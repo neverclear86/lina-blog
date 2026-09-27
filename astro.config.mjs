@@ -2,6 +2,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import cloudflare from "@astrojs/cloudflare";
+import { satteri } from "@astrojs/markdown-satteri";
 import { defineConfig, fontProviders } from "astro/config";
 import sharp from "sharp";
 import {
@@ -11,6 +12,7 @@ import {
 } from "./src/ansi-art.ts";
 import { devPages } from "./src/dev/dev-pages.ts";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
+import { tableAlignToClass } from "./src/markdown/table-align.ts";
 
 /** Same pattern Astro uses to read a page's `export const prerender`. */
 const PRERENDER_EXPORT = /^\s*export\s+const\s+prerender\s*=\s*(true|false);?/m;
@@ -94,6 +96,11 @@ function linaAnsiArt() {
 export default defineConfig({
   // Origin of absolute URLs, such as the links in /llms.txt and /rss.xml.
   site: "https://ikili.pro",
+  markdown: {
+    // Sätteri is Astro's default processor. It is set explicitly to add the plugins in
+    // src/markdown/.
+    processor: satteri({ hastPlugins: [tableAlignToClass] }),
+  },
   output: "server",
   adapter: cloudflare({
     // The default `cloudflare-binding` uses Cloudflare Images, which can incur charges.
