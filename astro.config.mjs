@@ -41,6 +41,8 @@ function prerenderByDefault() {
 
 // https://astro.build/config
 export default defineConfig({
+  // Origin of absolute URLs, such as the links in /llms.txt.
+  site: "https://ikili.pro",
   output: "server",
   adapter: cloudflare({
     // The default `cloudflare-binding` uses Cloudflare Images, which can incur charges.

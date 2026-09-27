@@ -19,6 +19,7 @@ bun create astro@latest -- --template basics
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
 │   ├── content.config.ts # blog collection: src/content/blog/ (and blog-dev/ in astro dev), checked by blog-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
+│   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── assets/           # Images processed by astro:assets
 │   │   ├── logo-black.png  # Logo for the light theme, optimized by astro:assets
@@ -36,8 +37,9 @@ bun create astro@latest -- --template basics
 │   ├── layouts/
 │   │   └── Layout.astro       # <head> with the <Font /> tags; imports tokens.css and global.css; sets --font-body on html
 │   ├── pages/
-│   │   └── [lang]/
-│   │       └── index.astro   # /ja/ and /en/
+│   │   ├── [lang]/
+│   │   │   └── index.astro   # /ja/ and /en/
+│   │   └── llms.txt.ts   # /llms.txt, prerendered to dist/client/
 │   └── styles/
 │       ├── global.css    # body colors and the grid backgrounds (.grid, .cgrid)
 │       └── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>
