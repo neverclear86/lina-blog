@@ -46,15 +46,15 @@ GitHub のトークンと Nostr のバンカーの接続情報は Worker にだ�
 
 表に無い拡張子（`jpeg`、`svg` を含む）と、拡張子に合わない `Content-Type` は、400 `invalid_request` で拒む。
 
-`HEAD /images/{name}` は、画像が有れば 200、無ければ 404 を返す（どちらも本文は無い）。
+`HEAD /images/{name}` は、画像が有れば 200 と、置いたときの `Content-Type`、`Cache-Control`、`ETag` を返し、無ければ 404 を返す（どちらも本文は無い）。
 同期スクリプトは、404 のときだけ `PUT` する。
 
 `PUT /images/{name}` の本文は、画像の生のバイト列である。
-`Content-Length` を要る。
+`Content-Length` を要り、無いとき（chunked の転送を含む）は 400 `invalid_request` で拒む（R2 は長さの分からない本文を受け取らない）。
 Worker は本文を解析せず、そのまま R2 に流す。
 Worker はハッシュを自分で計算しない。
 R2 の `put` の `sha256` オプションにパスのハッシュを渡して照合させ、一致しない画像は 422 `hash_mismatch` で拒む。
-一致しないときの R2 の振る舞いは、R2 のバケットを作る実装（#48）で確かめる。
+R2 は一致しない画像を置かず、`put` がエラー（R2 のエラーコード 10037 `BadDigest`）を投げる。Worker はこれを 422 `hash_mismatch` にする。
 新しく置いたときは 201、既に有るときは本文を読まずに 200 を返す。
 どちらも、応答の本文は次の形である。
 
@@ -63,7 +63,10 @@ R2 の `put` の `sha256` オプションにパスのハッシュを渡して照
 ```
 
 R2 のキーは `{name}` そのものである。
-`Cache-Control` と画像の配信は #48 で決める。
+画像は、表の `Content-Type` と `Cache-Control: public, max-age=31536000, immutable` を付けて置く。
+名前が内容のハッシュなので、同じ名前の画像の中身は変わらず、1 年の `immutable` でキャッシュできる。
+画像は公開用 R2 バケット（`lina-blog-images`）のカスタムドメイン `https://img.ikili.pro` から、置いたときの `Content-Type` と `Cache-Control` で配信する。速度制限のある開発用の `r2.dev` の URL は使わない。
+画像の形式とサイズの最適化を行うなら、同期スクリプトがハッシュを計算する前に行う。Worker は画像を変換しない（無料プランの CPU 時間に収めるため）。
 
 ## 記事の公開
 
@@ -215,7 +218,7 @@ GitHub から公開の記録を読めないとき、または公開の記録の�
 
 | 状態 | `code` | 起きるとき | 再送 |
 | --- | --- | --- | --- |
-| 400 | `invalid_request` | JSON やパスの形が違う、項目が無い、画像の拡張子や `Content-Type` が違う | しない |
+| 400 | `invalid_request` | JSON やパスの形が違う、項目が無い、画像の拡張子や `Content-Type` が違う、画像の `Content-Length` が無い | しない |
 | 401 | `unauthorized` | 認証が無い、形式か値が違う | しない |
 | 404 | `not_found` | 無いパス（画像の `HEAD` は本文無しの 404） | しない |
 | 409 | `conflict` | GitHub の先頭が並行した公開で動いた | する |

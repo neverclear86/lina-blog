@@ -54,8 +54,9 @@ bun create astro@latest -- --template basics
 │       │   ├── app.ts               # Hono app and Worker entry; every route needs the shared secret
 │       │   ├── auth.ts              # Bearer auth with a constant-time comparison
 │       │   ├── content-hash.ts      # Content hash of an article (SHA-256 of its markdown)
-│       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL)
+│       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL, IMAGES)
 │       │   ├── errors.ts            # Error body shared by every error response
+│       │   ├── images.ts            # Image names, R2 lookups and uploads for /images/{name}
 │       │   └── published-record.ts  # Reads src/content/published.json on GitHub for GET /articles
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
@@ -138,6 +139,10 @@ at hashed files that the deploy removed. The adapter skips its rule when a `_hea
 `public/_headers` added later must therefore not set `Cache-Control` on `/*`, or the hashed
 files lose their long cache.
 
+Article images are not build output. The publish Worker stores them in the R2 bucket
+`lina-blog-images` under a content-hash name with `public, max-age=31536000, immutable`, and
+they are served from `https://img.ikili.pro` (`docs/publish-api.md`).
+
 ## 🧞 Commands
 
 All commands are run from the root of the project, from a terminal:
@@ -175,6 +180,8 @@ Check the publish Worker locally by copying `workers/publish/.dev.vars.example` 
 without GitHub, add `GITHUB_API_URL=http://127.0.0.1:<port>` to `.dev.vars` and serve a
 directory with `python3 -m http.server <port>`: the list is empty until the directory has
 `repos/neverclear86/lina-blog/contents/src/content/published.json`.
+`HEAD` and `PUT /images/<sha256>.<ext>` use a local R2 bucket that `wrangler dev` keeps in
+`workers/publish/.wrangler/state`.
 
 Both deploy workflows need the same two repository secrets:
 
@@ -191,6 +198,11 @@ The publish Worker also needs two secrets on Cloudflare, each set once: its shar
 (`bunx wrangler secret put PUBLISH_TOKEN -c workers/publish/wrangler.jsonc`) and a GitHub token
 with read access to this repository's contents
 (`bunx wrangler secret put GITHUB_TOKEN -c workers/publish/wrangler.jsonc`).
+
+It also stores images in the R2 bucket `lina-blog-images`, created once with
+`bunx wrangler r2 bucket create lina-blog-images`. Connect `img.ikili.pro` to the bucket as a
+custom domain (R2 > lina-blog-images > Settings > Custom Domains) and leave the `r2.dev` URL
+disabled; it is rate-limited and meant for development.
 
 ## 🛡️ Turnstile
 
