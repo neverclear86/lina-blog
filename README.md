@@ -14,7 +14,7 @@ bun create astro@latest -- --template basics
 │   └── publish-api.md    # API contract between the article sync script and the publishing Worker
 ├── src/
 │   ├── contact.ts        # Contact form input validation, unit-tested
-│   ├── api.ts            # Hono routes handled by the Worker (/api/*), unit-tested
+│   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
 │   ├── content.config.ts # blog collection: src/content/blog/ (and blog-dev/ in astro dev), checked by blog-schema.ts
@@ -30,14 +30,14 @@ bun create astro@latest -- --template basics
 │   │   └── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
 │   ├── i18n/
 │   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
+│   │   ├── negotiate.ts  # Picks the locale for / from Accept-Language, unit-tested
 │   │   ├── paths.ts      # Path of the same page in another locale, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
 │   │   └── Layout.astro       # <head> with the <Font /> tags; imports tokens.css and global.css; sets --font-body on html
 │   ├── pages/
-│   │   ├── [lang]/
-│   │   │   └── index.astro   # /ja/ and /en/
-│   │   └── index.astro
+│   │   └── [lang]/
+│   │       └── index.astro   # /ja/ and /en/
 │   └── styles/
 │       ├── global.css    # body colors and the grid backgrounds (.grid, .cgrid)
 │       └── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>
@@ -55,7 +55,7 @@ bun create astro@latest -- --template basics
 └── package.json
 ```
 
-Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets. Routes that no page matches, such as `/api/*`, fall through to the Hono app in `src/fetch.ts`, which serves the routes in `src/api.ts`.
+Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets. `/` has no page: the route in `src/api.ts` redirects it to `/en/` when `Accept-Language` prefers English over Japanese and to `/ja/` otherwise, with `Vary: Accept-Language`. Do not add `src/pages/index.astro`, because the adapter serves a prerendered page before the Hono app sees the request. Routes that no page matches, such as `/api/*`, fall through to the Hono app in `src/fetch.ts`, which serves the routes in `src/api.ts`.
 
 Pages that exist in every language go in `src/pages/[lang]/` and are generated once for each locale in `src/i18n/locales.ts` (`/ja/`, `/en/`); their UI strings come from `src/i18n/ui.ts`. Pages outside `[lang]/`, such as the Japanese-only blog under `/blog/`, have no language prefix. Astro's `i18n()` handler in `src/fetch.ts` is never reached, so `astro build` warns that the project does not call it; running it would answer 404 for those unprefixed paths. The layout links every page to the same path in the other locales (`src/i18n/paths.ts`); a page without a language prefix links to the other locale's top page.
 
