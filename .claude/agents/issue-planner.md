@@ -23,7 +23,7 @@ disallowedTools: Agent
 - 依存は作業ツリーで `bun install --frozen-lockfile` で入れる。`.astro/` と `dist/` は生成物でコミットしない
 - Astro 7 は、エージェントの中で実行した `astro dev` / `astro preview` を自動で背景に回す（pid とロックは作業ツリーに置かれ、呼び出しはすぐ返る）。立てるときは `env -C <作業ツリー> bunx astro preview --background --host 127.0.0.1 --port <ポート>`（dev なら `astro dev --background --port <ポート>`）、止めるときは同じ作業ツリーで `env -C <作業ツリー> bunx astro preview stop`（`astro dev stop`）を実行する。状態は作業ツリーごとなので、ユーザーの作業ツリーの dev サーバーには影響しない。`--port` を省くと既定の 4321（ユーザーの dev サーバー）を取り合う。`pkill -f` は使わない
 - wrangler / workerd を立てるとき（#17 の Cloudflare アダプタ以降）も、既定の 8788 を使わず割り当てのポートを明示する
-- 画面の確認と撮影は headless で行う: `sh <作業ツリー>/.claude/scripts/screenshot.sh <作業ツリー> <ポート> <出力先> <パス>...`（`dist/` が要るので先に `bun run build`。preview の起動と停止はスクリプトが行う）。user スコープの Playwright MCP（`mcp__playwright__*`）は headed でユーザーの画面にブラウザーの窓を開き、作業ツリーに `.playwright-mcp/` を残すので使わない
+- 画面の確認と撮影は headless で行う: `node <作業ツリー>/.claude/scripts/screenshot.mjs --root <作業ツリー> --port <ポート> --out <出力先> <パス>...`（Playwright の Chromium。`dist/` が要るので先に `bun run build`。preview の起動と停止はスクリプトが行う。ページ全体を、動きを止めた状態（`prefers-reduced-motion: reduce`）で撮り、撮影ごとに応答の状態と横のはみ出し（`overflowX`、はみ出した要素）を JSON で 1 行出す）。user スコープの Playwright MCP（`mcp__playwright__*`）は headed でユーザーの画面にブラウザーの窓を開き、作業ツリーに `.playwright-mcp/` を残すので使わない
 <!-- /ADAPT:env -->
 
 ## 記憶
@@ -47,7 +47,7 @@ disallowedTools: Agent
 - 判断が要る箇所は「決めたこと」として、決定と理由と捨てた案を書く。設計の選択は推奨案で決めて「決めたこと」に書き、status を question にするのは issue の前提が事実に反するときだけにする（question は実行を止め、ユーザーの介入を要する）。依頼文に「ユーザーの決定」があれば、それはすでに決まった事項なので再議論しない
 - テスト: 受け入れ条件はまず自動テストで表し、足すテストと既存のテストで変わるものを列挙する。手作業の検証手順は、自動テストにも CI にも表せないものだけにする
 <!-- ADAPT:ci -->
-- CI（`.github/workflows/ci.yml`）は PR ごとに `biome ci`、`astro check`、`bun run build` を行う。テストはまだ無いので、変えたページが `dist/` に出ること、出力の HTML の中身（属性、`lang`、meta）、Worker の応答は、検証の手順に `dist/` を読む手順や preview に `curl` する手順として置く
+- CI（`.github/workflows/ci.yml`）は PR ごとに `biome ci`、`astro check`、`bun run test`（vitest）、`bun run build` を行う。単体テストはロジックだけにあるので、変えたページが `dist/` に出ること、出力の HTML の中身（属性、`lang`、meta）、Worker の応答は、検証の手順に `dist/` を読む手順や preview に `curl` する手順として置く
 - デプロイ（`.github/workflows/deploy.yml`）は当面手動でだけ起動する。プランの検証の手順でデプロイはしない。Worker の動作（`src/fetch.ts`、`wrangler.jsonc`、`public/_headers` などに関わる変更）は、build の後に `env -C <作業ツリー> bunx wrangler dev --ip 127.0.0.1 --port <ポート +1> --inspector-port <ポート +2>` で立て、`curl` で応答を確かめる手順を置く（`wrangler dev` は build が書いた `dist/server/wrangler.json` を読む）
 <!-- /ADAPT:ci -->
   - 分岐を持つ型（変種を足す型）のプランは、変種ごとに実行時の検証（足すテスト、または既存の実行経路の根拠）を書く
@@ -66,7 +66,7 @@ disallowedTools: Agent
   - 追跡されたファイルを書き換えて戻す手順は書かない。壊して確かめる検査は、使い捨ての clone で回す手順にするか、レビュアーの再現に任せる
 <!-- ADAPT:procedure -->
   - サーバーを使う手順は、立てる行（`astro preview --background --host 127.0.0.1 --port <ポート>`）、確かめる行（`curl -fsS http://127.0.0.1:<ポート>/<パス>`）、止める行（`astro preview stop`）をそれぞれ別の手順にし、全部 `env -C <作業ツリー>` で書く
-  - UI を変えるプランは、`screenshot.sh` で 1440px と 390px をライトとダークで撮る手順を置き、issue の完了条件が中間の幅を言うときは `SHOT_WIDTHS="1440 1024 768 390"` で撮って崩れを見る手順にする
+  - UI を変えるプランは、`screenshot.mjs` で 1440px と 390px をライトとダークで撮る手順を置く。issue の完了条件が中間の幅を言うときは `--widths 1440,1024,768,390` で撮り、期待する出力を「全部の行で `overflowX` が 0、`overflowing` が空」と書く。演出を見る issue は `--motion no-preference` でも撮る
   - ビルドの出力を確かめる手順は、`dist/` の HTML を `grep -c` などで数え、期待する件数を土台で取った値から書く
 <!-- /ADAPT:procedure -->
 - Doc コメントは、この PR がマージされた時点の動作だけを書く。行番号、issue 番号、後続 issue で配線される動作は書かない
@@ -79,6 +79,7 @@ disallowedTools: Agent
 - ほぼ全ページを静的ビルドし、Workers Static Assets から配信する。動的な処理（お問い合わせ、curl 応答）は `src/fetch.ts` の Hono アプリに置く。表示のために Worker も DB も起動しないことを基本とし、D1 と Live Content Collections は使わない（#1）
 - CSS は素の CSS（Astro のスコープ付き `<style>` とグローバルの少数ファイル）で書く。色はトークン（CSS 変数）で持ち、コンポーネントに色を直書きしない（#2、#20）
 - 見た目は `design/` の CB* を正とする。テキストの色は WCAG AA を満たし、アニメーションは `prefers-reduced-motion: reduce` で止める
+- 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
 - `要決定` ラベルの issue（#11〜#16）で決まっていない値（リンク先、文言、通知の手段）は、issue の指示どおり仮のままにし、先取りして決めない
 <!-- /ADAPT:design -->
 - 既存のコードの流儀（モジュールの分け方、エラーの表し方、テストの書き方）に合わせる

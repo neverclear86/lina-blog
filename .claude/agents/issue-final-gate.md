@@ -30,6 +30,7 @@ disallowedTools: Agent
 - ほぼ全ページを静的ビルドし、Workers Static Assets から配信する。動的な処理（お問い合わせ、curl 応答）は `src/fetch.ts` の Hono アプリに置く。表示のために Worker も DB も起動しないことを基本とし、D1 と Live Content Collections は使わない（#1）
 - CSS は素の CSS（Astro のスコープ付き `<style>` とグローバルの少数ファイル）で書く。色はトークン（CSS 変数）で持ち、コンポーネントに色を直書きしない（#2、#20）
 - 見た目は `design/` の CB* を正とする。テキストの色は WCAG AA を満たし、アニメーションは `prefers-reduced-motion: reduce` で止める
+- 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
 - `要決定` ラベルの issue（#11〜#16）で決まっていない値（リンク先、文言、通知の手段）は、issue の指示どおり仮のままにし、先取りして決めない
 <!-- /ADAPT:design -->
 - 依頼文に「条件への対応コメント」があるとき（レビューが APPROVE に条件を付け、再レビューをせずに直させた場合）は、その対応の差分が条件の範囲に収まっているか。対応コメントの `kind=fix` のマーカーの head について `gh api repos/neverclear86/lina-blog/commits/<その head> --jq '.files[] | .filename, .patch'` でそのコミットの変更だけを見て、条件に無い変更が入っていれば must にする。対応が複数ラウンドあるときは各 `kind=fix` の head について同じことをする

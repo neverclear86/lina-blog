@@ -21,7 +21,7 @@ disallowedTools: Agent
 - 依存は作業ツリーで `bun install --frozen-lockfile` で入れる。`.astro/` と `dist/` は生成物でコミットしない
 - Astro 7 は、エージェントの中で実行した `astro dev` / `astro preview` を自動で背景に回す（pid とロックは作業ツリーに置かれ、呼び出しはすぐ返る）。立てるときは `env -C <作業ツリー> bunx astro preview --background --host 127.0.0.1 --port <ポート>`（dev なら `astro dev --background --port <ポート>`）、止めるときは同じ作業ツリーで `env -C <作業ツリー> bunx astro preview stop`（`astro dev stop`）を実行する。状態は作業ツリーごとなので、ユーザーの作業ツリーの dev サーバーには影響しない。`--port` を省くと既定の 4321（ユーザーの dev サーバー）を取り合う。`pkill -f` は使わない
 - wrangler / workerd を立てるとき（#17 の Cloudflare アダプタ以降）も、既定の 8788 を使わず割り当てのポートを明示する
-- 画面の確認と撮影は headless で行う: `sh <作業ツリー>/.claude/scripts/screenshot.sh <作業ツリー> <ポート> <出力先> <パス>...`（`dist/` が要るので先に `bun run build`。preview の起動と停止はスクリプトが行う）。user スコープの Playwright MCP（`mcp__playwright__*`）は headed でユーザーの画面にブラウザーの窓を開き、作業ツリーに `.playwright-mcp/` を残すので使わない
+- 画面の確認と撮影は headless で行う: `node <作業ツリー>/.claude/scripts/screenshot.mjs --root <作業ツリー> --port <ポート> --out <出力先> <パス>...`（Playwright の Chromium。`dist/` が要るので先に `bun run build`。preview の起動と停止はスクリプトが行う。ページ全体を、動きを止めた状態（`prefers-reduced-motion: reduce`）で撮り、撮影ごとに応答の状態と横のはみ出し（`overflowX`、はみ出した要素）を JSON で 1 行出す）。user スコープの Playwright MCP（`mcp__playwright__*`）は headed でユーザーの画面にブラウザーの窓を開き、作業ツリーに `.playwright-mcp/` を残すので使わない
 - ポートの割り当ては、依頼文の「使ってよいポート」（レビュー側）の先頭から +0 が astro preview / dev（撮影もここ）、+1 が wrangler / workerd、+2〜+4 は予備である
 <!-- /ADAPT:env -->
 
@@ -37,6 +37,7 @@ disallowedTools: Agent
 - ほぼ全ページを静的ビルドし、Workers Static Assets から配信する。動的な処理（お問い合わせ、curl 応答）は `src/fetch.ts` の Hono アプリに置く。表示のために Worker も DB も起動しないことを基本とし、D1 と Live Content Collections は使わない（#1）
 - CSS は素の CSS（Astro のスコープ付き `<style>` とグローバルの少数ファイル）で書く。色はトークン（CSS 変数）で持ち、コンポーネントに色を直書きしない（#2、#20）
 - 見た目は `design/` の CB* を正とする。テキストの色は WCAG AA を満たし、アニメーションは `prefers-reduced-motion: reduce` で止める
+- 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
 - `要決定` ラベルの issue（#11〜#16）で決まっていない値（リンク先、文言、通知の手段）は、issue の指示どおり仮のままにし、先取りして決めない
 <!-- /ADAPT:design -->
 - CI: `gh pr checks <PR> -R neverclear86/lina-blog` の全ジョブが head で pass か skipped か（実装エージェントが待ってから返す決まりなので、fail していれば must）
@@ -45,7 +46,7 @@ disallowedTools: Agent
 ## 再現
 - CI（`gh pr checks <PR> -R neverclear86/lina-blog`）が head で pass していることを確かめる。CI が行う検査は再現しない。再実行するのは差分を読んで疑わしいと思ったときだけ。CI の結果は「確認したこと」の表に 1 行で書く
 <!-- ADAPT:ci-scope -->
-CI（`.github/workflows/ci.yml` の `check` ジョブ）は `bun install --frozen-lockfile`、`biome ci`（整形、lint、import の並び）、`astro check`（型）、`bun run build` を行う。テストはまだ無い
+CI（`.github/workflows/ci.yml` の `check` ジョブ）は `bun install --frozen-lockfile`、`biome ci`（整形、lint、import の並び）、`astro check`（型）、`bun run test`（vitest の単体テスト）、`bun run build` を行う
 <!-- /ADAPT:ci-scope -->
 - 再現するのは CI にも PR 本文にも無いものだけ: プランの「検証の手順」のうち自動テストで表されていない手順、PR に貼られたスクリーンショットに無い UI の状態、差分を読んで疑わしいと思った箇所の実行
 - docker を使うときは指示されたプロジェクト名とポートを使い、始める前にその名前の資源が無いことを確かめる。ユーザーの資源（issue-implementer の定義の「docker を使うときの安全策」）には触れない。1 回の Bash 呼び出しで完結するスクリプトにし、`.env` は作業ツリーに置かず `--env-file` でスクラッチパッドから渡す。後片付けでイメージはタグで消し、ID では消さない。`prune` は使わない。前後で資源の一覧を比べる

@@ -22,7 +22,7 @@ disallowedTools: Agent
 - 依存は作業ツリーで `bun install --frozen-lockfile` で入れる。`.astro/` と `dist/` は生成物でコミットしない
 - Astro 7 は、エージェントの中で実行した `astro dev` / `astro preview` を自動で背景に回す（pid とロックは作業ツリーに置かれ、呼び出しはすぐ返る）。立てるときは `env -C <作業ツリー> bunx astro preview --background --host 127.0.0.1 --port <ポート>`（dev なら `astro dev --background --port <ポート>`）、止めるときは同じ作業ツリーで `env -C <作業ツリー> bunx astro preview stop`（`astro dev stop`）を実行する。状態は作業ツリーごとなので、ユーザーの作業ツリーの dev サーバーには影響しない。`--port` を省くと既定の 4321（ユーザーの dev サーバー）を取り合う。`pkill -f` は使わない
 - wrangler / workerd を立てるとき（#17 の Cloudflare アダプタ以降）も、既定の 8788 を使わず割り当てのポートを明示する
-- 画面の確認と撮影は headless で行う: `sh <作業ツリー>/.claude/scripts/screenshot.sh <作業ツリー> <ポート> <出力先> <パス>...`（`dist/` が要るので先に `bun run build`。preview の起動と停止はスクリプトが行う）。user スコープの Playwright MCP（`mcp__playwright__*`）は headed でユーザーの画面にブラウザーの窓を開き、作業ツリーに `.playwright-mcp/` を残すので使わない
+- 画面の確認と撮影は headless で行う: `node <作業ツリー>/.claude/scripts/screenshot.mjs --root <作業ツリー> --port <ポート> --out <出力先> <パス>...`（Playwright の Chromium。`dist/` が要るので先に `bun run build`。preview の起動と停止はスクリプトが行う。ページ全体を、動きを止めた状態（`prefers-reduced-motion: reduce`）で撮り、撮影ごとに応答の状態と横のはみ出し（`overflowX`、はみ出した要素）を JSON で 1 行出す）。user スコープの Playwright MCP（`mcp__playwright__*`）は headed でユーザーの画面にブラウザーの窓を開き、作業ツリーに `.playwright-mcp/` を残すので使わない
 <!-- /ADAPT:env -->
 
 ## 記憶
@@ -44,6 +44,7 @@ disallowedTools: Agent
 - ほぼ全ページを静的ビルドし、Workers Static Assets から配信する。動的な処理（お問い合わせ、curl 応答）は `src/fetch.ts` の Hono アプリに置く。表示のために Worker も DB も起動しないことを基本とし、D1 と Live Content Collections は使わない（#1）
 - CSS は素の CSS（Astro のスコープ付き `<style>` とグローバルの少数ファイル）で書く。色はトークン（CSS 変数）で持ち、コンポーネントに色を直書きしない（#2、#20）
 - 見た目は `design/` の CB* を正とする。テキストの色は WCAG AA を満たし、アニメーションは `prefers-reduced-motion: reduce` で止める
+- 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
 - `要決定` ラベルの issue（#11〜#16）で決まっていない値（リンク先、文言、通知の手段）は、issue の指示どおり仮のままにし、先取りして決めない
 <!-- /ADAPT:design -->
 

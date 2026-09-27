@@ -35,7 +35,7 @@ hooks:
 - 依存は作業ツリーで `bun install --frozen-lockfile` で入れる。`.astro/` と `dist/` は生成物でコミットしない
 - Astro 7 は、エージェントの中で実行した `astro dev` / `astro preview` を自動で背景に回す（pid とロックは作業ツリーに置かれ、呼び出しはすぐ返る）。立てるときは `env -C <作業ツリー> bunx astro preview --background --host 127.0.0.1 --port <ポート>`（dev なら `astro dev --background --port <ポート>`）、止めるときは同じ作業ツリーで `env -C <作業ツリー> bunx astro preview stop`（`astro dev stop`）を実行する。状態は作業ツリーごとなので、ユーザーの作業ツリーの dev サーバーには影響しない。`--port` を省くと既定の 4321（ユーザーの dev サーバー）を取り合う。`pkill -f` は使わない
 - wrangler / workerd を立てるとき（#17 の Cloudflare アダプタ以降）も、既定の 8788 を使わず割り当てのポートを明示する
-- 画面の確認と撮影は headless で行う: `sh <作業ツリー>/.claude/scripts/screenshot.sh <作業ツリー> <ポート> <出力先> <パス>...`（`dist/` が要るので先に `bun run build`。preview の起動と停止はスクリプトが行う）。user スコープの Playwright MCP（`mcp__playwright__*`）は headed でユーザーの画面にブラウザーの窓を開き、作業ツリーに `.playwright-mcp/` を残すので使わない
+- 画面の確認と撮影は headless で行う: `node <作業ツリー>/.claude/scripts/screenshot.mjs --root <作業ツリー> --port <ポート> --out <出力先> <パス>...`（Playwright の Chromium。`dist/` が要るので先に `bun run build`。preview の起動と停止はスクリプトが行う。ページ全体を、動きを止めた状態（`prefers-reduced-motion: reduce`）で撮り、撮影ごとに応答の状態と横のはみ出し（`overflowX`、はみ出した要素）を JSON で 1 行出す）。user スコープの Playwright MCP（`mcp__playwright__*`）は headed でユーザーの画面にブラウザーの窓を開き、作業ツリーに `.playwright-mcp/` を残すので使わない
 - ポートの割り当ては、依頼文の「使ってよいポート」の先頭から +0 が astro preview / dev（撮影もここ）、+1 が wrangler / workerd、+2〜+4 は予備である
 <!-- /ADAPT:env -->
 
@@ -45,6 +45,7 @@ hooks:
 - ほぼ全ページを静的ビルドし、Workers Static Assets から配信する。動的な処理（お問い合わせ、curl 応答）は `src/fetch.ts` の Hono アプリに置く。表示のために Worker も DB も起動しないことを基本とし、D1 と Live Content Collections は使わない（#1）
 - CSS は素の CSS（Astro のスコープ付き `<style>` とグローバルの少数ファイル）で書く。色はトークン（CSS 変数）で持ち、コンポーネントに色を直書きしない（#2、#20）
 - 見た目は `design/` の CB* を正とする。テキストの色は WCAG AA を満たし、アニメーションは `prefers-reduced-motion: reduce` で止める
+- 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
 - `要決定` ラベルの issue（#11〜#16）で決まっていない値（リンク先、文言、通知の手段）は、issue の指示どおり仮のままにし、先取りして決めない
 <!-- /ADAPT:design -->
 - Doc コメントは、この PR がマージされた時点の動作だけを書く。行番号、issue 番号、後続 issue で配線される動作は書かない。プランが文言を指定していればそのまま使う（`<土台の値 + 1>` の形の件数は、今の土台の値から計算した数で埋める）
@@ -61,6 +62,7 @@ push のたびに CI が走り、CI の失敗や衝突で push をやり直す�
 - **依存**: `bun install --frozen-lockfile`。`package.json` を変えたら `bun install` で `bun.lock` を更新してコミットに含める
 - **整形と lint**: `bunx biome check --write` で直せるものを直し（差分をコミットに含める）、`bunx biome ci` を通す
 - **型**: `bunx astro check`
+- **テスト**: `bun run test`（vitest）
 - **build**: `bun run build`
 - **wrangler**: Worker に関わる変更（`src/fetch.ts`、`wrangler.jsonc`、`astro.config.mjs`、`public/_headers` など）では、build の後に `env -C <作業ツリー> timeout 60 bunx wrangler dev --ip 127.0.0.1 --port <ポート +1> --inspector-port <ポート +2>` を背景で立て、変えたルートと `/` に `curl` して期待どおり応答することを確かめる。止めるときは `timeout` に任せるか、ポートの行から引いた pid の `/proc/<pid>/cwd` が作業ツリーであることを確かめてから kill する
 <!-- /ADAPT:checks -->
@@ -70,7 +72,7 @@ push のたびに CI が走り、CI の失敗や衝突で push をやり直す�
 - **issue の取り直し**: `gh pr create` の直前に、issue の本文とコメントを `gh issue view <N> -R neverclear86/lina-blog --json title,body,comments --jq '.title, .body, (.comments[].body)'` で取り直す。依頼文の補足が「#M を分割したサブ issue」と言うときは、親 #M も同じコマンドで取り直す（実行の途中でユーザーが決定を変えると、issue の本文とコメントが書き換わる）。プランがあるときは、取り直したコメントにプランの承認より後の決定の変更が無いことを見る。受け入れ条件や決定が変わっていれば取り込んでから PR を作り、取り込めないときは status を deviation にして返す
 - UI を変える issue（`ui: true`）でだけ、main と作業ブランチの両方の画面を撮り（同じ初期状態を作ってから）、PR を作った直後に `gh pr comment <PR> --attach <png>` で「変更前」「変更後」を貼る。貼るのは変えた画面だけで、全画面の一式は貼らない。見た目の変わった画面が 1 つも無いとき（リファクタリングなど）は貼らず、「テストと検証」に「変更前と変更後の一式を撮って比べ、見た目の変わった画面は無い」と 1 行書く。UI を変えない issue では撮らない
 <!-- ADAPT:screenshots -->
-- 撮影は `sh <作業ツリー>/.claude/scripts/screenshot.sh <作業ツリー> <ポート +0> <出力先> <パス>...`（headless の Chromium。幅ごとにライトとダークの 2 枚を `<名前>-<幅>-<light|dark>.png` で撮る）。幅は 1440 と 390 で、issue の完了条件が中間の幅（768、1024）を言うときは `SHOT_WIDTHS="1440 1024 768 390"` を付ける。貼るのは 1440 と 390 だけでよい。i18n（#18）の後は日本語と英語のページを両方撮る
+- 撮影は `node <作業ツリー>/.claude/scripts/screenshot.mjs --root <作業ツリー> --port <ポート +0> --out <出力先> <パス>...`（Playwright の headless Chromium。幅ごと・テーマごとにページ全体を `<名前>-<幅>-<light|dark>.png` で撮り、動きは止める）。幅は 1440 と 390 で、issue の完了条件が中間の幅（768、1024）を言うときは `--widths 1440,1024,768,390` を付け、出力の `overflowX` が 0 であることを「テストと検証」に書く。変更前（main）の撮影は、main にこのスクリプトが無ければ、作業ツリーのスクリプトを `--root` に main の作業ツリーを渡して使う。貼るのは 1440 と 390 だけでよい。i18n（#18）の後は日本語と英語のページを両方撮る
 <!-- /ADAPT:screenshots -->
 
 ## docker を使うときの安全策（ユーザーの docker と同じ daemon を共有している）
