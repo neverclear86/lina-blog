@@ -38,3 +38,6 @@ export const blogSchema = z.object({
     .optional(),
   description: z.string().min(1),
 });
+
+/** Frontmatter of a blog post after `blogSchema` parses it, with `date` as a `Date`. */
+export type BlogFrontmatter = z.output<typeof blogSchema>;
