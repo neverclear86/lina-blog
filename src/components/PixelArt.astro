@@ -7,10 +7,15 @@ interface Props {
   alt?: string;
   /** Displayed width in CSS pixels. The height follows the aspect ratio. Defaults to 48. */
   width?: number;
+  /**
+   * Whether the image bobs up and down by 4px in two steps every 1.2s. It stays still under
+   * `prefers-reduced-motion: reduce`. Defaults to false.
+   */
+  bob?: boolean;
   class?: string;
 }
 
-const { alt = "", width = 48, class: className } = Astro.props;
+const { alt = "", width = 48, bob = false, class: className } = Astro.props;
 
 // PNG at the source size keeps every pixel as is. A lossy format or a resized
 // candidate would blend neighbouring pixels before the browser scales the image.
@@ -22,7 +27,7 @@ const image = await getImage({ src: pixelLina, format: "png" });
   width={image.attributes.width}
   height={image.attributes.height}
   alt={alt}
-  class:list={["pixel-art", className]}
+  class:list={["pixel-art", { bob }, className]}
   style={`--pixel-art-width: ${width}px`}
   decoding="async"
 >
@@ -32,5 +37,26 @@ const image = await getImage({ src: pixelLina, format: "png" });
   width: var(--pixel-art-width);
   height: auto;
   image-rendering: pixelated;
+}
+
+.bob {
+  animation: pixel-art-bob 1.2s steps(2, jump-none) infinite;
+}
+
+@keyframes pixel-art-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bob {
+    animation: none;
+  }
 }
 </style>

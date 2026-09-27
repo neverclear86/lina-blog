@@ -1,0 +1,204 @@
+---
+/**
+ * The About section of the top page: the section heading with a lead paragraph, then three
+ * terminal window cards (the full-body image, streaming and development), with the pixel art
+ * standing on the development card.
+ *
+ * The strings come from the `about.*` keys of `src/i18n/ui.ts`. The card titles are a file
+ * name and commands, so they are written here and not translated. The cards sit in one row
+ * from 1024px, in two columns from 768px with the full-body card spanning both rows, and in
+ * one column below 768px.
+ */
+import type { Locale } from "../i18n/locales";
+import { translate, type UiKey } from "../i18n/ui";
+import AboutFullBody from "./AboutFullBody.astro";
+import PixelArt from "./PixelArt.astro";
+import SectionHeading from "./SectionHeading.astro";
+import TerminalCard from "./TerminalCard.astro";
+
+interface Props {
+  /** Language of the page, which picks the strings. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = (key: UiKey) => translate(lang, key);
+
+const streamItems: [UiKey, UiKey][] = [
+  ["about.stream.activity.label", "about.stream.activity.value"],
+  ["about.stream.topics.label", "about.stream.topics.value"],
+  ["about.stream.note.label", "about.stream.note.value"],
+];
+const devItems: [UiKey, UiKey][] = [
+  ["about.dev.work.label", "about.dev.work.value"],
+  ["about.dev.skills.label", "about.dev.skills.value"],
+  ["about.dev.handle.label", "about.dev.handle.value"],
+];
+---
+
+<section id="about" class="about">
+  <SectionHeading label="~/about" title="ABOUT" subtitle={t("about.subtitle")}>
+    <p class="lead">{t("about.lead")}</p>
+  </SectionHeading>
+  <div class="cards">
+    <TerminalCard title="lina.png" class="full-body-card">
+      <div class="full-body">
+        <div class="full-body-image">
+          <AboutFullBody alt={t("about.fullBodyAlt")} />
+        </div>
+      </div>
+    </TerminalCard>
+    <TerminalCard title="lina --stream">
+      <div class="body">
+        <h3 class="card-title">{t("about.stream.title")}</h3>
+        <dl class="items">
+          {streamItems.map(([label, value]) => (
+  <>
+    <dt>{t(label)}</dt>
+    <dd>{t(value)}</dd>
+  </>
+))}
+        </dl>
+      </div>
+    </TerminalCard>
+    <div class="dev-card">
+      <div class="dev-pixel"><PixelArt bob /></div>
+      <TerminalCard title="lina --dev">
+        <div class="body">
+          <h3 class="card-title">{t("about.dev.title")}</h3>
+          <dl class="items">
+            {devItems.map(([label, value]) => (
+  <>
+    <dt>{t(label)}</dt>
+    <dd>{t(value)}</dd>
+  </>
+))}
+          </dl>
+        </div>
+      </TerminalCard>
+    </div>
+  </div>
+</section>
+
+<style>
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 56px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.lead {
+  margin: 0;
+  max-width: 480px;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.85;
+  padding-bottom: 4px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 40px;
+}
+
+.full-body {
+  position: relative;
+  flex-grow: 1;
+  min-height: 422px;
+  overflow: hidden;
+  background: var(--blush);
+  color: var(--ink);
+}
+
+.full-body-image {
+  position: absolute;
+  left: 50%;
+  top: 20px;
+  width: 151px;
+  transform: translateX(-50%);
+}
+
+.body {
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.items {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  row-gap: 16px;
+  column-gap: 12px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+dt {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.dev-card {
+  position: relative;
+}
+
+.dev-pixel {
+  display: flex;
+  position: absolute;
+  right: 30px;
+  top: -62px;
+}
+
+@media (min-width: 768px) {
+  .about {
+    gap: 40px;
+    padding: 72px 40px;
+  }
+
+  .cards {
+    grid-template-columns: 280px minmax(0, 1fr);
+    column-gap: 32px;
+  }
+
+  .cards > :global(.full-body-card) {
+    grid-row: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .about {
+    gap: 44px;
+    padding: 88px 64px;
+  }
+
+  /* Keeps the last line of the lead clear of the pixel art standing on the development card. */
+  .lead {
+    padding-right: 80px;
+  }
+
+  .cards {
+    grid-template-columns: 280px repeat(2, minmax(0, 1fr));
+  }
+
+  .cards > :global(.full-body-card) {
+    grid-row: auto;
+  }
+}
+</style>

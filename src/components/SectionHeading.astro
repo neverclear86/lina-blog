@@ -7,7 +7,8 @@
  * the English title has `lang="en"`. Below 768px the subtitle goes under the English title;
  * from 768px they sit side by side, aligned at the bottom. The default slot, such as a lead
  * paragraph or a "see all" link, goes under the titles below 1024px and to their right from
- * 1024px.
+ * 1024px. From 1024px the titles keep their width, so that the subtitle stays on one line,
+ * and the slot takes the rest of the row.
  */
 interface Props {
   /** Label above the heading, such as `~/about`. */
@@ -52,6 +53,10 @@ const { label, title, subtitle, as: Heading = "h2" } = Astro.props;
     align-items: flex-end;
     justify-content: space-between;
     gap: 48px;
+  }
+
+  .titles {
+    flex-shrink: 0;
   }
 }
 

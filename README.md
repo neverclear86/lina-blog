@@ -35,6 +35,7 @@ bun create astro@latest -- --template basics
 │   │   ├── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
 │   │   └── logo-white.png  # Logo for the dark theme
 │   ├── components/
+│   │   ├── About.astro           # About section: heading, lead and three terminal cards
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (tables, task lists, footnotes, code file names, YouTube embeds)
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
