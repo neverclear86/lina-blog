@@ -19,6 +19,7 @@ bun create astro@latest -- --template basics
 │   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
+│   ├── contact-form.ts   # Contact form states and their UI strings, unit-tested
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
 │   ├── content.config.ts # blog and works collections: src/content/blog/ (and blog-dev/ in astro dev) checked by blog-schema.ts, src/content/works/ checked by work-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
