@@ -34,7 +34,7 @@ bun create astro@latest -- --template basics
 │   │   ├── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
 │   │   └── logo-white.png  # Logo for the dark theme
 │   ├── components/
-│   │   ├── ArticleBody.astro     # Styles rendered Markdown (tables, task lists, footnotes, code file names)
+│   │   ├── ArticleBody.astro     # Styles rendered Markdown (tables, task lists, footnotes, code file names, YouTube embeds)
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
 │   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
@@ -60,7 +60,8 @@ bun create astro@latest -- --template basics
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code block file names as <figure>, unit-tested
 │   │   ├── sample.md         # Sample article shown at /dev/markdown/
-│   │   └── table-align.ts    # Sätteri hast plugin: table alignment as classes, unit-tested
+│   │   ├── table-align.ts    # Sätteri hast plugin: table alignment as classes, unit-tested
+│   │   └── youtube.ts        # Sätteri hast plugin: YouTube URL paragraphs as iframes, unit-tested
 │   ├── pages/
 │   │   ├── [lang]/
 │   │   │   └── index.astro   # /ja/ and /en/
@@ -102,7 +103,7 @@ Pages that exist in every language go in `src/pages/[lang]/` and are generated o
 
 Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema, and `astro build` leaves them out, so they never reach `dist/`.
 
-Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are not syntax-highlighted (`markdown.syntaxHighlight: false`), because Astro's default Shiki output has `style` attributes.
+Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are not syntax-highlighted (`markdown.syntaxHighlight: false`), because Astro's default Shiki output has `style` attributes. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player.
 
 `astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the works, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt` uses as well.
 
