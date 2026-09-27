@@ -3,6 +3,7 @@ export type ErrorCode =
   | "invalid_request"
   | "unauthorized"
   | "hash_mismatch"
+  | "too_many_images"
   | "upstream_error"
   | "misconfigured";
 

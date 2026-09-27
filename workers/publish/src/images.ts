@@ -51,10 +51,11 @@ export type PutImageResult =
   | { ok: false; code: "hash_mismatch" | "upstream_error"; message: string };
 
 /**
- * Checks an image name of `PUT` and `HEAD /images/{name}`: `<sha256>.<ext>`, where `<sha256>`
- * is 64 lowercase hexadecimal digits and `<ext>` is avif, gif, jpg, png or webp.
+ * Checks an image name: the `{name}` of `PUT` and `HEAD /images/{name}`, and the name after
+ * `image:` in an article. The form is `<sha256>.<ext>`, where `<sha256>` is 64 lowercase
+ * hexadecimal digits and `<ext>` is avif, gif, jpg, png or webp.
  *
- * @param name The `{name}` of the path.
+ * @param name The name to check.
  * @returns The name, its SHA-256 and the `Content-Type` of its extension, or `null` when the
  *   name has another form.
  */
