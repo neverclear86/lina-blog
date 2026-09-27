@@ -50,7 +50,7 @@ bun create astro@latest -- --template basics
 │   ├── content/
 │   │   └── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
 │   ├── dev/
-│   │   ├── components.astro  # /dev/components/: samples of the shared shapes and components
+│   │   ├── components.astro  # /dev/components/: samples of the shared shapes, animations and components
 │   │   ├── dev-pages.ts      # Adds the dev pages in astro dev (or with LINA_DEV_PAGES=1), unit-tested
 │   │   └── markdown.astro    # /dev/markdown/: sample article with every supported Markdown syntax
 │   ├── i18n/
@@ -59,7 +59,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the theme script, the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css and shapes.css; sets --font-body on html; puts the theme toggle next to the language links
+│   │   └── Layout.astro       # <head> with the theme script, the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css, shapes.css and motion.css; sets --font-body on html; puts the theme toggle next to the language links
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code block file names as <figure>, unit-tested
 │   │   ├── sample.md         # Sample article shown at /dev/markdown/
@@ -77,6 +77,7 @@ bun create astro@latest -- --template basics
 │   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
 │   └── styles/
 │       ├── global.css    # body colors and their fade, and the grid backgrounds (.grid, .cgrid)
+│       ├── motion.css    # Animations that keep running (.bob, .caret, .a-typeLoop), stopped under reduced motion
 │       ├── shapes.css    # Notched corners, hard shadows, the lift and the focus outline
 │       └── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
 ├── workers/
@@ -127,7 +128,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | `tokens.css` | Color tokens (CSS variables) for the light and dark themes                 |
 | `global.css` | Styles of `body` (colors and their fade between the themes) and decorations used across pages, such as `.grid` and `.cgrid` |
 | `shapes.css` | Notched corners (`.shape`, `.shapeL`, `.shapeS`), hard shadows (`.shadow`, `.shadowF`, `.shadowInk`), the hover lift (`.lift`) and the keyboard focus outline |
-| `motion.css` | Shared animations (`@keyframes`), stopped under `prefers-reduced-motion: reduce` (not created yet) |
+| `motion.css` | Animations that keep running: the pixel art bob (`.bob`), the blinking cursor (`.caret`) and the typed command (`.a-typeLoop`), stopped under `prefers-reduced-motion: reduce` |
 
 A global file holds only what several components share.
 Styles that belong to one component go in that component's scoped `<style>`.
@@ -140,7 +141,7 @@ It takes the value saved in `localStorage` under the key `theme` (`light` or `da
 Without JavaScript, the page keeps the light theme that `Layout.astro` renders.
 `src/components/ThemeToggle.astro` switches the theme with `toggleTheme` and saves it under the same key; when saving throws, the switch lasts only until the next page or a change of the OS setting.
 
-`src/dev/components.astro` shows the shared shapes and the components on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
+`src/dev/components.astro` shows the shared shapes, the shared animations and the components on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
 `astro dev` serves them at `/dev/components/` and `/dev/markdown/`, and `astro build` leaves them out of `dist/` unless `LINA_DEV_PAGES=1` is set.
 Add `?theme=dark` or `?theme=light` to the URL of `/dev/components/` to see that theme whatever the OS setting is.
 To capture them with `.claude/scripts/screenshot.mjs`, which serves `dist/`, build with `LINA_DEV_PAGES=1 bun run build`.

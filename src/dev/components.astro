@@ -10,11 +10,15 @@ import RssIcon from "../components/icons/RssIcon.astro";
 import XIcon from "../components/icons/XIcon.astro";
 import YouTubeIcon from "../components/icons/YouTubeIcon.astro";
 import ZennIcon from "../components/icons/ZennIcon.astro";
+import PixelArt from "../components/PixelArt.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import Tape from "../components/Tape.astro";
 import TerminalCard from "../components/TerminalCard.astro";
 import { translate } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
+
+// Commands for the typing samples: 16 characters (the design) and 10.
+const COMMANDS = ["$ npm run deploy", "$ git push"];
 ---
 
 <Layout lang="ja">
@@ -384,6 +388,29 @@ import Layout from "../layouts/Layout.astro";
         <IconLink href="#english" label="RSS"><RssIcon /></IconLink>
       </div>
     </section>
+    <section id="motion">
+      <h2>動き</h2>
+      <div class="row">
+        <PixelArt class="bob" width={96} />
+        <p class="motion-text">
+          配信もするし、開発もする。<span class="caret" aria-hidden="true"
+            >▍</span
+          >
+        </p>
+      </div>
+      <div class="row">
+        {COMMANDS.map((command) => (
+  <span class="prompt">
+    <span class="a-typeLoop" style={`--type-steps: ${[...command].length}`}>
+      {command}
+    </span>
+    <span class="caret" aria-hidden="true">
+      ▍
+    </span>
+  </span>
+))}
+      </div>
+    </section>
   </main>
 </Layout>
 
@@ -520,5 +547,15 @@ section {
 
 .narrow-chip {
   width: 100px;
+}
+
+.motion-text {
+  margin: 0;
+}
+
+.prompt {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
 }
 </style>

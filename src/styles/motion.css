@@ -1,0 +1,74 @@
+/*
+ * Animations that keep running, shared by every page and imported by `src/layouts/Layout.astro`
+ * after `shapes.css`. The keyframes and timings are copied from `.bob`, `.cursor` and
+ * `.a-typeLoop` in `design/CBMain.dc.html`; `.cursor` is renamed `.caret`.
+ *
+ * `.bob` moves an element up by 4px and back in two steps, for the pixel art
+ * (`<PixelArt class="bob" />`). It sets `transform`, so it goes on the image itself, and another
+ * effect that sets `transform`, such as `.lift`, goes on an element outside it.
+ *
+ * `.caret` blinks the text cursor in `--orange`. The caller writes the glyph and hides it from
+ * screen readers: `<span class="caret" aria-hidden="true">▍</span>`.
+ *
+ * `.a-typeLoop` reveals a one-line command from left to right in `--type-steps` steps, shows it
+ * whole, and starts again every 5s. The caller sets `--type-steps` to the number of characters,
+ * `` style={`--type-steps: ${[...command].length}`} ``, so that each step shows one more character
+ * of a monospace font; it is 16 (`$ npm run deploy`) when not set. It is an inline block that does
+ * not wrap, because the clip opens across one line only.
+ *
+ * Under `prefers-reduced-motion: reduce` the three do not move: the pixel art stays in place, the
+ * cursor stays shown and the whole command is shown.
+ */
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes typeLoop {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  45%,
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.bob {
+  animation: bob 1.2s steps(2, jump-none) infinite;
+}
+
+.caret {
+  color: var(--orange);
+  animation: blink 1.1s steps(1, end) infinite;
+}
+
+.a-typeLoop {
+  display: inline-block;
+  white-space: nowrap;
+  animation: typeLoop 5s steps(var(--type-steps, 16), end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bob,
+  .caret,
+  .a-typeLoop {
+    animation: none;
+  }
+}
