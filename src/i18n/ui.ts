@@ -64,6 +64,13 @@ const ja = {
     "確認が終わるまで少し待ってから、もう一度送信してください。",
   // Name after "© <year>" in the site footer.
   "footer.copyrightHolder": "創好リナ",
+  // Hero of the top page; "hero.intro" shows from 768px and "hero.introShort" below it.
+  "hero.intro":
+    "配信もするし、開発もする。ITで遊ぶ動画と配信を、Resoniteを中心に届けています。",
+  "hero.introShort":
+    "配信もするし、開発もする。ITで遊ぶ動画と配信を届けています。",
+  "hero.links": "リンク",
+  "hero.tagline": "バーチャルイキリプログラマ",
   "home.comingSoon": "準備中です。",
   "latest.blog.all": "記事一覧",
   "latest.blog.heading": "ブログ",
@@ -174,6 +181,12 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "contact.status.waiting":
       "Please wait for the verification to finish, then send again.",
     "footer.copyrightHolder": "Tsukusu Lina",
+    "hero.intro":
+      "I stream, and I build software. I make videos and streams about having fun with IT, mostly in Resonite.",
+    "hero.introShort":
+      "I stream, and I build software. I make videos and streams about having fun with IT.",
+    "hero.links": "Links",
+    "hero.tagline": 'Virtual "ikiri" programmer',
     "home.comingSoon": "Coming soon.",
     "latest.blog.all": "All posts",
     "latest.blog.heading": "Blog",
