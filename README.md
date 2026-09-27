@@ -20,7 +20,7 @@ bun create astro@latest -- --template basics
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
-│   ├── content.config.ts # blog collection: src/content/blog/ (and blog-dev/ in astro dev), checked by blog-schema.ts
+│   ├── content.config.ts # blog and works collections: src/content/blog/ (and blog-dev/ in astro dev) checked by blog-schema.ts, src/content/works/ checked by work-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
@@ -29,6 +29,7 @@ bun create astro@latest -- --template basics
 │   ├── theme.ts          # Theme key and values, the inline script that sets <html data-theme> and the toggle, unit-tested
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── user-agent.ts     # Tells curl and other command-line clients from browsers, unit-tested
+│   ├── work-schema.ts    # Schema of the works data (ja and en in one entry, no astro:content), unit-tested
 │   ├── assets/           # Images processed by astro:assets
 │   │   ├── logo-black.png  # Logo for the light theme, optimized by astro:assets
 │   │   ├── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
@@ -48,7 +49,8 @@ bun create astro@latest -- --template basics
 │   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
 │   │   └── icons/                # Service icons for IconLink; sources and terms in icons/README.md
 │   ├── content/
-│   │   └── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
+│   │   ├── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
+│   │   └── works/        # Works, one YAML file per work (placeholder data), with placeholder.png
 │   ├── dev/
 │   │   ├── components.astro  # /dev/components/: samples of the shared shapes, animations and components
 │   │   ├── dev-pages.ts      # Adds the dev pages in astro dev (or with LINA_DEV_PAGES=1), unit-tested
