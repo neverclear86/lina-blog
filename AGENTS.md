@@ -27,6 +27,8 @@ Astro のドキュメント: https://docs.astro.build
 - [スタイルと Tailwind](https://docs.astro.build/en/guides/styling/)
 - [多言語対応](https://docs.astro.build/en/guides/internationalization/)
 
+公開用 Worker と記事の同期スクリプトの作業の前に、[公開用 Worker の API の取り決め](docs/publish-api.md)を読む。
+
 ## issue ワークフロー
 
 - issue を番号で頼まれたら、スキル `issue-workflow`（`.claude/skills/issue-workflow/`）で進める。

@@ -10,6 +10,8 @@ bun create astro@latest -- --template basics
 
 ```text
 /
+├── docs/
+│   └── publish-api.md    # API contract between the article sync script and the publishing Worker
 ├── public/
 │   └── favicon.svg
 ├── src/
@@ -172,6 +174,10 @@ For local checks, put the address in `.dev.vars` at the repository root (ignored
 ```sh
 CONTACT_MAIL_TO=you@example.com
 ```
+
+## 📚 Docs
+
+- [Publishing Worker API](docs/publish-api.md) (in Japanese): the contract between the article sync script and the publishing Worker, covering authentication, requests and responses, errors, the list of published articles and its content hash, and the processing order and retries.
 
 ## 📄 License
 
