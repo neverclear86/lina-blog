@@ -3,12 +3,17 @@
   "name": "lina-blog",
   "compatibility_date": "2026-09-25",
   "assets": {
-    // Only `/` runs the Worker first: it has no static page, and the Hono route in
+    // `/` and `/api/*` run the Worker first. `/` has no static page, and the Hono route in
     // `src/api.ts` answers curl and other command-line clients with the text art and the text
     // version fetched through the ASSETS binding, and redirects browsers to `/ja/` or `/en/`
-    // by `Accept-Language`.
+    // by `Accept-Language`. `/api/*` has no static files and is served by the routes in
+    // `src/api.ts`; without it here, `not_found_handling` would answer those paths from assets.
     // Other static pages are served from assets without starting the Worker.
-    "run_worker_first": ["/"],
+    "run_worker_first": ["/", "/api/*"],
+    // A GET for a path with no file gets `/404.html` (`src/pages/404.astro`) with status 404,
+    // without starting the Worker. A page that exports `prerender = false` has no file either,
+    // so it must be added to `run_worker_first` above.
+    "not_found_handling": "404-page",
     // The Worker reads the built files through this binding. The Cloudflare adapter adds the
     // same name when it is missing; it is written here to keep it next to its use.
     "binding": "ASSETS"
