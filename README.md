@@ -33,12 +33,13 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the <Font /> tags; imports tokens.css; sets --font-body on html
+│   │   └── Layout.astro       # <head> with the <Font /> tags; imports tokens.css and global.css; sets --font-body on html
 │   ├── pages/
 │   │   ├── [lang]/
 │   │   │   └── index.astro   # /ja/ and /en/
 │   │   └── index.astro
 │   └── styles/
+│       ├── global.css    # body colors and the grid backgrounds (.grid, .cgrid)
 │       └── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>
 ├── workers/
 │   └── publish/          # Publish Worker, separate from the site and deployed on its own
@@ -64,6 +65,24 @@ Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes an
 `workers/publish/src/app.ts` are tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 
 To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+
+## 🎨 CSS
+
+CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in each component.
+`src/layouts/Layout.astro` imports the global files, so they apply to every page.
+
+| File         | Holds                                                                      |
+| :----------- | :------------------------------------------------------------------------- |
+| `tokens.css` | Color tokens (CSS variables) for the light and dark themes                 |
+| `global.css` | Styles of `body` and decorations used across pages, such as `.grid` and `.cgrid` |
+| `shapes.css` | Shared shapes used by several components, such as the notched corner and the hard shadow (not created yet) |
+| `motion.css` | Shared animations (`@keyframes`), stopped under `prefers-reduced-motion: reduce` (not created yet) |
+
+A global file holds only what several components share.
+Styles that belong to one component go in that component's scoped `<style>`.
+Color values are written only in `tokens.css`; other CSS, global or scoped, uses the tokens with `var(--…)`.
+A component that must style an element outside its own markup, such as `<html data-theme>`,
+wraps only that selector in `:global()`.
 
 ## 🔤 Fonts
 
