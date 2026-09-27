@@ -78,8 +78,11 @@ R2 のキーは `{name}` そのものである。
 
 `markdown` は、`## 内容のハッシュ` の正規化を済ませたものである。
 frontmatter は、ブログの frontmatter のスキーマ（`src/blog-schema.ts`）から `date` を除いたものである。
+frontmatter は、`markdown` の 1 行目の `---` の行と、次の `---` だけの行の間に YAML で書く。
+Worker は、サイトのビルド（Astro）と同じ `js-yaml` で読む。
+閉じの `---` の行より前に `---` か `+++` で始まる行があるときは、Astro と区切りの位置が変わるので、frontmatter が無いものとして扱う。
 frontmatter に `date` が有るときは、422 `invalid_frontmatter` で拒む。
-スキーマに合わないときも、同じ 422 `invalid_frontmatter` で拒む（検証は #49）。
+frontmatter が無いとき、YAML のマッピングとして読めないとき、スキーマに合わないときも、同じ 422 `invalid_frontmatter` で拒む（検証は #49）。
 frontmatter の `slug` がパスの `{slug}` と違うときは、422 `slug_mismatch` で拒む。
 
 本文の画像は `![代替テキスト](image:<sha256>.<ext>)` の形で参照する。
@@ -224,7 +227,7 @@ GitHub から公開の記録を読めないとき、または公開の記録の�
 | 409 | `conflict` | GitHub の先頭が並行した公開で動いた | する |
 | 422 | `hash_mismatch` | 画像の中身がパスのハッシュと違う | しない |
 | 422 | `invalid_markdown` | `\r` か BOM を含む | しない |
-| 422 | `invalid_frontmatter` | スキーマに合わない、`date` が有る | しない |
+| 422 | `invalid_frontmatter` | frontmatter が無い、YAML のマッピングとして読めない、スキーマに合わない、`date` が有る | しない |
 | 422 | `slug_mismatch` | frontmatter の `slug` がパスと違う | しない |
 | 422 | `missing_image` | 参照した画像が R2 に無い | 画像を置いてから |
 | 422 | `too_many_images` | `image:` の参照が 21 種以上 | しない |
