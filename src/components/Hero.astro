@@ -14,6 +14,12 @@
  * and growing with the content. Below 1024px the intro and the links sit in a row below the
  * stage; from 1024px they follow the name in the text column. Below 768px the name and the
  * chip are stacked, the intro is `hero.introShort`, and the English links sit in three columns.
+ *
+ * The last row is the dark strip: the striped `Tape`, then "status: online" and the switching
+ * kaomoji of `Kao` in JetBrains Mono. "status: online" is a fixed decoration, hidden from
+ * assistive technology. From 768px the strip is 40px high with a 160px tape and ends with
+ * `site.curlHint` on the right; below 768px it is 36px high with a 64px tape and leaves the
+ * curl hint out, as in `design/CBMobile.dc.html`.
  */
 import { FEED_PATH } from "../blog-rss";
 import type { Locale } from "../i18n/locales";
@@ -27,6 +33,8 @@ import RssIcon from "./icons/RssIcon.astro";
 import XIcon from "./icons/XIcon.astro";
 import YouTubeIcon from "./icons/YouTubeIcon.astro";
 import ZennIcon from "./icons/ZennIcon.astro";
+import Kao from "./Kao.astro";
+import Tape from "./Tape.astro";
 
 interface Props {
   /** Language of the page, which picks the strings. */
@@ -75,6 +83,17 @@ const ICONS = {
       <IconLink href={FEED_PATH} label="RSS"><RssIcon /></IconLink>
     </nav>
   </div>
+  <div class="band">
+    <span class="band-tape"><Tape width="100%" /></span>
+    <div class="band-text">
+      <span aria-hidden="true"
+        >status: online<span class="band-kao"
+          ><Kao faces={["⸜(*ˊᗜˋ*)⸝", "ᐠ( ᐛ )ᐟ", "(๑•̀ㅂ•́)و✧"]} /></span
+        ></span
+      >
+      <span class="curl">{translate(lang, "site.curlHint")}</span>
+    </div>
+  </div>
 </section>
 
 <style>
@@ -83,7 +102,8 @@ const ICONS = {
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     "text"
-    "intro";
+    "intro"
+    "band";
   overflow: hidden;
   border-bottom: 1px solid var(--line);
   container-type: inline-size;
@@ -180,6 +200,45 @@ const ICONS = {
   row-gap: 16px;
 }
 
+.band {
+  grid-area: band;
+  display: flex;
+  align-items: stretch;
+  height: 36px;
+  background: var(--inv);
+  color: var(--invfg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.band-tape {
+  display: flex;
+  flex-shrink: 0;
+  width: 64px;
+}
+
+.band-text {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.band-kao {
+  display: inline-block;
+  min-width: 7em;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.curl {
+  display: none;
+  color: var(--invmuted);
+}
+
 @media (min-width: 768px) {
   .stage {
     height: auto;
@@ -247,6 +306,28 @@ const ICONS = {
     gap: 20px;
     justify-content: flex-start;
   }
+
+  .band {
+    height: 40px;
+    font-size: 13px;
+  }
+
+  .band-tape {
+    width: 160px;
+  }
+
+  .band-text {
+    padding: 0 24px;
+  }
+
+  .band-kao {
+    min-width: 8em;
+    margin-left: 1ch;
+  }
+
+  .curl {
+    display: inline;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -254,8 +335,9 @@ const ICONS = {
     grid-template-areas:
       "text"
       "intro"
-      ".";
-    grid-template-rows: auto auto 1fr;
+      "."
+      "band";
+    grid-template-rows: auto auto 1fr auto;
   }
 
   .stage {
