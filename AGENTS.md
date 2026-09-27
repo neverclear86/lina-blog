@@ -1,6 +1,6 @@
 # lina-blog
 
-創好リナ（バーチャルイキリプログラマ）の個人サイト兼ブログ ikili.pro のリポジトリ。Astro 7 でほぼ全ページを静的に生成し、Cloudflare Workers（Static Assets と、`src/fetch.ts` の Hono）で配信する。計画は GitHub の issue（Epic #1〜#10）にある。
+創好リナ（バーチャルイキリプログラマ）の個人サイト兼ブログ ikili.pro のリポジトリ。Astro 7 でほぼ全ページを静的に生成し、Cloudflare Workers（Static Assets と、`src/fetch.ts` の Hono）で配信する。記事の公開は、サイトとは別の Worker（`workers/publish/`、Hono）が受け持つ。計画は GitHub の issue（Epic #1〜#10）にある。
 
 ## 開発
 
@@ -11,6 +11,8 @@ astro dev --background
 ```
 
 背景のサーバーは `astro dev stop`、`astro dev status`、`astro dev logs` で扱う。
+
+公開用 Worker（`workers/publish/`）は `bun run dev:publish`（`wrangler dev`）で立てる。シークレットは `workers/publish/.dev.vars.example` を `workers/publish/.dev.vars` に写して置く。`wrangler dev` は背景に回らないので、エージェントが立てるときは `timeout` と `--port` を付ける。
 
 ## ドキュメント
 
