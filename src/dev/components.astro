@@ -16,6 +16,8 @@ import LatestPosts from "../components/LatestPosts.astro";
 import LatestVideoFeature from "../components/LatestVideoFeature.astro";
 import LatestVideoList from "../components/LatestVideoList.astro";
 import PixelArt from "../components/PixelArt.astro";
+import PostCard from "../components/PostCard.astro";
+import PostList from "../components/PostList.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import Tape from "../components/Tape.astro";
 import TerminalCard from "../components/TerminalCard.astro";
@@ -57,6 +59,59 @@ const samplePosts: ComponentProps<typeof LatestPosts>["posts"] = [
       slug: "sample-post-oldest",
       date: new Date("2026-08-01"),
       tags: ["技術"],
+    },
+  },
+];
+
+// Posts for the post list samples: a title that wraps to three lines or more at 390px, three
+// tags, a sponsor, a ZWJ emoji and a flag. They are not in date order, to show that the list
+// keeps the order it is given.
+const sampleListPosts: ComponentProps<typeof PostList>["posts"] = [
+  {
+    data: {
+      title: "サイトをAstroで作り直した話",
+      slug: "sample-post-devlog",
+      date: new Date("2026-09-20"),
+      tags: ["制作記"],
+      emoji: "🛠️",
+    },
+  },
+  {
+    data: {
+      title:
+        "Cloudflare Workersで静的なページとAPIを同じWorkerから配信し、お問い合わせのフォームまで1つにまとめた構成の記録",
+      slug: "sample-post-long-title",
+      date: new Date("2026-09-12"),
+      tags: ["技術", "制作記", "日記"],
+      emoji: "🧑‍💻",
+    },
+  },
+  {
+    data: {
+      title: "配信の機材を少しずつ入れ替えた一週間",
+      slug: "sample-post-diary",
+      date: new Date("2026-08-20"),
+      tags: ["日記"],
+      emoji: "🇯🇵",
+    },
+  },
+  {
+    data: {
+      title: "キーボードを提供していただいたので使ってみた",
+      slug: "sample-post-sponsor",
+      date: new Date("2026-08-28"),
+      tags: ["技術"],
+      emoji: "⌨️",
+      sponsor: { name: "サンプル株式会社" },
+    },
+  },
+  {
+    data: {
+      title: "短い題",
+      slug: "sample-post-short",
+      date: new Date("2026-08-01"),
+      tags: ["技術"],
+      emoji: "📝",
     },
   },
 ];
@@ -464,6 +519,23 @@ const sampleVideos: YouTubeVideo[] = [
       </div>
     </section>
 
+    <section id="post-list">
+      <h2>記事の一覧</h2>
+      <div class="stack">
+        <PostList
+          posts={sampleListPosts}
+          emptyText={translate("ja", "latest.blog.noPosts")}
+        />
+        <PostList
+          posts={[]}
+          emptyText={translate("ja", "latest.blog.noPosts")}
+        />
+        <div class="post-card-sample">
+          <PostCard post={sampleListPosts[0]} class="is-focus" />
+        </div>
+      </div>
+    </section>
+
     <section id="english" lang="en">
       <h2>英語</h2>
       <div class="row">
@@ -557,6 +629,11 @@ const sampleVideos: YouTubeVideo[] = [
 
 .latest-list-sample {
   max-width: 536px;
+}
+
+/* Width of a card in the two columns of the post list at 1440px on this page. */
+.post-card-sample {
+  max-width: 688px;
 }
 
 .latest-narrow,
