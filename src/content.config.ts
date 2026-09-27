@@ -1,6 +1,7 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { blogSchema } from "./blog-schema";
+import { workSchema } from "./work-schema";
 
 /**
  * Blog posts: Markdown files under `src/content/blog/`. The glob loader uses a post's `slug`
@@ -19,4 +20,14 @@ const blog = defineCollection({
   schema: blogSchema,
 });
 
-export const collections = { blog };
+/**
+ * Works: one YAML file per work under `src/content/works/`, with the Japanese and English text
+ * in the same entry. The glob loader uses a work's `slug` as its entry id. A thumbnail path is
+ * resolved relative to the YAML file, and a missing image fails `astro build`.
+ */
+const works = defineCollection({
+  loader: glob({ pattern: "*.yaml", base: "./src/content/works" }),
+  schema: ({ image }) => workSchema(image()),
+});
+
+export const collections = { blog, works };

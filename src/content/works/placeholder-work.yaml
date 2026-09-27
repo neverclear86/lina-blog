@@ -1,0 +1,9 @@
+title: placeholder-work
+slug: placeholder-work
+description:
+  ja: 仮の作品。詳細ページの無いカードの確認に使う。
+  en: A placeholder work for checking a card without a page of its own.
+tech: [typescript]
+links:
+  repo: https://example.com/placeholder-work
+order: 3

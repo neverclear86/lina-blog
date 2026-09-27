@@ -1,0 +1,14 @@
+title: ikili.pro
+slug: ikili-pro
+description:
+  ja: このサイト。Obsidianで書いた記事が、ボタン1つで公開されます。
+  en: This site. A post written in Obsidian goes live with one button.
+tech: [astro, hono, cloudflare workers]
+thumbnail: logo
+links:
+  demo: https://ikili.pro/
+  repo: https://github.com/neverclear86/lina-blog
+order: 1
+hasPage: true
+label: $ npm run deploy
+cursor: true

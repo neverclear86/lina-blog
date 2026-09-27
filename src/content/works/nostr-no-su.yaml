@@ -1,0 +1,16 @@
+title: nostr-no-su
+slug: nostr-no-su
+description:
+  ja: Nostrの鍵を預かって署名するbunker。
+  en: A bunker that keeps Nostr keys and signs with them.
+tech: [nostr, nip-46]
+thumbnail: ./placeholder.png
+links:
+  repo: https://github.com/neverclear86/nostr-no-su
+  videos:
+    - url: https://example.com/videos/nostr-no-su
+      name: 仮の関連動画
+  posts:
+    - url: https://example.com/posts/nostr-no-su
+order: 2
+hasPage: true
