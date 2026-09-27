@@ -1,0 +1,289 @@
+---
+/**
+ * The hero of the top page, copied from `#top` of `design/CBMain.dc.html` and the first view of
+ * `design/CBMobile.dc.html`: `$ whoami`, LINA as the `<h1>` of the page, TSUKUSU, 創好リナ with
+ * the tilted pink chip, the intro ending with a blinking cursor, and the icon links of the
+ * profiles in `PROFILE_LINKS` followed by the RSS feed, on the grid background.
+ *
+ * The strings come from the `hero.*` keys of `src/i18n/ui.ts`. `$ whoami`, LINA, TSUKUSU and
+ * 創好リナ are the same in every locale, and 創好リナ is marked `lang="ja"`. Each profile link
+ * shows the icon of its `id` and has `rel="me"`.
+ *
+ * The section is a one-column grid. `.stage`, behind the text, holds the height of the stage:
+ * 566px below 768px, and from 768px 840px at 1440px wide, shrinking with the section (`cqw`)
+ * and growing with the content. Below 1024px the intro and the links sit in a row below the
+ * stage; from 1024px they follow the name in the text column. Below 768px the name and the
+ * chip are stacked, the intro is `hero.introShort`, and the English links sit in three columns.
+ */
+import { FEED_PATH } from "../blog-rss";
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import { PROFILE_LINKS, type ProfileLink } from "../profile-links";
+import Chip from "./Chip.astro";
+import IconLink from "./IconLink.astro";
+import GitHubIcon from "./icons/GitHubIcon.astro";
+import NostrIcon from "./icons/NostrIcon.astro";
+import RssIcon from "./icons/RssIcon.astro";
+import XIcon from "./icons/XIcon.astro";
+import YouTubeIcon from "./icons/YouTubeIcon.astro";
+import ZennIcon from "./icons/ZennIcon.astro";
+
+interface Props {
+  /** Language of the page, which picks the strings. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+
+const ICONS = {
+  youtube: YouTubeIcon,
+  twitter: XIcon,
+  github: GitHubIcon,
+  nostr: NostrIcon,
+  zenn: ZennIcon,
+} satisfies Record<ProfileLink["id"], unknown>;
+---
+
+<section id="top" class="hero grid">
+  <div class="stage"></div>
+  <div class="text">
+    <p class="prompt" aria-hidden="true">$ whoami</p>
+    <h1 class="first-name">LINA</h1>
+    <p class="family-name">TSUKUSU</p>
+    <div class="name-row">
+      <span class="name" lang="ja">創好リナ</span>
+      <span class="tagline"
+        ><Chip tone="pink" tilt>{translate(lang, "hero.tagline")}</Chip></span
+      >
+    </div>
+  </div>
+  <div class="intro">
+    <p class="intro-text">
+      <span class="intro-long">{translate(lang, "hero.intro")}</span
+      ><span class="intro-short">{translate(lang, "hero.introShort")}</span
+      ><span class="caret" aria-hidden="true">▍</span>
+    </p>
+    <nav class="links" aria-label={translate(lang, "hero.links")}>
+      {PROFILE_LINKS.map((link) => {
+  const Icon = ICONS[link.id];
+  return (
+    <IconLink href={link.url} label={link.label[lang]} rel="me">
+      <Icon />
+    </IconLink>
+  );
+})}
+      <IconLink href={FEED_PATH} label="RSS"><RssIcon /></IconLink>
+    </nav>
+  </div>
+</section>
+
+<style>
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "text"
+    "intro";
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  container-type: inline-size;
+}
+
+.stage {
+  grid-area: text;
+  height: 566px;
+}
+
+.text {
+  grid-area: text;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 12px 18px 0;
+}
+
+.prompt {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--muted);
+}
+
+.first-name {
+  margin: 4px 0 0 -6px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 128px;
+  line-height: 0.8;
+  letter-spacing: -3px;
+}
+
+.family-name {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: 3px;
+}
+
+.name-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+  margin-top: 12px;
+}
+
+.name {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.tagline {
+  margin-left: -4px;
+}
+
+.intro {
+  grid-area: intro;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 18px 24px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.intro-text {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.8;
+}
+
+.intro-long {
+  display: none;
+}
+
+.links {
+  display: flex;
+  justify-content: space-between;
+}
+
+.links:lang(en) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-items: center;
+  row-gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .stage {
+    height: auto;
+    min-height: min(840px, 58.333cqw);
+  }
+
+  .text {
+    padding: min(52px, 3.611cqw) 40px 0;
+  }
+
+  .prompt {
+    font-size: 13px;
+    line-height: 17px;
+  }
+
+  .first-name {
+    margin: min(15px, 1.042cqw) 0 0 -0.0294em;
+    font-size: min(340px, 23.611cqw);
+    letter-spacing: -0.0176em;
+  }
+
+  .family-name {
+    margin-top: min(16px, 1.111cqw);
+    font-size: min(96px, 6.667cqw);
+    letter-spacing: 0.0625em;
+  }
+
+  .name-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 18px;
+    margin-top: min(26px, 1.806cqw);
+  }
+
+  .name {
+    font-size: max(28px, min(52px, 3.611cqw));
+  }
+
+  .tagline {
+    margin-left: 0;
+  }
+
+  .intro {
+    gap: 20px;
+    padding: 24px 40px 32px;
+  }
+
+  .intro-text {
+    max-width: 560px;
+    font-size: 18px;
+    line-height: 1.85;
+  }
+
+  .intro-long {
+    display: inline;
+  }
+
+  .intro-short {
+    display: none;
+  }
+
+  .links,
+  .links:lang(en) {
+    display: flex;
+    gap: 20px;
+    justify-content: flex-start;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    grid-template-areas:
+      "text"
+      "intro"
+      ".";
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .stage {
+    grid-area: 1 / 1 / 4 / 2;
+  }
+
+  .text {
+    padding: min(52px, 3.611cqw) 64px 0;
+  }
+
+  .intro {
+    gap: 31px;
+    max-width: calc(51.389% - 64px - 24px);
+    padding: 27px 0 min(83px, 5.764cqw) 64px;
+    border-top: 0;
+    background: none;
+  }
+
+  .links,
+  .links:lang(en) {
+    gap: 12px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .links,
+  .links:lang(en) {
+    gap: 20px;
+  }
+}
+</style>

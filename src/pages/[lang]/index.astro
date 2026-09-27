@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import type { GetStaticPaths } from "astro";
 import About from "../../components/About.astro";
 import ContactSection from "../../components/ContactSection.astro";
+import Hero from "../../components/Hero.astro";
 import HeroStanding from "../../components/HeroStanding.astro";
 import LatestPosts from "../../components/LatestPosts.astro";
 import LatestSection from "../../components/LatestSection.astro";
@@ -10,7 +11,6 @@ import LatestVideoFeature from "../../components/LatestVideoFeature.astro";
 import LatestVideoList from "../../components/LatestVideoList.astro";
 import Works from "../../components/Works.astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
-import { translate } from "../../i18n/ui";
 import { LATEST_VIDEOS_SHOWN, latestVideos } from "../../latest-videos";
 import Layout from "../../layouts/Layout.astro";
 import { fetchLatestVideos } from "../../youtube-feed";
@@ -37,7 +37,7 @@ const { feature, list } = latestVideos(result);
 
 <Layout lang={lang}>
   <main>
-    <p>{translate(lang, "home.comingSoon")}</p>
+    <Hero lang={lang} />
     <div class="preview-standing"><HeroStanding /></div>
     <About lang={lang} />
     <Works lang={lang} />
@@ -51,7 +51,7 @@ const { feature, list } = latestVideos(result);
 </Layout>
 
 <style>
-/* HeroStanding をビルドで描画させる仮の配置。Hero のセクションができたら消す。 */
+/* HeroStanding をビルドで描画させる仮の配置。立ち絵を Hero に置いたら消す。 */
 .preview-standing {
   width: 259px;
 }
