@@ -7,8 +7,9 @@ import Layout from "../layouts/Layout.astro";
 
 <Layout lang="ja">
   <script is:inline slot="head">
-  if (new URLSearchParams(location.search).get("theme") === "dark") {
-    document.documentElement.dataset.theme = "dark";
+  const theme = new URLSearchParams(location.search).get("theme");
+  if (theme === "light" || theme === "dark") {
+    document.documentElement.dataset.theme = theme;
   }
   </script>
   <main class="page">

@@ -5,6 +5,7 @@ import { FEED_PATH, FEED_TITLE } from "../blog-rss";
 import { DEFAULT_LOCALE, LOCALES, type Locale } from "../i18n/locales";
 import { localizedPath } from "../i18n/paths";
 import { translate } from "../i18n/ui";
+import { THEME_SCRIPT } from "../theme";
 import "../styles/tokens.css";
 import "../styles/global.css";
 import "../styles/shapes.css";
@@ -51,6 +52,8 @@ const [icon32, icon192, appleTouchIcon] = await Promise.all([
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
+    {/* Sets <html data-theme> before the first paint; see THEME_SCRIPT in src/theme.ts. */}
+    <script is:inline set:html={THEME_SCRIPT} />
     <link rel="icon" type="image/png" sizes="32x32" href={icon32.src}>
     <link rel="icon" type="image/png" sizes="192x192" href={icon192.src}>
     <link rel="apple-touch-icon" href={appleTouchIcon.src}>
