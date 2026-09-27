@@ -1,5 +1,5 @@
 // @ts-check
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import cloudflare from '@astrojs/cloudflare';
 import { defineConfig } from 'astro/config';
 
@@ -25,7 +25,11 @@ function prerenderByDefault() {
 				root = config.root;
 			},
 			'astro:route:setup': ({ route }) => {
-				const source = readFileSync(new URL(route.component, root), 'utf8');
+				// Routes whose component is not a file in this project (injected by Astro or
+				// integrations) keep their own setting.
+				const file = new URL(route.component, root);
+				if (!existsSync(file)) return;
+				const source = readFileSync(file, 'utf8');
 				if (!PRERENDER_EXPORT.test(source)) {
 					route.prerender = true;
 				}
