@@ -8,9 +8,10 @@ import logoWhite from "../assets/logo-white.png";
  *
  * Both images are rendered as `<picture>` elements with AVIF and WebP sources at 1x and 2x
  * of `size`, and CSS hides the one that does not match the theme. The dark theme is
- * `<html data-theme="dark">`; when `<html>` has no `data-theme`, the OS setting
- * (`prefers-color-scheme`) decides. The hidden picture is `display: none`, so assistive
- * technology reads the `alt` only once and the lazily loaded image is not fetched.
+ * `<html data-theme="dark">`, set before the first paint by `THEME_SCRIPT` in `src/theme.ts`;
+ * any other value, or the light default when JavaScript does not run, shows the black logo.
+ * The hidden picture is `display: none`, so assistive technology reads the `alt` only once
+ * and the lazily loaded image is not fetched.
  */
 interface Props {
   /** Width and height in CSS pixels; the logo is square. */
@@ -61,13 +62,5 @@ picture {
 }
 :global(:root[data-theme="dark"]) .white {
   display: flex;
-}
-@media (prefers-color-scheme: dark) {
-  :global(:root:not([data-theme])) .black {
-    display: none;
-  }
-  :global(:root:not([data-theme])) .white {
-    display: flex;
-  }
 }
 </style>
