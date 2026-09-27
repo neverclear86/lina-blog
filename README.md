@@ -13,6 +13,7 @@ bun create astro@latest -- --template basics
 ├── public/
 │   └── favicon.svg
 ├── src/
+│   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/api/*), unit-tested
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── layouts/
