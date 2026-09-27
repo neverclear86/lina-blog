@@ -19,7 +19,7 @@ bun create astro@latest -- --template basics
 │   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
-│   ├── contact-form.ts   # Contact form states and their UI strings, unit-tested
+│   ├── contact-form.ts   # Contact form states before and after sending, their UI strings and the widget size, unit-tested
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
 │   ├── content.config.ts # blog and works collections: src/content/blog/ (and blog-dev/ in astro dev) checked by blog-schema.ts, src/content/works/ checked by work-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
@@ -45,7 +45,7 @@ bun create astro@latest -- --template basics
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
 │   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
-│   │   ├── ContactSection.astro  # Contact section of the top page: heading, lead and the form in a paper terminal window
+│   │   ├── ContactSection.astro  # Contact section of the top page: heading, lead and the form in a paper terminal window, sent with Turnstile by its script
 │   │   ├── IconButton.astro      # Square icon-only button, named by an aria-label or a hidden label slot
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
@@ -283,6 +283,8 @@ disabled; it is rate-limited and meant for development.
 
 - In production, register it with `bunx wrangler secret put TURNSTILE_SECRET_KEY`.
 - Locally, put it in `.dev.vars` at the root of the repository (ignored by git). `wrangler dev`, which `bun run preview:wrangler` runs, reads it and prints `Using secrets defined in .dev.vars` on startup.
+
+The contact form (`src/components/ContactSection.astro`) renders the widget with the site key `TURNSTILE_SITE_KEY`, a public variable declared with `astro:env` in `astro.config.mjs`. Pages are prerendered, so `astro build` reads it from the environment or from `.env` at the root of the repository (ignored by git), not from `.dev.vars`. Without it the build uses Cloudflare's test site key `1x00000000000000000000AA`, whose widget always passes with the dummy token `XXXX.DUMMY.TOKEN.XXXX`. A production secret key rejects that token, so a production build must set the real site key.
 
 Locally, use one of Cloudflare's test secret keys instead of the production key:
 
