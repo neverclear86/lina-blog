@@ -1,7 +1,8 @@
 /*
- * Animations that keep running, shared by every page and imported by `src/layouts/Layout.astro`
- * after `shapes.css`. The keyframes and timings are copied from `.bob`, `.cursor` and
- * `.a-typeLoop` in `design/CBMain.dc.html`; `.cursor` is renamed `.caret`.
+ * Animations that keep running or play on scroll, shared by every page and imported by
+ * `src/layouts/Layout.astro` after `shapes.css`. The keyframes and timings of `.bob`, `.caret` and
+ * `.a-typeLoop` are copied from `.bob`, `.cursor` and `.a-typeLoop` in `design/CBMain.dc.html`;
+ * `.reveal` is not in the design.
  *
  * `.bob` moves an element up by 4px and back in two steps, for the pixel art
  * (`<PixelArt class="bob" />`). It sets `transform`, so it goes on the image itself, and another
@@ -16,8 +17,15 @@
  * of a monospace font; it is 16 (`$ npm run deploy`) when not set. It is an inline block that does
  * not wrap, because the clip opens across one line only.
  *
- * Under `prefers-reduced-motion: reduce` the three do not move: the pixel art stays in place, the
- * cursor stays shown and the whole command is shown.
+ * `.reveal` fades a section in and moves it up from 32px below while its top edge scrolls from
+ * the bottom of the viewport to 30vh above it, on a view timeline (`animation-timeline: view()`).
+ * It goes on the root element of a section. A section whose top edge is already 30vh or more
+ * above the bottom of the viewport when the page opens is shown whole. The rule sits inside
+ * `@supports (animation-timeline: view())`, and the element itself sets neither `opacity` nor
+ * `translate`, so a browser without scroll-driven animations shows the section from the start.
+ *
+ * Under `prefers-reduced-motion: reduce` the four do not move: the pixel art stays in place, the
+ * cursor stays shown, the whole command is shown and the sections are shown from the start.
  */
 @keyframes bob {
   0%,
@@ -37,6 +45,17 @@
   50%,
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    translate: 0 32px;
+  }
+  to {
+    opacity: 1;
+    translate: none;
   }
 }
 
@@ -65,10 +84,20 @@
   animation: typeLoop 5s steps(var(--type-steps, 16), end) infinite;
 }
 
+/* The shorthand resets `animation-timeline` and `animation-range`, so they come after it. */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: reveal ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0 entry 30vh;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bob,
   .caret,
-  .a-typeLoop {
+  .a-typeLoop,
+  .reveal {
     animation: none;
   }
 }
