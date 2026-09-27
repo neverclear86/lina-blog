@@ -12,6 +12,7 @@ import {
 } from "./src/ansi-art.ts";
 import { devPages } from "./src/dev/dev-pages.ts";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
+import { codeFilename } from "./src/markdown/code-filename.ts";
 import { tableAlignToClass } from "./src/markdown/table-align.ts";
 
 /** Same pattern Astro uses to read a page's `export const prerender`. */
@@ -99,7 +100,12 @@ export default defineConfig({
   markdown: {
     // Sätteri is Astro's default processor. It is set explicitly to add the plugins in
     // src/markdown/.
-    processor: satteri({ hastPlugins: [tableAlignToClass] }),
+    processor: satteri({
+      mdastPlugins: [codeFilename],
+      hastPlugins: [tableAlignToClass],
+    }),
+    // Astro's default Shiki highlighting writes `style` attributes, which articles must not have.
+    syntaxHighlight: false,
   },
   output: "server",
   adapter: cloudflare({
