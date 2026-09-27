@@ -84,6 +84,29 @@ Components use these variables and never name a font. Form controls (`button`, `
 because 700 is not loaded. `font-synthesis-weight: none` on `html` keeps the browser from
 faking a weight that is not loaded.
 
+## 🖼️ Images and caching
+
+Images in `src/assets/` are rendered with `Picture` or `getImage` from `astro:assets`.
+`astro build` converts them once (`imageService: "compile"`), so no image is transformed at
+request time. Photos and the logo are offered as AVIF and WebP at several widths or densities.
+The pixel art and the favicons stay PNG at a fixed size, so no pixel is blended.
+
+Every file whose name carries a content hash, images and fonts included, is written to
+`/_astro/`. The repository has no `_headers` file: the Cloudflare adapter writes
+`dist/client/_headers` during `astro build` with one rule, and Workers Static Assets serves
+the other files with its default.
+
+| Path        | `Cache-Control`                         | Set by                                  |
+| :---------- | :-------------------------------------- | :-------------------------------------- |
+| `/_astro/*` | `public, max-age=31536000, immutable`   | The Cloudflare adapter (`_headers`)     |
+| HTML pages  | `public, max-age=0, must-revalidate`    | The Workers Static Assets default (with an `ETag`) |
+
+HTML is revalidated on every request, so a deploy shows up at once and a page never points
+at hashed files that the deploy removed. The adapter skips its rule when a `_headers` file in
+`public/` already sets `Cache-Control` on a rule that matches `/_astro/*`, such as `/*`. A
+`public/_headers` added later must therefore not set `Cache-Control` on `/*`, or the hashed
+files lose their long cache.
+
 ## 🧞 Commands
 
 All commands are run from the root of the project, from a terminal:
