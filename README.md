@@ -13,6 +13,7 @@ bun create astro@latest -- --template basics
 ├── docs/
 │   └── publish-api.md    # API contract between the article sync script and the publishing Worker
 ├── src/
+│   ├── ansi-art.ts       # Pixels to terminal text art (half blocks, 24-bit color), unit-tested
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
