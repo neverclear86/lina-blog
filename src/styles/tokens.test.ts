@@ -64,10 +64,15 @@ describe("tokens.css", () => {
     expect(light).toMatchObject(expected);
   });
 
-  it("ダークのトークンはデザインの .root.dark の変数を --num のほかは同じ値で持つ", () => {
+  it("ダークのトークンはデザインの .root.dark の変数を --num のほかは同じ値で持ち、ほかにはアイコンの色だけを持つ", () => {
     const expected = customProperties(declarations(design, ".root.dark"));
     expect(expected["--num"]).toBe("#b85510");
-    expect(customProperties(dark)).toEqual({ ...expected, "--num": "#a04a0e" });
+    expect(customProperties(dark)).toEqual({
+      ...expected,
+      "--num": "#a04a0e",
+      "--icon-yt": "#ffffff",
+      "--icon-x": "#ffffff",
+    });
   });
 
   it("アクセント色とインク色はテーマに依らないトークンとして :root にだけある", () => {
@@ -75,6 +80,17 @@ describe("tokens.css", () => {
     for (const name of Object.keys(THEME_INDEPENDENT)) {
       expect(dark).not.toHaveProperty(name);
     }
+  });
+
+  it("アイコンの色はライトで YouTube の Almost Black と Twitter(自称X) の黒、ダークで白になる", () => {
+    expect(light).toMatchObject({
+      "--icon-yt": "#212121",
+      "--icon-x": "#000000",
+    });
+    expect(dark).toMatchObject({
+      "--icon-yt": "#ffffff",
+      "--icon-x": "#ffffff",
+    });
   });
 
   it("color-scheme はライトで light、ダークで dark になる", () => {
@@ -113,6 +129,19 @@ const TEXT_PAIRS: readonly (readonly [
   ["--ink", "--paper"],
   ["--ink", "--field"],
   ["--paper-muted", "--ink"],
+];
+
+/**
+ * Icon colors of `src/components/icons/` on the face of `IconLink` (`--surf`), checked in both
+ * themes. An icon is a graphical object, so it must reach 3:1 (WCAG 2.2 SC 1.4.11).
+ */
+const ICON_PAIRS: readonly (readonly [
+  foreground: string,
+  background: string,
+])[] = [
+  ["--fg", "--surf"],
+  ["--icon-yt", "--surf"],
+  ["--icon-x", "--surf"],
 ];
 
 /**
@@ -164,6 +193,17 @@ describe("tokens.css のコントラスト", () => {
       const failures = TEXT_PAIRS.flatMap(([foreground, background]) => {
         const ratio = contrastRatio(colors[foreground], colors[background]);
         return ratio < 4.5 ? [`${foreground} / ${background}: ${ratio}`] : [];
+      });
+      expect(failures).toEqual([]);
+    },
+  );
+
+  it.each(Object.entries(themes))(
+    "%s のアイコンの色は --surf の上で 3:1 以上になる",
+    (_theme, colors) => {
+      const failures = ICON_PAIRS.flatMap(([foreground, background]) => {
+        const ratio = contrastRatio(colors[foreground], colors[background]);
+        return ratio < 3 ? [`${foreground} / ${background}: ${ratio}`] : [];
       });
       expect(failures).toEqual([]);
     },
