@@ -1,0 +1,208 @@
+---
+import { Picture } from "astro:assets";
+import { getCollection } from "astro:content";
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import { workCardLink, worksInOrder } from "../work-card";
+import Logo from "./Logo.astro";
+import SectionHeading from "./SectionHeading.astro";
+import TerminalCard from "./TerminalCard.astro";
+
+/**
+ * The Works section of the top page: the section heading, then a terminal window card for
+ * each work in the `works` collection, sorted by `order`.
+ *
+ * A card shows the work's thumbnail (an image, the logo on `--inv`, or an empty grid face),
+ * its label, title, description in `lang` and technologies. A work with a page of its own
+ * links to it; another work links to its demo or repository with `↗` after the title, and a
+ * work with neither is not a link and does not lift. The cards sit in three columns from
+ * 1024px, two from 768px and one below. Without works, the section shows "coming soon".
+ */
+interface Props {
+  /** Language of the page, which picks the strings and the link targets. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+
+const works = worksInOrder(await getCollection("works"));
+---
+
+<section id="works" class="works">
+  <SectionHeading
+    label="~/works"
+    title="WORKS"
+    subtitle={translate(lang, "works.subtitle")}
+  />
+  {works.length === 0 ? (
+  <p class="empty">{translate(lang, "home.comingSoon")}</p>
+) : (
+  <ul class="cards">
+    {works.map(({ data }) => {
+      const link = workCardLink(data, lang);
+      return (
+        <li>
+          <TerminalCard
+            title={`~/works/${data.title}`}
+            href={link?.href}
+            lift={link !== undefined}
+          >
+            {data.thumbnail === "logo" ? (
+              <div class="thumb logo">
+                <Logo size={80} alt="" tone="inverse" />
+              </div>
+            ) : data.thumbnail ? (
+              <div class="thumb">
+                <Picture
+                  src={data.thumbnail}
+                  alt=""
+                  formats={["avif", "webp"]}
+                  widths={[480, 960]}
+                  sizes="(min-width: 1024px) 30vw, (min-width: 768px) 50vw, 100vw"
+                />
+              </div>
+            ) : (
+              <div class="thumb grid empty-thumb" aria-hidden="true" />
+            )}
+            <div class="body">
+              <span class="label">
+                {data.label}
+                {data.cursor && (
+                  <span class="cursor" aria-hidden="true">
+                    ▍
+                  </span>
+                )}
+              </span>
+              <h3 class="title">
+                {data.title}
+                {link?.external && (
+                  <span class="ext" aria-hidden="true">
+                    ↗
+                  </span>
+                )}
+              </h3>
+              <p class="description">{data.description[lang]}</p>
+              {data.tech.length > 0 && (
+                <p class="tech">{data.tech.join(" / ")}</p>
+              )}
+            </div>
+          </TerminalCard>
+        </li>
+      );
+    })}
+  </ul>
+)}
+</section>
+
+<style>
+.works {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 56px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.empty {
+  margin: 0;
+  font-size: 17px;
+}
+
+.cards {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+}
+
+.thumb {
+  height: 180px;
+  flex-shrink: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.thumb picture {
+  display: flex;
+  width: 100%;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.logo {
+  align-items: center;
+  justify-content: center;
+  background: var(--inv);
+}
+
+.empty-thumb {
+  background-color: var(--ph);
+}
+
+.body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.label,
+.tech {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.cursor {
+  color: var(--orange);
+}
+
+.title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.ext {
+  margin-left: 6px;
+  color: var(--muted);
+}
+
+.description {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .works {
+    gap: 40px;
+    padding: 72px 40px;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .works {
+    gap: 44px;
+    padding: 88px 64px;
+  }
+
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+</style>

@@ -30,6 +30,7 @@ bun create astro@latest -- --template basics
 │   ├── theme.ts          # Theme key and values, the inline script that sets <html data-theme> and the toggle, unit-tested
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── user-agent.ts     # Tells curl and other command-line clients from browsers, unit-tested
+│   ├── work-card.ts      # Order and link target of the work cards on the top page, unit-tested
 │   ├── work-schema.ts    # Schema of the works data (ja and en in one entry, no astro:content), unit-tested
 │   ├── youtube-feed.ts   # Channel RSS feed to the newest videos at build time (WebP or JPEG thumbnails), unit-tested
 │   ├── assets/           # Images processed by astro:assets
@@ -47,11 +48,12 @@ bun create astro@latest -- --template basics
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
 │   │   ├── LatestPosts.astro     # Blog column of the Latest section: newest posts with tag chips
-│   │   ├── Logo.astro            # Switches the logo with the theme
+│   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for an --inv face
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level is a prop
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: moon or sun, and a name that says the next theme
 │   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
+│   │   ├── Works.astro           # Works section: heading and a terminal card per work, from the works collection
 │   │   └── icons/                # Service icons for IconLink; sources and terms in icons/README.md
 │   ├── content/
 │   │   ├── blog-dev/     # Posts for checking how pages look; loaded by astro dev only

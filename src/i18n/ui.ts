@@ -64,6 +64,8 @@ const ja = {
   "social.twitter": "Twitter(自称X)",
   "theme.toDark": "ダークテーマに切り替え",
   "theme.toLight": "ライトテーマに切り替え",
+  // Subtitle of the Works section on the top page.
+  "works.subtitle": "つくったもの",
 } as const;
 
 /** Key of a UI string. */
@@ -125,6 +127,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "social.twitter": "Twitter (self-proclaimed X)",
     "theme.toDark": "Switch to dark theme",
     "theme.toLight": "Switch to light theme",
+    "works.subtitle": "Things I made",
   },
 };
 
