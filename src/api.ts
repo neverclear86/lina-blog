@@ -1,4 +1,5 @@
 import { type Context, Hono } from "hono";
+import { secureHeaders } from "hono/secure-headers";
 import {
   type ContactErrors,
   type ContactKind,
@@ -115,6 +116,12 @@ function redirectToLocale(c: Context): Response {
   c.header("Vary", "Accept-Language");
   return c.redirect(`/${negotiateLocale(c.req.header("Accept-Language"))}/`);
 }
+
+// A `_headers` file applies to static assets only, not to responses from this Worker, so
+// `secureHeaders()` adds Hono's default set (`Strict-Transport-Security`,
+// `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy:
+// no-referrer` and others) to every response of `/`. It runs for `/` only, not for `/api/*`.
+api.use("/", secureHeaders());
 
 // `/` must not have a page in `src/pages/`: the adapter would serve it before this route.
 api.get("/", redirectToLocale);

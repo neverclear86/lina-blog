@@ -12,6 +12,21 @@ import { type TurnstileVerification, verifyTurnstile } from "./turnstile";
 
 vi.mock("./turnstile", () => ({ verifyTurnstile: vi.fn() }));
 
+/** Headers that `secureHeaders()` adds with its defaults, keyed by lower-case name. */
+const SECURITY_HEADERS = {
+  "cross-origin-opener-policy": "same-origin",
+  "cross-origin-resource-policy": "same-origin",
+  "origin-agent-cluster": "?1",
+  "referrer-policy": "no-referrer",
+  "strict-transport-security": "max-age=15552000; includeSubDomains",
+  "x-content-type-options": "nosniff",
+  "x-dns-prefetch-control": "off",
+  "x-download-options": "noopen",
+  "x-frame-options": "SAMEORIGIN",
+  "x-permitted-cross-domain-policies": "none",
+  "x-xss-protection": "0",
+};
+
 describe("api", () => {
   it("GET /api/health は 200 と { ok: true } を返す", async () => {
     const res = await api.request("/api/health");
@@ -38,6 +53,27 @@ describe("api", () => {
     expect(res.status).toBe(302);
     expect(res.headers.get("Location")).toBe("/ja/");
     expect(res.headers.get("Vary")).toBe("Accept-Language");
+  });
+
+  it.each([
+    ["ja", "/ja/"],
+    ["en", "/en/"],
+  ])(
+    "GET / は Accept-Language が %s のリダイレクトにもセキュリティヘッダーを付ける",
+    async (lang, location) => {
+      const res = await api.request("/", {
+        headers: { "Accept-Language": lang },
+      });
+      expect(res.headers.get("Location")).toBe(location);
+      expect(Object.fromEntries(res.headers)).toMatchObject(SECURITY_HEADERS);
+    },
+  );
+
+  it("/api/* の応答にはセキュリティヘッダーを付けない", async () => {
+    const res = await api.request("/api/health");
+    for (const name of Object.keys(SECURITY_HEADERS)) {
+      expect(res.headers.has(name)).toBe(false);
+    }
   });
 });
 
