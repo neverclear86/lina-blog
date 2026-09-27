@@ -20,6 +20,7 @@ gh pr view <PR> -R $R --json headRefOid,mergeable,mergeStateStatus,commits --jq 
 gh api repos/$R/issues/<PR>/comments --jq '.[] | (.body | split("\n")[0]) as $m | select($m | test("^<!-- lb kind=(pr-review|gate|fix) ")) | "\(.created_at) \($m) \(.html_url)"'
 git fetch origin main <ブランチ>
 git show -s --format=%cI <APPROVE を出した head>
+gh pr checks <PR> -R $R
 ```
 
 コメントの絞り込みは 1 行目の HTML コメントのマーカーで行う。書式は `<!-- lb kind=<種別> round=<N> verdict=<APPROVE|REQUEST CHANGES|NEEDS_USER|-> head=<SHA|-> -->` である。
@@ -42,6 +43,7 @@ APPROVE を出した head の時刻は `git show -s --format=%cI` で得る（re
 - 最終確認の APPROVE のコメントが、照合の起点の head のコミットより後の時刻である（`git show -s --format=%cI <その head>` と比べる。現在の head とは比べない。rebase で head が変わっていても、その差分は下の range-diff で見る）
 - PR レビューの APPROVE を出した head 以後に入った push は、rebase か、条件への対応だけである。条件への対応とは、その APPROVE の後に投稿された `kind=fix` のマーカーを持つ対応コメントがあり、その push がそれに対応することを指す。`git -C <リポジトリ> range-diff origin/main <PR レビューが APPROVE を出した head> <照合の起点の head>` の `>` の行（レビューの後に増えたコミット）を見て、その各コミットが、APPROVE の後に投稿された `kind=fix` のマーカーの `head`（短い SHA なので前方一致で見る）のいずれかと一致することを確かめる。`=` の行は rebase で写ったコミットなので見ない。`!` の行（条件への対応の前の rebase で写ったコミット）は、差分が衝突の解消に限られることを見て、超えていれば not_ready にし `needsReview` を立てる。一致しないコミットがあれば not_ready にし、`needsReview` を true にして problem にそのコミットを書く
 - 依頼文に「rebase の差分は…再確認して APPROVE を出した」の行があるときは、上の 2 つの range-diff の照合（rebase だけであること、`kind=fix` との一致）を、その行の「再確認が見た head」から head までの `git -C <リポジトリ> range-diff origin/main <再確認が見た head> <head>` の各行が `=` か衝突の解消に限られる `!` であることの確認に置き換える。再確認が見た head までの `!` と `>` の行は再確認が見たものなので、not_ready の理由にしない（再確認の後にもう一度 rebase が入ったときだけ、その分に `needsReview` を立てうる）
+- CI の全ジョブが pass か skipped である（pending なら `gh pr checks <PR> -R $R --watch` で待つ。変えたファイルに応じて省略されたジョブは skipped になる）
 - `mergeable` が `MERGEABLE` である。`CONFLICTING` なら status を conflict にして返す（rebase は実装エージェントが行う）。force-push の直後は GitHub が再計算中で `UNKNOWN` を返すので、10 秒待って引き直すことを最大 6 回まで繰り返す
 <!-- ADAPT:merge-guard -->
 <!-- /ADAPT:merge-guard -->

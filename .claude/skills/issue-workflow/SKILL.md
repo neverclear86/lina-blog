@@ -17,7 +17,7 @@ description: lina-blog の GitHub issue を、判定 → デザイン → プラ
 | 実装 | `issue-implementer` | opus / medium | ブランチ、コミット、PR。tier none では PR 本文の「## 設計メモ」がプランの代わり。レビューの指摘への対応と rebase も同じ定義で新しいエージェントを立てる |
 | PR レビュー | `issue-pr-reviewer` | opus / medium | PR コメント「## レビュー（ラウンド N）」。最大 2 ラウンド。must 0 なら条件付きで APPROVE |
 | 最終確認 | `issue-final-gate` | fable / low | PR コメント「## 最終確認」と、APPROVE のとき「## まとめ」。diff とレビューの経緯だけを読み、再現はしない |
-| マージ | `issue-merger` | opus / low | 承認・衝突を確かめて `gh pr merge --squash --delete-branch`。1 件ずつ |
+| マージ | `issue-merger` | opus / low | 承認・CI・衝突を確かめて `gh pr merge --squash --delete-branch`。1 件ずつ |
 
 ふりかえり（`retrospective`）は 1 件の issue の段階ではなく、この表の全 issue が終わった実行の後に 1 回だけ回す（「### 2. 結果の処理」の「実行の後: ふりかえり」）。`issue-retrospective`（opus / medium）が学びを分類して改善の issue を 1 本起票し、続けて `issue-retro-implementer`（fable / medium）がその issue の主張を裏取りして実装し、PR を作る。マージはユーザーが判断する。他のリポジトリにも効く学びは `portable` で返り、ユーザーレベルのスキル issue-workflow-kit の学びの表に取り込む。
 
@@ -42,7 +42,7 @@ tier は判定が決める。`none`（追加 100 行未満・3 ファイル以�
 | modules.split | on | 大きい issue をサブ issue に分ける |
 | modules.design | on | UI を変える issue でプランの前にデザインの方針を決める |
 | modules.gate | on | PR レビューの後に別のモデルで最終確認をする |
-| modules.ci | off | PR の CI を待つ（無ければ手元の検査が代わり） |
+| modules.ci | on | PR の CI を待つ（無ければ手元の検査が代わり） |
 | modules.retro | on | 実行の後にふりかえりで学びを集め、改善の PR を作る |
 | modules.ports | on | issue ごとにポートと docker のプロジェクト名を割り当てる |
 | modules.plan-tests | off | プランのテスト名と実装を機械的に突き合わせる |
@@ -65,7 +65,7 @@ tier は判定が決める。`none`（追加 100 行未満・3 ファイル以�
 - **再開は `blocked` / `stalled` / `failed` の issue だけを新しい実行（新しい `base`）で回す**。依頼文は自己完結（`planUrl`、既存 PR の検知）なので、完了済みの段階を走り直す必要が無い。`resumeFromRunId` は、実行が 1 件だけのときか、起動直後の失敗のときに限る（並列の実行を再開すると、完了済みの issue にまで再ディスパッチされる）
 - **同時に進める issue は `window` 件**（既定 4）。1 issue につき動くエージェントは常に 1 体なので、同時のエージェント数も `window` になる。マージは 1 件ずつ直列で、衝突は実装エージェントの rebase で解く
 - **依存する issue** は `after` に書き、GitHub の Relationships の「blocked by」にもそろえる（段階 0 と分割とプランの承認で記録する）。判定・デザイン・プランは、依存先のプランが承認された時点で、その承認済みプランの URL を依頼文に添えて始まる。実装は依存先のマージを待ち、最後にマージされた依存先のコミットを土台にする。待つ間は `window` の枠を使わない。依存先がプランの前に止まるか、マージされずに終わると `blocked`（stage `deps`）になり、`after` が循環していれば待たずに `blocked` になる。プランが兄弟の部品を前提にして構造化出力の `after` を返したときは、スクリプトが承認の後にその番号を依存先に足し、実装だけがそのマージを待つ
-- **検査が通るまでレビューしない**: このリポジトリに CI は無い。実装エージェントは push の前に origin/main に rebase して定義の「PR を作る前の検査」を全部通し、通ったことを `ciPassed` で返す。通らないまま返ると `blocked`。PR レビュアーは別の作業ツリーで build とテストをやり直す（マージ前の唯一の検証になる）
+- **CI が通るまでレビューしない**: 実装エージェントは push の前に origin/main に rebase して CI と同じ検査を手元で通し、PR を作ったら `gh pr checks --watch` で CI の全ジョブの pass を待ち、fail は直してから返す（`ciPassed`）。通らないまま返ると `blocked`。PR レビュアーは CI が行う検査を再現せず、CI にも PR 本文にも無い検証だけを再現する
 - **大きい issue は分割する**: 判定が tier `full` と決めたら、`gh issue create --parent` でサブ issue を作り（`after` のある子は依存先から順に作って `--blocked-by` を付ける）、親に「## 分割の設計」をコメントして `status: split` を返す。各サブ issue は単独でしきい値（300 行・6 ファイル・決めたこと 2 件）に収まる粒度で切る。兄弟への依存 `after` は論理的な依存のときだけ付け、同じファイルを触るだけなら付けない。スクリプトはサブ issue を同じ実行に足し、`after` の無いものは並列に進める。サブ issue は判定を飛ばし、再分割しない。親は `split`（`subIssues` と `children` の結果つき）で返る。親の issue は最後のサブ issue をマージした `issue-merger` が兄弟の全部の完了を確かめて閉じる
 - **往復の上限**（スクリプトが行う）: プランレビューも PR レビューも 2 ラウンドで、APPROVE にならなければ `stalled`。最終確認は 3 回まで。PR レビューがプランの設計に起因する must（`designMust`）を出したら、プランの版を上げて再承認させてから直す。実装がプランどおりに作れないと報告したら（`deviation`）同じ手順で版を上げ、新しいエージェントに続きを実装させる
 - **PR レビューの条件付き承認**: must が 0 件なら APPROVE にし、残った should を全部 `conditions` で返す。スクリプトが実装者に直させて push させ（対応コメントのマーカーは `kind=fix`）、**再レビューはせずに**最終確認へ進む。must には直し方の案を書かせない
@@ -77,11 +77,11 @@ tier は判定が決める。`none`（追加 100 行未満・3 ファイル以�
 - **実装者の定義の hooks**: `issue-implementer` の frontmatter の `hooks`（整形、PR 本文の必須の節、push 前の速い検査）は、その subagent が動いている間だけ発火する。project の subagent の hooks は、ワークスペースの trust を受け入れたフォルダーから起動した対話セッションでだけ動く（動かないときは debug ログに残るだけで、実行は止まらない）
 - **対話セッションから起動する**: エージェントが usage limit に当たったとき、対話セッションなら run は一時停止してリセット後に続くが、`claude -p` やバックグラウンドではそのエージェントが失敗する
 <!-- ADAPT:rules -->
-- **CI と Biome は後から入る**: 今は CI も整形の道具も無いので、PR レビュアーが build をやり直す形で回している。#17（Biome）と #19（CI）がマージされたら、issue-workflow-kit の「更新」で `ci` を true にし、hooks の `FORMAT_FILE_CMD`（`bunx biome format --write` など）と `PUSH_CHECK_CMD`（`bun run check` など）を入れる
-- **Biome の対象**: #17 で `biome.json` を作るとき、`.claude/` と `design/` を対象から外す。ワークフローのスクリプトは最上位に `return` があって Biome が解析できず、整形で書き換えると kit の更新の 3-way merge が崩れる。`design/` はキャンバスの写しである
-- **#17 の Claude Code の hook**: #17 が `.claude/settings.json` に足す PostToolUse の hook はセッションの cwd（ユーザーの作業ツリー）で走り、ワークフローのサブエージェントの編集でも発火する。編集したファイルのパスで Biome を呼び、ユーザーの作業ツリーの外のファイルでは block しない形にするかを、#17 のプランの論点にする
+- **CI とデプロイ**: PR では `.github/workflows/ci.yml` が `biome ci`、`astro check`、build を行う。main への push で `.github/workflows/deploy.yml` が本番にデプロイするので、本番の設定（`wrangler.jsonc`、Secrets、`_headers`）を変える issue は `noMerge` で回すかを段階 0 で聞く
+- **Biome の対象**: `biome.json` は `.claude/` と `design/` を対象から外している。ワークフローのスクリプトは最上位に `return` があって Biome が解析できず、整形で書き換えると kit の更新の 3-way merge が崩れる。`design/` はキャンバスの写しである。この除外を外さない
+- **project の hook**: `.claude/settings.json` の PostToolUse（`.claude/hooks/biome-check.sh`）は、ユーザーの作業ツリーの中のファイルを編集したときだけ Biome をかけ、それ以外（ワークフローの作業ツリー）では何もしない。ワークフローの作業ツリーの整形は implementer の hook（`.claude/scripts/hook_format.sh`）が担う
+- **`/` と Worker**: 静的なファイルに当たるリクエストは、アダプタの既定の入口が `src/fetch.ts` の Hono に渡す前に返す。`/` を Hono で扱う issue（#18 の言語の振り分け、#43 の curl 応答）は、`/` を prerender のページにしない（`src/pages/index.astro` を消すか `prerender = false` にする）か、`src/worker.ts` を入口にして `@astrojs/cloudflare/hono` の `cf()` を Hono の `/` の後に置くかを、プランで決める
 - **渡さない issue**: Epic（`epic` ラベル、#1〜#10）と `要決定` ラベルの issue（#11〜#16）はワークフローに渡さない。決定はユーザーが行う。blocked by に開いた `要決定` の issue があるときは、段階 0 の「事前に聞く論点」に入れる。#8（Obsidian プラグイン）は別のリポジトリで扱う
-- **本番**: #19 の後は main への push で本番にデプロイされる。本番の設定（`wrangler.jsonc`、Secrets、`_headers`）を変える issue は `noMerge` で回すかを段階 0 で聞く
 - **デザインの写し**: `design/` は Design キャンバスの写しである。キャンバスを直したら、ユーザーが写しを取り直す
 <!-- /ADAPT:rules -->
 

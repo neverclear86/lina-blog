@@ -56,7 +56,7 @@ const CONFIG = {
     split: true, // 大きい issue をサブ issue に分ける。false なら分け方の案を添えて blocked で返す
     design: true, // UI を変える issue でプランの前にデザインの方針を決める
     gate: true, // PR レビューの APPROVE の後に別のモデルで最終確認をする
-    ci: false, // PR の CI（gh pr checks）を待つ。false なら定義の検査を手元で通したことを ciPassed とする
+    ci: true, // PR の CI（gh pr checks）を待つ。false なら定義の検査を手元で通したことを ciPassed とする
     retro: true, // APPROVE の後に「## まとめ」の学びを残し、実行の後に retrospective で拾う
     screenshots: true, // UI を変える issue（ui: true）の PR に変更前後のスクリーンショットを貼る
   },

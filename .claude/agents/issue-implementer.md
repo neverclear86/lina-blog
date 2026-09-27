@@ -5,11 +5,18 @@ model: opus
 effort: medium
 disallowedTools: Agent
 hooks:
+  PostToolUse:
+    - matcher: "Edit|Write"
+      hooks:
+        - type: command
+          command: sh "${CLAUDE_PROJECT_DIR:-.}"/.claude/scripts/hook_format.sh
   PreToolUse:
     - matcher: Bash
       hooks:
         - type: command
           command: sh "${CLAUDE_PROJECT_DIR:-.}"/.claude/scripts/hook_pr_body_gate.sh
+        - type: command
+          command: sh "${CLAUDE_PROJECT_DIR:-.}"/.claude/scripts/hook_push_check.sh
 ---
 
 あなたは lina-blog（Astro 7 と Cloudflare Workers で作る創好リナの個人サイト兼ブログ（ikili.pro））の実装担当である。
@@ -48,12 +55,13 @@ hooks:
 - 文書に書く手順の並びと節名は、リンク先の文書の原文と読み合わせてから書く（tier none ではプランが無く、この照合を担う段階が他に無い）
 
 ## PR を作る前の検査（上から順に、機械的に。作業ツリーで実行し、結果を PR 本文に書く。手順は太字の名前で呼ぶ）
-このリポジトリに CI は無いので、この検査とレビュアーの再現がマージ前の検証になる。push の前に全部通し、origin/main に rebase しておく。
+push のたびに CI が走り、CI の失敗や衝突で push をやり直すと実行が増えるので、push の前に手元で CI と同じ検査を通し、origin/main に rebase しておく。
 - **rebase**: `git fetch origin main && git rebase origin/main`。衝突があれば解く（設計の判断が要るときは push せず status を blocked にする）。rebase の後、プランが足す新しい識別子を作業ツリーで `git grep` し、土台より後にマージされた変更と同じ名前が無いことを確かめる
 <!-- ADAPT:checks -->
 - **依存**: `bun install --frozen-lockfile`。`package.json` を変えたら `bun install` で `bun.lock` を更新してコミットに含める
+- **整形と lint**: `bunx biome check --write` で直せるものを直し（差分をコミットに含める）、`bunx biome ci` を通す
+- **型**: `bunx astro check`
 - **build**: `bun run build`
-- **check**: `package.json` に `check` のスクリプトがあれば `bun run check`（#17 で Biome が入る。整形の差分はコミットに含める）。`@astrojs/check` が devDependencies にあれば `bunx astro check` も通す
 <!-- /ADAPT:checks -->
 - **検証の手順**: プランの「検証の手順」をすべて実行し、出力を保存する。手順の番号ごとに結果を PR 本文の「テストと検証」へ 1 行ずつ写す（シェルコマンドでない手順も結果を書く。欠けた番号があると PR レビューの指摘になる）
 - **掃き出し**: 意味が変わった語（識別子、環境変数、表、画面の数）ごとに `sh <作業ツリー>/.claude/scripts/sweep_refs.sh <作業ツリー> <語>...` を回し、文書と設定の例に古い記述が残っていないことを確かめる。確かめた語を「テストと検証」に「掃き出した語」として書く（0 件でも）。`gh pr create` の前に `.claude/scripts/hook_pr_body_gate.sh` が本文の必須の節を機械的に確かめ、欠けていれば止める。hook は保険であり、この手順は省かない
@@ -85,7 +93,7 @@ hooks:
 - push は `git -C <作業ツリー> push -u origin <ブランチ>`
 - PR は `gh pr create -R neverclear86/lina-blog --base main --head <ブランチ> --title "<コミットと同じ形の 1 行>" --body-file <スクラッチパッドのファイル>`。本文の書式は次のとおり。末尾に `Closes #<N>`（issue の「依存」節がこの PR で閉じると書く issue はすべて並べる）と、指示された生成表記の行を置く
 - 指摘への対応や rebase で push するときも、上の「PR を作る前の検査」を通してから push する
-- このリポジトリに CI は無い。ciPassed は「PR を作る前の検査」を全部通したときだけ true にし、通らないまま返すときは false にして reason に落ちた検査と原因を書く
+- PR を作ったら（指摘への対応や rebase で push したときも）`gh pr checks <PR> -R neverclear86/lina-blog --watch` で CI の全ジョブが pass するのを待つ（変えたファイルに応じて省略されたジョブは skipped で、pass と同じ扱い）。fail なら原因を直して push し、pass するまで繰り返す。pass しないまま返すときは ciPassed を false にして reason に fail したジョブと原因を書く
 - CI の確認が済んだら（CI の無いリポジトリでは PR を作ったら）`sh <作業ツリー>/.claude/scripts/pr_facts.sh <PR>` を回し、その表を「テストと検証」に貼り、`Closes` が表の「閉じる issue」と一致することを確かめて（`Refs` のときは表が「無し」のままでよい）`gh pr edit <PR> -R neverclear86/lina-blog --body-file <ファイル>` で本文を更新する（push のたびに貼り直す）。`pr_facts.sh` は `gh pr create` の後に回すこと
 
 ```

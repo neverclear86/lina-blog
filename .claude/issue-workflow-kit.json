@@ -1,6 +1,6 @@
 {
   "kit": "issue-workflow-kit",
-  "kitCommit": "31fcf0f87ff05d5c8089bc2b5831f46fc5d8bbeb",
+  "kitCommit": "3a6a6e405cbe8ec497c0b01763f2a82c96a93e8c",
   "config": {
     "values": {
       "REPO": "neverclear86/lina-blog",
@@ -17,13 +17,17 @@
       "DOC_COMMENT_RE": "^(/[*][*]|[*])",
       "TEST_PATH_RE": "[.](test|spec)[.][jt]sx?$",
       "DOCS_PATH_RE": "^(docs|design)/|[.]md$",
-      "CONFIG_PATH_RE": "^[.](claude|github)/|[.](json|jsonc|ya?ml|toml)$|[.]config[.]m?[jt]s$|^astro[.]config[.]mjs$"
+      "CONFIG_PATH_RE": "^[.](claude|github)/|[.](json|jsonc|ya?ml|toml)$|[.]config[.]m?[jt]s$|^astro[.]config[.]mjs$",
+      "FORMAT_EXT_RE": "[.](ts|tsx|js|jsx|mjs|cjs|json|jsonc|astro|css)$",
+      "FORMAT_FILE_CMD": "bunx biome format --write --no-errors-on-unmatched --files-ignore-unknown=true",
+      "PUSH_CHECK_CMD": "bunx biome ci",
+      "PROJECT_MARKER_FILE": "biome.json"
     },
     "modules": {
       "split": true,
       "design": true,
       "gate": true,
-      "ci": false,
+      "ci": true,
       "retro": true,
       "ports": true,
       "plan-tests": false,
@@ -48,7 +52,9 @@
     ".claude/agents/issue-retro-implementer.md",
     ".claude/agents/issue-retrospective.md",
     ".claude/scripts/check_procedure.sh",
+    ".claude/scripts/hook_format.sh",
     ".claude/scripts/hook_pr_body_gate.sh",
+    ".claude/scripts/hook_push_check.sh",
     ".claude/scripts/post_comment.sh",
     ".claude/scripts/pr_facts.sh",
     ".claude/scripts/sweep_refs.sh",
