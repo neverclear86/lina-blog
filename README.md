@@ -16,6 +16,7 @@ bun create astro@latest -- --template basics
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/api/*), unit-tested
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
+│   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── layouts/
 │   │   └── Layout.astro
 │   └── pages/
@@ -68,6 +69,36 @@ The deploy workflow needs two repository secrets:
    gh secret set CLOUDFLARE_API_TOKEN
    gh secret set CLOUDFLARE_ACCOUNT_ID
    ```
+
+## 🛡️ Turnstile
+
+`src/turnstile.ts` checks Turnstile tokens with Cloudflare's siteverify API. The secret key is a Worker secret named `TURNSTILE_SECRET_KEY` and is never committed:
+
+- In production, register it with `bunx wrangler secret put TURNSTILE_SECRET_KEY`.
+- Locally, put it in `.dev.vars` at the root of the repository (ignored by git). `wrangler dev`, which `bun run preview:wrangler` runs, reads it and prints `Using secrets defined in .dev.vars` on startup.
+
+Locally, use one of Cloudflare's test secret keys instead of the production key:
+
+| Secret key | siteverify result |
+| :-- | :-- |
+| `1x0000000000000000000000000000000AA` | Always passes |
+| `2x0000000000000000000000000000000AA` | Always fails (`invalid-input-response`) |
+
+For example, `.dev.vars` with the key that always passes:
+
+```sh
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+```
+
+To see what a test key returns, post the dummy token to siteverify:
+
+```sh
+curl -sS -X POST https://challenges.cloudflare.com/turnstile/v0/siteverify \
+  --data-urlencode "secret=1x0000000000000000000000000000000AA" \
+  --data-urlencode "response=XXXX.DUMMY.TOKEN.XXXX"
+```
+
+The first key answers `"success":true`, and the second answers `"success":false` with `"error-codes":["invalid-input-response"]`.
 
 ## 📄 License
 
