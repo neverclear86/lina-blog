@@ -14,6 +14,7 @@ import { devPages } from "./src/dev/dev-pages.ts";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
 import { codeFilename } from "./src/markdown/code-filename.ts";
 import { tableAlignToClass } from "./src/markdown/table-align.ts";
+import { youtubeEmbed } from "./src/markdown/youtube.ts";
 
 /** Same pattern Astro uses to read a page's `export const prerender`. */
 const PRERENDER_EXPORT = /^\s*export\s+const\s+prerender\s*=\s*(true|false);?/m;
@@ -102,7 +103,7 @@ export default defineConfig({
     // src/markdown/.
     processor: satteri({
       mdastPlugins: [codeFilename],
-      hastPlugins: [tableAlignToClass],
+      hastPlugins: [tableAlignToClass, youtubeEmbed],
     }),
     // Astro's default Shiki highlighting writes `style` attributes, which articles must not have.
     syntaxHighlight: false,

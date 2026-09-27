@@ -49,5 +49,15 @@ bun run build
 - [ ] 残りの記法
   - [ ] 入れ子の項目
 
+## YouTube の埋め込み
+
+YouTube の動画の URL だけを書いた段落は、動画の埋め込みになる。
+
+https://www.youtube.com/watch?v=jNQXAC9IVRw
+
+動画の ID が 11 文字でない URL は、埋め込みにせずリンクのまま出す。
+
+https://youtu.be/jNQXAC9IVR
+
 [^first]: 最初の脚注である。
 [^long-name]: 名前を付けた脚注である。番号は出てきた順に振られる。

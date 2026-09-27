@@ -1,8 +1,9 @@
 ---
 /**
- * Wraps rendered Markdown (an article's `<Content />`) and styles the elements Sätteri outputs:
- * GFM tables, task lists, footnotes and the file names of code blocks. The rules reach those
- * elements through `:global()` under `.article-body`, so they apply only inside this wrapper.
+ * Wraps rendered Markdown (an article's `<Content />`) and styles the elements that Sätteri
+ * and the plugins in src/markdown/ output: GFM tables, task lists, footnotes, the file names
+ * of code blocks and YouTube embeds. The rules reach those elements through `:global()` under
+ * `.article-body`, so they apply only inside this wrapper.
  */
 ---
 
@@ -105,5 +106,17 @@
   box-shadow:
     19px 0 0 var(--orange),
     38px 0 0 var(--green);
+}
+
+.article-body :global(.youtube-embed) {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  margin-block: 1.5em;
+  border: 0;
+  border-radius: 4px;
+  background: var(--ph);
+  box-shadow: 3px 3px 0 var(--shadow);
 }
 </style>
