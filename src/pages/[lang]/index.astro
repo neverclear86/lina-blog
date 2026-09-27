@@ -8,7 +8,6 @@ import LatestPosts from "../../components/LatestPosts.astro";
 import LatestSection from "../../components/LatestSection.astro";
 import LatestVideoFeature from "../../components/LatestVideoFeature.astro";
 import LatestVideoList from "../../components/LatestVideoList.astro";
-import Logo from "../../components/Logo.astro";
 import Works from "../../components/Works.astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
 import { translate } from "../../i18n/ui";
@@ -38,7 +37,6 @@ const { feature, list } = latestVideos(result);
 
 <Layout lang={lang}>
   <main>
-    <h1><Logo size={36} alt="" />ikili.pro</h1>
     <p>{translate(lang, "home.comingSoon")}</p>
     <div class="preview-standing"><HeroStanding /></div>
     <About lang={lang} />

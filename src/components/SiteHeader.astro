@@ -1,0 +1,178 @@
+---
+/**
+ * The site header of every page, copied from the `<header>` of `design/CBMain.dc.html`: the
+ * logo and `ikili.pro` linking to the top of the top page, the main navigation, the language
+ * switch, the theme toggle and the contact button. The navigation and the contact button point
+ * to the sections of the top page of `lang` (`navLinks` and `homeSectionPath` in `./site-nav`),
+ * and the item of the current page has `aria-current="page"` and a pink underline.
+ *
+ * The header stays in the page flow, 60px high below 768px and 72px from 768px. Below 1024px
+ * only the logo, `ikili.pro` and the theme toggle show; the navigation, the language switch and
+ * the contact button appear from 1024px. The side padding is 32px up to 1279px and 64px from
+ * 1280px.
+ */
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import Button from "./Button.astro";
+import Logo from "./Logo.astro";
+import { homeSectionPath, languageLinks, navLinks } from "./site-nav";
+import ThemeToggle from "./ThemeToggle.astro";
+
+interface Props {
+  /** Language of the text and of the links to the top page. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const pathname = Astro.url.pathname;
+const nav = navLinks(lang, pathname);
+const languages = languageLinks(lang, pathname);
+---
+
+<header class="site-header">
+  <a class="brand" href={homeSectionPath(lang, "top")}>
+    <Logo size={36} alt="" /><span class="brand-name">ikili.pro</span>
+  </a>
+  <nav class="site-nav" aria-label={translate(lang, "nav.label")}>
+    {nav.map((item) => (
+  <a href={item.href} aria-current={item.current ? "page" : undefined}>
+    {translate(lang, item.key)}
+  </a>
+))}
+  </nav>
+  <div class="actions">
+    <div class="languages">
+      {languages.map((link, index) => (
+  <>
+    {index > 0 && (
+      <span class="separator" aria-hidden="true">
+        /
+      </span>
+    )}
+    <a
+      href={link.href}
+      hreflang={link.locale}
+      lang={link.locale}
+      aria-current={link.current ? "page" : undefined}
+    >
+      {link.locale.toUpperCase()}
+    </a>
+  </>
+))}
+    </div>
+    <ThemeToggle lang={lang} />
+    <div class="contact">
+      <Button href={homeSectionPath(lang, "contact")} size="md">
+        {translate(lang, "nav.contact")}
+      </Button>
+    </div>
+  </div>
+</header>
+
+<style>
+.site-header {
+  box-sizing: border-box;
+  height: 60px;
+  padding: 0 14px 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+a {
+  color: var(--fg);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.brand-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+}
+.brand :global(img) {
+  width: 30px;
+  height: 30px;
+}
+@media (min-width: 768px) {
+  .site-header {
+    height: 72px;
+    padding: 0 32px;
+  }
+  .brand-name {
+    font-size: 15px;
+  }
+  .brand :global(img) {
+    width: 36px;
+    height: 36px;
+  }
+}
+.site-nav,
+.languages,
+.contact {
+  display: none;
+}
+.site-nav {
+  align-items: center;
+  gap: 24px;
+  font-size: 15px;
+  font-weight: 900;
+}
+.site-nav a {
+  text-decoration: none;
+  padding: 6px 0;
+  border-bottom: 3px solid transparent;
+}
+.site-nav a[aria-current="page"] {
+  border-bottom-color: var(--pink);
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.languages {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  gap: 6px;
+}
+.languages a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.languages a[aria-current="page"] {
+  color: var(--fg);
+  font-weight: 500;
+  text-decoration: underline;
+}
+.separator {
+  color: var(--muted);
+}
+.site-header a:hover {
+  color: var(--fg);
+  opacity: 0.8;
+}
+@media (min-width: 1024px) {
+  .site-nav,
+  .languages {
+    display: flex;
+  }
+  .contact {
+    display: block;
+  }
+  .actions {
+    gap: 20px;
+  }
+}
+@media (min-width: 1280px) {
+  .site-header {
+    padding: 0 64px;
+  }
+  .site-nav {
+    gap: 36px;
+  }
+}
+</style>
