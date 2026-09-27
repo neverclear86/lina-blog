@@ -9,6 +9,9 @@
  * paragraph or a "see all" link, goes under the titles below 1024px and to their right from
  * 1024px. From 1024px the titles keep their width, so that the subtitle stays on one line,
  * and the slot takes the rest of the row.
+ *
+ * The `contact` variant is for the contact section on `--cbg`: the label is in `--cmuted`, the
+ * subtitle is 26px and stays under the English title at every width.
  */
 interface Props {
   /** Label above the heading, such as `~/about`. */
@@ -19,12 +22,20 @@ interface Props {
   subtitle: string;
   /** Heading element, chosen by the level of the section in the page. */
   as?: "h1" | "h2" | "h3";
+  /** Look of the heading: `default`, or `contact` for the contact section on `--cbg`. */
+  variant?: "default" | "contact";
 }
 
-const { label, title, subtitle, as: Heading = "h2" } = Astro.props;
+const {
+  label,
+  title,
+  subtitle,
+  as: Heading = "h2",
+  variant = "default",
+} = Astro.props;
 ---
 
-<div class="section-heading">
+<div class:list={["section-heading", variant]}>
   <div class="titles">
     <span class="label">{label}</span>
     <Heading class="heading"
@@ -100,5 +111,19 @@ const { label, title, subtitle, as: Heading = "h2" } = Astro.props;
   font-size: 22px;
   font-weight: 900;
   padding-bottom: 4px;
+}
+
+.contact .label {
+  color: var(--cmuted);
+}
+
+.contact .heading {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.contact .ja {
+  font-size: 26px;
 }
 </style>

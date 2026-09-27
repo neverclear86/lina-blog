@@ -43,13 +43,14 @@ bun create astro@latest -- --template basics
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
 │   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
+│   │   ├── ContactSection.astro  # Contact section of the top page: heading, lead and the form in a paper terminal window
 │   │   ├── IconButton.astro      # Square icon-only button, named by an aria-label or a hidden label slot
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
 │   │   ├── LatestPosts.astro     # Blog column of the Latest section: newest posts with tag chips
 │   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for an --inv face
-│   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level is a prop
+│   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level and the contact variant are props
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: moon or sun, and a name that says the next theme
 │   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href

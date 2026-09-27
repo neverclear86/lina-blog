@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import type { GetStaticPaths } from "astro";
 import About from "../../components/About.astro";
+import ContactSection from "../../components/ContactSection.astro";
 import HeroStanding from "../../components/HeroStanding.astro";
 import LatestPosts from "../../components/LatestPosts.astro";
 import LatestSection from "../../components/LatestSection.astro";
@@ -35,6 +36,7 @@ const posts = await getCollection("blog");
     <LatestSection lang={lang}>
       <LatestPosts slot="blog" lang={lang} posts={posts} />
     </LatestSection>
+    <ContactSection lang={lang} />
   </main>
 </Layout>
 
