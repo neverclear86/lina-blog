@@ -17,6 +17,15 @@ describe("translate", () => {
       "Twitter (self-proclaimed X)",
     );
   });
+
+  it("お問い合わせの JS が無いときの文言は日本語と英語で対になる", () => {
+    expect(translate("ja", "contact.noscript")).toBe(
+      "送信には JavaScript が必要です。",
+    );
+    expect(translate("en", "contact.noscript")).toBe(
+      "Sending requires JavaScript.",
+    );
+  });
 });
 
 describe("ui", () => {
