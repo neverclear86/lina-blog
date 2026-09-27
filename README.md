@@ -74,6 +74,7 @@ bun create astro@latest -- --template basics
 │       ├── src/
 │       │   ├── app.ts               # Hono app and Worker entry; every route needs the shared secret
 │       │   ├── article-event.ts     # Builds the unsigned kind 30023 (NIP-23) event of an article
+│       │   ├── article-markdown.ts  # Splits an article's markdown and checks its frontmatter (blog-schema.ts without date)
 │       │   ├── auth.ts              # Bearer auth with a constant-time comparison
 │       │   ├── content-hash.ts      # Content hash of an article (SHA-256 of its markdown)
 │       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL, IMAGES)
