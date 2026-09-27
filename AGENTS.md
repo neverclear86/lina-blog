@@ -12,6 +12,8 @@ astro dev --background
 
 背景のサーバーは `astro dev stop`、`astro dev status`、`astro dev logs` で扱う。
 
+部品の見本は dev サーバーの `/dev/components/`（`src/dev/components.astro`）で見る。部品を足したら見本もここに足す。`dist/` から撮るときは `LINA_DEV_PAGES=1 bun run build` で build する（README の「CSS」）。
+
 公開用 Worker（`workers/publish/`）は `bun run dev:publish`（`wrangler dev`）で立てる。シークレットは `workers/publish/.dev.vars.example` を `workers/publish/.dev.vars` に写して置く。`wrangler dev` は背景に回らないので、エージェントが立てるときは `timeout` と `--port` を付ける。
 
 ## ドキュメント

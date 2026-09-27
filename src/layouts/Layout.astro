@@ -7,6 +7,7 @@ import { localizedPath } from "../i18n/paths";
 import { translate } from "../i18n/ui";
 import "../styles/tokens.css";
 import "../styles/global.css";
+import "../styles/shapes.css";
 
 interface Props {
   /**
@@ -64,6 +65,8 @@ const [icon32, icon192, appleTouchIcon] = await Promise.all([
     <Font cssVariable="--font-body" />
     <Font cssVariable="--font-display" />
     <Font cssVariable="--font-mono" />
+    {/* Elements that a page adds to <head> with slot="head". */}
+    <slot name="head" />
   </head>
   <body>
     <nav>

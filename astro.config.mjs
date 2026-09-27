@@ -2,6 +2,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import cloudflare from "@astrojs/cloudflare";
 import { defineConfig, fontProviders } from "astro/config";
+import { devPages } from "./src/dev/dev-pages.ts";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
 
 /** Same pattern Astro uses to read a page's `export const prerender`. */
@@ -26,8 +27,8 @@ function prerenderByDefault() {
         root = config.root;
       },
       "astro:route:setup": ({ route }) => {
-        // Routes whose component is not a file in this project (injected by Astro or
-        // integrations) keep their own setting.
+        // Routes whose component is not a file in this project, such as the ones Astro
+        // injects, keep their own setting.
         const file = new URL(route.component, root);
         if (!existsSync(file)) return;
         const source = readFileSync(file, "utf8");
@@ -48,7 +49,7 @@ export default defineConfig({
     // The default `cloudflare-binding` uses Cloudflare Images, which can incur charges.
     imageService: "compile",
   }),
-  integrations: [prerenderByDefault()],
+  integrations: [prerenderByDefault(), devPages()],
   // Sessions are not used; this also keeps the adapter from provisioning a KV namespace.
   session: false,
   // Every locale, including the default, has a URL prefix (`/ja/`, `/en/`). Pages outside

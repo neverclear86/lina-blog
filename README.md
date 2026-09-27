@@ -33,13 +33,16 @@ bun create astro@latest -- --template basics
 │   │   └── Logo.astro      # Switches the logo with the theme
 │   ├── content/
 │   │   └── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
+│   ├── dev/
+│   │   ├── components.astro  # /dev/components/: samples of the shared shapes and components
+│   │   └── dev-pages.ts      # Adds the dev pages in astro dev (or with LINA_DEV_PAGES=1), unit-tested
 │   ├── i18n/
 │   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
 │   │   ├── negotiate.ts  # Picks the locale for / from Accept-Language, unit-tested
 │   │   ├── paths.ts      # Path of the same page in another locale, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the <Font /> tags and the RSS link; imports tokens.css and global.css; sets --font-body on html
+│   │   └── Layout.astro       # <head> with the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css and shapes.css; sets --font-body on html
 │   ├── pages/
 │   │   ├── [lang]/
 │   │   │   └── index.astro   # /ja/ and /en/
@@ -47,6 +50,7 @@ bun create astro@latest -- --template basics
 │   │   └── rss.xml.ts    # /rss.xml: prerendered RSS feed with each post's full HTML
 │   └── styles/
 │       ├── global.css    # body colors and the grid backgrounds (.grid, .cgrid)
+│       ├── shapes.css    # Notched corners, hard shadows, the lift and the focus outline
 │       └── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>
 ├── workers/
 │   └── publish/          # Publish Worker, separate from the site and deployed on its own
@@ -60,7 +64,7 @@ bun create astro@latest -- --template basics
 │       │   └── published-record.ts  # Reads src/content/published.json on GitHub for GET /articles
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
-├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts; pages are prerendered by default
+├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, dev pages; pages are prerendered by default
 ├── biome.json
 ├── wrangler.jsonc
 └── package.json
@@ -88,7 +92,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | :----------- | :------------------------------------------------------------------------- |
 | `tokens.css` | Color tokens (CSS variables) for the light and dark themes                 |
 | `global.css` | Styles of `body` and decorations used across pages, such as `.grid` and `.cgrid` |
-| `shapes.css` | Shared shapes used by several components, such as the notched corner and the hard shadow (not created yet) |
+| `shapes.css` | Notched corners (`.shape`, `.shapeL`, `.shapeS`), hard shadows (`.shadow`, `.shadowF`, `.shadowInk`), the hover lift (`.lift`) and the keyboard focus outline |
 | `motion.css` | Shared animations (`@keyframes`), stopped under `prefers-reduced-motion: reduce` (not created yet) |
 
 A global file holds only what several components share.
@@ -96,6 +100,12 @@ Styles that belong to one component go in that component's scoped `<style>`.
 Color values are written only in `tokens.css`; other CSS, global or scoped, uses the tokens with `var(--…)`.
 A component that must style an element outside its own markup, such as `<html data-theme>`,
 wraps only that selector in `:global()`.
+
+`src/dev/components.astro` shows the shared shapes and the components on one page.
+`astro dev` serves it at `/dev/components/`, and `astro build` leaves it out of `dist/` unless `LINA_DEV_PAGES=1` is set.
+Add `?theme=dark` to the URL to see the dark theme.
+To capture it with `.claude/scripts/screenshot.mjs`, which serves `dist/`, build with `LINA_DEV_PAGES=1 bun run build`.
+A new component adds its samples to this page.
 
 ## 🔤 Fonts
 

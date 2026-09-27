@@ -1,0 +1,109 @@
+/*
+ * Shared shapes for every page, imported by `src/layouts/Layout.astro` after `global.css`.
+ * The shape, shadow and lift values are copied from `design/CBMain.dc.html` and
+ * `design/CBMobile.dc.html`; the design has no focus outline.
+ *
+ * Notched corners: `.shape` (radius 4px, notch 14px), `.shapeL` (radius 6px, notch 44px below
+ * 768px and 80px from 768px) and `.shapeS` (radius 3px, notch 8px, for chips). `clip-path` cuts
+ * off the top right corner, and with it the element's own `box-shadow` and `outline`.
+ *
+ * Hard shadows: `.shadow` (`--shadow`), `.shadowF` (`--fshadow`) and `.shadowInk` (`--ink`) draw
+ * a 3px shadow to the bottom right with `filter: drop-shadow`. They go on an element outside the
+ * notched one, so that the clip does not cut the shadow off.
+ *
+ * `.lift` goes on the shadow element. On hover, and while its parent has keyboard focus, it moves
+ * up and left by 2px and its shadow grows to 5px in the same color. It needs a box (block,
+ * inline-block or a flex item), because `transform` does not apply to inline elements. Under
+ * `prefers-reduced-motion: reduce` it changes without a transition.
+ *
+ * Keyboard focus draws a 2px outline in `--focus-ring`, or `--fg` when it is not set; a section
+ * on another background, such as `--cbg`, sets `--focus-ring`. A focusable part has three layers,
+ * `<a>` or `<button>` > shadow and `.lift` > notched shape, so that the outline goes on the outer
+ * element, which has neither the clip nor the shadow, 5px away from it.
+ *
+ * `.is-lift` and `.is-focus` show the lifted and focused states without hover or focus, for the
+ * samples in `src/dev/components.astro`.
+ */
+
+.shape,
+.shapeL,
+.shapeS {
+  border-radius: var(--radius);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--notch)) 0,
+    100% var(--notch),
+    100% 100%,
+    0 100%
+  );
+}
+
+.shape {
+  --radius: 4px;
+  --notch: 14px;
+}
+
+.shapeL {
+  --radius: 6px;
+  --notch: 44px;
+}
+
+@media (min-width: 768px) {
+  .shapeL {
+    --notch: 80px;
+  }
+}
+
+.shapeS {
+  --radius: 3px;
+  --notch: 8px;
+}
+
+.shadow {
+  --shadow-color: var(--shadow);
+}
+
+.shadowF {
+  --shadow-color: var(--fshadow);
+}
+
+.shadowInk {
+  --shadow-color: var(--ink);
+}
+
+.shadow,
+.shadowF,
+.shadowInk {
+  filter: drop-shadow(3px 3px 0 var(--shadow-color));
+}
+
+.lift {
+  transition:
+    transform 0.15s,
+    filter 0.15s;
+}
+
+.lift:hover,
+:focus-visible > .lift,
+.is-focus > .lift,
+.is-lift {
+  transform: translate(-2px, -2px);
+  filter: drop-shadow(5px 5px 0 var(--shadow-color, var(--shadow)));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lift {
+    transition: none;
+  }
+}
+
+:focus-visible,
+.is-focus {
+  outline: 2px solid var(--focus-ring, var(--fg));
+  outline-offset: 2px;
+}
+
+:focus-visible:has(> .lift),
+.is-focus:has(> .lift) {
+  outline-offset: 5px;
+}

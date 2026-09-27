@@ -1,0 +1,139 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout lang="ja">
+  <script is:inline slot="head">
+  if (new URLSearchParams(location.search).get("theme") === "dark") {
+    document.documentElement.dataset.theme = "dark";
+  }
+  </script>
+  <main class="page">
+    <h1>部品の確認</h1>
+    <p><a href="?theme=light">ライト</a> / <a href="?theme=dark">ダーク</a></p>
+
+    <section id="shapes">
+      <h2>形と影</h2>
+      <div class="row">
+        <div class="shadow">
+          <div class="shapeS sample small chip">shapeS</div>
+        </div>
+        <div class="shadow"><div class="shape sample surf">shape</div></div>
+        <div class="shadowInk">
+          <div class="shape sample orange">shadowInk</div>
+        </div>
+        <div class="shadow wide">
+          <div class="shapeL sample large surf">shapeL</div>
+        </div>
+      </div>
+      <div class="cbg">
+        <div class="row">
+          <div class="shadowF wide">
+            <div class="shapeL sample large paper">shadowF</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="focus">
+      <h2>lift とフォーカス</h2>
+      <div class="row">
+        <a class="part" href="#focus"
+          ><span class="shadow lift"
+            ><span class="shape sample surf">通常</span></span
+          ></a
+        >
+        <a class="part" href="#focus"
+          ><span class="shadow lift is-lift"
+            ><span class="shape sample surf">lift</span></span
+          ></a
+        >
+        <a class="part is-focus" href="#focus"
+          ><span class="shadow lift"
+            ><span class="shape sample surf">フォーカス</span></span
+          ></a
+        >
+        <a class="is-focus" href="#focus">本文のリンク</a>
+      </div>
+      <div class="cbg">
+        <div class="row">
+          <a class="part is-focus" href="#focus"
+            ><span class="shadowInk lift"
+              ><span class="shape sample orange">フォーカス</span></span
+            ></a
+          >
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+.page {
+  padding: 16px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.sample {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 64px;
+}
+
+.small {
+  width: 80px;
+  height: 28px;
+}
+
+.wide {
+  width: min(100%, 480px);
+}
+
+.large {
+  width: 100%;
+  height: 160px;
+}
+
+.chip {
+  background: var(--chip);
+}
+
+.surf {
+  background: var(--surf);
+}
+
+.orange {
+  background: var(--orange);
+  color: var(--ink);
+}
+
+.paper {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.part {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.part > span {
+  display: block;
+}
+
+.cbg {
+  padding: 24px;
+  margin-top: 24px;
+  background: var(--cbg);
+  color: var(--cfg);
+  --focus-ring: var(--cfg);
+}
+</style>
