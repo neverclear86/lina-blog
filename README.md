@@ -27,6 +27,7 @@ bun create astro@latest -- --template basics
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
 │   ├── profile-links.ts  # Profile links (label and note per locale), shared by llms.ts, text-site.ts and LatestVideoList.astro
+│   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
 │   ├── text-site.ts      # Builds the text version of the site for curl (80 columns), unit-tested
 │   ├── theme.ts          # Theme key and values, the inline script that sets <html data-theme> and the toggle, unit-tested
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
@@ -92,6 +93,7 @@ bun create astro@latest -- --template basics
 │   │   │   ├── color.txt.ts  # /ansi/color.txt: the standing illustration as 24-bit color text art
 │   │   │   └── plain.txt.ts  # /ansi/plain.txt: the same art without escape sequences
 │   │   ├── llms.txt.ts   # /llms.txt, prerendered to dist/client/
+│   │   ├── robots.txt.ts # /robots.txt, prerendered to dist/client/
 │   │   ├── rss.xml.ts    # /rss.xml: prerendered RSS feed with each post's full HTML
 │   │   └── text/
 │   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
@@ -115,7 +117,7 @@ bun create astro@latest -- --template basics
 │       │   └── published-record.ts  # Reads src/content/published.json on GitHub for GET /articles
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
-├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin; pages are prerendered by default
+├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin, sitemap; pages are prerendered by default
 ├── biome.json
 ├── wrangler.jsonc
 └── package.json
@@ -218,6 +220,22 @@ files lose their long cache.
 Article images are not build output. The publish Worker stores them in the R2 bucket
 `lina-blog-images` under a content-hash name with `public, max-age=31536000, immutable`, and
 they are served from `https://img.ikili.pro` (`docs/publish-api.md`).
+
+## 🔎 Sitemap and robots.txt
+
+`astro build` writes `/sitemap-index.xml` and the sitemap it lists with `@astrojs/sitemap` (`sitemap()` in `astro.config.mjs`).
+The sitemap lists the pages of `src/pages/[lang]/` in every locale, and each entry links the same page in the other locales and `/` as `x-default` (`xhtml:link`).
+`src/sitemap.ts` leaves out the dev pages under `/dev/` and every URL that does not end with `/`, such as `/llms.txt` and `/rss.xml`; the integration leaves out the 404 page.
+`/robots.txt` (`src/pages/robots.txt.ts`) is prerendered like `/llms.txt`.
+It allows every crawler, AI crawlers such as GPTBot and ClaudeBot included, and points to the sitemap with an absolute URL.
+
+Cloudflare can block AI crawlers in front of the Worker and rewrite `/robots.txt`.
+Before the site goes public, open the `ikili.pro` zone in the Cloudflare dashboard and turn these off:
+
+1. Security > Settings, filtered by "Bot traffic": turn off "Set your preference to block training in robots.txt" (managed robots.txt, which prepends rules that disallow AI crawlers to `/robots.txt`). See https://developers.cloudflare.com/bots/additional-configurations/managed-robots-txt/.
+2. On the same page, allow every category in "Configure AI bot policies", and turn off the older "Block AI bots" if it is still shown (https://developers.cloudflare.com/bots/additional-configurations/block-ai-bots/).
+3. In AI Crawl Control, set the action of every crawler that shows Block to Allow (https://developers.cloudflare.com/ai-crawl-control/features/manage-ai-crawlers/).
+4. Check that `curl -fsS https://ikili.pro/robots.txt` prints the same text as `dist/client/robots.txt`.
 
 ## 🧞 Commands
 
