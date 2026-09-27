@@ -132,7 +132,7 @@ Worker は受け取った `markdown` から計算する。
 - BOM を付けない
 - Unicode は NFC にする
 - 末尾は改行 1 つにする
-- frontmatter のキーは決まった順序で書く
+- frontmatter のキーは `title`、`slug`、`emoji`、`tags`、`description`、`sponsor`、`topics` の順に書く（`sponsor` の中は `name`、`url` の順）
 - 値の無い任意の項目は書かない
 
 Worker は正規化しない。
