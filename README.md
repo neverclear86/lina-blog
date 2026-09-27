@@ -17,7 +17,7 @@ bun create astro@latest -- --template basics
 │   ├── api.ts            # Hono routes handled by the Worker (/api/*), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
-│   ├── content.config.ts # blog collection: src/content/blog/**/*.md checked by blog-schema.ts
+│   ├── content.config.ts # blog collection: src/content/blog/ (and blog-dev/ in astro dev), checked by blog-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── assets/           # Images processed by astro:assets
@@ -26,6 +26,8 @@ bun create astro@latest -- --template basics
 │   │   └── logo-white.png  # Logo for the dark theme
 │   ├── components/
 │   │   └── Logo.astro      # Switches the logo with the theme
+│   ├── content/
+│   │   └── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
 │   ├── i18n/
 │   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
 │   │   └── ui.ts         # UI strings per locale, unit-tested
@@ -54,6 +56,8 @@ bun create astro@latest -- --template basics
 Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets. Routes that no page matches, such as `/api/*`, fall through to the Hono app in `src/fetch.ts`, which serves the routes in `src/api.ts`.
 
 Pages that exist in every language go in `src/pages/[lang]/` and are generated once for each locale in `src/i18n/locales.ts` (`/ja/`, `/en/`); their UI strings come from `src/i18n/ui.ts`. Pages outside `[lang]/`, such as the Japanese-only blog under `/blog/`, have no language prefix. Astro's `i18n()` handler in `src/fetch.ts` is never reached, so `astro build` warns that the project does not call it; running it would answer 404 for those unprefixed paths.
+
+Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema, and `astro build` leaves them out, so they never reach `dist/`.
 
 Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes and the blog frontmatter schema; `src/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
