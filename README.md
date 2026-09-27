@@ -16,6 +16,7 @@ bun create astro@latest -- --template basics
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/api/*), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
+│   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
 │   ├── content.config.ts # blog collection: src/content/blog/**/*.md checked by blog-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
@@ -101,6 +102,30 @@ curl -sS -X POST https://challenges.cloudflare.com/turnstile/v0/siteverify \
 ```
 
 The first key answers `"success":true`, and the second answers `"success":false` with `"error-codes":["invalid-input-response"]`.
+
+## 📧 Contact notifications
+
+The `CONTACT_MAIL` binding (`send_email` in `wrangler.jsonc`) is for sending the contact form
+notification to the site owner. The recipient address is kept out of the repository and is
+given as the `CONTACT_MAIL_TO` secret.
+
+1. In the Cloudflare dashboard, enable Email Routing for `ikili.pro`. A Worker can only send
+   from an address on a domain with Email Routing enabled; the sender is `noreply@ikili.pro`,
+   the only address in `allowed_sender_addresses`.
+2. In Email Routing > Destination addresses, add the recipient address and open the link in the
+   verification mail. The binding only sends to verified destination addresses.
+3. Register the recipient as a Worker secret:
+
+   ```sh
+   bunx wrangler secret put CONTACT_MAIL_TO
+   ```
+
+For local checks, put the address in `.dev.vars` at the repository root (ignored by Git).
+`wrangler dev` (`bun run preview:wrangler`) reads it and does not deliver the mail:
+
+```sh
+CONTACT_MAIL_TO=you@example.com
+```
 
 ## 📄 License
 
