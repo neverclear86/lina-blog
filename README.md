@@ -19,9 +19,14 @@ bun create astro@latest -- --template basics
 │   ├── content.config.ts # blog collection: src/content/blog/**/*.md checked by blog-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
+│   ├── i18n/
+│   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
+│   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
 │   │   └── Layout.astro
 │   └── pages/
+│       ├── [lang]/
+│       │   └── index.astro   # /ja/ and /en/
 │       └── index.astro
 ├── astro.config.mjs      # Cloudflare adapter; pages are prerendered by default
 ├── biome.json
@@ -30,6 +35,8 @@ bun create astro@latest -- --template basics
 ```
 
 Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets. Routes that no page matches, such as `/api/*`, fall through to the Hono app in `src/fetch.ts`, which serves the routes in `src/api.ts`.
+
+Pages that exist in every language go in `src/pages/[lang]/` and are generated once for each locale in `src/i18n/locales.ts` (`/ja/`, `/en/`); their UI strings come from `src/i18n/ui.ts`. Pages outside `[lang]/`, such as the Japanese-only blog under `/blog/`, have no language prefix. Astro's `i18n()` handler in `src/fetch.ts` is never reached, so `astro build` warns that the project does not call it; running it would answer 404 for those unprefixed paths.
 
 Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes and the blog frontmatter schema; `src/api.ts` is tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 

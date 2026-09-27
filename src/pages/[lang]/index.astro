@@ -1,0 +1,25 @@
+---
+import type { GetStaticPaths } from "astro";
+import { LOCALES, type Locale } from "../../i18n/locales";
+import { translate } from "../../i18n/ui";
+import Layout from "../../layouts/Layout.astro";
+
+export const getStaticPaths = (() =>
+  LOCALES.map((lang) => ({
+    params: { lang },
+    props: { lang },
+  }))) satisfies GetStaticPaths;
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+---
+
+<Layout lang={lang}>
+  <main>
+    <h1>ikili.pro</h1>
+    <p>{translate(lang, "home.comingSoon")}</p>
+  </main>
+</Layout>
