@@ -1,0 +1,74 @@
+---
+/**
+ * The square icon-only button of the design, such as the theme switch and the menu button in
+ * the headers of `design/CBMain.dc.html` and `design/CBMobile.dc.html`.
+ *
+ * The button shows no text, so `label` becomes its `aria-label`. The icon comes in the default
+ * slot, hidden from assistive technology, and the caller sets its size. The square is 40px
+ * below 768px and 44px from 768px.
+ */
+interface Props {
+  /** Accessible name of the button, such as "ライト・ダークを切り替え". */
+  label: string;
+  /** Face and icon colors: "surface" (`--surf`, `--fg`) or "inverse" (`--inv`, `--invfg`). */
+  tone?: "surface" | "inverse";
+  /** Classes for the `<button>`, such as a layout class of the caller. */
+  class?: string;
+}
+
+const { label, tone = "surface", class: className } = Astro.props;
+---
+
+<button
+  class:list={["icon-button", className]}
+  type="button"
+  aria-label={label}
+>
+  <span class="shadow lift">
+    <span class:list={["shape", "face", tone]} aria-hidden="true"
+      ><slot /></span
+    >
+  </span>
+</button>
+
+<style>
+.icon-button {
+  display: inline-block;
+  vertical-align: top;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.icon-button > span {
+  display: block;
+}
+
+.face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.surface {
+  background: var(--surf);
+  color: var(--fg);
+}
+
+.inverse {
+  background: var(--inv);
+  color: var(--invfg);
+}
+
+@media (min-width: 768px) {
+  .face {
+    width: 44px;
+    height: 44px;
+  }
+}
+</style>

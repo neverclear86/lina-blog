@@ -8,6 +8,8 @@ const ja = {
   "home.comingSoon": "準備中です。",
   // The locale's own name, shown on the links to it; not translated into other locales.
   "locale.name": "日本語",
+  // Label of the Twitter link; "X" appears only in its icon.
+  "social.twitter": "Twitter(自称X)",
 } as const;
 
 /** Key of a UI string. */
@@ -19,6 +21,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
   en: {
     "home.comingSoon": "Coming soon.",
     "locale.name": "English",
+    "social.twitter": "Twitter (self-proclaimed X)",
   },
 };
 

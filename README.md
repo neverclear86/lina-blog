@@ -36,6 +36,11 @@ bun create astro@latest -- --template basics
 │   ├── components/
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (tables, task lists, footnotes)
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
+│   │   ├── Button.astro          # Orange main button, as a link or a <button>
+│   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
+│   │   ├── IconButton.astro      # Square icon-only button with a required aria-label
+│   │   ├── IconLink.astro        # Icon square with a label below, for the social links
+│   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
 │   │   ├── Logo.astro            # Switches the logo with the theme
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level is a prop
 │   │   └── TerminalCard.astro    # Terminal window card with a title bar; a link when given href

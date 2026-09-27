@@ -10,6 +10,13 @@ describe("translate", () => {
   it("英語を指定すると英語の文言を返す", () => {
     expect(translate("en", "home.comingSoon")).toBe("Coming soon.");
   });
+
+  it("Twitter のラベルは日本語で Twitter(自称X)、英語で Twitter (self-proclaimed X) になる", () => {
+    expect(translate("ja", "social.twitter")).toBe("Twitter(自称X)");
+    expect(translate("en", "social.twitter")).toBe(
+      "Twitter (self-proclaimed X)",
+    );
+  });
 });
 
 describe("ui", () => {

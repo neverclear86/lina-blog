@@ -1,7 +1,12 @@
 ---
 import Bubble from "../components/Bubble.astro";
+import Button from "../components/Button.astro";
+import Chip from "../components/Chip.astro";
+import IconButton from "../components/IconButton.astro";
+import IconLink from "../components/IconLink.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import TerminalCard from "../components/TerminalCard.astro";
+import { translate } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
 ---
 
@@ -156,6 +161,247 @@ import Layout from "../layouts/Layout.astro";
         </div>
       </div>
     </section>
+
+    <section id="buttons">
+      <h2>ボタン</h2>
+      <div class="row">
+        <Button href="#buttons">お問い合わせ</Button>
+        <Button href="#buttons" class="is-hover">お問い合わせ</Button>
+        <Button href="#buttons" class="is-focus">お問い合わせ</Button>
+      </div>
+      <div class="cbg">
+        <div class="form">
+          <div class="row">
+            <Button size="lg" shadow="ink" type="submit">送信する</Button>
+            <Button size="lg" shadow="ink" type="submit" class="is-hover"
+              >送信する</Button
+            >
+            <Button size="lg" shadow="ink" type="submit" class="is-focus"
+              >送信する</Button
+            >
+            <Button size="lg" shadow="ink" type="submit" disabled
+              >送信する</Button
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="icons">
+      <h2>アイコン</h2>
+      <div class="row">
+        <IconButton label="ライト・ダークを切り替え"
+          ><svg
+            aria-hidden="true"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <circle cx="12" cy="12" r="4"></circle>
+            <path
+              d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+            ></path>
+          </svg></IconButton
+        >
+        <IconButton label="ライト・ダークを切り替え" class="is-hover"
+          ><svg
+            aria-hidden="true"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <circle cx="12" cy="12" r="4"></circle>
+            <path
+              d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+            ></path>
+          </svg></IconButton
+        >
+        <IconButton label="ライト・ダークを切り替え" class="is-focus"
+          ><svg
+            aria-hidden="true"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <circle cx="12" cy="12" r="4"></circle>
+            <path
+              d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+            ></path>
+          </svg></IconButton
+        >
+        <IconButton label="メニューを開く" tone="inverse"
+          ><svg
+            aria-hidden="true"
+            width="18"
+            height="12"
+            viewBox="0 0 18 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M0 1h18M0 6h18M0 11h10"></path>
+          </svg></IconButton
+        >
+        <IconButton label="メニューを開く" tone="inverse" class="is-focus"
+          ><svg
+            aria-hidden="true"
+            width="18"
+            height="12"
+            viewBox="0 0 18 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M0 1h18M0 6h18M0 11h10"></path>
+          </svg></IconButton
+        >
+      </div>
+      <div class="row">
+        <IconLink href="#icons" label="YouTube"
+          ><svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          >
+            <rect x="2.5" y="5" width="19" height="14" rx="3"></rect>
+            <path d="M10 9.5v5l4.5-2.5z" fill="currentColor"></path>
+          </svg></IconLink
+        >
+        <IconLink
+          href="#icons"
+          label={translate("ja", "social.twitter")}
+          rel="me"
+          ><svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          >
+            <path d="M4 5h16v11H9l-5 4z"></path>
+          </svg></IconLink
+        >
+        <IconLink
+          href="#icons"
+          label={translate("ja", "social.twitter")}
+          rel="me"
+          class="is-hover"
+          ><svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          >
+            <path d="M4 5h16v11H9l-5 4z"></path>
+          </svg></IconLink
+        >
+        <IconLink
+          href="#icons"
+          label={translate("ja", "social.twitter")}
+          rel="me"
+          class="is-focus"
+          ><svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          >
+            <path d="M4 5h16v11H9l-5 4z"></path>
+          </svg></IconLink
+        >
+      </div>
+      <div class="row">
+        <div class="narrow">
+          <IconLink href="#icons" label={translate("ja", "social.twitter")}
+            ><svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linejoin="round"
+            >
+              <path d="M4 5h16v11H9l-5 4z"></path>
+            </svg></IconLink
+          >
+        </div>
+      </div>
+    </section>
+
+    <section id="chips">
+      <h2>チップ</h2>
+      <div class="row">
+        <Chip tone="pink" tilt>バーチャルイキリプログラマ</Chip>
+        <Chip tone="pink">NEW</Chip>
+        <Chip tone="orange">制作記</Chip>
+        <Chip>技術</Chip>
+      </div>
+      <div class="row">
+        <div class="narrow-chip">
+          <Chip>とても長いタグの名前がここに入る</Chip>
+        </div>
+      </div>
+    </section>
+
+    <section id="english" lang="en">
+      <h2>英語</h2>
+      <div class="row">
+        <Button href="#english">Contact</Button>
+        <Button size="lg" shadow="ink">Send</Button>
+        <IconButton label="Switch between light and dark"
+          ><svg
+            aria-hidden="true"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <circle cx="12" cy="12" r="4"></circle>
+            <path
+              d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+            ></path>
+          </svg></IconButton
+        >
+        <IconLink
+          href="#english"
+          label={translate("en", "social.twitter")}
+          rel="me"
+          ><svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          >
+            <path d="M4 5h16v11H9l-5 4z"></path>
+          </svg></IconLink
+        >
+      </div>
+    </section>
   </main>
 </Layout>
 
@@ -252,5 +498,24 @@ section {
 .heading-aside {
   margin: 0;
   max-width: 480px;
+}
+
+.row + .row {
+  margin-top: 24px;
+}
+
+.form {
+  padding: 24px;
+  background: var(--paper);
+  color: var(--ink);
+  --focus-ring: var(--ink);
+}
+
+.narrow {
+  width: 60px;
+}
+
+.narrow-chip {
+  width: 100px;
 }
 </style>
