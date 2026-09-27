@@ -54,6 +54,8 @@ bun create astro@latest -- --template basics
 │   │   ├── LatestVideoFeature.astro # Latest section: newest video as a latest.mp4 card with a NEW chip
 │   │   ├── LatestVideoList.astro # Latest section: the next videos with JST dates and the YouTube link
 │   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for --inv and --cbg faces
+│   │   ├── PostCard.astro        # Blog post card: emoji tile, title, JST date, tag chips and a PR chip; the whole card is a link
+│   │   ├── PostList.astro        # Post cards in one column, two from 1024px, or one line when there are none
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level and the contact variant are props
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, unit-tested
 │   │   ├── SiteFooter.astro      # Footer band on --cbg: inverse logo, © year and name, curl hint
