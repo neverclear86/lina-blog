@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { experimental_readRawConfig } from "wrangler";
 import app from "./app";
+import type { ImageBucket, StoredImage } from "./images";
 
 const env = { PUBLISH_TOKEN: "test-token" };
 
@@ -167,5 +169,336 @@ describe("GET /articles", () => {
       error: { code: "misconfigured", message: "GITHUB_TOKEN is not set." },
     });
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+});
+
+describe("images", () => {
+  const HELLO_HASH =
+    "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824";
+  const ZERO_HASH = "0".repeat(64);
+  const AUTHORIZATION = "Bearer test-token";
+
+  type Stored = { contentType: string; cacheControl: string; etag: string };
+
+  /**
+   * A bucket stub over a `Map`. `put` reads the body and, like R2, throws BadDigest (10037)
+   * when its SHA-256 differs from `sha256`.
+   */
+  function fakeBucket() {
+    const objects = new Map<string, Stored>();
+    const toStoredImage = (stored: Stored): StoredImage => ({
+      httpEtag: stored.etag,
+      writeHttpMetadata: (headers) => {
+        headers.set("Content-Type", stored.contentType);
+        headers.set("Cache-Control", stored.cacheControl);
+      },
+    });
+    const head = vi.fn<ImageBucket["head"]>(async (key) => {
+      const stored = objects.get(key);
+      return stored ? toStoredImage(stored) : null;
+    });
+    const put = vi.fn<ImageBucket["put"]>(async (key, value, options) => {
+      const bytes = await new Response(value).arrayBuffer();
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      const hex = [...new Uint8Array(digest)]
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+      if (hex !== options.sha256) {
+        throw new Error(
+          "put: The SHA-256 checksum you specified did not match what we received. (10037)",
+        );
+      }
+      objects.set(key, {
+        contentType: options.httpMetadata.contentType,
+        cacheControl: options.httpMetadata.cacheControl,
+        etag: `"${hex.slice(0, 32)}"`,
+      });
+      return {};
+    });
+    return { objects, head, put };
+  }
+
+  /** A `PUT /images/{name}` request with an explicit `Content-Length`. */
+  function putRequest(
+    body: string,
+    headers: Record<string, string> = {},
+  ): RequestInit {
+    return {
+      method: "PUT",
+      body,
+      headers: {
+        Authorization: AUTHORIZATION,
+        "Content-Type": "image/png",
+        "Content-Length": String(new TextEncoder().encode(body).length),
+        ...headers,
+      },
+    };
+  }
+
+  const headRequest: RequestInit = {
+    method: "HEAD",
+    headers: { Authorization: AUTHORIZATION },
+  };
+
+  it("認証の無い PUT は 401 を返し、R2 を呼ばない", async () => {
+    const bucket = fakeBucket();
+
+    const res = await app.request(
+      `/images/${HELLO_HASH}.png`,
+      { method: "PUT", body: "hello" },
+      { ...env, IMAGES: bucket },
+    );
+
+    expect(res.status).toBe(401);
+    expect(bucket.head).not.toHaveBeenCalled();
+    expect(bucket.put).not.toHaveBeenCalled();
+  });
+
+  it("ハッシュの合う画像を置き、201 と名前と img.ikili.pro の URL を返す", async () => {
+    const bucket = fakeBucket();
+
+    const res = await app.request(
+      `/images/${HELLO_HASH}.png`,
+      putRequest("hello"),
+      { ...env, IMAGES: bucket },
+    );
+
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({
+      name: `${HELLO_HASH}.png`,
+      url: `https://img.ikili.pro/${HELLO_HASH}.png`,
+    });
+    expect(bucket.objects.get(`${HELLO_HASH}.png`)).toEqual({
+      contentType: "image/png",
+      cacheControl: "public, max-age=31536000, immutable",
+      etag: `"${HELLO_HASH.slice(0, 32)}"`,
+    });
+  });
+
+  it("既に有る画像は置き直さずに 200 を返す", async () => {
+    const bucket = fakeBucket();
+    const bindings = { ...env, IMAGES: bucket };
+    await app.request(
+      `/images/${HELLO_HASH}.png`,
+      putRequest("hello"),
+      bindings,
+    );
+
+    const res = await app.request(
+      `/images/${HELLO_HASH}.png`,
+      putRequest("hello"),
+      bindings,
+    );
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      name: `${HELLO_HASH}.png`,
+      url: `https://img.ikili.pro/${HELLO_HASH}.png`,
+    });
+    expect(bucket.put).toHaveBeenCalledTimes(1);
+  });
+
+  it("ハッシュが一致しない画像は 422 と hash_mismatch を返し、置かない", async () => {
+    const bucket = fakeBucket();
+
+    const res = await app.request(
+      `/images/${ZERO_HASH}.png`,
+      putRequest("hello"),
+      { ...env, IMAGES: bucket },
+    );
+
+    expect(res.status).toBe(422);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "hash_mismatch",
+        message: `The image does not match the SHA-256 ${ZERO_HASH}.`,
+      },
+    });
+    expect(bucket.objects.size).toBe(0);
+  });
+
+  it("R2 が失敗すると 502 と upstream_error を返す", async () => {
+    const bucket = fakeBucket();
+    bucket.put.mockRejectedValue(new Error("put: Internal error (10001)"));
+
+    const res = await app.request(
+      `/images/${HELLO_HASH}.png`,
+      putRequest("hello"),
+      { ...env, IMAGES: bucket },
+    );
+
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "upstream_error",
+        message: `Could not store ${HELLO_HASH}.png in R2.`,
+      },
+    });
+  });
+
+  it.each([`${HELLO_HASH}.svg`, `${HELLO_HASH}.jpeg`, "not-a-hash.png"])(
+    "名前の形が違う PUT（%s）は 400 と invalid_request を返す",
+    async (name) => {
+      const bucket = fakeBucket();
+
+      const res = await app.request(`/images/${name}`, putRequest("hello"), {
+        ...env,
+        IMAGES: bucket,
+      });
+
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({
+        error: {
+          code: "invalid_request",
+          message:
+            "Image name must be <sha256>.<ext> with the extension avif, gif, jpg, png or webp.",
+        },
+      });
+      expect(bucket.put).not.toHaveBeenCalled();
+    },
+  );
+
+  it("拡張子に合わない Content-Type は 400 を返す", async () => {
+    const bucket = fakeBucket();
+
+    const res = await app.request(
+      `/images/${HELLO_HASH}.png`,
+      putRequest("hello", { "Content-Type": "image/jpeg" }),
+      { ...env, IMAGES: bucket },
+    );
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "invalid_request",
+        message: "Content-Type must be image/png.",
+      },
+    });
+    expect(bucket.put).not.toHaveBeenCalled();
+  });
+
+  it("パラメーター付きの Content-Type（image/png; charset=binary）は 400 を返し、R2 を呼ばない", async () => {
+    const bucket = fakeBucket();
+
+    const res = await app.request(
+      `/images/${HELLO_HASH}.png`,
+      putRequest("hello", { "Content-Type": "image/png; charset=binary" }),
+      { ...env, IMAGES: bucket },
+    );
+
+    expect(res.status).toBe(400);
+    expect(bucket.head).not.toHaveBeenCalled();
+    expect(bucket.put).not.toHaveBeenCalled();
+  });
+
+  it("Content-Length の無い PUT は 400 を返し、R2 を呼ばない", async () => {
+    const bucket = fakeBucket();
+
+    const res = await app.request(
+      `/images/${HELLO_HASH}.png`,
+      {
+        method: "PUT",
+        body: "hello",
+        headers: { Authorization: AUTHORIZATION, "Content-Type": "image/png" },
+      },
+      { ...env, IMAGES: bucket },
+    );
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "invalid_request",
+        message: "Content-Length is required.",
+      },
+    });
+    expect(bucket.head).not.toHaveBeenCalled();
+    expect(bucket.put).not.toHaveBeenCalled();
+  });
+
+  it("HEAD は有る画像に 200 と保存した Content-Type、Cache-Control、ETag を返す", async () => {
+    const bucket = fakeBucket();
+    const bindings = { ...env, IMAGES: bucket };
+    await app.request(
+      `/images/${HELLO_HASH}.png`,
+      putRequest("hello"),
+      bindings,
+    );
+
+    const res = await app.request(
+      `/images/${HELLO_HASH}.png`,
+      headRequest,
+      bindings,
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toBe("image/png");
+    expect(res.headers.get("Cache-Control")).toBe(
+      "public, max-age=31536000, immutable",
+    );
+    expect(res.headers.get("ETag")).toBe(`"${HELLO_HASH.slice(0, 32)}"`);
+    expect(await res.text()).toBe("");
+  });
+
+  it("有る画像でも GET /images/{name} は 404 を返す", async () => {
+    const bucket = fakeBucket();
+    const bindings = { ...env, IMAGES: bucket };
+    await app.request(
+      `/images/${HELLO_HASH}.png`,
+      putRequest("hello"),
+      bindings,
+    );
+
+    const res = await app.request(
+      `/images/${HELLO_HASH}.png`,
+      withAuthorization(AUTHORIZATION),
+      bindings,
+    );
+
+    expect(res.status).toBe(404);
+  });
+
+  it("HEAD は無い画像に本文無しの 404 を返す", async () => {
+    const bucket = fakeBucket();
+
+    const res = await app.request(`/images/${HELLO_HASH}.png`, headRequest, {
+      ...env,
+      IMAGES: bucket,
+    });
+
+    expect(res.status).toBe(404);
+    expect(await res.text()).toBe("");
+  });
+
+  it("HEAD は R2 が失敗すると 502 を返す", async () => {
+    const bucket = fakeBucket();
+    bucket.head.mockRejectedValue(new Error("head: Internal error"));
+
+    const res = await app.request(`/images/${HELLO_HASH}.png`, headRequest, {
+      ...env,
+      IMAGES: bucket,
+    });
+
+    expect(res.status).toBe(502);
+  });
+
+  it("HEAD は名前の形が違うと 400 を返す", async () => {
+    const bucket = fakeBucket();
+
+    const res = await app.request(`/images/${HELLO_HASH}.svg`, headRequest, {
+      ...env,
+      IMAGES: bucket,
+    });
+
+    expect(res.status).toBe(400);
+    expect(bucket.head).not.toHaveBeenCalled();
+  });
+
+  it("wrangler.jsonc の IMAGES バインディングが公開用 R2 バケットを指す", () => {
+    const { rawConfig } = experimental_readRawConfig({
+      config: "workers/publish/wrangler.jsonc",
+    });
+    expect(rawConfig.r2_buckets).toEqual([
+      { binding: "IMAGES", bucket_name: "lina-blog-images" },
+    ]);
   });
 });

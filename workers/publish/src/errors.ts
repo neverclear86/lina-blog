@@ -1,5 +1,10 @@
 /** Error codes that the publish Worker returns; the meaning of each is in `docs/publish-api.md`. */
-export type ErrorCode = "unauthorized" | "misconfigured" | "upstream_error";
+export type ErrorCode =
+  | "invalid_request"
+  | "unauthorized"
+  | "hash_mismatch"
+  | "upstream_error"
+  | "misconfigured";
 
 /** Step of the processing in which a request failed, as listed in `docs/publish-api.md`. */
 export type ErrorStep = "list";
