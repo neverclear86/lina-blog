@@ -26,6 +26,7 @@ bun create astro@latest -- --template basics
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
 │   ├── profile-links.ts  # Profile links (label and note per locale), shared by llms.ts and text-site.ts
 │   ├── text-site.ts      # Builds the text version of the site for curl (80 columns), unit-tested
+│   ├── theme.ts          # Theme key and values, and the inline script that sets <html data-theme>, unit-tested
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── user-agent.ts     # Tells curl and other command-line clients from browsers, unit-tested
 │   ├── assets/           # Images processed by astro:assets
@@ -50,7 +51,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css and shapes.css; sets --font-body on html
+│   │   └── Layout.astro       # <head> with the theme script, the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css and shapes.css; sets --font-body on html
 │   ├── markdown/
 │   │   ├── sample.md       # Sample article shown at /dev/markdown/
 │   │   └── table-align.ts  # Sätteri hast plugin: table alignment as classes, unit-tested
@@ -67,7 +68,7 @@ bun create astro@latest -- --template basics
 │   └── styles/
 │       ├── global.css    # body colors and the grid backgrounds (.grid, .cgrid)
 │       ├── shapes.css    # Notched corners, hard shadows, the lift and the focus outline
-│       └── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>
+│       └── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
 ├── workers/
 │   └── publish/          # Publish Worker, separate from the site and deployed on its own
 │       ├── src/
@@ -123,9 +124,13 @@ Color values are written only in `tokens.css`; other CSS, global or scoped, uses
 A component that must style an element outside its own markup, such as `<html data-theme>`,
 wraps only that selector in `:global()`.
 
+The inline script in the `<head>` of `src/layouts/Layout.astro` (`THEME_SCRIPT` in `src/theme.ts`) sets `<html data-theme>` before the first paint.
+It takes the value saved in `localStorage` under the key `theme` (`light` or `dark`), or `prefers-color-scheme` while nothing valid is saved, and follows changes of the OS setting until a theme is saved.
+Without JavaScript, the page keeps the light theme that `Layout.astro` renders.
+
 `src/dev/components.astro` shows the shared shapes and the components on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
 `astro dev` serves them at `/dev/components/` and `/dev/markdown/`, and `astro build` leaves them out of `dist/` unless `LINA_DEV_PAGES=1` is set.
-Add `?theme=dark` to the URL of `/dev/components/` to see the dark theme.
+Add `?theme=dark` or `?theme=light` to the URL of `/dev/components/` to see that theme whatever the OS setting is.
 To capture them with `.claude/scripts/screenshot.mjs`, which serves `dist/`, build with `LINA_DEV_PAGES=1 bun run build`.
 A new component adds its samples to `/dev/components/`, and a new Markdown syntax adds its examples to `src/markdown/sample.md`.
 
