@@ -3,6 +3,9 @@ export type ErrorCode =
   | "invalid_request"
   | "unauthorized"
   | "hash_mismatch"
+  | "invalid_markdown"
+  | "invalid_frontmatter"
+  | "slug_mismatch"
   | "upstream_error"
   | "misconfigured";
 
