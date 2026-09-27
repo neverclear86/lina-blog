@@ -16,6 +16,7 @@ bun create astro@latest -- --template basics
 │   ├── ansi-art.ts       # Pixels to terminal text art (half blocks, 24-bit color), unit-tested
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
+│   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
 │   ├── content.config.ts # blog collection: src/content/blog/ (and blog-dev/ in astro dev), checked by blog-schema.ts
@@ -36,11 +37,12 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the <Font /> tags; imports tokens.css and global.css; sets --font-body on html
+│   │   └── Layout.astro       # <head> with the <Font /> tags and the RSS link; imports tokens.css and global.css; sets --font-body on html
 │   ├── pages/
 │   │   ├── [lang]/
 │   │   │   └── index.astro   # /ja/ and /en/
-│   │   └── llms.txt.ts   # /llms.txt, prerendered to dist/client/
+│   │   ├── llms.txt.ts   # /llms.txt, prerendered to dist/client/
+│   │   └── rss.xml.ts    # /rss.xml: prerendered RSS feed with each post's full HTML
 │   └── styles/
 │       ├── global.css    # body colors and the grid backgrounds (.grid, .cgrid)
 │       └── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>
@@ -67,7 +69,7 @@ Pages that exist in every language go in `src/pages/[lang]/` and are generated o
 
 Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema, and `astro build` leaves them out, so they never reach `dist/`.
 
-Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes and the blog frontmatter schema; `src/api.ts` and
+Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema and the RSS items; `src/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 
 Colors are tested the same way. `src/styles/tokens.test.ts` checks that every foreground and background token pair used for text reaches 4.5:1 (WCAG AA) in both themes, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--fg)` and so on) instead; inline SVG takes `currentColor`.

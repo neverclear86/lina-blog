@@ -41,7 +41,7 @@ function prerenderByDefault() {
 
 // https://astro.build/config
 export default defineConfig({
-  // Origin of absolute URLs, such as the links in /llms.txt.
+  // Origin of absolute URLs, such as the links in /llms.txt and /rss.xml.
   site: "https://ikili.pro",
   output: "server",
   adapter: cloudflare({
