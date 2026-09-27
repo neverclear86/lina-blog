@@ -22,7 +22,9 @@
  * element, which has neither the clip nor the shadow, 5px away from it.
  *
  * `.is-lift` and `.is-focus` show the lifted and focused states without hover or focus, for the
- * samples in `src/dev/components.astro`.
+ * samples in `src/dev/components.astro`. `.is-lift` goes on the shadow element itself, while
+ * `.is-hover` goes on the outer element of a component, like `.is-focus`, and lifts only its
+ * `.lift` child.
  */
 
 .shape,
@@ -86,6 +88,7 @@
 .lift:hover,
 :focus-visible > .lift,
 .is-focus > .lift,
+.is-hover > .lift,
 .is-lift {
   transform: translate(-2px, -2px);
   filter: drop-shadow(5px 5px 0 var(--shadow-color, var(--shadow)));
