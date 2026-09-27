@@ -21,8 +21,11 @@ bun create astro@latest -- --template basics
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── assets/           # Images processed by astro:assets
-│   │   └── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
+│   │   ├── logo-black.png  # Logo for the light theme, optimized by astro:assets
+│   │   ├── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
+│   │   └── logo-white.png  # Logo for the dark theme
 │   ├── components/
+│   │   └── Logo.astro      # Switches the logo with the theme
 │   ├── i18n/
 │   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
 │   │   └── ui.ts         # UI strings per locale, unit-tested
