@@ -4,5 +4,18 @@
       "Bash(gh issue close:*)",
       "Bash(gh issue edit:*)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/biome-check.sh"
+          }
+        ]
+      }
+    ]
   }
 }

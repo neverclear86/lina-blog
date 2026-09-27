@@ -1,20 +1,29 @@
 {
-  "name": "lina-blog",
-  "type": "module",
-  "version": "0.0.1",
-  "engines": {
-    "node": ">=22.12.0"
-  },
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
-  "dependencies": {
-    "astro": "^7.3.5"
-  },
-  "allowScripts": {
-    "esbuild": true
-  }
+	"name": "lina-blog",
+	"type": "module",
+	"version": "0.0.1",
+	"engines": {
+		"node": ">=22.12.0"
+	},
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"astro": "astro",
+		"format": "biome format --write",
+		"lint": "biome lint",
+		"check": "biome check"
+	},
+	"dependencies": {
+		"@astrojs/cloudflare": "^14.3.3",
+		"astro": "^7.3.5",
+		"hono": "^4.13.9"
+	},
+	"allowScripts": {
+		"esbuild": true
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.14",
+		"wrangler": "^4.141.0"
+	}
 }
