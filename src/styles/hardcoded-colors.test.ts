@@ -31,7 +31,7 @@ function colorSources(path: string, text: string): string[] {
   );
   const attributes = [
     ...text.matchAll(
-      /\s(?:style|fill|stroke|stop-color|color)=(?:"([^"]*)"|'([^']*)'|\{([^}]*)\})/g,
+      /\s(?:style|fill|stroke|stop-color|color)=(?:"([^"]*)"|'([^']*)'|\{([\s\S]*?)\}(?=[\s/>]))/g,
     ),
   ].map((match) => match[1] ?? match[2] ?? match[3]);
   return [...styles, ...attributes];
@@ -63,6 +63,7 @@ describe("色の直書き", () => {
       '<svg fill="#fff" stroke="rgb(0 0 0)"><circle style="color: #E8731A80" /></svg>',
       '<linearGradient><stop stop-color="#abcd" /></linearGradient>',
       "<g color='hwb(0 0% 0%)' style={{ color: \"lab(50 0 0)\" }} />",
+      `<div style={\`--w: \${w}px; color: #0f0\`} />`,
       "<style>",
       "a { color: #232427; background: hsl(0 0% 100%); border-color: oklch(0.5 0.1 30); }",
       "b { outline-color: lch(50 0 0); caret-color: oklab(0.5 0 0); fill: color(srgb 1 0 0); }",
@@ -81,6 +82,7 @@ describe("色の直書き", () => {
       "#abcd",
       "hwb(",
       "lab(",
+      "#0f0",
     ]);
     expect(
       hardcodedColors("a.css", "a { color: rgba(0, 0, 0, 0.5); }"),
