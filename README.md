@@ -57,7 +57,7 @@ bun create astro@latest -- --template basics
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level and the contact variant are props
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, unit-tested
 │   │   ├── SiteFooter.astro      # Footer band on --cbg: inverse logo, © year and name, curl hint
-│   │   ├── SiteHeader.astro      # Site header: logo, navigation, JA / EN, theme switch and contact button
+│   │   ├── SiteHeader.astro      # Site header: logo, navigation, JA / EN, theme switch, contact button, and a popover menu below 1024px
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: moon or sun, and a name that says the next theme
 │   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href

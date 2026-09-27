@@ -18,9 +18,19 @@ interface Props {
   tone?: "surface" | "inverse";
   /** Classes for the `<button>`, such as a layout class of the caller. */
   class?: string;
+  /**
+   * Id of the popover that the button shows and hides, written to `popovertarget`. The browser
+   * then toggles the popover on a click without script and exposes whether it is open.
+   */
+  popovertarget?: string;
 }
 
-const { label, tone = "surface", class: className } = Astro.props;
+const {
+  label,
+  tone = "surface",
+  class: className,
+  popovertarget,
+} = Astro.props;
 if (label === undefined && !Astro.slots.has("label")) {
   throw new Error("IconButton needs a label prop or a label slot.");
 }
@@ -30,6 +40,7 @@ if (label === undefined && !Astro.slots.has("label")) {
   class:list={["icon-button", className]}
   type="button"
   aria-label={label}
+  popovertarget={popovertarget}
 >
   <span class="shadow lift">
     <span class:list={["shape", "face", tone]} aria-hidden="true"
