@@ -87,9 +87,13 @@ frontmatter の `slug` がパスの `{slug}` と違うときは、422 `slug_mism
 
 本文の画像は `![代替テキスト](image:<sha256>.<ext>)` の形で参照する。
 参照先の画像は、先に `PUT /images/{name}` で置いておく。
-Worker は `image:` で始まる参照だけを `https://img.ikili.pro/<sha256>.<ext>` に差し替える。
+Worker は、リンク先が `](image:<name>)` の形の参照（画像と、`[文字](image:<name>)` のリンク）だけを `https://img.ikili.pro/<sha256>.<ext>` に差し替える。
 `image:` 以外の画像（外部の URL）は、そのまま残る。
+`]( image:<name>)`、`](<image:<name>>)`、`](image:<name>` の後で改行して書いたタイトル、参照定義（`[id]: image:<name>`。リストの項目と引用の中を含む）、`<image:<name>>`、HTML の `src`・`srcset`・`href` 属性（`src="image:<name>"`）、スキームの大文字（`IMAGE:`）で `image:` を宛先に書いた記事は、422 `invalid_markdown` で拒む。
+フェンスで囲んだコードブロックとコードスパンの中の `image:` は、参照として数えず、差し替えない。
 `image:` の参照が 21 種以上の記事は、422 `too_many_images` で拒む。
+種の数は、同じ名前を 1 種とし、形の違う名前も含めて数える。
+名前が「## 画像のアップロード」の `{name}` の形でない参照（`"title"` を付けたものを含む）は、422 `invalid_markdown` で拒む。
 参照した画像が R2 に無いときは、422 `missing_image` で拒む。
 
 成功したときは 200 を返す。
@@ -185,7 +189,7 @@ GitHub から公開の記録を読めないとき、または公開の記録の�
 
 | 段 | 行うこと | 再実行したとき |
 | --- | --- | --- |
-| 0 | 要求を検証する（認証、`markdown`、frontmatter、画像の参照の数） | 副作用が無い |
+| 0 | 要求を検証する（認証、`markdown`、frontmatter、画像の参照の数と形） | 副作用が無い |
 | 1 | 参照した画像が R2 に有ることを確かめる | 副作用が無い |
 | 2 | 本文の `image:` の参照を `https://img.ikili.pro/<name>` に差し替える | 副作用が無い |
 | 3 | 記事のファイルと、公開の記録の項目（`hash: null`）を 1 つのコミットで書く。記事の `date` は公開の記録の `date` を使い、無ければ現在時刻（UTC、秒まで）を入れる | 内容が同じならコミットを作らない |
@@ -226,7 +230,7 @@ GitHub から公開の記録を読めないとき、または公開の記録の�
 | 404 | `not_found` | 無いパス（画像の `HEAD` は本文無しの 404） | しない |
 | 409 | `conflict` | GitHub の先頭が並行した公開で動いた | する |
 | 422 | `hash_mismatch` | 画像の中身がパスのハッシュと違う | しない |
-| 422 | `invalid_markdown` | `\r` か BOM を含む | しない |
+| 422 | `invalid_markdown` | `\r` か BOM を含む、`image:` の参照の名前の形が違う、`image:` をほかの形で宛先に書いた | しない |
 | 422 | `invalid_frontmatter` | frontmatter が無い、YAML のマッピングとして読めない、スキーマに合わない、`date` が有る | しない |
 | 422 | `slug_mismatch` | frontmatter の `slug` がパスと違う | しない |
 | 422 | `missing_image` | 参照した画像が R2 に無い | 画像を置いてから |
