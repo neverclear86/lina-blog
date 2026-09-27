@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   type ContactFormState,
   contactFieldMessage,
+  contactStateBeforeSend,
   contactStateFromFetch,
   contactStateMessage,
+  turnstileSize,
 } from "./contact-form";
 
 /** A fetch result whose body is `body` (a string is sent as is, anything else as JSON). */
@@ -220,4 +222,54 @@ describe("contactFieldMessage", () => {
       expect(contactFieldMessage("en", field, code)).toBe(expected);
     },
   );
+});
+
+describe("contactStateBeforeSend", () => {
+  const valid = {
+    kind: "work",
+    name: "Lina",
+    email: "you@example.com",
+    message: "Hello",
+    "cf-turnstile-response": "token",
+  };
+
+  it("入力に誤りがあれば Turnstile の状態によらず項目ごとの符号を持つ入力の誤りになる", () => {
+    expect(
+      contactStateBeforeSend(
+        { ...valid, name: "", email: "lina" },
+        { failed: true, token: undefined },
+      ),
+    ).toEqual({
+      state: "invalid",
+      fields: { name: "required", email: "invalid" },
+    });
+  });
+
+  it("Turnstile の読み込みに失敗していれば、トークンが無くても確認の読み込みの失敗になる", () => {
+    expect(
+      contactStateBeforeSend(valid, { failed: true, token: undefined }),
+    ).toEqual({ state: "unavailable" });
+  });
+
+  it.each([undefined, ""])("トークンが %j ならトークン待ちになる", (token) => {
+    expect(contactStateBeforeSend(valid, { failed: false, token })).toEqual({
+      state: "waiting",
+    });
+  });
+
+  it("入力が正しくトークンがあれば送信中になる", () => {
+    expect(
+      contactStateBeforeSend(valid, { failed: false, token: "token" }),
+    ).toEqual({ state: "sending" });
+  });
+});
+
+describe("turnstileSize", () => {
+  it.each([
+    [300, "flexible"],
+    [560, "flexible"],
+    [299, "compact"],
+  ])("幅 %ipx は %s になる", (width, size) => {
+    expect(turnstileSize(width)).toBe(size);
+  });
 });
