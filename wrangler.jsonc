@@ -7,6 +7,15 @@
     // Other static pages are served from assets without starting the Worker.
     "run_worker_first": ["/"]
   },
+  // Binding for the contact form notification mail built by src/contact-mail.ts. The recipient
+  // is not written here but kept in the CONTACT_MAIL_TO secret (.dev.vars locally), and a
+  // binding without a destination restriction can only send to verified destination addresses.
+  "send_email": [
+    {
+      "name": "CONTACT_MAIL",
+      "allowed_sender_addresses": ["noreply@ikili.pro"]
+    }
+  ],
   "observability": {
     "enabled": true
   }
