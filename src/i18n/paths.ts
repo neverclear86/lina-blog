@@ -1,4 +1,4 @@
-/** Paths of the same page in each locale, for the language links in the layout. */
+/** Paths of the same page in each locale, for the language switch of the site header. */
 import { LOCALES, type Locale } from "./locales";
 
 /** Returns whether `segment` is one of the locale codes in `LOCALES`. */
