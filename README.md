@@ -23,6 +23,7 @@ bun create astro@latest -- --template basics
 │   ├── content.config.ts # blog collection: src/content/blog/ (and blog-dev/ in astro dev), checked by blog-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
+│   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── user-agent.ts     # Tells curl and other command-line clients from browsers, unit-tested
 │   ├── assets/           # Images processed by astro:assets
@@ -46,6 +47,9 @@ bun create astro@latest -- --template basics
 │   ├── pages/
 │   │   ├── [lang]/
 │   │   │   └── index.astro   # /ja/ and /en/
+│   │   ├── ansi/
+│   │   │   ├── color.txt.ts  # /ansi/color.txt: the standing illustration as 24-bit color text art
+│   │   │   └── plain.txt.ts  # /ansi/plain.txt: the same art without escape sequences
 │   │   ├── llms.txt.ts   # /llms.txt, prerendered to dist/client/
 │   │   └── rss.xml.ts    # /rss.xml: prerendered RSS feed with each post's full HTML
 │   └── styles/
@@ -64,7 +68,7 @@ bun create astro@latest -- --template basics
 │       │   └── published-record.ts  # Reads src/content/published.json on GitHub for GET /articles
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
-├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, dev pages; pages are prerendered by default
+├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, dev pages, text art plugin; pages are prerendered by default
 ├── biome.json
 ├── wrangler.jsonc
 └── package.json
@@ -132,6 +136,12 @@ Images in `src/assets/` are rendered with `Picture` or `getImage` from `astro:as
 `astro build` converts them once (`imageService: "compile"`), so no image is transformed at
 request time. Photos and the logo are offered as AVIF and WebP at several widths or densities.
 The pixel art and the favicons stay PNG at a fixed size, so no pixel is blended.
+
+The standing illustration, `src/assets/lina-standing.webp`, is also turned into text art for
+terminals. The `linaAnsiArt()` Vite plugin in `astro.config.mjs` resizes it with sharp to 80
+pixels wide, and the endpoints in `src/pages/ansi/` are prerendered to `/ansi/color.txt` (24-bit
+color) and `/ansi/plain.txt` (no escape sequences) in `dist/client/`. Every line fits in 80
+columns.
 
 Every file whose name carries a content hash, images and fonts included, is written to
 `/_astro/`. The repository has no `_headers` file: the Cloudflare adapter writes

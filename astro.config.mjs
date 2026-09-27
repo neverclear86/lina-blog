@@ -1,7 +1,14 @@
 // @ts-check
 import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import cloudflare from "@astrojs/cloudflare";
 import { defineConfig, fontProviders } from "astro/config";
+import sharp from "sharp";
+import {
+  ANSI_ART_MAX_COLUMNS,
+  renderAnsiArt,
+  renderPlainArt,
+} from "./src/ansi-art.ts";
 import { devPages } from "./src/dev/dev-pages.ts";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
 
@@ -40,6 +47,49 @@ function prerenderByDefault() {
   };
 }
 
+/** Virtual module with the text art of the standing illustration, built by `linaAnsiArt()`. */
+const ANSI_ART_MODULE = "virtual:lina-ansi-art";
+
+/** Illustration that the text art is drawn from. */
+const ANSI_ART_SOURCE = new URL(
+  "./src/assets/lina-standing.webp",
+  import.meta.url,
+);
+
+/**
+ * Builds the text art of the standing illustration for terminals as the virtual module
+ * `virtual:lina-ansi-art`, which exports `ansiArt` (24-bit color) and `plainArt` (no escape
+ * sequences).
+ *
+ * The endpoints in `src/pages/ansi/` are prerendered in workerd, which cannot load sharp, so
+ * the illustration is decoded and resized here, in Node, and the endpoints only return the
+ * strings. The image is resized to `ANSI_ART_MAX_COLUMNS` pixels wide, so every line of the
+ * art fits in 80 columns.
+ * @returns {import('vite').Plugin}
+ */
+function linaAnsiArt() {
+  const resolvedId = `\0${ANSI_ART_MODULE}`;
+  return {
+    name: "lina-ansi-art",
+    resolveId(id) {
+      if (id === ANSI_ART_MODULE) return resolvedId;
+    },
+    async load(id) {
+      if (id !== resolvedId) return;
+      const { data, info } = await sharp(fileURLToPath(ANSI_ART_SOURCE))
+        .resize({ width: ANSI_ART_MAX_COLUMNS })
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      const image = { width: info.width, height: info.height, data };
+      return [
+        `export const ansiArt = ${JSON.stringify(renderAnsiArt(image))};`,
+        `export const plainArt = ${JSON.stringify(renderPlainArt(image))};`,
+      ].join("\n");
+    },
+  };
+}
+
 // https://astro.build/config
 export default defineConfig({
   // Origin of absolute URLs, such as the links in /llms.txt and /rss.xml.
@@ -50,6 +100,7 @@ export default defineConfig({
     imageService: "compile",
   }),
   integrations: [prerenderByDefault(), devPages()],
+  vite: { plugins: [linaAnsiArt()] },
   // Sessions are not used; this also keeps the adapter from provisioning a KV namespace.
   session: false,
   // Every locale, including the default, has a URL prefix (`/ja/`, `/en/`). Pages outside
