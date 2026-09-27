@@ -4,14 +4,16 @@ import logoBlack from "../assets/logo-black.png";
 import logoWhite from "../assets/logo-white.png";
 
 /**
- * The ikili.pro logo, black on the light theme and white on the dark theme.
+ * The ikili.pro logo in the color that stands out on the theme: black on the light theme and
+ * white on the dark theme. With `tone="inverse"`, for a face in `--inv`, the colors swap: white
+ * on the light theme and black on the dark theme.
  *
  * Both images are rendered as `<picture>` elements with AVIF and WebP sources at 1x and 2x
  * of `size`, and CSS hides the one that does not match the theme. The dark theme is
  * `<html data-theme="dark">`, set before the first paint by `THEME_SCRIPT` in `src/theme.ts`;
- * any other value, or the light default when JavaScript does not run, shows the black logo.
- * The hidden picture is `display: none`, so assistive technology reads the `alt` only once
- * and the lazily loaded image is not fetched.
+ * any other value, or the light default when JavaScript does not run, shows the light theme's
+ * logo. The hidden picture is `display: none`, so assistive technology reads the `alt` only
+ * once and the lazily loaded image is not fetched.
  */
 interface Props {
   /** Width and height in CSS pixels; the logo is square. */
@@ -21,29 +23,36 @@ interface Props {
    * same link or heading, already names the site; otherwise describe the link target.
    */
   alt: string;
+  /**
+   * `default` for a face in `--bg` or `--surf`. `inverse` for a face in `--inv`, which is dark
+   * on the light theme and light on the dark theme.
+   */
+  tone?: "default" | "inverse";
 }
 
-const { size, alt } = Astro.props;
+const { size, alt, tone = "default" } = Astro.props;
+const [lightThemeLogo, darkThemeLogo] =
+  tone === "inverse" ? [logoWhite, logoBlack] : [logoBlack, logoWhite];
 ---
 
 <span class="logo">
   <Picture
-    src={logoBlack}
+    src={lightThemeLogo}
     alt={alt}
     width={size}
     height={size}
     densities={[1, 2]}
     formats={["avif", "webp"]}
-    pictureAttributes={{ class: "black" }}
+    pictureAttributes={{ class: "on-light" }}
   />
   <Picture
-    src={logoWhite}
+    src={darkThemeLogo}
     alt={alt}
     width={size}
     height={size}
     densities={[1, 2]}
     formats={["avif", "webp"]}
-    pictureAttributes={{ class: "white" }}
+    pictureAttributes={{ class: "on-dark" }}
   />
 </span>
 
@@ -54,13 +63,13 @@ const { size, alt } = Astro.props;
 picture {
   display: flex;
 }
-.white {
+.on-dark {
   display: none;
 }
-:global(:root[data-theme="dark"]) .black {
+:global(:root[data-theme="dark"]) .on-light {
   display: none;
 }
-:global(:root[data-theme="dark"]) .white {
+:global(:root[data-theme="dark"]) .on-dark {
   display: flex;
 }
 </style>
