@@ -24,6 +24,28 @@ const ja = {
   "about.dev.skills.value": "[得意な領域・技術]",
   "about.dev.handle.label": "名義",
   "about.dev.handle.value": "GitHubなどではLinaTsukusu",
+  // Contact form: the status line, the text under a rejected field and the noscript notice.
+  "contact.error.invalid": "正しい形式で入力してください。",
+  "contact.error.invalidChoice": "選択肢から選んでください。",
+  "contact.error.invalidEmail": "メールアドレスの形式で入力してください。",
+  "contact.error.newline": "改行を入れずに入力してください。",
+  "contact.error.required": "入力してください。",
+  "contact.error.requiredChoice": "選んでください。",
+  // "{max}" is replaced with the limit by contactFieldMessage in src/contact-form.ts.
+  "contact.error.tooLong": "{max} 文字以内で入力してください。",
+  "contact.noscript": "送信には JavaScript が必要です。",
+  "contact.status.failed":
+    "送信できませんでした。時間をおいてもう一度お試しください。",
+  "contact.status.invalid": "入力内容を確かめてください。",
+  "contact.status.network":
+    "通信できませんでした。接続を確かめてもう一度お試しください。",
+  "contact.status.sending": "送信中…",
+  "contact.status.sent": "送信しました。ありがとうございます！",
+  "contact.status.turnstile": "確認に失敗しました。もう一度送信してください。",
+  "contact.status.unavailable":
+    "確認を読み込めませんでした。ページを再読み込みしてください。",
+  "contact.status.waiting":
+    "確認が終わるまで少し待ってから、もう一度送信してください。",
   "home.comingSoon": "準備中です。",
   // Subtitle of the Latest section on the home page.
   "latest.subtitle": "さいきんの配信と記事",
@@ -61,6 +83,26 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "about.dev.skills.value": "[Areas and technologies]",
     "about.dev.handle.label": "Handle",
     "about.dev.handle.value": "LinaTsukusu on GitHub and elsewhere",
+    "contact.error.invalid": "Enter a valid value.",
+    "contact.error.invalidChoice": "Choose one of the options.",
+    "contact.error.invalidEmail": "Enter a valid email address.",
+    "contact.error.newline": "Remove the line breaks.",
+    "contact.error.required": "This field is required.",
+    "contact.error.requiredChoice": "Please choose one.",
+    "contact.error.tooLong": "Use {max} characters or fewer.",
+    "contact.noscript": "Sending requires JavaScript.",
+    "contact.status.failed":
+      "Couldn't send your message. Please try again later.",
+    "contact.status.invalid": "Please check the marked fields.",
+    "contact.status.network":
+      "Couldn't reach the server. Check your connection and try again.",
+    "contact.status.sending": "Sending…",
+    "contact.status.sent": "Sent. Thank you!",
+    "contact.status.turnstile": "Verification failed. Please send again.",
+    "contact.status.unavailable":
+      "Couldn't load the verification. Please reload the page.",
+    "contact.status.waiting":
+      "Please wait for the verification to finish, then send again.",
     "home.comingSoon": "Coming soon.",
     "latest.subtitle": "Recent streams and posts",
     "locale.name": "English",
