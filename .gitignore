@@ -21,6 +21,7 @@ pnpm-debug.log*
 .env.*
 .dev.vars
 .dev.vars.*
+!.dev.vars.example
 *.local.*
 
 # macOS-specific files

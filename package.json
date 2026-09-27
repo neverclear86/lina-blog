@@ -10,6 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "preview:wrangler": "astro build && wrangler dev",
+    "dev:publish": "wrangler dev -c workers/publish/wrangler.jsonc",
     "astro": "astro",
     "format": "biome format --write",
     "lint": "biome lint",

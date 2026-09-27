@@ -1,0 +1,29 @@
+name: Deploy publish Worker
+
+# Deploys the publish Worker in workers/publish/. Started manually for now; switch to
+# `push: branches: [main]` with `paths: [workers/publish/**]` once the site is ready to go public.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A running deploy always finishes; among waiting runs only the latest is kept.
+concurrency:
+  group: deploy-publish-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx wrangler deploy -c workers/publish/wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

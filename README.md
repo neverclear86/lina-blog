@@ -28,6 +28,14 @@ bun create astro@latest -- --template basics
 │       ├── [lang]/
 │       │   └── index.astro   # /ja/ and /en/
 │       └── index.astro
+├── workers/
+│   └── publish/          # Publish Worker, separate from the site and deployed on its own
+│       ├── src/
+│       │   ├── app.ts    # Hono app and Worker entry; every route needs the shared secret
+│       │   ├── auth.ts   # Bearer auth with a constant-time comparison
+│       │   └── env.ts    # Bindings (PUBLISH_TOKEN)
+│       ├── .dev.vars.example
+│       └── wrangler.jsonc
 ├── astro.config.mjs      # Cloudflare adapter; pages are prerendered by default
 ├── biome.json
 ├── wrangler.jsonc
@@ -38,7 +46,8 @@ Pages are prerendered unless they export `prerender = false`. The Worker runs fi
 
 Pages that exist in every language go in `src/pages/[lang]/` and are generated once for each locale in `src/i18n/locales.ts` (`/ja/`, `/en/`); their UI strings come from `src/i18n/ui.ts`. Pages outside `[lang]/`, such as the Japanese-only blog under `/blog/`, have no language prefix. Astro's `i18n()` handler in `src/fetch.ts` is never reached, so `astro build` warns that the project does not call it; running it would answer 404 for those unprefixed paths.
 
-Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes and the blog frontmatter schema; `src/api.ts` is tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
+Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes and the blog frontmatter schema; `src/api.ts` and
+`workers/publish/src/app.ts` are tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 
 To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
 
@@ -53,6 +62,7 @@ All commands are run from the root of the project, from a terminal:
 | `bun run build`       | Builds the site to `./dist/`                        |
 | `bun preview`         | Previews the build locally in `workerd`             |
 | `bun run preview:wrangler` | Builds, then serves the Worker with `wrangler dev` |
+| `bun run dev:publish` | Serves the publish Worker with `wrangler dev` (secret from `workers/publish/.dev.vars`) |
 | `bun run format`      | Formats files with Biome                            |
 | `bun run lint`        | Lints files with Biome                              |
 | `bun run check`       | Runs Biome formatting, lint and import checks       |
@@ -61,14 +71,21 @@ All commands are run from the root of the project, from a terminal:
 
 ## 🚢 CI and deployment
 
-GitHub Actions runs two workflows:
+GitHub Actions runs three workflows:
 
 - `.github/workflows/ci.yml` runs on every pull request: `biome ci`, `astro check`, `bun run test` and `bun run build`.
 - `.github/workflows/deploy.yml` builds the site and runs `wrangler deploy`. For now it only runs when started manually (Actions > Deploy > Run workflow); it will run on every push to `main` once the site is ready to go public. A running deploy always finishes; if several runs are queued meanwhile, only the latest waiting run is kept.
+- `.github/workflows/deploy-publish.yml` runs `wrangler deploy` for the publish Worker in
+  `workers/publish/`. Like the site deploy, it only runs when started manually for now (Actions >
+  Deploy publish Worker > Run workflow).
 
 Until then, check the Worker locally with `bun run preview:wrangler`, which builds the site and serves `dist/` with `wrangler dev` (static pages, `/api/*` and the other Hono routes).
 
-The deploy workflow needs two repository secrets:
+Check the publish Worker locally by copying `workers/publish/.dev.vars.example` to
+`workers/publish/.dev.vars` and running `bun run dev:publish`. Every route needs
+`Authorization: Bearer <PUBLISH_TOKEN>`; without it the Worker answers 401.
+
+Both deploy workflows need the same two repository secrets:
 
 1. In the Cloudflare dashboard, create an API token from the "Edit Cloudflare Workers" template, limited to this account (at minimum `Account` > `Workers Scripts` > `Edit`).
 2. Copy the account ID from the Workers & Pages overview.
@@ -78,6 +95,9 @@ The deploy workflow needs two repository secrets:
    gh secret set CLOUDFLARE_API_TOKEN
    gh secret set CLOUDFLARE_ACCOUNT_ID
    ```
+
+The publish Worker also needs its shared secret on Cloudflare, set once with
+`bunx wrangler secret put PUBLISH_TOKEN -c workers/publish/wrangler.jsonc`.
 
 ## 🛡️ Turnstile
 
