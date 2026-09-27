@@ -9,6 +9,7 @@
         "@astrojs/markdown-satteri": "^0.4.2",
         "@astrojs/rss": "^4.0.19",
         "astro": "^7.3.5",
+        "fast-xml-parser": "^5.11.1",
         "hono": "^4.13.9",
         "js-yaml": "^4.3.2",
         "satteri": "^0.10.5",
