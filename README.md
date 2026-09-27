@@ -74,7 +74,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css, shapes.css and motion.css; sets --font-body on html; puts the theme toggle next to the language links and the site footer at the end of <body>
+│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css, shapes.css and motion.css; sets --font-body on html; puts the theme toggle next to the language links and the site footer at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code block file names as <figure>, unit-tested
 │   │   ├── sample.md         # Sample article shown at /dev/markdown/

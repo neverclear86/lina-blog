@@ -98,7 +98,8 @@ const [icon32, icon192, appleTouchIcon] = await Promise.all([
       </nav>
       <ThemeToggle lang={lang} />
     </div>
-    <slot />
+    {/* The page content; it grows so that the footer sits at the bottom of a short page. */}
+    <div class="site-content"><slot /></div>
     {/* The site footer, after the page content. */}
     <SiteFooter lang={lang} />
   </body>
@@ -109,7 +110,22 @@ html,
 body {
   margin: 0;
   width: 100%;
+}
+
+html {
   height: 100%;
+}
+
+/* On a page shorter than the viewport, .site-content grows and the footer sits at the bottom. */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Keeps the page in block layout, where its margin-inline: auto works as on a plain body. */
+.site-content {
+  flex-grow: 1;
 }
 
 /* Every element except form controls (which need `font: inherit`) inherits Zen Maru Gothic;
