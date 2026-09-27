@@ -98,8 +98,8 @@ function linaAnsiArt() {
 
 // https://astro.build/config
 export default defineConfig({
-  // Origin of absolute URLs, such as the links in /llms.txt and /rss.xml, the sitemap and the
-  // Sitemap line of /robots.txt.
+  // Origin of absolute URLs, such as the links in /llms.txt and /rss.xml, the sitemap, the
+  // Sitemap line of /robots.txt and the canonical and hreflang links in the `<head>` of every page.
   site: "https://ikili.pro",
   markdown: {
     // Sätteri is Astro's default processor. It is set explicitly to add the plugins in
