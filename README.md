@@ -46,6 +46,7 @@ bun create astro@latest -- --template basics
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
+│   │   ├── LatestPosts.astro     # Blog column of the Latest section: newest posts with tag chips
 │   │   ├── Logo.astro            # Switches the logo with the theme
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level is a prop
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { buildTextSite } from "../text-site";
 import { DEFAULT_LOCALE, LOCALES } from "./locales";
 import { translate, ui } from "./ui";
 
@@ -25,6 +26,17 @@ describe("translate", () => {
     expect(translate("en", "contact.noscript")).toBe(
       "Sending requires JavaScript.",
     );
+  });
+
+  it("記事が 0 件のときの文言は、テキスト版の記事が 0 件のときの行と同じになる", () => {
+    for (const locale of LOCALES) {
+      const lines = buildTextSite(
+        locale,
+        [],
+        new URL("https://example.com"),
+      ).split("\n");
+      expect(lines).toContain(translate(locale, "latest.blog.noPosts"));
+    }
   });
 });
 

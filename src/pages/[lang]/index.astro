@@ -1,7 +1,9 @@
 ---
+import { getCollection } from "astro:content";
 import type { GetStaticPaths } from "astro";
 import About from "../../components/About.astro";
 import HeroStanding from "../../components/HeroStanding.astro";
+import LatestPosts from "../../components/LatestPosts.astro";
 import LatestSection from "../../components/LatestSection.astro";
 import Logo from "../../components/Logo.astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
@@ -19,6 +21,7 @@ interface Props {
 }
 
 const { lang } = Astro.props;
+const posts = await getCollection("blog");
 ---
 
 <Layout lang={lang}>
@@ -27,7 +30,9 @@ const { lang } = Astro.props;
     <p>{translate(lang, "home.comingSoon")}</p>
     <div class="preview-standing"><HeroStanding /></div>
     <About lang={lang} />
-    <LatestSection lang={lang} />
+    <LatestSection lang={lang}>
+      <LatestPosts slot="blog" lang={lang} posts={posts} />
+    </LatestSection>
   </main>
 </Layout>
 
