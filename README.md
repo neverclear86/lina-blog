@@ -24,6 +24,8 @@ bun create astro@latest -- --template basics
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
+│   ├── profile-links.ts  # Profile links (label and note per locale), shared by llms.ts and text-site.ts
+│   ├── text-site.ts      # Builds the text version of the site for curl (80 columns), unit-tested
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── user-agent.ts     # Tells curl and other command-line clients from browsers, unit-tested
 │   ├── assets/           # Images processed by astro:assets
@@ -51,7 +53,9 @@ bun create astro@latest -- --template basics
 │   │   │   ├── color.txt.ts  # /ansi/color.txt: the standing illustration as 24-bit color text art
 │   │   │   └── plain.txt.ts  # /ansi/plain.txt: the same art without escape sequences
 │   │   ├── llms.txt.ts   # /llms.txt, prerendered to dist/client/
-│   │   └── rss.xml.ts    # /rss.xml: prerendered RSS feed with each post's full HTML
+│   │   ├── rss.xml.ts    # /rss.xml: prerendered RSS feed with each post's full HTML
+│   │   └── text/
+│   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
 │   └── styles/
 │       ├── global.css    # body colors and the grid backgrounds (.grid, .cgrid)
 │       ├── shapes.css    # Notched corners, hard shadows, the lift and the focus outline
@@ -79,6 +83,8 @@ Pages are prerendered unless they export `prerender = false`. The Worker runs fi
 Pages that exist in every language go in `src/pages/[lang]/` and are generated once for each locale in `src/i18n/locales.ts` (`/ja/`, `/en/`); their UI strings come from `src/i18n/ui.ts`. Pages outside `[lang]/`, such as the Japanese-only blog under `/blog/`, have no language prefix. Astro's `i18n()` handler in `src/fetch.ts` is never reached, so `astro build` warns that the project does not call it; running it would answer 404 for those unprefixed paths. The layout links every page to the same path in the other locales (`src/i18n/paths.ts`); a page without a language prefix links to the other locale's top page.
 
 Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema, and `astro build` leaves them out, so they never reach `dist/`.
+
+`astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the works, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt` uses as well.
 
 Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema and the RSS items; `src/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).

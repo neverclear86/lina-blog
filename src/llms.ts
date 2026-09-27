@@ -1,39 +1,17 @@
 /**
  * Builds `/llms.txt`, a Markdown summary of the site for LLMs (https://llmstxt.org/).
  * `src/pages/llms.txt.ts` calls it when `/llms.txt` is rendered, so every build writes the file
- * from the locales in `src/i18n/locales.ts` and the links below.
+ * from the locales in `src/i18n/locales.ts` and the Japanese labels of `PROFILE_LINKS` in
+ * `src/profile-links.ts`.
  */
 import { LOCALES, type Locale } from "./i18n/locales";
+import { PROFILE_LINKS } from "./profile-links";
 
 /** Link text of each locale's top page. The type requires one for every locale. */
 const TOP_PAGE_LABELS: Record<Locale, string> = {
   ja: "トップ（日本語）",
   en: "トップ（英語）",
 };
-
-/**
- * Profiles on other services, in the order of the design's icon row (without RSS). X is
- * written "Twitter(自称X)" everywhere except in its icon. The Nostr npub is provisional.
- */
-const PROFILE_LINKS: readonly { label: string; url: string; note: string }[] = [
-  {
-    label: "YouTube",
-    url: "https://www.youtube.com/@LinaTsukusu",
-    note: "動画と配信",
-  },
-  { label: "Twitter(自称X)", url: "https://x.com/TsukusuLina", note: "近況" },
-  {
-    label: "GitHub",
-    url: "https://github.com/neverclear86",
-    note: "ソースコード",
-  },
-  {
-    label: "Nostr",
-    url: "https://nostter.app/npub1es86m387vusxe66jjp200eqkn3lcxsxudeg2g50zz0yjx5ggvt8sgctaxz",
-    note: "近況",
-  },
-  { label: "Zenn", url: "https://zenn.dev/linatsukusu", note: "技術記事" },
-];
 
 /**
  * Returns the `/llms.txt` text: the site name, a quoted summary, the top page of each locale
@@ -65,7 +43,7 @@ export function buildLlmsTxt(site: URL | undefined): string {
     "## リンク",
     "",
     ...PROFILE_LINKS.map(
-      ({ label, url, note }) => `- [${label}](${url}): ${note}`,
+      ({ label, url, note }) => `- [${label.ja}](${url}): ${note.ja}`,
     ),
     "",
   ].join("\n");
