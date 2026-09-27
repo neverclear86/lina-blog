@@ -13,12 +13,15 @@ import YouTubeIcon from "../components/icons/YouTubeIcon.astro";
 import ZennIcon from "../components/icons/ZennIcon.astro";
 import Kao from "../components/Kao.astro";
 import LatestPosts from "../components/LatestPosts.astro";
+import LatestVideoFeature from "../components/LatestVideoFeature.astro";
+import LatestVideoList from "../components/LatestVideoList.astro";
 import PixelArt from "../components/PixelArt.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import Tape from "../components/Tape.astro";
 import TerminalCard from "../components/TerminalCard.astro";
 import { translate } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
+import type { YouTubeVideo } from "../youtube-feed";
 
 // Commands for the typing samples: 16 characters (the design) and 10.
 const COMMANDS = ["$ npm run deploy", "$ git push"];
@@ -56,6 +59,37 @@ const samplePosts: ComponentProps<typeof LatestPosts>["posts"] = [
       tags: ["技術"],
     },
   },
+];
+
+const sampleVideo = (
+  id: string,
+  title: string,
+  publishedAt: string,
+): YouTubeVideo => ({
+  id,
+  title,
+  publishedAt: new Date(publishedAt),
+  url: `https://www.youtube.com/watch?v=${id}`,
+  thumbnail: {
+    src: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+    srcset: `https://i.ytimg.com/vi/${id}/mqdefault.jpg 320w, https://i.ytimg.com/vi/${id}/hqdefault.jpg 480w`,
+  },
+});
+
+// Videos for the Latest samples. The IDs do not exist on i.ytimg.com, so the thumbnails do
+// not load and the boxes stay in --ph.
+const sampleVideos: YouTubeVideo[] = [
+  sampleVideo(
+    "AAAAAAAAAAA",
+    "長いタイトルの見本。".repeat(10),
+    "2026-09-27T15:30:00Z",
+  ),
+  sampleVideo(
+    "BBBBBBBBBBB",
+    "長いタイトルの見本。".repeat(10),
+    "2026-09-20T10:00:00Z",
+  ),
+  sampleVideo("CCCCCCCCCCC", "短いタイトル", "2026-09-13T10:00:00Z"),
 ];
 ---
 
@@ -409,6 +443,27 @@ const samplePosts: ComponentProps<typeof LatestPosts>["posts"] = [
       </div>
     </section>
 
+    <section id="latest-videos">
+      <h2>最新の動画</h2>
+      <div class="stack">
+        <div class="latest-video-sample">
+          <LatestVideoFeature lang="ja" video={sampleVideos[0]} />
+        </div>
+        <div class="latest-video-sample">
+          <LatestVideoFeature lang="ja" video={undefined} />
+        </div>
+        <div class="latest-list-sample">
+          <LatestVideoList lang="ja" videos={sampleVideos.slice(1)} />
+        </div>
+        <div class="latest-list-narrow" lang="en">
+          <LatestVideoList lang="en" videos={sampleVideos.slice(1)} />
+        </div>
+        <div class="latest-list-sample">
+          <LatestVideoList lang="ja" videos={[]} />
+        </div>
+      </div>
+    </section>
+
     <section id="english" lang="en">
       <h2>英語</h2>
       <div class="row">
@@ -488,14 +543,24 @@ const samplePosts: ComponentProps<typeof LatestPosts>["posts"] = [
 </Layout>
 
 <style>
-/* Widths of the right column of #latest at 1440px (536px) and at 1024px (320px). */
+/* Widths of the columns of #latest at 1440px (720px and 536px) and at 1024px (320px). */
 .latest-samples {
   display: grid;
   gap: 48px;
   max-width: 536px;
 }
 
-.latest-narrow {
+.latest-video-sample {
+  max-width: 720px;
+  padding-top: 72px;
+}
+
+.latest-list-sample {
+  max-width: 536px;
+}
+
+.latest-narrow,
+.latest-list-narrow {
   max-width: 320px;
 }
 
