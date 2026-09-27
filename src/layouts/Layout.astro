@@ -2,6 +2,7 @@
 import { Font, getImage } from "astro:assets";
 import logo from "../assets/logo-light.png";
 import { DEFAULT_LOCALE, type Locale } from "../i18n/locales";
+import "../styles/tokens.css";
 
 interface Props {
   /** Language of the page, written to `<html lang>`. Defaults to `DEFAULT_LOCALE`. */
@@ -35,7 +36,7 @@ const [icon32, icon192, appleTouchIcon] = await Promise.all([
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={lang} data-theme="light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
