@@ -32,7 +32,7 @@ const rows = workLinkRows(links, lang, Astro.site);
 const cardTitle = `~/works/${title}`;
 ---
 
-<Layout lang={lang} title={title}>
+<Layout lang={lang} title={title} description={description[lang]}>
   <main class="work">
     <a class="back" href={`/${lang}/#works`}
       ><span aria-hidden="true">←</span> {translate(lang, "works.back")}</a

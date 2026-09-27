@@ -93,6 +93,10 @@ const ja = {
   "notFound.topLink": "日本語のトップページへ",
   // Says that the site can also be read with curl; shown in the site footer.
   "site.curlHint": "$ curl ikili.pro でも読めるよ",
+  // Description of the site: the meta description and og:description of the pages that do not
+  // pass their own, such as the top page.
+  "site.description":
+    "創好リナ（Tsukusu Lina）の個人サイト兼ブログ。創好リナはバーチャルイキリプログラマで、ITで遊ぶ動画と配信を、Resoniteを中心に届けている。",
   // Label of the Twitter link; "X" appears only in its icon.
   "social.twitter": "Twitter(自称X)",
   "theme.toDark": "ダークテーマに切り替え",
@@ -192,6 +196,8 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "notFound.subtitle": "Page not found",
     "notFound.topLink": "Go to the English top page",
     "site.curlHint": "$ curl ikili.pro works too",
+    "site.description":
+      'Personal site and blog of Tsukusu Lina (創好リナ), a virtual "ikiri" programmer who makes videos and streams about playing with IT, mostly in Resonite.',
     "social.twitter": "Twitter (self-proclaimed X)",
     "theme.toDark": "Switch to dark theme",
     "theme.toLight": "Switch to light theme",
