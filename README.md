@@ -18,6 +18,7 @@ bun create astro@latest -- --template basics
 │   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
 │   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
+│   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
 │   ├── content.config.ts # blog collection: src/content/blog/ (and blog-dev/ in astro dev), checked by blog-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
@@ -63,7 +64,7 @@ bun create astro@latest -- --template basics
 └── package.json
 ```
 
-Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets. `/` has no page: the route in `src/api.ts` redirects it to `/en/` when `Accept-Language` prefers English over Japanese and to `/ja/` otherwise, with `Vary: Accept-Language`. Do not add `src/pages/index.astro`, because the adapter serves a prerendered page before the Hono app sees the request. Routes that no page matches, such as `/api/*`, fall through to the Hono app in `src/fetch.ts`, which serves the routes in `src/api.ts`.
+Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets. `/` has no page: the route in `src/api.ts` redirects it to `/en/` when `Accept-Language` prefers English over Japanese and to `/ja/` otherwise, with `Vary: Accept-Language`. Do not add `src/pages/index.astro`, because the adapter serves a prerendered page before the Hono app sees the request. Routes that no page matches, such as `/api/*`, fall through to the Hono app in `src/fetch.ts`, which serves the routes in `src/api.ts`. Astro calls that app with the request only, so `src/fetch.ts` passes the Worker's bindings and secrets (`env` from `cloudflare:workers`) to it.
 
 Pages that exist in every language go in `src/pages/[lang]/` and are generated once for each locale in `src/i18n/locales.ts` (`/ja/`, `/en/`); their UI strings come from `src/i18n/ui.ts`. Pages outside `[lang]/`, such as the Japanese-only blog under `/blog/`, have no language prefix. Astro's `i18n()` handler in `src/fetch.ts` is never reached, so `astro build` warns that the project does not call it; running it would answer 404 for those unprefixed paths. The layout links every page to the same path in the other locales (`src/i18n/paths.ts`); a page without a language prefix links to the other locale's top page.
 
@@ -220,11 +221,13 @@ curl -sS -X POST https://challenges.cloudflare.com/turnstile/v0/siteverify \
 
 The first key answers `"success":true`, and the second answers `"success":false` with `"error-codes":["invalid-input-response"]`.
 
+To check a test key through the contact form route, see the `curl` example in "Contact notifications".
+
 ## 📧 Contact notifications
 
-The `CONTACT_MAIL` binding (`send_email` in `wrangler.jsonc`) is for sending the contact form
-notification to the site owner. The recipient address is kept out of the repository and is
-given as the `CONTACT_MAIL_TO` secret.
+`POST /api/contact` (`src/api.ts`) sends the contact form notification to the site owner
+through the `CONTACT_MAIL` binding (`send_email` in `wrangler.jsonc`). The recipient address is
+kept out of the repository and is given as the `CONTACT_MAIL_TO` secret.
 
 1. In the Cloudflare dashboard, enable Email Routing for `ikili.pro`. A Worker can only send
    from an address on a domain with Email Routing enabled; the sender is `noreply@ikili.pro`,
@@ -237,11 +240,33 @@ given as the `CONTACT_MAIL_TO` secret.
    bunx wrangler secret put CONTACT_MAIL_TO
    ```
 
-For local checks, put the address in `.dev.vars` at the repository root (ignored by Git).
+For local checks, put the address in `.dev.vars` at the repository root (ignored by Git), next
+to a Turnstile test secret key (see "Turnstile" above).
 `wrangler dev` (`bun run preview:wrangler`) reads it and does not deliver the mail:
 
 ```sh
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
 CONTACT_MAIL_TO=you@example.com
+```
+
+`POST /api/contact` takes the form fields `kind`, `name`, `email`, `message` and
+`cf-turnstile-response` as `multipart/form-data` or `application/x-www-form-urlencoded`, and
+answers with JSON:
+
+| Status | Body | When |
+| :-- | :-- | :-- |
+| 200 | `{"ok":true}` | The notification was sent |
+| 400 | `{"ok":false,"error":"invalid","fields":{…}}` | `fields` maps each rejected field to `required`, `invalid`, `too_long` or `newline` |
+| 403 | `{"ok":false,"error":"turnstile"}` | The Turnstile token is missing or rejected |
+| 500 | `{"ok":false,"error":"failed"}` | A secret is not set, or sending failed |
+| 503 | `{"ok":false,"error":"failed"}` | siteverify could not be reached |
+
+With the `.dev.vars` above, this request answers 200 and `wrangler dev` prints the mail instead
+of sending it. With `TURNSTILE_SECRET_KEY=2x0000000000000000000000000000000AA` it answers 403:
+
+```sh
+curl -sS -X POST http://localhost:8787/api/contact -F kind=work -F name=Lina \
+  -F email=you@example.com -F message=Hello -F cf-turnstile-response=XXXX.DUMMY.TOKEN.XXXX
 ```
 
 ## 📚 Docs
