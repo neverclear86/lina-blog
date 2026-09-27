@@ -1,0 +1,29 @@
+---
+/**
+ * Hero に置く立ち絵。ファーストビューに入る画像なので、遅延読み込みにせず優先して読み込む。
+ * 名前の見出しと並べて置く画像なので、装飾として扱い alt を空にする。
+ * 親の入れ物の幅いっぱいに描く。sizes はデザインの Hero の表示幅（スマホ 259px、
+ * デスクトップ 466px）に合わせてあるので、表示幅を変えるときは widths と sizes も合わせる。
+ */
+import { Picture } from "astro:assets";
+import standing from "../assets/lina-standing.webp";
+---
+
+<Picture
+  src={standing}
+  alt=""
+  formats={["avif", "webp"]}
+  fallbackFormat="webp"
+  widths={[259, 466, 518, 900]}
+  sizes="(max-width: 767px) 259px, 466px"
+  priority
+  class="hero-standing"
+/>
+
+<style>
+.hero-standing {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+</style>
