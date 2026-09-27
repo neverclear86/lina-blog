@@ -1,0 +1,2 @@
+# Copy to .dev.vars for `wrangler dev`; in production use `wrangler secret put PUBLISH_TOKEN`.
+PUBLISH_TOKEN=local-dev-token
