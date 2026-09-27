@@ -1,0 +1,36 @@
+---
+import { getImage } from "astro:assets";
+import pixelLina from "../assets/pixel-lina.png";
+
+interface Props {
+  /** Text alternative. Defaults to empty, which marks the image as decorative. */
+  alt?: string;
+  /** Displayed width in CSS pixels. The height follows the aspect ratio. Defaults to 48. */
+  width?: number;
+  class?: string;
+}
+
+const { alt = "", width = 48, class: className } = Astro.props;
+
+// PNG at the source size keeps every pixel as is. A lossy format or a resized
+// candidate would blend neighbouring pixels before the browser scales the image.
+const image = await getImage({ src: pixelLina, format: "png" });
+---
+
+<img
+  src={image.src}
+  width={image.attributes.width}
+  height={image.attributes.height}
+  alt={alt}
+  class:list={["pixel-art", className]}
+  style={`--pixel-art-width: ${width}px`}
+  decoding="async"
+>
+
+<style>
+.pixel-art {
+  width: var(--pixel-art-width);
+  height: auto;
+  image-rendering: pixelated;
+}
+</style>
