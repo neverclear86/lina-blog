@@ -45,14 +45,39 @@ describe("api", () => {
     });
     expect(res.status).toBe(302);
     expect(res.headers.get("Location")).toBe("/en/");
-    expect(res.headers.get("Vary")).toBe("Accept-Language");
+    expect(res.headers.get("Vary")).toBe("User-Agent, Accept-Language");
   });
 
   it("GET / は Accept-Language が無ければ /ja/ にリダイレクトする", async () => {
     const res = await api.request("/");
     expect(res.status).toBe(302);
     expect(res.headers.get("Location")).toBe("/ja/");
-    expect(res.headers.get("Vary")).toBe("Accept-Language");
+    expect(res.headers.get("Vary")).toBe("User-Agent, Accept-Language");
+  });
+
+  it("GET / は curl の User-Agent に text/plain の 200 で仮のテキストを返す", async () => {
+    const res = await api.request("/", {
+      headers: { "User-Agent": "curl/8.22.0", "Accept-Language": "en" },
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")?.toLowerCase()).toBe(
+      "text/plain; charset=utf-8",
+    );
+    expect(res.headers.get("Vary")).toBe("User-Agent, Accept-Language");
+    expect(await res.text()).toBe("ikili.pro\n準備中です。\n");
+  });
+
+  it("GET / はブラウザの User-Agent なら Accept-Language の言語にリダイレクトする", async () => {
+    const res = await api.request("/", {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+        "Accept-Language": "en",
+      },
+    });
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe("/en/");
+    expect(res.headers.get("Vary")).toBe("User-Agent, Accept-Language");
   });
 
   it.each([
