@@ -4,7 +4,8 @@
   "compatibility_date": "2026-09-25",
   "assets": {
     // Only `/` runs the Worker first: it has no static page, and the Hono route in
-    // `src/api.ts` redirects it to `/ja/` or `/en/` by `Accept-Language`.
+    // `src/api.ts` answers curl and other command-line clients with text and redirects
+    // browsers to `/ja/` or `/en/` by `Accept-Language`.
     // Other static pages are served from assets without starting the Worker.
     "run_worker_first": ["/"]
   },

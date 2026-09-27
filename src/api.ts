@@ -8,6 +8,7 @@ import {
 import { buildContactMail, type ContactMail } from "./contact-mail";
 import { negotiateLocale } from "./i18n/negotiate";
 import { verifyTurnstile } from "./turnstile";
+import { isCommandLineClient } from "./user-agent";
 
 /**
  * Hono environment of the site Worker. `src/fetch.ts` passes the Worker's `env`. Secrets come
@@ -109,11 +110,9 @@ api.post("/api/contact", async (c) => {
 
 /**
  * Redirects to `/<locale>/`, the top page of the locale that the request's `Accept-Language`
- * prefers (see `negotiateLocale`). The response depends on that header, so it carries
- * `Vary: Accept-Language`.
+ * prefers (see `negotiateLocale`). `serveRoot` sets the `Vary` header of the response.
  */
 function redirectToLocale(c: Context): Response {
-  c.header("Vary", "Accept-Language");
   return c.redirect(`/${negotiateLocale(c.req.header("Accept-Language"))}/`);
 }
 
@@ -123,7 +122,23 @@ function redirectToLocale(c: Context): Response {
 // no-referrer` and others) to every response of `/`. It runs for `/` only, not for `/api/*`.
 api.use("/", secureHeaders());
 
+/** Placeholder text that `/` returns to command-line clients. */
+const ROOT_TEXT = "ikili.pro\n準備中です。\n";
+
+/**
+ * Answers `/`. Command-line clients such as curl (see `isCommandLineClient`) get `ROOT_TEXT` as
+ * `text/plain`, and other clients are redirected by `redirectToLocale`. The response depends on
+ * both request headers, so it carries `Vary: User-Agent, Accept-Language`.
+ */
+function serveRoot(c: Context): Response {
+  c.header("Vary", "User-Agent, Accept-Language");
+  if (isCommandLineClient(c.req.header("User-Agent"))) {
+    return c.text(ROOT_TEXT);
+  }
+  return redirectToLocale(c);
+}
+
 // `/` must not have a page in `src/pages/`: the adapter would serve it before this route.
-api.get("/", redirectToLocale);
+api.get("/", serveRoot);
 
 export default api;
