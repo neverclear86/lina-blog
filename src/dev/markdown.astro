@@ -1,0 +1,23 @@
+---
+/**
+ * Sample article with every Markdown syntax the site supports, rendered the way articles are.
+ * `devPages()` in `src/dev/dev-pages.ts` serves it at `/dev/markdown/`.
+ */
+import ArticleBody from "../components/ArticleBody.astro";
+import Layout from "../layouts/Layout.astro";
+import { Content } from "../markdown/sample.md";
+---
+
+<Layout lang="ja">
+  <main>
+    <ArticleBody><Content /></ArticleBody>
+  </main>
+</Layout>
+
+<style>
+main {
+  max-width: 42rem;
+  margin-inline: auto;
+  padding: 2rem 16px;
+}
+</style>

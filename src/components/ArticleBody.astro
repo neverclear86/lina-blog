@@ -1,0 +1,74 @@
+---
+/**
+ * Wraps rendered Markdown (an article's `<Content />`) and styles the elements Sätteri outputs:
+ * GFM tables, task lists and footnotes. The rules reach those elements through `:global()`
+ * under `.article-body`, so they apply only inside this wrapper.
+ */
+---
+
+<div class="article-body"><slot /></div>
+
+<style>
+.article-body :global(table) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.article-body :global(th),
+.article-body :global(td) {
+  padding: 0.5em 0.75em;
+  border-bottom: 1px solid var(--hair);
+  text-align: start;
+  min-width: 4em;
+}
+
+.article-body :global(th) {
+  border-bottom-color: var(--line);
+  background: var(--surf);
+  white-space: nowrap;
+}
+
+.article-body :global(:is(th, td).align-left) {
+  text-align: left;
+}
+
+.article-body :global(:is(th, td).align-center) {
+  text-align: center;
+}
+
+.article-body :global(:is(th, td).align-right) {
+  text-align: right;
+}
+
+.article-body :global(.contains-task-list) {
+  padding-inline-start: 1.5em;
+}
+
+.article-body :global(.task-list-item) {
+  list-style: none;
+}
+
+.article-body :global(.task-list-item > input) {
+  margin: 0 0.5em 0 -1.5em;
+  accent-color: var(--fg);
+}
+
+.article-body :global(.footnotes) {
+  margin-top: 3em;
+  padding-top: 1em;
+  border-top: 1px solid var(--hair);
+  color: var(--muted);
+  font-size: 0.875em;
+}
+
+.article-body :global(.sr-only) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+</style>

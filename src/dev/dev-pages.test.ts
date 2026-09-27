@@ -41,9 +41,12 @@ describe("devPagesEnabled", () => {
 });
 
 describe("devPages", () => {
-  it("有効なとき /dev/components に src/dev/components.astro を足す", () => {
+  it("有効なとき /dev/components と /dev/markdown に src/dev/ の .astro を足す", () => {
     const routes = injectedRoutes("dev", {});
-    expect(routes.map((route) => route.pattern)).toEqual(["/dev/components"]);
+    expect(routes.map((route) => route.pattern)).toEqual([
+      "/dev/components",
+      "/dev/markdown",
+    ]);
     for (const route of routes) {
       expect(existsSync(route.entrypoint)).toBe(true);
     }
