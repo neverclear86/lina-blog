@@ -1,8 +1,8 @@
 ---
 /**
  * Wraps rendered Markdown (an article's `<Content />`) and styles the elements Sätteri outputs:
- * GFM tables, task lists and footnotes. The rules reach those elements through `:global()`
- * under `.article-body`, so they apply only inside this wrapper.
+ * GFM tables, task lists, footnotes and the file names of code blocks. The rules reach those
+ * elements through `:global()` under `.article-body`, so they apply only inside this wrapper.
  */
 ---
 
@@ -70,5 +70,40 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+.article-body :global(figure.code-file) {
+  margin: 1em 0;
+}
+
+.article-body :global(.code-file > pre) {
+  margin: 0;
+}
+
+.article-body :global(.code-file > figcaption) {
+  position: relative;
+  min-height: 34px;
+  box-sizing: border-box;
+  padding: 9px 14px 9px 79px;
+  background: var(--inv);
+  color: var(--invmuted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+
+.article-body :global(.code-file > figcaption)::before {
+  content: "";
+  position: absolute;
+  top: 11.5px;
+  left: 14px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--pink);
+  box-shadow:
+    19px 0 0 var(--orange),
+    38px 0 0 var(--green);
 }
 </style>

@@ -19,6 +19,29 @@
 | --- | --- | --- | --- | :-: | --: | --- |
 | `processor` | Markdown の処理系 | Sätteri | `MarkdownProcessor` | いいえ | 7.0 | 長い説明の文をここに置いて、列の幅が広がることを確かめる |
 
+## コードブロックのファイル名
+
+言語の後ろに `:` とファイル名を書くと、コードブロックの上にファイル名が出る。
+
+```ts:src/hello.ts
+export function hello(name: string): string {
+  return `Hello, ${name}!`;
+}
+```
+
+ファイル名だけを書くこともできる。
+
+```:.gitignore
+dist/
+node_modules/
+```
+
+ファイル名を書かないコードブロックは、そのまま出る。
+
+```sh
+bun run build
+```
+
 ## タスクリスト
 
 - [x] 脚注
