@@ -1,15 +1,23 @@
 ---
 import { Font, getImage } from "astro:assets";
 import logo from "../assets/logo-light.png";
-import { DEFAULT_LOCALE, type Locale } from "../i18n/locales";
+import { DEFAULT_LOCALE, LOCALES, type Locale } from "../i18n/locales";
+import { localizedPath } from "../i18n/paths";
+import { translate } from "../i18n/ui";
 import "../styles/tokens.css";
 
 interface Props {
-  /** Language of the page, written to `<html lang>`. Defaults to `DEFAULT_LOCALE`. */
+  /**
+   * Language of the page, written to `<html lang>`. The language links point to every other
+   * locale. Defaults to `DEFAULT_LOCALE`.
+   */
   lang?: Locale;
 }
 
 const { lang = DEFAULT_LOCALE } = Astro.props;
+
+// Locales to link to: the same page in each of them, from `localizedPath`.
+const targets = LOCALES.filter((locale) => locale !== lang);
 
 /**
  * Background of the favicons, the light `--bg` of the design. The logo is black on a transparent
@@ -50,6 +58,17 @@ const [icon32, icon192, appleTouchIcon] = await Promise.all([
     <Font cssVariable="--font-mono" />
   </head>
   <body>
+    <nav>
+      {targets.map((target) => (
+  <a
+    href={localizedPath(Astro.url.pathname, target)}
+    hreflang={target}
+    lang={target}
+  >
+    {translate(target, "locale.name")}
+  </a>
+))}
+    </nav>
     <slot />
   </body>
 </html>
