@@ -26,7 +26,7 @@ bun create astro@latest -- --template basics
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
 │   ├── profile-links.ts  # Profile links (label and note per locale), shared by llms.ts and text-site.ts
 │   ├── text-site.ts      # Builds the text version of the site for curl (80 columns), unit-tested
-│   ├── theme.ts          # Theme key and values, and the inline script that sets <html data-theme>, unit-tested
+│   ├── theme.ts          # Theme key and values, the inline script that sets <html data-theme> and the toggle, unit-tested
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── user-agent.ts     # Tells curl and other command-line clients from browsers, unit-tested
 │   ├── assets/           # Images processed by astro:assets
@@ -38,11 +38,12 @@ bun create astro@latest -- --template basics
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
 │   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
-│   │   ├── IconButton.astro      # Square icon-only button with a required aria-label
+│   │   ├── IconButton.astro      # Square icon-only button, named by an aria-label or a hidden label slot
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
 │   │   ├── Logo.astro            # Switches the logo with the theme
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level is a prop
+│   │   ├── ThemeToggle.astro     # Theme switch: moon or sun, and a name that says the next theme
 │   │   └── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
 │   ├── content/
 │   │   └── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
@@ -56,7 +57,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the theme script, the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css and shapes.css; sets --font-body on html
+│   │   └── Layout.astro       # <head> with the theme script, the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css and shapes.css; sets --font-body on html; puts the theme toggle next to the language links
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code block file names as <figure>, unit-tested
 │   │   ├── sample.md         # Sample article shown at /dev/markdown/
@@ -73,7 +74,7 @@ bun create astro@latest -- --template basics
 │   │   └── text/
 │   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
 │   └── styles/
-│       ├── global.css    # body colors and the grid backgrounds (.grid, .cgrid)
+│       ├── global.css    # body colors and their fade, and the grid backgrounds (.grid, .cgrid)
 │       ├── shapes.css    # Notched corners, hard shadows, the lift and the focus outline
 │       └── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
 ├── workers/
@@ -122,7 +123,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | File         | Holds                                                                      |
 | :----------- | :------------------------------------------------------------------------- |
 | `tokens.css` | Color tokens (CSS variables) for the light and dark themes                 |
-| `global.css` | Styles of `body` and decorations used across pages, such as `.grid` and `.cgrid` |
+| `global.css` | Styles of `body` (colors and their fade between the themes) and decorations used across pages, such as `.grid` and `.cgrid` |
 | `shapes.css` | Notched corners (`.shape`, `.shapeL`, `.shapeS`), hard shadows (`.shadow`, `.shadowF`, `.shadowInk`), the hover lift (`.lift`) and the keyboard focus outline |
 | `motion.css` | Shared animations (`@keyframes`), stopped under `prefers-reduced-motion: reduce` (not created yet) |
 
@@ -135,6 +136,7 @@ wraps only that selector in `:global()`.
 The inline script in the `<head>` of `src/layouts/Layout.astro` (`THEME_SCRIPT` in `src/theme.ts`) sets `<html data-theme>` before the first paint.
 It takes the value saved in `localStorage` under the key `theme` (`light` or `dark`), or `prefers-color-scheme` while nothing valid is saved, and follows changes of the OS setting until a theme is saved.
 Without JavaScript, the page keeps the light theme that `Layout.astro` renders.
+`src/components/ThemeToggle.astro` switches the theme with `toggleTheme` and saves it under the same key; when saving throws, the switch lasts only until the next page or a change of the OS setting.
 
 `src/dev/components.astro` shows the shared shapes and the components on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
 `astro dev` serves them at `/dev/components/` and `/dev/markdown/`, and `astro build` leaves them out of `dist/` unless `LINA_DEV_PAGES=1` is set.

@@ -10,6 +10,8 @@ const ja = {
   "locale.name": "日本語",
   // Label of the Twitter link; "X" appears only in its icon.
   "social.twitter": "Twitter(自称X)",
+  "theme.toDark": "ダークテーマに切り替え",
+  "theme.toLight": "ライトテーマに切り替え",
 } as const;
 
 /** Key of a UI string. */
@@ -22,6 +24,8 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "home.comingSoon": "Coming soon.",
     "locale.name": "English",
     "social.twitter": "Twitter (self-proclaimed X)",
+    "theme.toDark": "Switch to dark theme",
+    "theme.toLight": "Switch to light theme",
   },
 };
 

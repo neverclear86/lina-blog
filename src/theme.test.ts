@@ -5,6 +5,7 @@ import {
   THEME_STORAGE_KEY,
   THEMES,
   type Theme,
+  toggleTheme,
 } from "./theme";
 
 interface ScriptOptions {
@@ -134,5 +135,69 @@ describe("THEME_SCRIPT", () => {
     expect(
       runThemeScript({ readThrows: true, prefersDark: false }).theme(),
     ).toBe("light");
+  });
+});
+
+describe("toggleTheme", () => {
+  function fakeStorage() {
+    const saved = new Map<string, string>();
+    const storage = {
+      setItem: (key: string, value: string) => {
+        saved.set(key, value);
+      },
+    };
+    return { saved, storage };
+  }
+
+  it("ライトのときはダークに切り替えて保存する", () => {
+    const root: { dataset: { theme?: string } } = {
+      dataset: { theme: "light" },
+    };
+    const { saved, storage } = fakeStorage();
+    expect(toggleTheme(root, () => storage)).toBe("dark");
+    expect(root.dataset.theme).toBe("dark");
+    expect(saved.get(THEME_STORAGE_KEY)).toBe("dark");
+  });
+
+  it("ダークのときはライトに切り替えて保存する", () => {
+    const root: { dataset: { theme?: string } } = {
+      dataset: { theme: "dark" },
+    };
+    const { saved, storage } = fakeStorage();
+    expect(toggleTheme(root, () => storage)).toBe("light");
+    expect(root.dataset.theme).toBe("light");
+    expect(saved.get(THEME_STORAGE_KEY)).toBe("light");
+  });
+
+  it("data-theme が light と dark 以外ならダークに切り替える", () => {
+    const root: { dataset: { theme?: string } } = { dataset: {} };
+    const { saved, storage } = fakeStorage();
+    expect(toggleTheme(root, () => storage)).toBe("dark");
+    expect(root.dataset.theme).toBe("dark");
+    expect(saved.get(THEME_STORAGE_KEY)).toBe("dark");
+  });
+
+  it("書き込みが例外を投げても切り替わる", () => {
+    const root: { dataset: { theme?: string } } = {
+      dataset: { theme: "light" },
+    };
+    const storage = {
+      setItem: () => {
+        throw new DOMException("full", "QuotaExceededError");
+      },
+    };
+    expect(toggleTheme(root, () => storage)).toBe("dark");
+    expect(root.dataset.theme).toBe("dark");
+  });
+
+  it("localStorage の取得が例外を投げても切り替わる", () => {
+    const root: { dataset: { theme?: string } } = {
+      dataset: { theme: "dark" },
+    };
+    const storage = () => {
+      throw new DOMException("denied", "SecurityError");
+    };
+    expect(toggleTheme(root, storage)).toBe("light");
+    expect(root.dataset.theme).toBe("light");
   });
 });
