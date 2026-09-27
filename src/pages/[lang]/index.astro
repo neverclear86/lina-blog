@@ -6,6 +6,7 @@ import HeroStanding from "../../components/HeroStanding.astro";
 import LatestPosts from "../../components/LatestPosts.astro";
 import LatestSection from "../../components/LatestSection.astro";
 import Logo from "../../components/Logo.astro";
+import Works from "../../components/Works.astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
 import { translate } from "../../i18n/ui";
 import Layout from "../../layouts/Layout.astro";
@@ -30,6 +31,7 @@ const posts = await getCollection("blog");
     <p>{translate(lang, "home.comingSoon")}</p>
     <div class="preview-standing"><HeroStanding /></div>
     <About lang={lang} />
+    <Works lang={lang} />
     <LatestSection lang={lang}>
       <LatestPosts slot="blog" lang={lang} posts={posts} />
     </LatestSection>
