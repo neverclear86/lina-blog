@@ -95,6 +95,10 @@ describe("blogSchema", () => {
     expect(accepts({ topics: ["a", "b", "c", "d", "e", "f"] })).toBe(false);
   });
 
+  it("topics の要素が空文字なら拒否する", () => {
+    expect(accepts({ topics: [""] })).toBe(false);
+  });
+
   it("sponsor の name だけ、name と https の url を受理する", () => {
     expect(accepts({ sponsor: { name: "スポンサー" } })).toBe(true);
     expect(
@@ -104,6 +108,7 @@ describe("blogSchema", () => {
 
   it.each([
     { url: "https://example.com/" },
+    { name: "" },
     { name: "スポンサー", url: "javascript:alert(1)" },
     { name: "スポンサー", url: "not a url" },
   ])("sponsor %j を拒否する", (sponsor) => {
