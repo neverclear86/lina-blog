@@ -31,6 +31,7 @@ bun create astro@latest -- --template basics
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── user-agent.ts     # Tells curl and other command-line clients from browsers, unit-tested
 │   ├── work-card.ts      # Order and link target of the work cards on the top page, unit-tested
+│   ├── work-pages.ts     # Paths of the pages of works and the rows of their links, unit-tested
 │   ├── work-schema.ts    # Schema of the works data (ja and en in one entry, no astro:content), unit-tested
 │   ├── youtube-feed.ts   # Channel RSS feed to the newest videos at build time (WebP or JPEG thumbnails), unit-tested
 │   ├── assets/           # Images processed by astro:assets
@@ -70,7 +71,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the theme script, the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css, shapes.css and motion.css; sets --font-body on html; puts the theme toggle next to the language links and the site footer at the end of <body>
+│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css, shapes.css and motion.css; sets --font-body on html; puts the theme toggle next to the language links and the site footer at the end of <body>
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code block file names as <figure>, unit-tested
 │   │   ├── sample.md         # Sample article shown at /dev/markdown/
@@ -78,7 +79,9 @@ bun create astro@latest -- --template basics
 │   │   └── youtube.ts        # Sätteri hast plugin: YouTube URL paragraphs as iframes, unit-tested
 │   ├── pages/
 │   │   ├── [lang]/
-│   │   │   └── index.astro   # /ja/ and /en/
+│   │   │   ├── index.astro   # /ja/ and /en/
+│   │   │   └── works/
+│   │   │       └── [slug].astro  # /ja/works/<slug>/ and /en/works/<slug>/ for the works with hasPage
 │   │   ├── ansi/
 │   │   │   ├── color.txt.ts  # /ansi/color.txt: the standing illustration as 24-bit color text art
 │   │   │   └── plain.txt.ts  # /ansi/plain.txt: the same art without escape sequences

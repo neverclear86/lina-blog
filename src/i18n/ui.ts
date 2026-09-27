@@ -80,8 +80,15 @@ const ja = {
   "social.twitter": "Twitter(自称X)",
   "theme.toDark": "ダークテーマに切り替え",
   "theme.toLight": "ライトテーマに切り替え",
+  // Link from the page of a work back to the Works section of the home page.
+  "works.back": "つくったものに戻る",
+  "works.links": "リンク",
+  // Subtitle next to the title of a work on its page.
+  "works.pageSubtitle": "つくったもの",
   // Subtitle of the Works section on the top page.
   "works.subtitle": "つくったもの",
+  // Name of the list of the technologies of a work.
+  "works.tech": "使用技術",
 } as const;
 
 /** Key of a UI string. */
@@ -157,7 +164,11 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "social.twitter": "Twitter (self-proclaimed X)",
     "theme.toDark": "Switch to dark theme",
     "theme.toLight": "Switch to light theme",
+    "works.back": "Back to Works",
+    "works.links": "Links",
+    "works.pageSubtitle": "Project",
     "works.subtitle": "Things I made",
+    "works.tech": "Tech stack",
   },
 };
 
