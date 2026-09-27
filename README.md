@@ -44,7 +44,8 @@ bun create astro@latest -- --template basics
 │   │   ├── Logo.astro            # Switches the logo with the theme
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level is a prop
 │   │   ├── ThemeToggle.astro     # Theme switch: moon or sun, and a name that says the next theme
-│   │   └── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
+│   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
+│   │   └── icons/                # Service icons for IconLink; sources and terms in icons/README.md
 │   ├── content/
 │   │   └── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
 │   ├── dev/
@@ -111,7 +112,7 @@ Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/mark
 Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema, the RSS items and the Markdown plugins; `src/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`, and the plugins in `src/markdown/` with Sätteri's `markdownToHtml()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 
-Colors are tested the same way. `src/styles/tokens.test.ts` checks that every foreground and background token pair used for text reaches 4.5:1 (WCAG AA) in both themes, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--fg)` and so on) instead; inline SVG takes `currentColor`.
+Colors are tested the same way. `src/styles/tokens.test.ts` checks that every foreground and background token pair used for text reaches 4.5:1 (WCAG AA) in both themes and that every icon color reaches 3:1 on `--surf`, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--fg)` and so on) instead; inline SVG takes `currentColor`. The service icons in `src/components/icons/` are also checked by `icons.test.ts`: their `fill` and `stroke` are only `currentColor` or `none`, because named colors such as `black` pass the check above.
 
 To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
 
@@ -347,6 +348,8 @@ The following are not covered by the MIT License. All rights are reserved by Tsu
 
 - The character Tsukusu Lina, and images that depict the character or the ikili.pro brand, such as illustrations, logos and pixel art, wherever they are in this repository (for example `design/assets/`, `public/` and `src/assets/`)
 - Blog posts and other written content published on the site
+
+The service icons in `src/components/icons/` are not covered by the MIT License either. They are trademarks or works of their owners and are used under the terms listed in [src/components/icons/README.md](src/components/icons/README.md).
 
 ## 👀 Want to learn more?
 
