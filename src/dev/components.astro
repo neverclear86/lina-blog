@@ -1,4 +1,7 @@
 ---
+import Bubble from "../components/Bubble.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import TerminalCard from "../components/TerminalCard.astro";
 import Layout from "../layouts/Layout.astro";
 ---
 
@@ -62,6 +65,93 @@ import Layout from "../layouts/Layout.astro";
               ><span class="shape sample orange">フォーカス</span></span
             ></a
           >
+        </div>
+      </div>
+    </section>
+
+    <section id="cards">
+      <h2>ターミナル窓カード</h2>
+      <div class="cards">
+        <TerminalCard title="~/works/nostr-no-su" href="#cards">
+          <p class="card-body">リンクのカード</p>
+        </TerminalCard>
+        <TerminalCard
+          title="~/works/nostr-no-su"
+          href="#cards"
+          class="is-focus"
+        >
+          <p class="card-body">フォーカス</p>
+        </TerminalCard>
+        <TerminalCard title="lina --stream">
+          <p class="card-body">リンクでないカード</p>
+        </TerminalCard>
+        <TerminalCard title="lina --stream" class="is-lift">
+          <p class="card-body">lift</p>
+        </TerminalCard>
+        <TerminalCard
+          title="~/works/a-very-long-project-name-for-the-ellipsis"
+          shape="shapeL"
+        >
+          <p class="card-body">shapeL と長い題</p>
+        </TerminalCard>
+      </div>
+      <div class="cbg">
+        <TerminalCard
+          title="new-message.txt"
+          shape="shapeL"
+          shadow="fshadow"
+          tone="paper"
+          lift={false}
+        >
+          <p class="card-body">
+            <a class="is-focus" href="#cards">紙の面のフォーカス</a>
+          </p>
+        </TerminalCard>
+      </div>
+    </section>
+
+    <section id="bubbles">
+      <h2>吹き出し</h2>
+      <div class="row">
+        <Bubble>
+          <span>今日もITで遊んでる〜</span>
+          <span>⸜(*ˊᗜˋ*)⸝</span>
+        </Bubble>
+        <Bubble>
+          <span
+            >長い本文は吹き出しの幅に収まるように折り返す。長い本文は吹き出しの幅に収まるように折り返す。長い本文は吹き出しの幅に収まるように折り返す。</span
+          >
+        </Bubble>
+      </div>
+    </section>
+
+    <section id="headings">
+      <h2>セクション見出し</h2>
+      <div class="stack">
+        <SectionHeading
+          label="~/about"
+          title="ABOUT"
+          subtitle="創好リナってこんな人"
+        >
+          <p class="heading-aside">
+            名前の由来はLinux。配信もするし、開発もする、バーチャルイキリプログラマです。
+          </p>
+        </SectionHeading>
+        <SectionHeading
+          label="~/contact"
+          title="CONTACT"
+          subtitle="お問い合わせ"
+          as="h3"
+        />
+        <div lang="en">
+          <SectionHeading
+            label="~/works"
+            title="WORKS"
+            subtitle="Things I made"
+            as="h3"
+          >
+            <a href="#headings">See all</a>
+          </SectionHeading>
         </div>
       </div>
     </section>
@@ -135,5 +225,31 @@ import Layout from "../layouts/Layout.astro";
   background: var(--cbg);
   color: var(--cfg);
   --focus-ring: var(--cfg);
+}
+
+section {
+  margin-top: 40px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 32px;
+}
+
+.card-body {
+  margin: 0;
+  padding: 20px 22px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.heading-aside {
+  margin: 0;
+  max-width: 480px;
 }
 </style>

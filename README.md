@@ -33,7 +33,10 @@ bun create astro@latest -- --template basics
 │   │   ├── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
 │   │   └── logo-white.png  # Logo for the dark theme
 │   ├── components/
-│   │   └── Logo.astro      # Switches the logo with the theme
+│   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
+│   │   ├── Logo.astro            # Switches the logo with the theme
+│   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level is a prop
+│   │   └── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
 │   ├── content/
 │   │   └── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
 │   ├── dev/
