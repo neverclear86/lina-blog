@@ -19,137 +19,157 @@
 //   --motion reduce            prefers-reduced-motion: reduce (default) or no-preference
 //   --height 900               viewport height before the full-page capture (default 900)
 
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync } from 'node:fs';
-import { createServer } from 'node:net';
-import { join, resolve } from 'node:path';
-import { parseArgs } from 'node:util';
-import { chromium } from 'playwright';
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync } from "node:fs";
+import { createServer } from "node:net";
+import { join, resolve } from "node:path";
+import { parseArgs } from "node:util";
+import { chromium } from "playwright";
 
 const { values, positionals } = parseArgs({
-	allowPositionals: true,
-	options: {
-		root: { type: 'string' },
-		port: { type: 'string' },
-		out: { type: 'string' },
-		widths: { type: 'string', default: '1440,390' },
-		themes: { type: 'string', default: 'light,dark' },
-		motion: { type: 'string', default: 'reduce' },
-		height: { type: 'string', default: '900' },
-	},
+  allowPositionals: true,
+  options: {
+    root: { type: "string" },
+    port: { type: "string" },
+    out: { type: "string" },
+    widths: { type: "string", default: "1440,390" },
+    themes: { type: "string", default: "light,dark" },
+    motion: { type: "string", default: "reduce" },
+    height: { type: "string", default: "900" },
+  },
 });
 
 if (!values.root || !values.port || !values.out || positionals.length === 0) {
-	console.error(
-		'usage: node screenshot.mjs --root <worktree> --port <port> --out <dir> [--widths 1440,390] [--themes light,dark] [--motion reduce] <path>...',
-	);
-	process.exit(1);
+  console.error(
+    "usage: node screenshot.mjs --root <worktree> --port <port> --out <dir> [--widths 1440,390] [--themes light,dark] [--motion reduce] <path>...",
+  );
+  process.exit(1);
 }
 
 const root = resolve(values.root);
 const port = Number(values.port);
 const out = resolve(values.out);
-const widths = values.widths.split(',').map(Number);
-const themes = values.themes.split(',');
+const widths = values.widths.split(",").map(Number);
+const themes = values.themes.split(",");
 const height = Number(values.height);
 const base = `http://127.0.0.1:${port}`;
 
-if (!existsSync(join(root, 'dist'))) {
-	console.error(`dist/ not found. run bun run build in ${root} first`);
-	process.exit(1);
+if (!existsSync(join(root, "dist"))) {
+  console.error(`dist/ not found. run bun run build in ${root} first`);
+  process.exit(1);
 }
 
 /** Resolves true when nothing listens on the port. */
 function portIsFree(p) {
-	return new Promise((done) => {
-		const server = createServer();
-		server.once('error', () => done(false));
-		server.listen(p, '127.0.0.1', () => server.close(() => done(true)));
-	});
+  return new Promise((done) => {
+    const server = createServer();
+    server.once("error", () => done(false));
+    server.listen(p, "127.0.0.1", () => server.close(() => done(true)));
+  });
 }
 
 /** Runs `astro preview <args>` in the worktree and returns the result. */
 function astroPreview(args) {
-	return spawnSync('bunx', ['astro', 'preview', ...args], { cwd: root, encoding: 'utf8' });
+  return spawnSync("bunx", ["astro", "preview", ...args], {
+    cwd: root,
+    encoding: "utf8",
+  });
 }
 
 /** Waits until the preview server answers, for up to 30 seconds. */
 async function waitForServer() {
-	for (let i = 0; i < 60; i++) {
-		try {
-			await fetch(`${base}/`);
-			return;
-		} catch {
-			await new Promise((r) => setTimeout(r, 500));
-		}
-	}
-	throw new Error(`preview did not start on ${base}`);
+  for (let i = 0; i < 60; i++) {
+    try {
+      await fetch(`${base}/`);
+      return;
+    } catch {
+      await new Promise((r) => setTimeout(r, 500));
+    }
+  }
+  throw new Error(`preview did not start on ${base}`);
 }
 
 /** Turns a URL path into a file name: / → index, /en/blog/ → en_blog. */
 function nameOf(path) {
-	return path.replace(/^\/+|\/+$/g, '').replaceAll('/', '_') || 'index';
+  return path.replace(/^\/+|\/+$/g, "").replaceAll("/", "_") || "index";
 }
 
 if (!(await portIsFree(port))) {
-	console.error(`port ${port} is in use`);
-	process.exit(1);
+  console.error(`port ${port} is in use`);
+  process.exit(1);
 }
 mkdirSync(out, { recursive: true });
 
-const started = astroPreview(['--background', '--host', '127.0.0.1', '--port', String(port)]);
+const started = astroPreview([
+  "--background",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  String(port),
+]);
 if (started.status !== 0) {
-	console.error(started.stdout, started.stderr);
-	process.exit(1);
+  console.error(started.stdout, started.stderr);
+  process.exit(1);
 }
 
 let browser;
 let failed = false;
 try {
-	await waitForServer();
-	browser = await chromium.launch({ headless: true });
-	for (const path of positionals) {
-		for (const width of widths) {
-			for (const theme of themes) {
-				const context = await browser.newContext({
-					viewport: { width, height },
-					colorScheme: theme,
-					reducedMotion: values.motion,
-				});
-				const page = await context.newPage();
-				const response = await page.goto(`${base}${path}`, { waitUntil: 'networkidle' });
-				await page.evaluate(() => document.fonts.ready);
-				const file = join(out, `${nameOf(path)}-${width}-${theme}.png`);
-				await page.screenshot({ path: file, fullPage: true });
-				const overflow = await page.evaluate(() => {
-					const viewport = document.documentElement.clientWidth;
-					const overflowing = [];
-					for (const el of document.body.querySelectorAll('*')) {
-						const rect = el.getBoundingClientRect();
-						if (rect.width === 0 || rect.height === 0) continue;
-						if (rect.right > viewport + 0.5 || rect.left < -0.5) {
-							const id = el.id ? `#${el.id}` : '';
-							const cls = el.classList.length ? `.${[...el.classList].join('.')}` : '';
-							overflowing.push(`${el.tagName.toLowerCase()}${id}${cls}`);
-						}
-					}
-					return {
-						overflowX: document.documentElement.scrollWidth - viewport,
-						overflowing: overflowing.slice(0, 10),
-					};
-				});
-				console.log(
-					JSON.stringify({ file, path, width, theme, status: response?.status() ?? null, ...overflow }),
-				);
-				await context.close();
-			}
-		}
-	}
+  await waitForServer();
+  browser = await chromium.launch({ headless: true });
+  for (const path of positionals) {
+    for (const width of widths) {
+      for (const theme of themes) {
+        const context = await browser.newContext({
+          viewport: { width, height },
+          colorScheme: theme,
+          reducedMotion: values.motion,
+        });
+        const page = await context.newPage();
+        const response = await page.goto(`${base}${path}`, {
+          waitUntil: "networkidle",
+        });
+        await page.evaluate(() => document.fonts.ready);
+        const file = join(out, `${nameOf(path)}-${width}-${theme}.png`);
+        await page.screenshot({ path: file, fullPage: true });
+        const overflow = await page.evaluate(() => {
+          const viewport = document.documentElement.clientWidth;
+          const overflowing = [];
+          for (const el of document.body.querySelectorAll("*")) {
+            const rect = el.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) continue;
+            if (rect.right > viewport + 0.5 || rect.left < -0.5) {
+              const id = el.id ? `#${el.id}` : "";
+              const cls = el.classList.length
+                ? `.${[...el.classList].join(".")}`
+                : "";
+              overflowing.push(`${el.tagName.toLowerCase()}${id}${cls}`);
+            }
+          }
+          return {
+            overflowX: document.documentElement.scrollWidth - viewport,
+            overflowing: overflowing.slice(0, 10),
+          };
+        });
+        console.log(
+          JSON.stringify({
+            file,
+            path,
+            width,
+            theme,
+            status: response?.status() ?? null,
+            ...overflow,
+          }),
+        );
+        await context.close();
+      }
+    }
+  }
 } catch (error) {
-	console.error(error);
-	failed = true;
+  console.error(error);
+  failed = true;
 } finally {
-	await browser?.close();
-	astroPreview(['stop']);
+  await browser?.close();
+  astroPreview(["stop"]);
 }
 process.exit(failed ? 1 : 0);

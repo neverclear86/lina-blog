@@ -1,4 +1,4 @@
-import { Hono } from 'hono';
+import { Hono } from "hono";
 
 /**
  * Routes that the Worker handles itself, mounted by `src/fetch.ts` before the Astro handlers.
@@ -6,6 +6,6 @@ import { Hono } from 'hono';
  */
 const api = new Hono();
 
-api.get('/api/health', (c) => c.json({ ok: true }));
+api.get("/api/health", (c) => c.json({ ok: true }));
 
 export default api;
