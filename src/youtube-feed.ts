@@ -48,7 +48,8 @@ export interface YouTubeVideo {
  * failures apart:
  * - `unavailable`: the feed could not be reached, answered with a non-2xx status, or did not
  *   answer within the time limit.
- * - `invalid-feed`: the body is not well-formed XML or has no `<feed>` element.
+ * - `invalid-feed`: the body is not well-formed XML, is rejected by the parser, or has no
+ *   `<feed>` element.
  */
 export type YouTubeFeedResult =
   | { ok: true; videos: YouTubeVideo[] }
@@ -89,8 +90,9 @@ function child(node: unknown, key: string): unknown {
  *
  * @param xml The body of the feed.
  * @returns The videos with WebP thumbnails, sorted by `publishedAt` from newest to oldest, or
- *   `null` when `xml` is not well-formed or has no `<feed>` element. A feed without entries
- *   gives an empty array.
+ *   `null` when `xml` is not well-formed, is rejected by the parser (such as a DOCTYPE with an
+ *   external entity or a reserved element name), or has no `<feed>` element. A feed without
+ *   entries gives an empty array.
  */
 export function parseYouTubeFeed(xml: string): YouTubeVideo[] | null {
   if (XMLValidator.validate(xml) !== true) {
@@ -105,7 +107,13 @@ export function parseYouTubeFeed(xml: string): YouTubeVideo[] | null {
     parseAttributeValue: false,
     isArray: (_name, jpath) => jpath === "feed.entry",
   });
-  const doc: unknown = parser.parse(xml);
+  // The parser throws on some input that the validator accepts, such as a second DOCTYPE.
+  let doc: unknown;
+  try {
+    doc = parser.parse(xml);
+  } catch {
+    return null;
+  }
   const feed = child(doc, "feed");
   if (feed === undefined) {
     return null;

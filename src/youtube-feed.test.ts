@@ -146,6 +146,15 @@ describe("parseYouTubeFeed", () => {
     expect(parseYouTubeFeed("<feed><entry></feed>")).toBeNull();
   });
 
+  it("検証は通るが parser が拒否する XML は null を返す", () => {
+    expect(
+      parseYouTubeFeed("<!DOCTYPE feed><!DOCTYPE feed><feed/>"),
+    ).toBeNull();
+    expect(
+      parseYouTubeFeed("<feed><constructor>a</constructor></feed>"),
+    ).toBeNull();
+  });
+
   it("feed の要素が無い XML は null を返す", () => {
     expect(parseYouTubeFeed("<html></html>")).toBeNull();
   });
@@ -226,6 +235,15 @@ describe("fetchLatestVideos", () => {
       ok: false,
       reason: "invalid-feed",
     });
+  });
+
+  it("parser が拒否する本文も例外を投げず invalid-feed を返す", async () => {
+    expect(
+      await fetchLatestVideos(
+        { limit: 3 },
+        stubFetch("<!DOCTYPE feed><!DOCTYPE feed><feed/>"),
+      ),
+    ).toEqual({ ok: false, reason: "invalid-feed" });
   });
 
   it("本文の読み出しが失敗しても unavailable を返す", async () => {
