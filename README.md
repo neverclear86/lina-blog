@@ -60,6 +60,7 @@ bun create astro@latest -- --template basics
 │   └── publish/          # Publish Worker, separate from the site and deployed on its own
 │       ├── src/
 │       │   ├── app.ts               # Hono app and Worker entry; every route needs the shared secret
+│       │   ├── article-event.ts     # Builds the unsigned kind 30023 (NIP-23) event of an article
 │       │   ├── auth.ts              # Bearer auth with a constant-time comparison
 │       │   ├── content-hash.ts      # Content hash of an article (SHA-256 of its markdown)
 │       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL, IMAGES)
