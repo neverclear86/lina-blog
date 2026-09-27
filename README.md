@@ -73,6 +73,7 @@ bun create astro@latest -- --template basics
 │       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL, IMAGES)
 │       │   ├── errors.ts            # Error body shared by every error response
 │       │   ├── images.ts            # Image names, R2 lookups and uploads for /images/{name}
+│       │   ├── nostr-relays.ts      # Reads write relays (kind 10002) and sends events to relays
 │       │   └── published-record.ts  # Reads src/content/published.json on GitHub for GET /articles
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
