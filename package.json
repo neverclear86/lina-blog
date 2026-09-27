@@ -21,7 +21,8 @@
     "@astrojs/cloudflare": "^14.3.3",
     "@astrojs/rss": "^4.0.19",
     "astro": "^7.3.5",
-    "hono": "^4.13.9"
+    "hono": "^4.13.9",
+    "sharp": "^0.35.4"
   },
   "allowScripts": {
     "esbuild": true
