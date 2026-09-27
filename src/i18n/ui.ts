@@ -78,13 +78,13 @@ const ja = {
   "latest.videos.watchOnYouTube": "YouTubeで見る",
   // The locale's own name, shown on the links to it; not translated into other locales.
   "locale.name": "日本語",
-  // Says that the site can also be read with curl; shown in the site footer.
-  "site.curlHint": "$ curl ikili.pro でも読めるよ",
   // The 404 page, which is in Japanese and shows the English message and link under the heading.
   "notFound.back": "トップへもどる",
   "notFound.message": "このページは存在しないよ。",
   "notFound.subtitle": "ページが見つからないよ",
   "notFound.topLink": "日本語のトップページへ",
+  // Says that the site can also be read with curl; shown in the site footer.
+  "site.curlHint": "$ curl ikili.pro でも読めるよ",
   // Label of the Twitter link; "X" appears only in its icon.
   "social.twitter": "Twitter(自称X)",
   "theme.toDark": "ダークテーマに切り替え",
@@ -172,11 +172,11 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "latest.videos.heading": "Videos",
     "latest.videos.watchOnYouTube": "Watch on YouTube",
     "locale.name": "English",
-    "site.curlHint": "$ curl ikili.pro works too",
     "notFound.back": "Back to top",
     "notFound.message": "This page doesn't exist.",
     "notFound.subtitle": "Page not found",
     "notFound.topLink": "Go to the English top page",
+    "site.curlHint": "$ curl ikili.pro works too",
     "social.twitter": "Twitter (self-proclaimed X)",
     "theme.toDark": "Switch to dark theme",
     "theme.toLight": "Switch to light theme",
