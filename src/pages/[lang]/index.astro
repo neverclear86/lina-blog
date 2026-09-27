@@ -1,10 +1,9 @@
 ---
 import type { GetStaticPaths } from "astro";
-import AboutFullBody from "../../components/AboutFullBody.astro";
+import About from "../../components/About.astro";
 import HeroStanding from "../../components/HeroStanding.astro";
 import LatestSection from "../../components/LatestSection.astro";
 import Logo from "../../components/Logo.astro";
-import PixelArt from "../../components/PixelArt.astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
 import { translate } from "../../i18n/ui";
 import Layout from "../../layouts/Layout.astro";
@@ -26,15 +25,14 @@ const { lang } = Astro.props;
   <main>
     <h1><Logo size={36} alt="" />ikili.pro</h1>
     <p>{translate(lang, "home.comingSoon")}</p>
-    <PixelArt />
     <div class="preview-standing"><HeroStanding /></div>
-    <div class="preview-full-body"><AboutFullBody /></div>
+    <About lang={lang} />
     <LatestSection lang={lang} />
   </main>
 </Layout>
 
 <style>
-/* 画像の部品をビルドで描画させる仮の配置。Hero と About のセクションができたら消す。 */
+/* HeroStanding をビルドで描画させる仮の配置。Hero のセクションができたら消す。 */
 .preview-standing {
   width: 259px;
 }
@@ -43,9 +41,5 @@ const { lang } = Astro.props;
   .preview-standing {
     width: 466px;
   }
-}
-
-.preview-full-body {
-  width: 151px;
 }
 </style>

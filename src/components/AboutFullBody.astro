@@ -1,17 +1,25 @@
 ---
 /**
- * About のターミナル窓カード（lina.png）の中身として置く全身の画像なので、alt を付ける。
+ * About のターミナル窓カード（lina.png）の中身として置く全身の画像。alt は呼び出し側が
+ * ページの言語の文言を渡す。
  * スクロールした先に置く画像なので、既定の遅延読み込みのままにする。
  * 親の入れ物の幅いっぱいに描く。sizes はデザインのカードの表示幅（151px）に合わせてあるので、
  * 表示幅を変えるときは widths と sizes も合わせる。
  */
 import { Picture } from "astro:assets";
 import fullBody from "../assets/lina-full-body.webp";
+
+interface Props {
+  /** 代替テキスト。ページの言語の文言を渡す。 */
+  alt: string;
+}
+
+const { alt } = Astro.props;
 ---
 
 <Picture
   src={fullBody}
-  alt="創好リナの全身"
+  alt={alt}
   formats={["avif", "webp"]}
   fallbackFormat="webp"
   widths={[151, 302, 453]}
