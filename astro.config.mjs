@@ -2,6 +2,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import cloudflare from "@astrojs/cloudflare";
 import { defineConfig } from "astro/config";
+import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
 
 /** Same pattern Astro uses to read a page's `export const prerender`. */
 const PRERENDER_EXPORT = /^\s*export\s+const\s+prerender\s*=\s*(true|false);?/m;
@@ -48,4 +49,11 @@ export default defineConfig({
   integrations: [prerenderByDefault()],
   // Sessions are not used; this also keeps the adapter from provisioning a KV namespace.
   session: false,
+  // Every locale, including the default, has a URL prefix (`/ja/`, `/en/`). Pages outside
+  // `src/pages/[lang]/`, such as `/blog/`, have none; see the i18n() note in `src/fetch.ts`.
+  i18n: {
+    locales: [...LOCALES],
+    defaultLocale: DEFAULT_LOCALE,
+    routing: { prefixDefaultLocale: true },
+  },
 });

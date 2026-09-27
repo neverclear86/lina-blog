@@ -10,6 +10,9 @@ app.route("/", api);
 app.use(actions());
 app.use(middleware());
 app.use(pages());
+// `pages()` does not call next, so i18n() is never reached and `astro build` warns about it.
+// Keep it after `pages()`: with prefixDefaultLocale it answers 404 for paths without a locale
+// prefix, such as `/blog/`.
 app.use(i18n());
 
 export default app;
