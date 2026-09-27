@@ -88,7 +88,7 @@ bun create astro@latest -- --template basics
 │   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
 │   └── styles/
 │       ├── global.css    # body colors and their fade, and the grid backgrounds (.grid, .cgrid)
-│       ├── motion.css    # Animations that keep running (.bob, .caret, .a-typeLoop), stopped under reduced motion
+│       ├── motion.css    # Animations that keep running (.bob, .caret, .a-typeLoop) and the section reveal on scroll (.reveal), stopped under reduced motion
 │       ├── shapes.css    # Notched corners, hard shadows, the lift and the focus outline
 │       └── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
 ├── workers/
@@ -139,7 +139,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | `tokens.css` | Color tokens (CSS variables) for the light and dark themes                 |
 | `global.css` | Styles of `body` (colors and their fade between the themes) and decorations used across pages, such as `.grid` and `.cgrid` |
 | `shapes.css` | Notched corners (`.shape`, `.shapeL`, `.shapeS`), hard shadows (`.shadow`, `.shadowF`, `.shadowInk`), the hover lift (`.lift`) and the keyboard focus outline |
-| `motion.css` | Animations that keep running: the pixel art bob (`.bob`), the blinking cursor (`.caret`) and the typed command (`.a-typeLoop`), stopped under `prefers-reduced-motion: reduce` |
+| `motion.css` | Animations that keep running: the pixel art bob (`.bob`), the blinking cursor (`.caret`) and the typed command (`.a-typeLoop`); and the section reveal on scroll (`.reveal`), enabled only inside `@supports (animation-timeline: view())`. All are stopped under `prefers-reduced-motion: reduce` |
 
 A global file holds only what several components share.
 Styles that belong to one component go in that component's scoped `<style>`.
