@@ -1,0 +1,53 @@
+---
+import Button from "../components/Button.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import { translate } from "../i18n/ui";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout lang="ja">
+  <main class="not-found">
+    <SectionHeading
+      as="h1"
+      label="$ cd ~/404"
+      title="404"
+      subtitle={translate("ja", "notFound.subtitle")}
+    />
+    <p lang="en">
+      {translate("en", "notFound.message")}{" "}<a href="/en/" hreflang="en"
+        >{translate("en", "notFound.topLink")}</a
+      >
+    </p>
+    <Button href="/ja/">{translate("ja", "notFound.back")}</Button>
+  </main>
+</Layout>
+
+<style>
+.not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 44px;
+  padding: 88px 16px;
+}
+
+@media (min-width: 768px) {
+  .not-found {
+    padding-inline: 32px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .not-found {
+    padding-inline: 64px;
+  }
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+</style>
