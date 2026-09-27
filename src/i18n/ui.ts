@@ -62,6 +62,8 @@ const ja = {
     "確認を読み込めませんでした。ページを再読み込みしてください。",
   "contact.status.waiting":
     "確認が終わるまで少し待ってから、もう一度送信してください。",
+  // Name after "© <year>" in the site footer.
+  "footer.copyrightHolder": "創好リナ",
   "home.comingSoon": "準備中です。",
   "latest.blog.all": "記事一覧",
   "latest.blog.heading": "ブログ",
@@ -72,6 +74,8 @@ const ja = {
   "latest.subtitle": "さいきんの配信と記事",
   // The locale's own name, shown on the links to it; not translated into other locales.
   "locale.name": "日本語",
+  // Says that the site can also be read with curl; shown in the site footer.
+  "site.curlHint": "$ curl ikili.pro でも読めるよ",
   // Label of the Twitter link; "X" appears only in its icon.
   "social.twitter": "Twitter(自称X)",
   "theme.toDark": "ダークテーマに切り替え",
@@ -141,6 +145,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
       "Couldn't load the verification. Please reload the page.",
     "contact.status.waiting":
       "Please wait for the verification to finish, then send again.",
+    "footer.copyrightHolder": "Tsukusu Lina",
     "home.comingSoon": "Coming soon.",
     "latest.blog.all": "All posts",
     "latest.blog.heading": "Blog",
@@ -148,6 +153,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "latest.blog.noPosts": "No posts yet.",
     "latest.subtitle": "Recent streams and posts",
     "locale.name": "English",
+    "site.curlHint": "$ curl ikili.pro works too",
     "social.twitter": "Twitter (self-proclaimed X)",
     "theme.toDark": "Switch to dark theme",
     "theme.toLight": "Switch to light theme",

@@ -34,9 +34,9 @@ bun create astro@latest -- --template basics
 │   ├── work-schema.ts    # Schema of the works data (ja and en in one entry, no astro:content), unit-tested
 │   ├── youtube-feed.ts   # Channel RSS feed to the newest videos at build time (WebP or JPEG thumbnails), unit-tested
 │   ├── assets/           # Images processed by astro:assets
-│   │   ├── logo-black.png  # Logo for the light theme, optimized by astro:assets
+│   │   ├── logo-black.png  # Black logo (light theme, or inverse faces on the dark theme), optimized by astro:assets
 │   │   ├── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
-│   │   └── logo-white.png  # Logo for the dark theme
+│   │   └── logo-white.png  # White logo (dark theme, or inverse faces on the light theme)
 │   ├── components/
 │   │   ├── About.astro           # About section: heading, lead and three terminal cards
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (tables, task lists, footnotes, code file names, YouTube embeds)
@@ -49,8 +49,9 @@ bun create astro@latest -- --template basics
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
 │   │   ├── LatestPosts.astro     # Blog column of the Latest section: newest posts with tag chips
-│   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for an --inv face
+│   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for --inv and --cbg faces
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level and the contact variant are props
+│   │   ├── SiteFooter.astro      # Footer band on --cbg: inverse logo, © year and name, curl hint
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: moon or sun, and a name that says the next theme
 │   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
@@ -69,7 +70,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the theme script, the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css, shapes.css and motion.css; sets --font-body on html; puts the theme toggle next to the language links
+│   │   └── Layout.astro       # <head> with the theme script, the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css, shapes.css and motion.css; sets --font-body on html; puts the theme toggle next to the language links and the site footer at the end of <body>
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code block file names as <figure>, unit-tested
 │   │   ├── sample.md         # Sample article shown at /dev/markdown/
