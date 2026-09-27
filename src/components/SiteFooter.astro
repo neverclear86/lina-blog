@@ -1,0 +1,64 @@
+---
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import Logo from "./Logo.astro";
+
+/**
+ * The footer at the end of every page, copied from the `<footer>` of `design/CBMain.dc.html`:
+ * the inverse logo and "© <year> <name>" on the left, and the curl hint in JetBrains Mono on
+ * the right. It is a band of its own on `--cbg` with the `.cgrid` lines, so it looks the same
+ * on every page. Below 768px the two parts stack, aligned to the left.
+ *
+ * The year is the year of the build.
+ */
+interface Props {
+  /** Language of the page, for the strings of the footer. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer cgrid">
+  <div class="owner">
+    <Logo size={36} alt="" tone="inverse" />
+    <span>© {year} {translate(lang, "footer.copyrightHolder")}</span>
+  </div>
+  <span class="curl">{translate(lang, "site.curlHint")}</span>
+</footer>
+
+<style>
+.site-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 28px 16px 40px;
+  border-top: 1px solid var(--cline);
+  background-color: var(--cbg);
+  color: var(--cmuted);
+  font-size: 13px;
+}
+.owner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.curl {
+  font-family: var(--font-mono);
+}
+@media (min-width: 768px) {
+  .site-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 32px;
+  }
+}
+@media (min-width: 1280px) {
+  .site-footer {
+    padding-inline: 64px;
+  }
+}
+</style>
