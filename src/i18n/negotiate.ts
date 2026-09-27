@@ -1,5 +1,6 @@
 /**
- * Chooses the locale that `/` redirects to from the request's `Accept-Language` header.
+ * Chooses the locale of `/` from the request's `Accept-Language` header: the top page that
+ * browsers are redirected to and the text version that command-line clients get.
  */
 import { parseAccept } from "hono/utils/accept";
 import { DEFAULT_LOCALE, LOCALES, type Locale } from "./locales";
