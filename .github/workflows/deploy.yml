@@ -1,8 +1,8 @@
 name: Deploy
 
+# Deploys are started manually for now. Switch to `push: branches: [main]`
+# once the site is ready to go public.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

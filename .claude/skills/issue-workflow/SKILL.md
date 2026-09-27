@@ -77,7 +77,7 @@ tier は判定が決める。`none`（追加 100 行未満・3 ファイル以�
 - **実装者の定義の hooks**: `issue-implementer` の frontmatter の `hooks`（整形、PR 本文の必須の節、push 前の速い検査）は、その subagent が動いている間だけ発火する。project の subagent の hooks は、ワークスペースの trust を受け入れたフォルダーから起動した対話セッションでだけ動く（動かないときは debug ログに残るだけで、実行は止まらない）
 - **対話セッションから起動する**: エージェントが usage limit に当たったとき、対話セッションなら run は一時停止してリセット後に続くが、`claude -p` やバックグラウンドではそのエージェントが失敗する
 <!-- ADAPT:rules -->
-- **CI とデプロイ**: PR では `.github/workflows/ci.yml` が `biome ci`、`astro check`、build を行う。main への push で `.github/workflows/deploy.yml` が本番にデプロイするので、本番の設定（`wrangler.jsonc`、Secrets、`_headers`）を変える issue は `noMerge` で回すかを段階 0 で聞く
+- **CI とデプロイ**: PR では `.github/workflows/ci.yml` が `biome ci`、`astro check`、build を行う。デプロイ（`.github/workflows/deploy.yml`）は、サイトがある程度できるまで手動でだけ起動する。それまで Worker の動作はローカルの `wrangler dev`（`bun run preview:wrangler`）で確かめる。デプロイを main への push に戻す issue と、本番の設定（Secrets、ドメイン）を変える issue は `noMerge` で回すかを段階 0 で聞く
 - **Biome の対象**: `biome.json` は `.claude/` と `design/` を対象から外している。ワークフローのスクリプトは最上位に `return` があって Biome が解析できず、整形で書き換えると kit の更新の 3-way merge が崩れる。`design/` はキャンバスの写しである。この除外を外さない
 - **project の hook**: `.claude/settings.json` の PostToolUse（`.claude/hooks/biome-check.sh`）は、ユーザーの作業ツリーの中のファイルを編集したときだけ Biome をかけ、それ以外（ワークフローの作業ツリー）では何もしない。ワークフローの作業ツリーの整形は implementer の hook（`.claude/scripts/hook_format.sh`）が担う
 - **`/` と Worker**: 静的なファイルに当たるリクエストは、アダプタの既定の入口が `src/fetch.ts` の Hono に渡す前に返す。`/` を Hono で扱う issue（#18 の言語の振り分け、#43 の curl 応答）は、`/` を prerender のページにしない（`src/pages/index.astro` を消すか `prerender = false` にする）か、`src/worker.ts` を入口にして `@astrojs/cloudflare/hono` の `cf()` を Hono の `/` の後に置くかを、プランで決める

@@ -62,6 +62,7 @@ push のたびに CI が走り、CI の失敗や衝突で push をやり直す�
 - **整形と lint**: `bunx biome check --write` で直せるものを直し（差分をコミットに含める）、`bunx biome ci` を通す
 - **型**: `bunx astro check`
 - **build**: `bun run build`
+- **wrangler**: Worker に関わる変更（`src/fetch.ts`、`wrangler.jsonc`、`astro.config.mjs`、`public/_headers` など）では、build の後に `env -C <作業ツリー> timeout 60 bunx wrangler dev --ip 127.0.0.1 --port <ポート +1> --inspector-port <ポート +2>` を背景で立て、変えたルートと `/` に `curl` して期待どおり応答することを確かめる。止めるときは `timeout` に任せるか、ポートの行から引いた pid の `/proc/<pid>/cwd` が作業ツリーであることを確かめてから kill する
 <!-- /ADAPT:checks -->
 - **検証の手順**: プランの「検証の手順」をすべて実行し、出力を保存する。手順の番号ごとに結果を PR 本文の「テストと検証」へ 1 行ずつ写す（シェルコマンドでない手順も結果を書く。欠けた番号があると PR レビューの指摘になる）
 - **掃き出し**: 意味が変わった語（識別子、環境変数、表、画面の数）ごとに `sh <作業ツリー>/.claude/scripts/sweep_refs.sh <作業ツリー> <語>...` を回し、文書と設定の例に古い記述が残っていないことを確かめる。確かめた語を「テストと検証」に「掃き出した語」として書く（0 件でも）。`gh pr create` の前に `.claude/scripts/hook_pr_body_gate.sh` が本文の必須の節を機械的に確かめ、欠けていれば止める。hook は保険であり、この手順は省かない

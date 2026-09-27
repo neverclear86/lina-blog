@@ -48,7 +48,7 @@ disallowedTools: Agent
 - テスト: 受け入れ条件はまず自動テストで表し、足すテストと既存のテストで変わるものを列挙する。手作業の検証手順は、自動テストにも CI にも表せないものだけにする
 <!-- ADAPT:ci -->
 - CI（`.github/workflows/ci.yml`）は PR ごとに `biome ci`、`astro check`、`bun run build` を行う。テストはまだ無いので、変えたページが `dist/` に出ること、出力の HTML の中身（属性、`lang`、meta）、Worker の応答は、検証の手順に `dist/` を読む手順や preview に `curl` する手順として置く
-- main への push で `.github/workflows/deploy.yml` が本番にデプロイする。プランの検証の手順でデプロイはしない
+- デプロイ（`.github/workflows/deploy.yml`）は当面手動でだけ起動する。プランの検証の手順でデプロイはしない。Worker の動作（`src/fetch.ts`、`wrangler.jsonc`、`public/_headers` などに関わる変更）は、build の後に `env -C <作業ツリー> bunx wrangler dev --ip 127.0.0.1 --port <ポート +1> --inspector-port <ポート +2>` で立て、`curl` で応答を確かめる手順を置く（`wrangler dev` は build が書いた `dist/server/wrangler.json` を読む）
 <!-- /ADAPT:ci -->
   - 分岐を持つ型（変種を足す型）のプランは、変種ごとに実行時の検証（足すテスト、または既存の実行経路の根拠）を書く
   - Doc コメントで分岐の規則を述べる関数は、その分岐ごとのテストを「テスト」の表に載せる

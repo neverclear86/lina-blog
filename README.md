@@ -38,6 +38,7 @@ All commands are run from the root of the project, from a terminal:
 | `bun dev`             | Starts local dev server at `localhost:4321`         |
 | `bun run build`       | Builds the site to `./dist/`                        |
 | `bun preview`         | Previews the build locally in `workerd`             |
+| `bun run preview:wrangler` | Builds, then serves the Worker with `wrangler dev` |
 | `bun run format`      | Formats files with Biome                            |
 | `bun run lint`        | Lints files with Biome                              |
 | `bun run check`       | Runs Biome formatting, lint and import checks       |
@@ -48,7 +49,9 @@ All commands are run from the root of the project, from a terminal:
 GitHub Actions runs two workflows:
 
 - `.github/workflows/ci.yml` runs on every pull request: `biome ci`, `astro check` and `bun run build`.
-- `.github/workflows/deploy.yml` runs on every push to `main` (and manually): it builds the site and runs `wrangler deploy`. A running deploy always finishes; if several pushes arrive meanwhile, only the latest waiting run is kept.
+- `.github/workflows/deploy.yml` builds the site and runs `wrangler deploy`. For now it only runs when started manually (Actions > Deploy > Run workflow); it will run on every push to `main` once the site is ready to go public. A running deploy always finishes; if several runs are queued meanwhile, only the latest waiting run is kept.
+
+Until then, check the Worker locally with `bun run preview:wrangler`, which builds the site and serves `dist/` with `wrangler dev` (static pages, `/api/*` and the other Hono routes).
 
 The deploy workflow needs two repository secrets:
 
