@@ -6,6 +6,8 @@ import type { Locale } from "./locales";
 
 const ja = {
   "home.comingSoon": "準備中です。",
+  // Subtitle of the Latest section on the home page.
+  "latest.subtitle": "さいきんの配信と記事",
   // The locale's own name, shown on the links to it; not translated into other locales.
   "locale.name": "日本語",
   // Label of the Twitter link; "X" appears only in its icon.
@@ -22,6 +24,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
   ja,
   en: {
     "home.comingSoon": "Coming soon.",
+    "latest.subtitle": "Recent streams and posts",
     "locale.name": "English",
     "social.twitter": "Twitter (self-proclaimed X)",
     "theme.toDark": "Switch to dark theme",

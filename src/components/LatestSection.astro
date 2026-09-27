@@ -1,0 +1,81 @@
+---
+/**
+ * The Latest section of the home page: the `~/latest` heading, then a grid of two columns.
+ *
+ * The left column shows the `video-feature` slot. The right column shows the `video-list`
+ * slot and then the `blog` slot, 32px apart. From 1024px the columns sit side by side, the
+ * left one up to 720px wide and the right one at least 320px wide; below 1024px they stack
+ * in the order of the DOM. Empty slots leave the heading and the grid in place.
+ */
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import SectionHeading from "./SectionHeading.astro";
+
+interface Props {
+  /** Locale of the page, which chooses the subtitle. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+---
+
+<section id="latest">
+  <SectionHeading
+    label="~/latest"
+    title="LATEST"
+    subtitle={translate(lang, "latest.subtitle")}
+  />
+  <div class="columns">
+    <div class="column">
+      <slot name="video-feature" />
+    </div>
+    <div class="column side">
+      <slot name="video-list" />
+      <slot name="blog" />
+    </div>
+  </div>
+</section>
+
+<style>
+#latest {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+  padding: 88px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+@media (min-width: 768px) {
+  #latest {
+    padding-inline: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  #latest {
+    padding-inline: 64px;
+  }
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 56px;
+}
+
+@media (min-width: 1024px) {
+  .columns {
+    grid-template-columns: minmax(0, 720px) minmax(320px, 1fr);
+  }
+}
+
+.column {
+  min-width: 0;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+</style>
