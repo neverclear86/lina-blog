@@ -1,19 +1,24 @@
 ---
 /**
- * The site header of every page, copied from the `<header>` of `design/CBMain.dc.html`: the
- * logo and `ikili.pro` linking to the top of the top page, the main navigation, the language
- * switch, the theme toggle and the contact button. The navigation and the contact button point
- * to the sections of the top page of `lang` (`navLinks` and `homeSectionPath` in `./site-nav`),
- * and the item of the current page has `aria-current="page"` and a pink underline.
+ * The site header of every page, copied from the `<header>` of `design/CBMain.dc.html` and
+ * `design/CBMobile.dc.html`: the logo and `ikili.pro` linking to the top of the top page, the
+ * main navigation, the language switch, the theme toggle and the contact button. The navigation
+ * and the contact button point to the sections of the top page of `lang` (`navLinks` and
+ * `homeSectionPath` in `./site-nav`), and the item of the current page has
+ * `aria-current="page"` and a pink underline.
  *
- * The header stays in the page flow, 60px high below 768px and 72px from 768px. Below 1024px
- * only the logo, `ikili.pro` and the theme toggle show; the navigation, the language switch and
- * the contact button appear from 1024px. The side padding is 18px on the left and 14px on the
- * right below 768px, 32px from 768px and 64px from 1280px.
+ * The header stays in the page flow, 60px high below 768px and 72px from 768px. The side padding is
+ * 18px on the left and 14px on the right below 768px, 32px from 768px and 64px from 1280px. From
+ * 1024px the navigation, the language switch and the contact button sit in the header. Below 1024px
+ * they move into the menu, a popover under the header that the menu button next to the theme toggle
+ * shows and hides without script. The button shows three bars, and a cross while the menu is open.
+ * While it is open, the page behind it does not scroll, and a script closes it when a link in it is
+ * clicked. From 1024px the menu button and the menu are hidden.
  */
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import Button from "./Button.astro";
+import IconButton from "./IconButton.astro";
 import Logo from "./Logo.astro";
 import { homeSectionPath, languageLinks, navLinks } from "./site-nav";
 import ThemeToggle from "./ThemeToggle.astro";
@@ -62,6 +67,71 @@ const languages = languageLinks(lang, pathname);
     </div>
     <ThemeToggle lang={lang} />
     <div class="contact">
+      <Button href={homeSectionPath(lang, "contact")} size="md">
+        {translate(lang, "nav.contact")}
+      </Button>
+    </div>
+    <div class="menu-toggle">
+      <IconButton
+        label={translate(lang, "menu.label")}
+        tone="inverse"
+        popovertarget="site-menu"
+      >
+        <svg
+          class="menu-open-icon"
+          width="18"
+          height="12"
+          viewBox="0 0 18 12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M0 1h18M0 6h18M0 11h10"></path>
+        </svg>
+        <svg
+          class="menu-close-icon"
+          width="18"
+          height="18"
+          viewBox="0 0 18 18"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M2 2l14 14M16 2L2 16"></path>
+        </svg>
+      </IconButton>
+    </div>
+  </div>
+  <div id="site-menu" class="menu-panel" popover>
+    <nav class="menu-nav" aria-label={translate(lang, "nav.label")}>
+      {nav.map((item) => (
+  <a href={item.href} aria-current={item.current ? "page" : undefined}>
+    {translate(lang, item.key)}
+  </a>
+))}
+    </nav>
+    <div class="menu-languages">
+      {languages.map((link, index) => (
+  <>
+    {index > 0 && (
+      <span class="separator" aria-hidden="true">
+        /
+      </span>
+    )}
+    <a
+      href={link.href}
+      hreflang={link.locale}
+      lang={link.locale}
+      aria-current={link.current ? "page" : undefined}
+    >
+      {link.locale.toUpperCase()}
+    </a>
+  </>
+))}
+    </div>
+    <div class="menu-contact">
       <Button href={homeSectionPath(lang, "contact")} size="md">
         {translate(lang, "nav.contact")}
       </Button>
@@ -134,22 +204,104 @@ a {
   align-items: center;
   gap: 12px;
 }
+.menu-toggle {
+  display: flex;
+}
 .languages {
   font-family: var(--font-mono);
   font-size: 13px;
   gap: 6px;
 }
-.languages a {
+.menu-close-icon {
+  display: none;
+}
+.site-header:has(.menu-panel:popover-open) .menu-open-icon {
+  display: none;
+}
+.site-header:has(.menu-panel:popover-open) .menu-close-icon {
+  display: block;
+}
+/*
+ * Replaces the UA box of [popover] (centered, bordered, Canvas colors) with a sheet under the
+ * header. Leave display to the UA so that the closed menu stays hidden.
+ */
+.menu-panel {
+  position: fixed;
+  inset: 60px 0 auto;
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  max-height: calc(100dvh - 60px);
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px 14px 24px 18px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+}
+.menu-nav {
+  display: flex;
+  flex-direction: column;
+}
+.menu-nav a {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 900;
+  text-decoration: none;
+}
+.menu-nav a[aria-current="page"] {
+  text-decoration-line: underline;
+  text-decoration-thickness: 3px;
+  text-decoration-color: var(--pink);
+  text-underline-offset: 6px;
+}
+.menu-languages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+.menu-languages a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+.menu-contact {
+  margin-top: 20px;
+}
+.languages a,
+.menu-languages a {
   color: var(--muted);
   text-decoration: none;
 }
-.languages a[aria-current="page"] {
+.languages a[aria-current="page"],
+.menu-languages a[aria-current="page"] {
   color: var(--fg);
   font-weight: 500;
   text-decoration: underline;
 }
 .separator {
   color: var(--muted);
+}
+@media (min-width: 768px) {
+  .menu-panel {
+    inset: 72px 0 auto;
+    max-height: calc(100dvh - 72px);
+    padding: 8px 32px 24px;
+  }
+}
+@media (max-width: 1023px) {
+  :global(html:has(#site-menu:popover-open)) {
+    overflow: hidden;
+  }
+}
+.menu-nav a + a {
+  border-top: 1px solid var(--hair);
 }
 .site-header a:hover {
   color: var(--fg);
@@ -162,6 +314,10 @@ a {
   }
   .contact {
     display: block;
+  }
+  .menu-toggle,
+  .menu-panel {
+    display: none;
   }
   .actions {
     gap: 20px;
@@ -176,3 +332,15 @@ a {
   }
 }
 </style>
+
+<script>
+// A link to a section of the current page moves within the document and leaves the popover
+// open over it, so close the menu on every link click. Without script the menu stays open until
+// the menu button, Escape or a tap outside closes it.
+const menu = document.getElementById("site-menu");
+for (const link of menu?.querySelectorAll("a") ?? []) {
+  link.addEventListener("click", () => {
+    if (menu && "hidePopover" in menu) menu.hidePopover();
+  });
+}
+</script>

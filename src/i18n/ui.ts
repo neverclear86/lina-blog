@@ -76,6 +76,8 @@ const ja = {
   "latest.videos.empty": "動画の一覧を読み込めませんでした。",
   "latest.videos.heading": "動画",
   "latest.videos.watchOnYouTube": "YouTubeで見る",
+  // Name of the menu button of the site header; whether the menu is open is its expanded state.
+  "menu.label": "メニュー",
   // Main navigation of the site header; "nav.label" names its <nav>.
   "nav.about": "プロフィール",
   "nav.blog": "ブログ",
@@ -177,6 +179,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "latest.videos.empty": "Couldn't load the latest videos.",
     "latest.videos.heading": "Videos",
     "latest.videos.watchOnYouTube": "Watch on YouTube",
+    "menu.label": "Menu",
     "nav.about": "About",
     "nav.blog": "Blog",
     "nav.contact": "Contact",
