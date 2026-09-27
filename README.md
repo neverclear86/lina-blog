@@ -20,8 +20,9 @@ bun create astro@latest -- --template basics
 │   ├── content.config.ts # blog collection: src/content/blog/**/*.md checked by blog-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
-│   ├── assets/
+│   ├── assets/           # Images processed by astro:assets
 │   │   └── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
+│   ├── components/
 │   ├── i18n/
 │   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
 │   │   └── ui.ts         # UI strings per locale, unit-tested
