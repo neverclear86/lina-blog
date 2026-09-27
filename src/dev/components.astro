@@ -5,6 +5,7 @@ import Chip from "../components/Chip.astro";
 import IconButton from "../components/IconButton.astro";
 import IconLink from "../components/IconLink.astro";
 import SectionHeading from "../components/SectionHeading.astro";
+import Tape from "../components/Tape.astro";
 import TerminalCard from "../components/TerminalCard.astro";
 import { translate } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
@@ -363,6 +364,18 @@ import Layout from "../layouts/Layout.astro";
       </div>
     </section>
 
+    <section id="tape">
+      <h2>テープ</h2>
+      <div class="strip">
+        <Tape />
+        <span class="strip-text">幅 160px、高さ 40px（Hero の下端）</span>
+      </div>
+      <div class="strip strip-mobile">
+        <Tape width="64px" />
+        <span class="strip-text">幅 64px、高さ 36px（モバイル）</span>
+      </div>
+    </section>
+
     <section id="english" lang="en">
       <h2>英語</h2>
       <div class="row">
@@ -445,6 +458,27 @@ import Layout from "../layouts/Layout.astro";
 
 .surf {
   background: var(--surf);
+}
+
+.strip {
+  display: flex;
+  align-items: stretch;
+  width: min(100%, 480px);
+  height: 40px;
+  margin-bottom: 16px;
+  background: var(--inv);
+  color: var(--invfg);
+}
+
+.strip-mobile {
+  height: 36px;
+}
+
+.strip-text {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 13px;
 }
 
 .orange {
