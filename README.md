@@ -43,6 +43,7 @@ bun create astro@latest -- --template basics
 │   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
 │   │   ├── IconButton.astro      # Square icon-only button, named by an aria-label or a hidden label slot
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
+│   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
 │   │   ├── Logo.astro            # Switches the logo with the theme
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level is a prop

@@ -10,6 +10,7 @@ import RssIcon from "../components/icons/RssIcon.astro";
 import XIcon from "../components/icons/XIcon.astro";
 import YouTubeIcon from "../components/icons/YouTubeIcon.astro";
 import ZennIcon from "../components/icons/ZennIcon.astro";
+import Kao from "../components/Kao.astro";
 import PixelArt from "../components/PixelArt.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import Tape from "../components/Tape.astro";
@@ -418,6 +419,18 @@ const COMMANDS = ["$ npm run deploy", "$ git push"];
   </span>
 ))}
       </div>
+      <div class="row">
+        <Bubble>
+          <span>今日もITで遊んでる〜</span>
+          <span class="kao-bubble"
+            ><Kao faces={["⸜(*ˊᗜˋ*)⸝", "(๑•̀ㅂ•́)و✧", "✌︎('ω'✌︎ )"]} /></span
+          >
+        </Bubble>
+      </div>
+      <div class="band">
+        <span>status: online</span>
+        <Kao faces={["⸜(*ˊᗜˋ*)⸝", "ᐠ( ᐛ )ᐟ", "(๑•̀ㅂ•́)و✧"]} />
+      </div>
     </section>
   </main>
 </Layout>
@@ -565,5 +578,23 @@ section {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--muted);
+}
+
+.kao-bubble {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.band {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  height: 40px;
+  margin-top: 24px;
+  padding: 0 24px;
+  background: var(--inv);
+  color: var(--invfg);
+  font-family: var(--font-mono);
+  font-size: 13px;
 }
 </style>
