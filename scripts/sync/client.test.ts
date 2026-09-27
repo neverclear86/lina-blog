@@ -91,7 +91,7 @@ describe("createPublishClient", () => {
     );
     const client = createPublishClient(
       { url: `${URL_BASE}/`, token: TOKEN },
-      { fetchImpl },
+      { fetchImpl, retryDelaysMs: [0, 0] },
     );
 
     const result = await client.listArticles();
