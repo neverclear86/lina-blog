@@ -1,0 +1,61 @@
+{
+  "kit": "issue-workflow-kit",
+  "kitCommit": "31fcf0f87ff05d5c8089bc2b5831f46fc5d8bbeb",
+  "config": {
+    "values": {
+      "REPO": "neverclear86/lina-blog",
+      "PROJECT_DESC": "Astro 7 と Cloudflare Workers で作る創好リナの個人サイト兼ブログ（ikili.pro）",
+      "BRANCH_FORM": "`feat/…`、`fix/…`、`docs/…`、`chore/…` の形で英語",
+      "BASE_BRANCH": "main",
+      "CLOSE_KEYWORD": "Closes",
+      "HELPERS_DIR": ".claude/scripts",
+      "MARKER": "lb",
+      "MERGE_METHOD": "squash",
+      "WINDOW": 4,
+      "PROJECT_PREFIX": "lb",
+      "SWEEP_PATHS": "src public design workers docs AGENTS.md README.md astro.config.mjs tsconfig.json package.json wrangler.jsonc biome.json .claude .github",
+      "DOC_COMMENT_RE": "^(/[*][*]|[*])",
+      "TEST_PATH_RE": "[.](test|spec)[.][jt]sx?$",
+      "DOCS_PATH_RE": "^(docs|design)/|[.]md$",
+      "CONFIG_PATH_RE": "^[.](claude|github)/|[.](json|jsonc|ya?ml|toml)$|[.]config[.]m?[jt]s$|^astro[.]config[.]mjs$"
+    },
+    "modules": {
+      "split": true,
+      "design": true,
+      "gate": true,
+      "ci": false,
+      "retro": true,
+      "ports": true,
+      "plan-tests": false,
+      "hooks": true,
+      "screenshots": true
+    },
+    "conditions": {
+      "長く動くプロセスを立てる": true,
+      "base が既定ブランチでない": false,
+      "テストが外部の API に接続する": false,
+      "テストが固定のポートを使う": false
+    }
+  },
+  "files": [
+    ".claude/agents/issue-designer.md",
+    ".claude/agents/issue-final-gate.md",
+    ".claude/agents/issue-implementer.md",
+    ".claude/agents/issue-merger.md",
+    ".claude/agents/issue-plan-reviewer.md",
+    ".claude/agents/issue-planner.md",
+    ".claude/agents/issue-pr-reviewer.md",
+    ".claude/agents/issue-retro-implementer.md",
+    ".claude/agents/issue-retrospective.md",
+    ".claude/scripts/check_procedure.sh",
+    ".claude/scripts/hook_pr_body_gate.sh",
+    ".claude/scripts/post_comment.sh",
+    ".claude/scripts/pr_facts.sh",
+    ".claude/scripts/sweep_refs.sh",
+    ".claude/scripts/wfstats.py",
+    ".claude/skills/issue-workflow/SKILL.md",
+    ".claude/skills/issue-workflow/references/formats.md",
+    ".claude/workflows/issue-workflow.js",
+    ".claude/workflows/retrospective.js"
+  ]
+}
