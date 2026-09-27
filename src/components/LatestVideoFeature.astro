@@ -1,0 +1,135 @@
+---
+/**
+ * The large card of the Latest section for the newest video: a `latest.mp4` terminal window with
+ * the thumbnail and a `NEW` chip, then the title, all in one link to the watch page. The pixel
+ * art stands on the card, outside the link.
+ *
+ * Without a video, such as when the feed could not be read, the window shows a message in place
+ * of the thumbnail and is not a link.
+ */
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import type { YouTubeVideo } from "../youtube-feed";
+import Chip from "./Chip.astro";
+import PixelArt from "./PixelArt.astro";
+import TerminalCard from "./TerminalCard.astro";
+
+interface Props {
+  /** Locale of the page, which chooses the message shown without a video. */
+  lang: Locale;
+  /** The newest video, or `undefined` when there is none. */
+  video: YouTubeVideo | undefined;
+}
+
+const { lang, video } = Astro.props;
+
+// Width of the left column of LatestSection: up to 720px from 1024px, one column below.
+const SIZES =
+  "(min-width: 1224px) 720px, (min-width: 1024px) calc(100vw - 504px), (min-width: 768px) calc(100vw - 64px), calc(100vw - 32px)";
+---
+
+<div class="latest-video-feature">
+  <div class="pixel"><PixelArt bob /></div>
+  {video ? (
+  <a class="link" href={video.url}>
+    <TerminalCard title="latest.mp4">
+      <div class="thumb">
+        <img
+          src={video.thumbnail.src}
+          srcset={video.thumbnail.srcset}
+          sizes={SIZES}
+          width="480"
+          height="270"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+        <div class="new">
+          <Chip tone="pink">NEW</Chip>
+        </div>
+      </div>
+    </TerminalCard>
+    <span class="title" lang="ja">
+      {video.title}
+    </span>
+  </a>
+) : (
+  <TerminalCard title="latest.mp4" lift={false}>
+    <div class="thumb empty">
+      <p>{translate(lang, "latest.videos.empty")}</p>
+    </div>
+  </TerminalCard>
+)}
+</div>
+
+<style>
+.latest-video-feature {
+  position: relative;
+}
+
+.pixel {
+  position: absolute;
+  top: -62px;
+  right: 100px;
+  display: flex;
+}
+
+.link {
+  display: block;
+  color: var(--fg);
+  text-decoration: none;
+}
+
+/* shapes.css lifts the card only while the card itself is hovered; this also covers the title. */
+.link:hover > :global(.lift) {
+  transform: translate(-2px, -2px);
+  filter: drop-shadow(5px 5px 0 var(--shadow-color, var(--shadow)));
+}
+
+.thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--ph);
+}
+
+.thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.new {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  display: flex;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.empty p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  margin-top: 18px;
+  font-size: 20px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+</style>

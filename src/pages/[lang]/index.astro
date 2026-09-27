@@ -6,11 +6,15 @@ import ContactSection from "../../components/ContactSection.astro";
 import HeroStanding from "../../components/HeroStanding.astro";
 import LatestPosts from "../../components/LatestPosts.astro";
 import LatestSection from "../../components/LatestSection.astro";
+import LatestVideoFeature from "../../components/LatestVideoFeature.astro";
+import LatestVideoList from "../../components/LatestVideoList.astro";
 import Logo from "../../components/Logo.astro";
 import Works from "../../components/Works.astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
 import { translate } from "../../i18n/ui";
+import { LATEST_VIDEOS_SHOWN, latestVideos } from "../../latest-videos";
 import Layout from "../../layouts/Layout.astro";
+import { fetchLatestVideos } from "../../youtube-feed";
 
 export const getStaticPaths = (() =>
   LOCALES.map((lang) => ({
@@ -24,6 +28,12 @@ interface Props {
 
 const { lang } = Astro.props;
 const posts = await getCollection("blog");
+
+const result = await fetchLatestVideos({ limit: LATEST_VIDEOS_SHOWN });
+if (!result.ok) {
+  console.warn(`Latest videos: the YouTube feed failed (${result.reason}).`);
+}
+const { feature, list } = latestVideos(result);
 ---
 
 <Layout lang={lang}>
@@ -34,6 +44,8 @@ const posts = await getCollection("blog");
     <About lang={lang} />
     <Works lang={lang} />
     <LatestSection lang={lang}>
+      <LatestVideoFeature slot="video-feature" lang={lang} video={feature} />
+      <LatestVideoList slot="video-list" lang={lang} videos={list} />
       <LatestPosts slot="blog" lang={lang} posts={posts} />
     </LatestSection>
     <ContactSection lang={lang} />

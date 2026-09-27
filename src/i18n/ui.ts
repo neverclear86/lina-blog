@@ -72,6 +72,10 @@ const ja = {
   "latest.blog.noPosts": "まだ記事はありません。",
   // Subtitle of the Latest section on the home page.
   "latest.subtitle": "さいきんの配信と記事",
+  // Shown in place of the newest video when the feed gives none, such as when it cannot be read.
+  "latest.videos.empty": "動画の一覧を読み込めませんでした。",
+  "latest.videos.heading": "動画",
+  "latest.videos.watchOnYouTube": "YouTubeで見る",
   // The locale's own name, shown on the links to it; not translated into other locales.
   "locale.name": "日本語",
   // Says that the site can also be read with curl; shown in the site footer.
@@ -152,6 +156,9 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "latest.blog.inJapanese": "(in Japanese)",
     "latest.blog.noPosts": "No posts yet.",
     "latest.subtitle": "Recent streams and posts",
+    "latest.videos.empty": "Couldn't load the latest videos.",
+    "latest.videos.heading": "Videos",
+    "latest.videos.watchOnYouTube": "Watch on YouTube",
     "locale.name": "English",
     "site.curlHint": "$ curl ikili.pro works too",
     "social.twitter": "Twitter (self-proclaimed X)",

@@ -1,0 +1,112 @@
+---
+/**
+ * The video list of the Latest section: the "動画" heading with a link to the YouTube channel,
+ * then the given videos, each a link with its date in Japan time and its title.
+ *
+ * Without videos only the heading row is shown.
+ */
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import { formatVideoDate } from "../latest-videos";
+import { YOUTUBE_URL } from "../profile-links";
+import type { YouTubeVideo } from "../youtube-feed";
+
+interface Props {
+  /** Locale of the page, which chooses the heading and the link text. */
+  lang: Locale;
+  /** Videos to list, newest first; all of them are shown. */
+  videos: readonly YouTubeVideo[];
+}
+
+const { lang, videos } = Astro.props;
+---
+
+<div class="latest-video-list">
+  <div class="head">
+    <h3>{translate(lang, "latest.videos.heading")}</h3>
+    <a class="watch" href={YOUTUBE_URL}
+      ><span>{translate(lang, "latest.videos.watchOnYouTube")}</span></a
+    >
+  </div>
+  {videos.length > 0 && (
+  <ul class="list">
+    {videos.map((v) => (
+      <li>
+        <a class="video" href={v.url}>
+          <time datetime={v.publishedAt.toISOString()}>
+            {formatVideoDate(v.publishedAt)}
+          </time>
+          <span class="title" lang="ja">
+            {v.title}
+          </span>
+        </a>
+      </li>
+    ))}
+  </ul>
+)}
+</div>
+
+<style>
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.watch {
+  flex-shrink: 0;
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.video {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--hair);
+  color: var(--fg);
+  text-decoration: none;
+}
+
+time {
+  flex-shrink: 0;
+  width: 96px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.watch:hover span,
+.video:hover .title {
+  opacity: 0.8;
+}
+</style>

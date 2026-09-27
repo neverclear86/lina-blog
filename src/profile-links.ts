@@ -1,6 +1,7 @@
 /**
- * Links to the profiles on other services, shared by `/llms.txt` (`src/llms.ts`) and the text
- * version of the site (`src/text-site.ts`).
+ * Links to the profiles on other services, shared by `/llms.txt` (`src/llms.ts`), the text
+ * version of the site (`src/text-site.ts`) and the video list of the Latest section
+ * (`src/components/LatestVideoList.astro`).
  */
 import type { Locale } from "./i18n/locales";
 
@@ -19,6 +20,9 @@ export interface ProfileLink {
   shortForm?: string;
 }
 
+/** The channel page on YouTube, also linked from the Latest section of the home page. */
+export const YOUTUBE_URL = "https://www.youtube.com/@LinaTsukusu";
+
 /**
  * Profiles on other services, in the order of the design's icon row (without RSS). X is
  * written "Twitter(自称X)" in Japanese and "Twitter (self-proclaimed X)" in English everywhere
@@ -27,7 +31,7 @@ export interface ProfileLink {
 export const PROFILE_LINKS: readonly ProfileLink[] = [
   {
     label: { ja: "YouTube", en: "YouTube" },
-    url: "https://www.youtube.com/@LinaTsukusu",
+    url: YOUTUBE_URL,
     note: { ja: "動画と配信", en: "Videos and streams" },
   },
   {
