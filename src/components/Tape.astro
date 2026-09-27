@@ -12,7 +12,10 @@
  * It takes the height of its box, such as a flex row that stretches it, and does not shrink.
  */
 interface Props {
-  /** The width as a CSS length: "160px" under the hero, "64px" on a phone. */
+  /**
+   * The width as a CSS length: "160px" under the hero, "64px" on a phone, or "100%" to take the
+   * width of a box that sets it.
+   */
   width?: string;
 }
 
