@@ -15,6 +15,8 @@ bun create astro@latest -- --template basics
 ├── src/
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/api/*), unit-tested
+│   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
+│   ├── content.config.ts # blog collection: src/content/blog/**/*.md checked by blog-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── layouts/
@@ -29,7 +31,7 @@ bun create astro@latest -- --template basics
 
 Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets. Routes that no page matches, such as `/api/*`, fall through to the Hono app in `src/fetch.ts`, which serves the routes in `src/api.ts`.
 
-Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes; `src/api.ts` is tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
+Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes and the blog frontmatter schema; `src/api.ts` is tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 
 To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
 
