@@ -4,11 +4,12 @@
  * the English title in Saira Condensed and the Japanese subtitle.
  *
  * Both titles are in the heading element, so its name reads "ABOUT 創好リナってこんな人", and
- * the English title has `lang="en"`. Below 768px the subtitle goes under the English title;
- * from 768px they sit side by side, aligned at the bottom. The default slot, such as a lead
- * paragraph or a "see all" link, goes under the titles below 1024px and to their right from
- * 1024px. From 1024px the titles keep their width, so that the subtitle stays on one line,
- * and the slot takes the rest of the row.
+ * the English title has `lang="en"`. An English title too long for the width, such as the name
+ * of a work, breaks between any two letters. Below 768px the subtitle goes under the English
+ * title; from 768px they sit side by side, aligned at the bottom. The default slot, such as a
+ * lead paragraph or a "see all" link, goes under the titles below 1024px and to their right
+ * from 1024px. From 1024px the titles keep their width, at most the whole row, so that the
+ * subtitle stays on one line, and the slot takes the rest of the row.
  *
  * The `contact` variant is for the contact section on `--cbg`: the label is in `--cmuted`, the
  * subtitle is 26px and stays under the English title at every width.
@@ -68,6 +69,7 @@ const {
 
   .titles {
     flex-shrink: 0;
+    max-width: 100%;
   }
 }
 
@@ -105,6 +107,7 @@ const {
   font-size: clamp(64px, 15vw, 120px);
   line-height: 0.8;
   letter-spacing: -2px;
+  overflow-wrap: anywhere;
 }
 
 .ja {

@@ -19,9 +19,17 @@ interface Props {
    * locale. Defaults to `DEFAULT_LOCALE`.
    */
   lang?: Locale;
+  /**
+   * Name of the page, such as the title of a work. `<title>` is `<name> | ikili.pro`, or
+   * `ikili.pro` alone when the name is omitted or is `ikili.pro` itself.
+   */
+  title?: string;
 }
 
-const { lang = DEFAULT_LOCALE } = Astro.props;
+const { lang = DEFAULT_LOCALE, title } = Astro.props;
+
+const pageTitle =
+  title && title !== "ikili.pro" ? `${title} | ikili.pro` : "ikili.pro";
 
 // Locales to link to: the same page in each of them, from `localizedPath`.
 const targets = LOCALES.filter((locale) => locale !== lang);
@@ -67,7 +75,7 @@ const [icon32, icon192, appleTouchIcon] = await Promise.all([
       href={FEED_PATH}
     >
     <meta name="generator" content={Astro.generator}>
-    <title>ikili.pro</title>
+    <title>{pageTitle}</title>
     <Font cssVariable="--font-body" />
     <Font cssVariable="--font-display" />
     <Font cssVariable="--font-mono" />
