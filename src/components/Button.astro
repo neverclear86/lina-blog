@@ -5,8 +5,8 @@
  *
  * With `href` it renders an `<a>`, and without it a `<button>`. The element holds a shadow
  * element with `.lift`, and that holds the notched orange face, so that the focus outline of
- * `shapes.css` goes on the outer element. A disabled `<button>` keeps its 3px shadow, does not
- * lift and dims to 55% opacity.
+ * `shapes.css` goes on the outer element. A `<button>` that is disabled or has
+ * `aria-disabled="true"` keeps its 3px shadow, does not lift and dims to 55% opacity.
  */
 type Props = {
   /** Height, padding and font size: "md" (44px, the header) or "lg" (54px, the form). */
@@ -102,11 +102,13 @@ button.button {
   font-size: 16px;
 }
 
-.button:disabled {
+.button:disabled,
+.button[aria-disabled="true"] {
   cursor: default;
 }
 
-.button:disabled > .lift {
+.button:disabled > .lift,
+.button[aria-disabled="true"] > .lift {
   transform: none;
   filter: drop-shadow(3px 3px 0 var(--shadow-color));
   opacity: 0.55;

@@ -1,24 +1,26 @@
 /**
- * What the contact form shows: the state after a submission, the text of its status line and
- * the text under a rejected field. No DOM access, so a browser script can call these functions
- * and Vitest can test them directly. `POST /api/contact` answers with a `ContactResponse` of
- * `src/api.ts`.
+ * What the contact form shows: the state before and after a submission, the text of its status
+ * line and the text under a rejected field, and the size of the Turnstile widget. No DOM access,
+ * so a browser script can call these functions and Vitest can test them directly.
+ * `POST /api/contact` answers with a `ContactResponse` of `src/api.ts`.
  */
 import {
   CONTACT_LIMITS,
   type ContactErrorCode,
   type ContactErrors,
   type ContactField,
+  validateContact,
 } from "./contact";
 import type { Locale } from "./i18n/locales";
 import { translate, type UiKey } from "./i18n/ui";
 
 /**
- * What the contact form shows. `contactStateFromFetch` returns `sent`, `invalid`, `turnstile`,
- * `failed` or `network`. The other states do not come from a response: `idle` before a
- * submission, `waiting` while the Turnstile token is not issued yet, `sending` while the request
- * is in flight, and `unavailable` when the Turnstile widget failed to load. `invalid` carries the
- * error code of each rejected field, from `validateContact` or from a 400 response.
+ * What the contact form shows. Before a request, `contactStateBeforeSend` returns `invalid`,
+ * `unavailable` when the Turnstile widget failed to load, `waiting` while its token is not issued
+ * yet, or `sending` when the request can go. After it, `contactStateFromFetch` returns `sent`,
+ * `invalid`, `turnstile`, `failed` or `network`. `idle` is the state before any submission.
+ * `invalid` carries the error code of each rejected field, from `validateContact` or from a 400
+ * response.
  */
 export type ContactFormState =
   | { state: "idle" }
@@ -156,4 +158,42 @@ export function contactFieldMessage(
     case "newline":
       return translate(locale, "contact.error.newline");
   }
+}
+
+/**
+ * What the page knows about the Turnstile widget when the visitor submits: whether it failed to
+ * load, and its current token (`undefined` or empty until one is issued and after it expires).
+ */
+export interface TurnstileStatus {
+  failed: boolean;
+  token: string | undefined;
+}
+
+/**
+ * Decides, before any request, what a submission of `values` shows. Rejected fields come first
+ * and give `invalid` with the code of each; then a widget that failed to load gives
+ * `unavailable`, and a missing or empty token gives `waiting`. Otherwise the form can be sent
+ * and the state is `sending`. `values` are the form's entries, such as
+ * `Object.fromEntries(new FormData(form))`; keys other than the fields are ignored.
+ */
+export function contactStateBeforeSend(
+  values: Record<string, unknown>,
+  turnstile: TurnstileStatus,
+): ContactFormState {
+  const validation = validateContact(values);
+  if (!validation.ok) return { state: "invalid", fields: validation.errors };
+  if (turnstile.failed) return { state: "unavailable" };
+  if (!turnstile.token) return { state: "waiting" };
+  return { state: "sending" };
+}
+
+/** Narrowest width, in CSS pixels, of the Turnstile widget with `size: "flexible"`. */
+const TURNSTILE_FLEXIBLE_MIN_WIDTH = 300;
+
+/**
+ * Returns the Turnstile `size` for a container `width` px wide: `flexible` when the flexible
+ * widget fits, otherwise `compact`.
+ */
+export function turnstileSize(width: number): "flexible" | "compact" {
+  return width >= TURNSTILE_FLEXIBLE_MIN_WIDTH ? "flexible" : "compact";
 }
