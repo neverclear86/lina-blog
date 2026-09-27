@@ -43,6 +43,24 @@ All commands are run from the root of the project, from a terminal:
 | `bun run check`       | Runs Biome formatting, lint and import checks       |
 | `bun astro ...`       | Runs CLI commands like `astro add`, `astro check`   |
 
+## 🚢 CI and deployment
+
+GitHub Actions runs two workflows:
+
+- `.github/workflows/ci.yml` runs on every pull request: `biome ci`, `astro check` and `bun run build`.
+- `.github/workflows/deploy.yml` runs on every push to `main` (and manually): it builds the site and runs `wrangler deploy`. A running deploy always finishes; if several pushes arrive meanwhile, only the latest waiting run is kept.
+
+The deploy workflow needs two repository secrets:
+
+1. In the Cloudflare dashboard, create an API token from the "Edit Cloudflare Workers" template, limited to this account (at minimum `Account` > `Workers Scripts` > `Edit`).
+2. Copy the account ID from the Workers & Pages overview.
+3. Register both secrets:
+
+   ```sh
+   gh secret set CLOUDFLARE_API_TOKEN
+   gh secret set CLOUDFLARE_ACCOUNT_ID
+   ```
+
 ## 👀 Want to learn more?
 
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
