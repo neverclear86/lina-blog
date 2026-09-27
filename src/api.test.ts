@@ -27,6 +27,27 @@ const SECURITY_HEADERS = {
   "x-xss-protection": "0",
 };
 
+/**
+ * Returns an `ASSETS` binding that serves `files` by path, answers 404 for other paths, and
+ * throws for the paths in `broken`.
+ */
+function assetsWith(
+  files: Record<string, string>,
+  broken: string[] = [],
+): { fetch: Mock<(input: URL) => Promise<Response>> } {
+  return {
+    fetch: vi.fn(async (input: URL) => {
+      if (broken.includes(input.pathname)) {
+        throw new TypeError("fetch failed");
+      }
+      const body = files[input.pathname];
+      return body === undefined
+        ? new Response(null, { status: 404 })
+        : new Response(body);
+    }),
+  };
+}
+
 describe("api", () => {
   it("GET /api/health は 200 と { ok: true } を返す", async () => {
     const res = await api.request("/api/health");
@@ -53,18 +74,6 @@ describe("api", () => {
     expect(res.status).toBe(302);
     expect(res.headers.get("Location")).toBe("/ja/");
     expect(res.headers.get("Vary")).toBe("User-Agent, Accept-Language");
-  });
-
-  it("GET / は curl の User-Agent に text/plain の 200 で仮のテキストを返す", async () => {
-    const res = await api.request("/", {
-      headers: { "User-Agent": "curl/8.22.0", "Accept-Language": "en" },
-    });
-    expect(res.status).toBe(200);
-    expect(res.headers.get("Content-Type")?.toLowerCase()).toBe(
-      "text/plain; charset=utf-8",
-    );
-    expect(res.headers.get("Vary")).toBe("User-Agent, Accept-Language");
-    expect(await res.text()).toBe("ikili.pro\n準備中です。\n");
   });
 
   it("GET / はブラウザの User-Agent なら Accept-Language の言語にリダイレクトする", async () => {
@@ -118,6 +127,7 @@ describe("POST /api/contact", () => {
     overrides: Partial<ApiEnv["Bindings"]> = {},
   ): ApiEnv["Bindings"] {
     return {
+      ASSETS: assetsWith({}),
       CONTACT_MAIL: { send },
       CONTACT_MAIL_TO: "owner@example.com",
       TURNSTILE_SECRET_KEY: "secret-1",
@@ -322,5 +332,108 @@ describe("POST /api/contact", () => {
     ]);
     expect(console.log).not.toHaveBeenCalled();
     expect(console.info).not.toHaveBeenCalled();
+  });
+});
+
+describe("GET / のコマンドラインのクライアント向けの応答", () => {
+  const FILES: Record<string, string> = {
+    "/ansi/color.txt": "ART\n",
+    "/text/ja.txt": "日本語\n",
+    "/text/en.txt": "English\n",
+  };
+
+  async function get(
+    assets: ApiEnv["Bindings"]["ASSETS"],
+    lang?: string,
+  ): Promise<Response> {
+    const headers: Record<string, string> = { "User-Agent": "curl/8.22.0" };
+    if (lang !== undefined) {
+      headers["Accept-Language"] = lang;
+    }
+    return await api.request(
+      "/",
+      { headers },
+      { ASSETS: assets, CONTACT_MAIL: { send: vi.fn() } },
+    );
+  }
+
+  beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("ANSI アート、空行、テキスト版の順に text/plain の 200 で返す", async () => {
+    const res = await get(assetsWith(FILES), "ja");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")?.toLowerCase()).toBe(
+      "text/plain; charset=utf-8",
+    );
+    expect(res.headers.get("Vary")).toBe("User-Agent, Accept-Language");
+    expect(await res.text()).toBe("ART\n\n日本語\n");
+  });
+
+  it("Accept-Language が無ければ日本語のテキスト版を返す", async () => {
+    const res = await get(assetsWith(FILES));
+    expect(await res.text()).toBe("ART\n\n日本語\n");
+  });
+
+  it("Accept-Language が en なら英語のテキスト版を返す", async () => {
+    const res = await get(assetsWith(FILES), "en-US,en;q=0.9");
+    expect(await res.text()).toBe("ART\n\nEnglish\n");
+  });
+
+  it("アセットは要求と同じオリジンから取得する", async () => {
+    const assets = assetsWith(FILES);
+    await get(assets, "en");
+    expect(assets.fetch.mock.calls.map(([input]) => input.href)).toEqual([
+      "http://localhost/ansi/color.txt",
+      "http://localhost/text/en.txt",
+    ]);
+  });
+
+  it("ANSI アートが 404 ならテキスト版だけを 200 で返す", async () => {
+    const { "/ansi/color.txt": _, ...texts } = FILES;
+    const res = await get(assetsWith(texts), "ja");
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("日本語\n");
+    expect(vi.mocked(console.error).mock.calls).toEqual([
+      ["root: /ansi/color.txt answered 404"],
+    ]);
+  });
+
+  it("ANSI アートの取得が例外ならテキスト版だけを 200 で返す", async () => {
+    const res = await get(assetsWith(FILES, ["/ansi/color.txt"]), "ja");
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("日本語\n");
+    expect(vi.mocked(console.error).mock.calls).toEqual([
+      ["root: /ansi/color.txt failed (TypeError)"],
+    ]);
+  });
+
+  it("テキスト版が 404 なら 503 でブラウザで開く案内を返す", async () => {
+    const { "/text/ja.txt": _, ...rest } = FILES;
+    const res = await get(assetsWith(rest), "ja");
+    expect(res.status).toBe(503);
+    expect(await res.text()).toBe(
+      "ikili.pro\nテキスト版を表示できませんでした。ブラウザで http://localhost/ja/ を開いてください。\n",
+    );
+    expect(vi.mocked(console.error).mock.calls).toEqual([
+      ["root: /text/ja.txt answered 404"],
+    ]);
+  });
+
+  it("英語のテキスト版の取得が例外なら 503 で英語の案内を返す", async () => {
+    const res = await get(assetsWith(FILES, ["/text/en.txt"]), "en");
+    expect(res.status).toBe(503);
+    expect(res.headers.get("Vary")).toBe("User-Agent, Accept-Language");
+    expect(await res.text()).toBe(
+      "ikili.pro\nThe text version is unavailable. Open http://localhost/en/ in a browser.\n",
+    );
+    expect(vi.mocked(console.error).mock.calls).toEqual([
+      ["root: /text/en.txt failed (TypeError)"],
+    ]);
   });
 });

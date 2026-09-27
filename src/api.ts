@@ -6,6 +6,7 @@ import {
   validateContact,
 } from "./contact";
 import { buildContactMail, type ContactMail } from "./contact-mail";
+import type { Locale } from "./i18n/locales";
 import { negotiateLocale } from "./i18n/negotiate";
 import { verifyTurnstile } from "./turnstile";
 import { isCommandLineClient } from "./user-agent";
@@ -16,6 +17,8 @@ import { isCommandLineClient } from "./user-agent";
  */
 export type ApiEnv = {
   Bindings: {
+    /** Workers Static Assets, serving the files that `astro build` writes to `dist/client/`. */
+    ASSETS: { fetch(input: URL): Promise<Response> };
     /** The `send_email` binding in `wrangler.jsonc` that sends the notification. */
     CONTACT_MAIL: { send(message: ContactMail): Promise<unknown> };
     /** Recipient of the contact form notification. */
@@ -122,18 +125,72 @@ function redirectToLocale(c: Context): Response {
 // no-referrer` and others) to every response of `/`. It runs for `/` only, not for `/api/*`.
 api.use("/", secureHeaders());
 
-/** Placeholder text that `/` returns to command-line clients. */
-const ROOT_TEXT = "ikili.pro\n準備中です。\n";
+/** Path of the text art that `/` shows command-line clients above the text version. */
+const ANSI_ART_PATH = "/ansi/color.txt";
 
 /**
- * Answers `/`. Command-line clients such as curl (see `isCommandLineClient`) get `ROOT_TEXT` as
- * `text/plain`, and other clients are redirected by `redirectToLocale`. The response depends on
- * both request headers, so it carries `Vary: User-Agent, Accept-Language`.
+ * Returns the body of the static asset at `path`, fetched through the `ASSETS` binding with the
+ * origin of the request. Returns `undefined` when the response is not 2xx or the fetch throws,
+ * and logs the path with the status or the error name.
  */
-function serveRoot(c: Context): Response {
+async function fetchAsset(
+  c: Context<ApiEnv>,
+  path: string,
+): Promise<string | undefined> {
+  try {
+    const res = await c.env.ASSETS.fetch(new URL(path, c.req.url));
+    if (!res.ok) {
+      console.error(`root: ${path} answered ${res.status}`);
+      return undefined;
+    }
+    return await res.text();
+  } catch (error) {
+    console.error(
+      `root: ${path} failed (${error instanceof Error ? error.name : typeof error})`,
+    );
+    return undefined;
+  }
+}
+
+/** Text that `/` returns with 503 when the text version cannot be fetched, by locale. */
+const TEXT_UNAVAILABLE: Record<Locale, (top: string) => string> = {
+  ja: (top) =>
+    `ikili.pro\nテキスト版を表示できませんでした。ブラウザで ${top} を開いてください。\n`,
+  en: (top) =>
+    `ikili.pro\nThe text version is unavailable. Open ${top} in a browser.\n`,
+};
+
+/**
+ * Answers command-line clients at `/` with `text/plain`: the text art at `ANSI_ART_PATH`, a
+ * blank line, then the text version `/text/<locale>.txt` in the locale that `Accept-Language`
+ * prefers (see `negotiateLocale`), both fetched by `fetchAsset`. Without the text art, the text
+ * version alone is returned with 200. Without the text version, `TEXT_UNAVAILABLE` is returned
+ * with 503.
+ */
+async function serveText(c: Context<ApiEnv>): Promise<Response> {
+  const locale = negotiateLocale(c.req.header("Accept-Language"));
+  const [art, text] = await Promise.all([
+    fetchAsset(c, ANSI_ART_PATH),
+    fetchAsset(c, `/text/${locale}.txt`),
+  ]);
+  if (text === undefined) {
+    return c.text(
+      TEXT_UNAVAILABLE[locale](new URL(`/${locale}/`, c.req.url).href),
+      503,
+    );
+  }
+  return c.text(art === undefined ? text : `${art}\n${text}`);
+}
+
+/**
+ * Answers `/`. Command-line clients such as curl (see `isCommandLineClient`) get `serveText`,
+ * and other clients are redirected by `redirectToLocale`. The response depends on both request
+ * headers, so it carries `Vary: User-Agent, Accept-Language`.
+ */
+async function serveRoot(c: Context<ApiEnv>): Promise<Response> {
   c.header("Vary", "User-Agent, Accept-Language");
   if (isCommandLineClient(c.req.header("User-Agent"))) {
-    return c.text(ROOT_TEXT);
+    return await serveText(c);
   }
   return redirectToLocale(c);
 }
