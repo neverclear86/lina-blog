@@ -6,6 +6,8 @@ import type { Locale } from "./locales";
 
 const ja = {
   "home.comingSoon": "準備中です。",
+  // The locale's own name, shown on the links to it; not translated into other locales.
+  "locale.name": "日本語",
 } as const;
 
 /** Key of a UI string. */
@@ -16,6 +18,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
   ja,
   en: {
     "home.comingSoon": "Coming soon.",
+    "locale.name": "English",
   },
 };
 
