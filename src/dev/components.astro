@@ -4,6 +4,12 @@ import Button from "../components/Button.astro";
 import Chip from "../components/Chip.astro";
 import IconButton from "../components/IconButton.astro";
 import IconLink from "../components/IconLink.astro";
+import GitHubIcon from "../components/icons/GitHubIcon.astro";
+import NostrIcon from "../components/icons/NostrIcon.astro";
+import RssIcon from "../components/icons/RssIcon.astro";
+import XIcon from "../components/icons/XIcon.astro";
+import YouTubeIcon from "../components/icons/YouTubeIcon.astro";
+import ZennIcon from "../components/icons/ZennIcon.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import Tape from "../components/Tape.astro";
 import TerminalCard from "../components/TerminalCard.astro";
@@ -270,80 +276,42 @@ import Layout from "../layouts/Layout.astro";
         >
       </div>
       <div class="row">
-        <IconLink href="#icons" label="YouTube"
-          ><svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linejoin="round"
-          >
-            <rect x="2.5" y="5" width="19" height="14" rx="3"></rect>
-            <path d="M10 9.5v5l4.5-2.5z" fill="currentColor"></path>
-          </svg></IconLink
-        >
+        <IconLink href="#icons" label="YouTube"><YouTubeIcon /></IconLink>
         <IconLink
           href="#icons"
           label={translate("ja", "social.twitter")}
           rel="me"
-          ><svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linejoin="round"
-          >
-            <path d="M4 5h16v11H9l-5 4z"></path>
-          </svg></IconLink
+          ><XIcon /></IconLink
         >
         <IconLink
           href="#icons"
           label={translate("ja", "social.twitter")}
           rel="me"
           class="is-hover"
-          ><svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linejoin="round"
-          >
-            <path d="M4 5h16v11H9l-5 4z"></path>
-          </svg></IconLink
+          ><XIcon /></IconLink
         >
         <IconLink
           href="#icons"
           label={translate("ja", "social.twitter")}
           rel="me"
           class="is-focus"
-          ><svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linejoin="round"
-          >
-            <path d="M4 5h16v11H9l-5 4z"></path>
-          </svg></IconLink
+          ><XIcon /></IconLink
         >
+      </div>
+      <div class="row">
+        <IconLink href="#icons" label="YouTube"><YouTubeIcon /></IconLink>
+        <IconLink href="#icons" label={translate("ja", "social.twitter")}
+          ><XIcon /></IconLink
+        >
+        <IconLink href="#icons" label="GitHub"><GitHubIcon /></IconLink>
+        <IconLink href="#icons" label="Nostr"><NostrIcon /></IconLink>
+        <IconLink href="#icons" label="Zenn"><ZennIcon /></IconLink>
+        <IconLink href="#icons" label="RSS"><RssIcon /></IconLink>
       </div>
       <div class="row">
         <div class="narrow">
           <IconLink href="#icons" label={translate("ja", "social.twitter")}
-            ><svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linejoin="round"
-            >
-              <path d="M4 5h16v11H9l-5 4z"></path>
-            </svg></IconLink
+            ><XIcon /></IconLink
           >
         </div>
       </div>
@@ -402,17 +370,18 @@ import Layout from "../layouts/Layout.astro";
           href="#english"
           label={translate("en", "social.twitter")}
           rel="me"
-          ><svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linejoin="round"
-          >
-            <path d="M4 5h16v11H9l-5 4z"></path>
-          </svg></IconLink
+          ><XIcon /></IconLink
         >
+      </div>
+      <div class="row">
+        <IconLink href="#english" label="YouTube"><YouTubeIcon /></IconLink>
+        <IconLink href="#english" label={translate("en", "social.twitter")}
+          ><XIcon /></IconLink
+        >
+        <IconLink href="#english" label="GitHub"><GitHubIcon /></IconLink>
+        <IconLink href="#english" label="Nostr"><NostrIcon /></IconLink>
+        <IconLink href="#english" label="Zenn"><ZennIcon /></IconLink>
+        <IconLink href="#english" label="RSS"><RssIcon /></IconLink>
       </div>
     </section>
   </main>

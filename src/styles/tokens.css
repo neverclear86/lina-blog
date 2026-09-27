@@ -5,15 +5,18 @@
  * light values, which also apply when the attribute is missing, and `:root[data-theme="dark"]`
  * overrides only the colors that change with the theme. Their values are copied from `.root` and
  * `.root.dark` in `design/CBMain.dc.html`, except the dark `--num`: the design's `#b85510` is
- * 3.7:1 on the dark `--cbg`, so it is darkened to `#a04a0e` (4.62:1). The hex digits are lowercase
- * because Biome formats them so.
+ * 3.7:1 on the dark `--cbg`, so it is darkened to `#a04a0e` (4.62:1). `--icon-yt` and `--icon-x`
+ * are not in the design: they are the only colors that the brand guidelines of YouTube and
+ * Twitter (self-proclaimed X) allow for their marks (Almost Black and black, and white in the
+ * dark theme). The hex digits are lowercase because Biome formats them so.
  *
  * The colors in the second group stay the same in both themes. They are named after the color
  * rather than a role because the design uses each of them for several roles (text, fills, dots
  * and shadows).
  *
  * `tokens.test.ts` lists every foreground and background pair used for text and checks that each
- * reaches 4.5:1 (WCAG AA) in both themes. Components use these tokens instead of color values.
+ * reaches 4.5:1 (WCAG AA) in both themes, and checks that each icon color reaches 3:1 on `--surf`.
+ * Components use these tokens instead of color values.
  */
 :root {
   color-scheme: light;
@@ -39,6 +42,8 @@
   --cgrid: #2f3034;
   --fshadow: #e8731a;
   --num: #e8731a;
+  --icon-yt: #212121;
+  --icon-x: #000000;
 
   /* Colors that stay the same in both themes. */
   --ink: #232427;
@@ -74,4 +79,6 @@
   --cgrid: #d6d3cc;
   --fshadow: #232427;
   --num: #a04a0e;
+  --icon-yt: #ffffff;
+  --icon-x: #ffffff;
 }
