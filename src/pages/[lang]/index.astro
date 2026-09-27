@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from "astro";
 import AboutFullBody from "../../components/AboutFullBody.astro";
 import HeroStanding from "../../components/HeroStanding.astro";
+import LatestSection from "../../components/LatestSection.astro";
 import Logo from "../../components/Logo.astro";
 import PixelArt from "../../components/PixelArt.astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
@@ -28,6 +29,7 @@ const { lang } = Astro.props;
     <PixelArt />
     <div class="preview-standing"><HeroStanding /></div>
     <div class="preview-full-body"><AboutFullBody /></div>
+    <LatestSection lang={lang} />
   </main>
 </Layout>
 
