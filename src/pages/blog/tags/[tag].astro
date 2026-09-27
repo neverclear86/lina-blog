@@ -1,0 +1,24 @@
+---
+import { getCollection } from "astro:content";
+import type { GetStaticPaths } from "astro";
+import { blogListText, blogTagPagePaths } from "../../../blog-pages";
+import BlogIndex from "../../../components/BlogIndex.astro";
+import { translate } from "../../../i18n/ui";
+import { type BlogTag, postsWithTag } from "../../../latest-posts";
+import Layout from "../../../layouts/Layout.astro";
+
+export const getStaticPaths = (() =>
+  blogTagPagePaths()) satisfies GetStaticPaths;
+
+interface Props {
+  tag: BlogTag;
+}
+
+const { tag } = Astro.props;
+const posts = postsWithTag(await getCollection("blog"), tag);
+const title = translate("ja", blogListText(tag).title);
+---
+
+<Layout lang="ja" title={title}>
+  <BlogIndex tag={tag} posts={posts} />
+</Layout>

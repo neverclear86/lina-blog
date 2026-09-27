@@ -28,6 +28,17 @@ const ja = {
   "blog.tag.devlog": "制作記",
   "blog.tag.diary": "日記",
   "blog.tag.tech": "技術",
+  // Pages of the blog posts, /blog/ and /blog/tags/<slug>/: the heading, the tag filter and the
+  // text shown when there are no posts.
+  "blog.filter.all": "すべて",
+  "blog.filter.label": "タグで絞り込む",
+  "blog.index.subtitle": "記事一覧",
+  "blog.tagPage.devlog.noPosts": "制作記の記事はまだありません。",
+  "blog.tagPage.devlog.subtitle": "制作記の記事",
+  "blog.tagPage.diary.noPosts": "日記の記事はまだありません。",
+  "blog.tagPage.diary.subtitle": "日記の記事",
+  "blog.tagPage.tech.noPosts": "技術の記事はまだありません。",
+  "blog.tagPage.tech.subtitle": "技術の記事",
   // Contact section of the top page.
   "contact.subtitle": "お問い合わせ",
   "contact.lead": "お仕事のご相談やコラボのお誘いなど、お気軽にどうぞ。",
@@ -148,6 +159,15 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "blog.tag.devlog": "Devlog",
     "blog.tag.diary": "Diary",
     "blog.tag.tech": "Tech",
+    "blog.filter.all": "All",
+    "blog.filter.label": "Filter by tag",
+    "blog.index.subtitle": "All posts",
+    "blog.tagPage.devlog.noPosts": "No Devlog posts yet.",
+    "blog.tagPage.devlog.subtitle": "Devlog posts",
+    "blog.tagPage.diary.noPosts": "No Diary posts yet.",
+    "blog.tagPage.diary.subtitle": "Diary posts",
+    "blog.tagPage.tech.noPosts": "No Tech posts yet.",
+    "blog.tagPage.tech.subtitle": "Tech posts",
     "contact.subtitle": "Get in touch",
     "contact.lead":
       "Feel free to reach out about work, collaborations, or anything else.",

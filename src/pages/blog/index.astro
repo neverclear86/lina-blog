@@ -1,0 +1,15 @@
+---
+import { getCollection } from "astro:content";
+import { blogListText } from "../../blog-pages";
+import BlogIndex from "../../components/BlogIndex.astro";
+import { translate } from "../../i18n/ui";
+import { postsNewestFirst } from "../../latest-posts";
+import Layout from "../../layouts/Layout.astro";
+
+const posts = await getCollection("blog");
+const title = translate("ja", blogListText(undefined).title);
+---
+
+<Layout lang="ja" title={title}>
+  <BlogIndex posts={postsNewestFirst(posts)} />
+</Layout>

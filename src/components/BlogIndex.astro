@@ -1,0 +1,113 @@
+---
+/**
+ * The main part of a page of blog posts, `/blog/` or a tag's page `/blog/tags/<slug>/`: the
+ * heading, the tag filter and the posts as `PostList`. Both kinds of page share this layout, so
+ * the filter and the cards stay in place when the reader switches between them.
+ *
+ * The tag filter is a row of links to `/blog/` and the page of each tag, without JavaScript; the
+ * link to the current page has `aria-current="page"` and a pink underline on the line under the
+ * row. The page is in Japanese only.
+ */
+import type { ComponentProps } from "astro/types";
+import { blogListText, tagFilterLinks } from "../blog-pages";
+import { translate } from "../i18n/ui";
+import type { BlogTag } from "../latest-posts";
+import PostList from "./PostList.astro";
+import SectionHeading from "./SectionHeading.astro";
+
+interface Props {
+  /** Tag of the page, or undefined for `/blog/`, which lists every post. */
+  tag?: BlogTag;
+  /** Posts of the page, newest first. */
+  posts: ComponentProps<typeof PostList>["posts"];
+}
+
+const { tag, posts } = Astro.props;
+const text = blogListText(tag);
+---
+
+<main class="blog">
+  <SectionHeading
+    as="h1"
+    label={text.label}
+    title="BLOG"
+    subtitle={translate("ja", text.subtitle)}
+  />
+  <nav class="filter" aria-label={translate("ja", "blog.filter.label")}>
+    <ul>
+      {tagFilterLinks(tag).map((link) => (
+        <li>
+          <a href={link.href} aria-current={link.current ? "page" : undefined}>
+            {translate("ja", link.key)}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+  <PostList posts={posts} emptyText={translate("ja", text.noPosts)} />
+</main>
+
+<style>
+.blog {
+  display: flex;
+  flex-direction: column;
+  padding: 56px 18px;
+}
+
+@media (min-width: 768px) {
+  .blog {
+    padding: 72px 40px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .blog {
+    padding: 88px 64px;
+  }
+}
+
+.filter {
+  margin: 32px 0;
+}
+
+@media (min-width: 768px) {
+  .filter {
+    margin-top: 40px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .filter {
+    margin-top: 44px;
+  }
+}
+
+.filter ul {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--line);
+}
+
+.filter a {
+  display: block;
+  margin-bottom: -1px;
+  padding: 10px 0;
+  color: var(--fg);
+  font-size: 15px;
+  font-weight: 900;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+}
+
+.filter a[aria-current="page"] {
+  border-bottom-color: var(--pink);
+}
+
+.filter a:hover {
+  opacity: 0.8;
+}
+</style>
