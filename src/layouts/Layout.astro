@@ -1,4 +1,5 @@
 ---
+import { Font } from "astro:assets";
 import { DEFAULT_LOCALE, type Locale } from "../i18n/locales";
 
 interface Props {
@@ -18,6 +19,9 @@ const { lang = DEFAULT_LOCALE } = Astro.props;
     <link rel="icon" href="/favicon.ico">
     <meta name="generator" content={Astro.generator}>
     <title>ikili.pro</title>
+    <Font cssVariable="--font-body" />
+    <Font cssVariable="--font-display" />
+    <Font cssVariable="--font-mono" />
   </head>
   <body>
     <slot />
@@ -30,5 +34,14 @@ body {
   margin: 0;
   width: 100%;
   height: 100%;
+}
+
+/* Every element except form controls (which need `font: inherit`) inherits Zen Maru Gothic;
+   components set var(--font-display) or var(--font-mono) where the design uses Saira Condensed
+   or JetBrains Mono. */
+html {
+  font-family: var(--font-body);
+  /* Only the loaded weights are drawn: no faux bold above JetBrains Mono 500. */
+  font-synthesis-weight: none;
 }
 </style>
