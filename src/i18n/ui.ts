@@ -24,6 +24,10 @@ const ja = {
   "about.dev.skills.value": "[得意な領域・技術]",
   "about.dev.handle.label": "名義",
   "about.dev.handle.value": "GitHubなどではLinaTsukusu",
+  // Labels of the post tags. The Japanese labels are the tag names in the frontmatter.
+  "blog.tag.devlog": "制作記",
+  "blog.tag.diary": "日記",
+  "blog.tag.tech": "技術",
   // Contact form: the status line, the text under a rejected field and the noscript notice.
   "contact.error.invalid": "正しい形式で入力してください。",
   "contact.error.invalidChoice": "選択肢から選んでください。",
@@ -47,6 +51,11 @@ const ja = {
   "contact.status.waiting":
     "確認が終わるまで少し待ってから、もう一度送信してください。",
   "home.comingSoon": "準備中です。",
+  "latest.blog.all": "記事一覧",
+  "latest.blog.heading": "ブログ",
+  // Read after a post title on pages in other locales; the Japanese pages do not show it.
+  "latest.blog.inJapanese": "(日本語)",
+  "latest.blog.noPosts": "まだ記事はありません。",
   // Subtitle of the Latest section on the home page.
   "latest.subtitle": "さいきんの配信と記事",
   // The locale's own name, shown on the links to it; not translated into other locales.
@@ -83,6 +92,9 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "about.dev.skills.value": "[Areas and technologies]",
     "about.dev.handle.label": "Handle",
     "about.dev.handle.value": "LinaTsukusu on GitHub and elsewhere",
+    "blog.tag.devlog": "Devlog",
+    "blog.tag.diary": "Diary",
+    "blog.tag.tech": "Tech",
     "contact.error.invalid": "Enter a valid value.",
     "contact.error.invalidChoice": "Choose one of the options.",
     "contact.error.invalidEmail": "Enter a valid email address.",
@@ -104,6 +116,10 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "contact.status.waiting":
       "Please wait for the verification to finish, then send again.",
     "home.comingSoon": "Coming soon.",
+    "latest.blog.all": "All posts",
+    "latest.blog.heading": "Blog",
+    "latest.blog.inJapanese": "(in Japanese)",
+    "latest.blog.noPosts": "No posts yet.",
     "latest.subtitle": "Recent streams and posts",
     "locale.name": "English",
     "social.twitter": "Twitter (self-proclaimed X)",

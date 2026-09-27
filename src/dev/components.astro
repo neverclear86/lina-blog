@@ -1,4 +1,5 @@
 ---
+import type { ComponentProps } from "astro/types";
 import Bubble from "../components/Bubble.astro";
 import Button from "../components/Button.astro";
 import Chip from "../components/Chip.astro";
@@ -11,6 +12,7 @@ import XIcon from "../components/icons/XIcon.astro";
 import YouTubeIcon from "../components/icons/YouTubeIcon.astro";
 import ZennIcon from "../components/icons/ZennIcon.astro";
 import Kao from "../components/Kao.astro";
+import LatestPosts from "../components/LatestPosts.astro";
 import PixelArt from "../components/PixelArt.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import Tape from "../components/Tape.astro";
@@ -20,6 +22,41 @@ import Layout from "../layouts/Layout.astro";
 
 // Commands for the typing samples: 16 characters (the design) and 10.
 const COMMANDS = ["$ npm run deploy", "$ git push"];
+
+const samplePosts: ComponentProps<typeof LatestPosts>["posts"] = [
+  {
+    data: {
+      title: "サイトをAstroで作り直した話",
+      slug: "sample-post-devlog",
+      date: new Date("2026-09-20"),
+      tags: ["制作記"],
+    },
+  },
+  {
+    data: {
+      title: "Cloudflare Workersで静的なページとAPIを同じWorkerから配信する",
+      slug: "sample-post-tech-devlog",
+      date: new Date("2026-09-12"),
+      tags: ["技術", "制作記"],
+    },
+  },
+  {
+    data: {
+      title: "配信の機材を少しずつ入れ替えた一週間",
+      slug: "sample-post-diary",
+      date: new Date("2026-09-05"),
+      tags: ["日記"],
+    },
+  },
+  {
+    data: {
+      title: "いちばん古い記事は出ない",
+      slug: "sample-post-oldest",
+      date: new Date("2026-08-01"),
+      tags: ["技術"],
+    },
+  },
+];
 ---
 
 <Layout lang="ja">
@@ -357,6 +394,18 @@ const COMMANDS = ["$ npm run deploy", "$ git push"];
       </div>
     </section>
 
+    <section id="latest-posts">
+      <h2>最新記事</h2>
+      <div class="latest-samples">
+        <LatestPosts lang="ja" posts={samplePosts} />
+        <div lang="en"><LatestPosts lang="en" posts={samplePosts} /></div>
+        <div class="latest-narrow" lang="en">
+          <LatestPosts lang="en" posts={samplePosts} />
+        </div>
+        <LatestPosts lang="ja" posts={[]} />
+      </div>
+    </section>
+
     <section id="english" lang="en">
       <h2>英語</h2>
       <div class="row">
@@ -436,6 +485,17 @@ const COMMANDS = ["$ npm run deploy", "$ git push"];
 </Layout>
 
 <style>
+/* Widths of the right column of #latest at 1440px (536px) and at 1024px (320px). */
+.latest-samples {
+  display: grid;
+  gap: 48px;
+  max-width: 536px;
+}
+
+.latest-narrow {
+  max-width: 320px;
+}
+
 .page {
   padding: 16px;
 }
