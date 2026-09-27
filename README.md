@@ -30,6 +30,7 @@ bun create astro@latest -- --template basics
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── user-agent.ts     # Tells curl and other command-line clients from browsers, unit-tested
 │   ├── work-schema.ts    # Schema of the works data (ja and en in one entry, no astro:content), unit-tested
+│   ├── youtube-feed.ts   # Channel RSS feed to the newest videos at build time (WebP or JPEG thumbnails), unit-tested
 │   ├── assets/           # Images processed by astro:assets
 │   │   ├── logo-black.png  # Logo for the light theme, optimized by astro:assets
 │   │   ├── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
