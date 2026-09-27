@@ -43,6 +43,7 @@ bun create astro@latest -- --template basics
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
 │   │   ├── Logo.astro            # Switches the logo with the theme
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level is a prop
+│   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: moon or sun, and a name that says the next theme
 │   │   └── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
 │   ├── content/

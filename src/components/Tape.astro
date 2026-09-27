@@ -1,0 +1,58 @@
+---
+/**
+ * The striped tape at the left end of the dark strip under the hero in `design/CBMain.dc.html`:
+ * orange and ink stripes, 12px each, at -45deg, flowing to the right.
+ *
+ * The stripes are drawn on an inner element one stripe period (24px across the stripes,
+ * 24px * √2 along the x axis) wider than the tape to the right. Every 1.6s it moves with
+ * `transform` from one period to the left back to its place and starts over, so the stripes
+ * flow right, and the pattern at the end matches the one at the start.
+ * The tape clips the inner element and stops under `prefers-reduced-motion: reduce`.
+ * It is decorative and hidden from assistive technology.
+ * It takes the height of its box, such as a flex row that stretches it, and does not shrink.
+ */
+interface Props {
+  /** The width as a CSS length: "160px" under the hero, "64px" on a phone. */
+  width?: string;
+}
+
+const { width = "160px" } = Astro.props;
+---
+
+<span class="tape" style={{ width }} aria-hidden="true"
+  ><span class="stripes"></span></span
+>
+
+<style>
+.tape {
+  --period: calc(24px * 1.41421356);
+
+  display: block;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.stripes {
+  position: absolute;
+  inset: 0 calc(-1 * var(--period)) 0 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--orange) 0 12px,
+    var(--ink) 12px 24px
+  );
+  animation: tape 1.6s linear infinite;
+}
+
+@keyframes tape {
+  from {
+    transform: translateX(calc(-1 * var(--period)));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stripes {
+    animation: none;
+  }
+}
+</style>
