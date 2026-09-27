@@ -1,5 +1,5 @@
 /**
- * Pages for checking how components look, left out of the production build.
+ * Pages for checking how components and rendered Markdown look, left out of the production build.
  *
  * `devPages()` adds them with `injectRoute` in `astro dev`, and in `astro build` only when the
  * environment variable `LINA_DEV_PAGES` is `1`, so that `.claude/scripts/screenshot.mjs`, which
@@ -13,6 +13,10 @@ const DEV_PAGES = [
   {
     pattern: "/dev/components",
     entrypoint: new URL("./components.astro", import.meta.url),
+  },
+  {
+    pattern: "/dev/markdown",
+    entrypoint: new URL("./markdown.astro", import.meta.url),
   },
 ];
 
@@ -29,9 +33,9 @@ export function devPagesEnabled(
 
 /**
  * Astro integration that injects the dev pages (`/dev/components/` from
- * `src/dev/components.astro`) when `devPagesEnabled` allows it. `prerenderByDefault` in
- * `astro.config.mjs` prerenders them like other pages. `env` is `process.env` unless a test
- * passes another one.
+ * `src/dev/components.astro` and `/dev/markdown/` from `src/dev/markdown.astro`) when
+ * `devPagesEnabled` allows it. `prerenderByDefault` in `astro.config.mjs` prerenders them like
+ * other pages. `env` is `process.env` unless a test passes another one.
  */
 export function devPages(
   env: Readonly<Record<string, string | undefined>> = process.env,

@@ -33,6 +33,7 @@ bun create astro@latest -- --template basics
 │   │   ├── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
 │   │   └── logo-white.png  # Logo for the dark theme
 │   ├── components/
+│   │   ├── ArticleBody.astro     # Styles rendered Markdown (tables, task lists, footnotes)
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Logo.astro            # Switches the logo with the theme
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level is a prop
@@ -41,7 +42,8 @@ bun create astro@latest -- --template basics
 │   │   └── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
 │   ├── dev/
 │   │   ├── components.astro  # /dev/components/: samples of the shared shapes and components
-│   │   └── dev-pages.ts      # Adds the dev pages in astro dev (or with LINA_DEV_PAGES=1), unit-tested
+│   │   ├── dev-pages.ts      # Adds the dev pages in astro dev (or with LINA_DEV_PAGES=1), unit-tested
+│   │   └── markdown.astro    # /dev/markdown/: sample article with every supported Markdown syntax
 │   ├── i18n/
 │   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
 │   │   ├── negotiate.ts  # Picks the locale for / from Accept-Language, unit-tested
@@ -49,6 +51,9 @@ bun create astro@latest -- --template basics
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
 │   │   └── Layout.astro       # <head> with the <Font /> tags, the RSS link and a "head" slot; imports tokens.css, global.css and shapes.css; sets --font-body on html
+│   ├── markdown/
+│   │   ├── sample.md       # Sample article shown at /dev/markdown/
+│   │   └── table-align.ts  # Sätteri hast plugin: table alignment as classes, unit-tested
 │   ├── pages/
 │   │   ├── [lang]/
 │   │   │   └── index.astro   # /ja/ and /en/
@@ -77,7 +82,7 @@ bun create astro@latest -- --template basics
 │       │   └── published-record.ts  # Reads src/content/published.json on GitHub for GET /articles
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
-├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, dev pages, text art plugin; pages are prerendered by default
+├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin; pages are prerendered by default
 ├── biome.json
 ├── wrangler.jsonc
 └── package.json
@@ -89,10 +94,12 @@ Pages that exist in every language go in `src/pages/[lang]/` and are generated o
 
 Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema, and `astro build` leaves them out, so they never reach `dist/`.
 
+Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax.
+
 `astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the works, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt` uses as well.
 
-Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema and the RSS items; `src/api.ts` and
-`workers/publish/src/app.ts` are tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
+Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema, the RSS items and the Markdown plugins; `src/api.ts` and
+`workers/publish/src/app.ts` are tested with `app.request()`, and the plugins in `src/markdown/` with Sätteri's `markdownToHtml()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 
 Colors are tested the same way. `src/styles/tokens.test.ts` checks that every foreground and background token pair used for text reaches 4.5:1 (WCAG AA) in both themes, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--fg)` and so on) instead; inline SVG takes `currentColor`.
 
@@ -116,11 +123,11 @@ Color values are written only in `tokens.css`; other CSS, global or scoped, uses
 A component that must style an element outside its own markup, such as `<html data-theme>`,
 wraps only that selector in `:global()`.
 
-`src/dev/components.astro` shows the shared shapes and the components on one page.
-`astro dev` serves it at `/dev/components/`, and `astro build` leaves it out of `dist/` unless `LINA_DEV_PAGES=1` is set.
-Add `?theme=dark` to the URL to see the dark theme.
-To capture it with `.claude/scripts/screenshot.mjs`, which serves `dist/`, build with `LINA_DEV_PAGES=1 bun run build`.
-A new component adds its samples to this page.
+`src/dev/components.astro` shows the shared shapes and the components on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
+`astro dev` serves them at `/dev/components/` and `/dev/markdown/`, and `astro build` leaves them out of `dist/` unless `LINA_DEV_PAGES=1` is set.
+Add `?theme=dark` to the URL of `/dev/components/` to see the dark theme.
+To capture them with `.claude/scripts/screenshot.mjs`, which serves `dist/`, build with `LINA_DEV_PAGES=1 bun run build`.
+A new component adds its samples to `/dev/components/`, and a new Markdown syntax adds its examples to `src/markdown/sample.md`.
 
 ## 🔤 Fonts
 
