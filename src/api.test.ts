@@ -12,4 +12,20 @@ describe("api", () => {
     const res = await api.request("/api/unknown");
     expect(res.status).toBe(404);
   });
+
+  it("GET / は Accept-Language が en なら /en/ にリダイレクトする", async () => {
+    const res = await api.request("/", {
+      headers: { "Accept-Language": "en" },
+    });
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe("/en/");
+    expect(res.headers.get("Vary")).toBe("Accept-Language");
+  });
+
+  it("GET / は Accept-Language が無ければ /ja/ にリダイレクトする", async () => {
+    const res = await api.request("/");
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe("/ja/");
+    expect(res.headers.get("Vary")).toBe("Accept-Language");
+  });
 });
