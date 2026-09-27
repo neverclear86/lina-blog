@@ -1,0 +1,64 @@
+---
+/**
+ * Three kaomoji in one place, shown one at a time for 2 seconds each in a 6-second loop, like
+ * the ones in the hero bubble and after "status: online" in `design/CBMain.dc.html`. With
+ * `prefers-reduced-motion: reduce` they stop and only the first one is shown.
+ *
+ * The three share one grid cell, so the component is as wide as the widest of them and keeps
+ * its width while they switch. The font size, weight and family come from the parent. The
+ * whole component is hidden from screen readers as decoration.
+ */
+interface Props {
+  /** The three kaomoji, in the order they are shown. */
+  faces: readonly [string, string, string];
+}
+
+const { faces } = Astro.props;
+---
+
+<span class="kao" aria-hidden="true">
+  {faces.map((face) => <span class="face">{face}</span>)}
+</span>
+
+<style>
+.kao {
+  display: inline-grid;
+}
+
+.face {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+  opacity: 0;
+  animation: kao 6s steps(1, end) infinite;
+}
+
+.face:nth-child(2) {
+  animation-delay: -4s;
+}
+
+.face:nth-child(3) {
+  animation-delay: -2s;
+}
+
+@keyframes kao {
+  0% {
+    opacity: 1;
+  }
+  33.3% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .face {
+    animation: none;
+  }
+
+  .face:first-child {
+    opacity: 1;
+  }
+}
+</style>
