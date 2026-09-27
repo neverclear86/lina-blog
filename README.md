@@ -16,6 +16,7 @@ bun create astro@latest -- --template basics
 │   ├── ansi-art.ts       # Pixels to terminal text art (half blocks, 24-bit color), unit-tested
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
+│   ├── blog-pages.ts     # Tag pages of /blog/tags/<slug>/, the heading texts and the tag filter links of the blog pages, unit-tested
 │   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
@@ -43,6 +44,7 @@ bun create astro@latest -- --template basics
 │   ├── components/
 │   │   ├── About.astro           # About section: heading, lead and three terminal cards
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (tables, task lists, footnotes, code file names, YouTube embeds)
+│   │   ├── BlogIndex.astro       # Blog pages: heading, tag filter links with the current one underlined, and the post cards
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
 │   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
@@ -94,6 +96,10 @@ bun create astro@latest -- --template basics
 │   │   ├── ansi/
 │   │   │   ├── color.txt.ts  # /ansi/color.txt: the standing illustration as 24-bit color text art
 │   │   │   └── plain.txt.ts  # /ansi/plain.txt: the same art without escape sequences
+│   │   ├── blog/
+│   │   │   ├── index.astro   # /blog/: every post, newest first
+│   │   │   └── tags/
+│   │   │       └── [tag].astro   # /blog/tags/devlog/, tech/ and diary/: the posts of one tag, built with or without posts
 │   │   ├── llms.txt.ts   # /llms.txt, prerendered to dist/client/
 │   │   ├── robots.txt.ts # /robots.txt, prerendered to dist/client/
 │   │   ├── rss.xml.ts    # /rss.xml: prerendered RSS feed with each post's full HTML
