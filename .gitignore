@@ -4,6 +4,9 @@ dist/
 # generated types
 .astro/
 
+# wrangler local state
+.wrangler/
+
 # dependencies
 node_modules/
 
@@ -22,3 +25,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# issue-workflow のエージェントの記憶（memory: local）
+.claude/agent-memory-local/
+# issue-workflow の手元の環境（compose のプロジェクト名とポート）
+.claude/issue-workflow.local.env

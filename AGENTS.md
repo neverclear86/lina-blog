@@ -1,22 +1,32 @@
-## Development
+# lina-blog
 
-When starting the dev server, use background mode:
+創好リナ（バーチャルイキリプログラマ）の個人サイト兼ブログ ikili.pro のリポジトリ。Astro 7 でほぼ全ページを静的に生成し、Cloudflare Workers（Static Assets と、`src/fetch.ts` の Hono）で配信する。計画は GitHub の issue（Epic #1〜#10）にある。
+
+## 開発
+
+dev サーバーは背景で立てる。
 
 ```
 astro dev --background
 ```
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+背景のサーバーは `astro dev stop`、`astro dev status`、`astro dev logs` で扱う。
 
-## Documentation
+## ドキュメント
 
-Full documentation: https://docs.astro.build
+Astro のドキュメント: https://docs.astro.build
 
-Consult these guides before working on related tasks:
+関係する作業の前に、次のガイドを読む。
 
-- [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
-- [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
-- [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
-- [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
-- [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+- [ページ、動的ルート、ミドルウェアの追加](https://docs.astro.build/en/guides/routing/)
+- [Astro のコンポーネント](https://docs.astro.build/en/basics/astro-components/)
+- [React、Vue、Svelte などのフレームワークのコンポーネント](https://docs.astro.build/en/guides/framework-components/)
+- [コンテンツの追加と管理](https://docs.astro.build/en/guides/content-collections/)
+- [スタイルと Tailwind](https://docs.astro.build/en/guides/styling/)
+- [多言語対応](https://docs.astro.build/en/guides/internationalization/)
+
+## issue ワークフロー
+
+- issue を番号で頼まれたら、スキル `issue-workflow`（`.claude/skills/issue-workflow/`）で進める。
+- PR を作る前の検査は `.claude/agents/issue-implementer.md` の「PR を作る前の検査」にある。`package.json` のスクリプトと食い違わないようにする。
+- `.claude/issue-workflow-kit.json` はワークフローの導入の記録である。ワークフローは生成されたファイルを手で直さず、ユーザーレベルのスキル `issue-workflow-kit` の「更新」で更新する。
