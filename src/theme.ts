@@ -5,6 +5,9 @@
  * takes the theme saved in `localStorage` under `THEME_STORAGE_KEY`, or follows the OS setting
  * (`prefers-color-scheme`) while no valid theme is saved, including when reading `localStorage`
  * throws. Without JavaScript, `<html>` keeps the light theme that the layout renders.
+ *
+ * `toggleTheme` is what the theme toggle (`src/components/ThemeToggle.astro`) runs on a click:
+ * it switches `<html data-theme>` and saves the new theme under the same key.
  */
 
 /** Key of the saved theme in `localStorage`. With no valid value, the OS setting decides. */
@@ -59,3 +62,24 @@ export const THEME_SCRIPT = `(() => {
   apply();
   media.addEventListener("change", apply);
 })();`;
+
+/**
+ * Switches `<html data-theme>` to the other theme and saves the new one under
+ * `THEME_STORAGE_KEY`. The new theme is "light" when the current value is "dark", and "dark"
+ * for "light" or any other value. When getting the storage or writing to it throws, the page
+ * still switches but nothing is saved, so a change of the OS setting or the next page goes back
+ * to the rule of `resolveTheme`. Returns the new theme.
+ */
+export function toggleTheme(
+  root: { dataset: { theme?: string } },
+  storage: () => Pick<Storage, "setItem">,
+): Theme {
+  const next: Theme = root.dataset.theme === "dark" ? "light" : "dark";
+  root.dataset.theme = next;
+  try {
+    storage().setItem(THEME_STORAGE_KEY, next);
+  } catch {
+    // Not saved: the theme stays switched on this page only.
+  }
+  return next;
+}
