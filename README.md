@@ -44,9 +44,12 @@ bun create astro@latest -- --template basics
 ├── workers/
 │   └── publish/          # Publish Worker, separate from the site and deployed on its own
 │       ├── src/
-│       │   ├── app.ts    # Hono app and Worker entry; every route needs the shared secret
-│       │   ├── auth.ts   # Bearer auth with a constant-time comparison
-│       │   └── env.ts    # Bindings (PUBLISH_TOKEN)
+│       │   ├── app.ts               # Hono app and Worker entry; every route needs the shared secret
+│       │   ├── auth.ts              # Bearer auth with a constant-time comparison
+│       │   ├── content-hash.ts      # Content hash of an article (SHA-256 of its markdown)
+│       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL)
+│       │   ├── errors.ts            # Error body shared by every error response
+│       │   └── published-record.ts  # Reads src/content/published.json on GitHub for GET /articles
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
 ├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts; pages are prerendered by default
@@ -159,6 +162,10 @@ Until then, check the Worker locally with `bun run preview:wrangler`, which buil
 Check the publish Worker locally by copying `workers/publish/.dev.vars.example` to
 `workers/publish/.dev.vars` and running `bun run dev:publish`. Every route needs
 `Authorization: Bearer <PUBLISH_TOKEN>`; without it the Worker answers 401.
+`GET /articles` reads `src/content/published.json` on GitHub with `GITHUB_TOKEN`. To try it
+without GitHub, add `GITHUB_API_URL=http://127.0.0.1:<port>` to `.dev.vars` and serve a
+directory with `python3 -m http.server <port>`: the list is empty until the directory has
+`repos/neverclear86/lina-blog/contents/src/content/published.json`.
 
 Both deploy workflows need the same two repository secrets:
 
@@ -171,8 +178,10 @@ Both deploy workflows need the same two repository secrets:
    gh secret set CLOUDFLARE_ACCOUNT_ID
    ```
 
-The publish Worker also needs its shared secret on Cloudflare, set once with
-`bunx wrangler secret put PUBLISH_TOKEN -c workers/publish/wrangler.jsonc`.
+The publish Worker also needs two secrets on Cloudflare, each set once: its shared secret
+(`bunx wrangler secret put PUBLISH_TOKEN -c workers/publish/wrangler.jsonc`) and a GitHub token
+with read access to this repository's contents
+(`bunx wrangler secret put GITHUB_TOKEN -c workers/publish/wrangler.jsonc`).
 
 ## 🛡️ Turnstile
 

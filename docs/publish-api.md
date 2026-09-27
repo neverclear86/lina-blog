@@ -171,7 +171,7 @@ Vault で `published: true` の記事なら再送し、`published: false` の記
 ファイルが無いときは、空の一覧とする。
 記事のファイルと公開の記録は、1 つのコミットで書き換える（コミットの API は #50 で選ぶ）。
 公開の記録は Worker だけが書き、人は手で直さない。
-GitHub から公開の記録を読めないときは、502 `upstream_error`（`step: "list"`）を返す。
+GitHub から公開の記録を読めないとき、または公開の記録の形が違うときは、502 `upstream_error`（`step: "list"`）を返す。
 
 ## 処理の順序と再実行
 
@@ -226,7 +226,7 @@ GitHub から公開の記録を読めないときは、502 `upstream_error`（`s
 | 422 | `missing_image` | 参照した画像が R2 に無い | 画像を置いてから |
 | 422 | `too_many_images` | `image:` の参照が 21 種以上 | しない |
 | 502 | `upstream_error` | R2、GitHub、Nostr のリレーやバンカーが失敗した | する |
-| 500 | `misconfigured` | Worker に共有シークレットが設定されていない | しない |
+| 500 | `misconfigured` | Worker に共有シークレットか GitHub のトークンが設定されていない | しない |
 | 500 | `internal_error` | Worker の想定外の失敗 | する |
 
 `missing_image` の `message` には、無かった画像の名前を並べる。
