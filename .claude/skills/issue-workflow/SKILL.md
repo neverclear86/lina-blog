@@ -82,7 +82,7 @@ tier は判定が決める。`none`（追加 100 行未満・3 ファイル以�
 - **project の hook**: `.claude/settings.json` の PostToolUse（`.claude/hooks/biome-check.sh`）は、ユーザーの作業ツリーの中のファイルを編集したときだけ Biome をかけ、それ以外（ワークフローの作業ツリー）では何もしない。ワークフローの作業ツリーの整形は implementer の hook（`.claude/scripts/hook_format.sh`）が担う
 - **force push**: `.claude/settings.json` は `--force-with-lease` の push を許可し、`main` を宛先にしたものを拒否する。宛先を書かない push は、PreToolUse の hook（`.claude/hooks/deny-force-push-main.py`）が `-C` のディレクトリで今のブランチを調べ、`main` なら拒否する
 - **`/` と Worker**: 静的なファイルに当たるリクエストは、アダプタの既定の入口が `src/fetch.ts` の Hono に渡す前に返す。`/` を Hono で扱う issue（#18 の言語の振り分け、#43 の curl 応答）は、`/` を prerender のページにしない（`src/pages/index.astro` を消すか `prerender = false` にする）か、`src/worker.ts` を入口にして `@astrojs/cloudflare/hono` の `cf()` を Hono の `/` の後に置くかを、プランで決める
-- **渡さない issue**: Epic（`epic` ラベル、#1〜#10）と `要決定` ラベルの issue（#11〜#16）はワークフローに渡さない。決定はユーザーが行う。blocked by に開いた `要決定` の issue があるときは、段階 0 の「事前に聞く論点」に入れる。#8（Obsidian プラグイン）は別のリポジトリで扱う
+- **渡さない issue**: Epic（`epic` ラベル、#1〜#10）と `要決定` ラベルの issue はワークフローに渡さない。決定はユーザーが行う。blocked by に開いた `要決定` の issue があるときは、段階 0 の「事前に聞く論点」に入れる。#8（Obsidian プラグイン）は別のリポジトリで扱う
 - **デザインの写し**: `design/` は Design キャンバスの写しである。キャンバスを直したら、ユーザーが写しを取り直す
 <!-- /ADAPT:rules -->
 

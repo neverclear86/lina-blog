@@ -30,6 +30,7 @@ disallowedTools: Agent
 - ライトとダークの両方での見え方と、テキストの色の WCAG AA のコントラスト
 - `prefers-reduced-motion: reduce` での最終状態
 - 英語の文言の下書き（issue が確認を受けると言うものは、決めた文言を一覧にしてユーザーの確認に回す）
+- X（旧 Twitter）の表記: アイコン以外（本文、`aria-label` を含む）では日本語で「Twitter(自称X)」、英語で「Twitter (self-proclaimed X)」にする
 <!-- /ADAPT:ui-decide -->
 
 ## 文書の長さ
