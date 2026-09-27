@@ -1,5 +1,6 @@
 ---
-import { Font } from "astro:assets";
+import { Font, getImage } from "astro:assets";
+import logo from "../assets/logo-light.png";
 import { DEFAULT_LOCALE, type Locale } from "../i18n/locales";
 
 interface Props {
@@ -8,6 +9,29 @@ interface Props {
 }
 
 const { lang = DEFAULT_LOCALE } = Astro.props;
+
+/**
+ * Background of the favicons, the light `--bg` of the design. The logo is black on a transparent
+ * background, so without it the icon disappears on dark tab bars and on iOS home screens.
+ */
+const FAVICON_BACKGROUND = "#ECEAE5";
+
+/** Renders the logo as an opaque square PNG of `size` pixels for a favicon link. */
+function logoIcon(size: number) {
+  return getImage({
+    src: logo,
+    width: size,
+    height: size,
+    format: "png",
+    background: FAVICON_BACKGROUND,
+  });
+}
+
+const [icon32, icon192, appleTouchIcon] = await Promise.all([
+  logoIcon(32),
+  logoIcon(192),
+  logoIcon(180),
+]);
 ---
 
 <!doctype html>
@@ -15,8 +39,9 @@ const { lang = DEFAULT_LOCALE } = Astro.props;
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href={icon32.src}>
+    <link rel="icon" type="image/png" sizes="192x192" href={icon192.src}>
+    <link rel="apple-touch-icon" href={appleTouchIcon.src}>
     <meta name="generator" content={Astro.generator}>
     <title>ikili.pro</title>
     <Font cssVariable="--font-body" />

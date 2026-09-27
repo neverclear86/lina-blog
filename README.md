@@ -12,8 +12,6 @@ bun create astro@latest -- --template basics
 /
 ├── docs/
 │   └── publish-api.md    # API contract between the article sync script and the publishing Worker
-├── public/
-│   └── favicon.svg
 ├── src/
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/api/*), unit-tested
@@ -22,6 +20,8 @@ bun create astro@latest -- --template basics
 │   ├── content.config.ts # blog collection: src/content/blog/**/*.md checked by blog-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
+│   ├── assets/
+│   │   └── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
 │   ├── i18n/
 │   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
 │   │   └── ui.ts         # UI strings per locale, unit-tested
