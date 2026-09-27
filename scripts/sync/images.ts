@@ -61,15 +61,19 @@ export type ResolveImagesInput = {
 /** An image reference: its decoded target and the alt text to write. */
 type ImageRef = { target: string; alt: string };
 
-/** The opening line of a fenced code block: up to 3 spaces, then 3 or more `` ` `` or `~`. */
-const FENCE = /^ {0,3}(`{3,}|~{3,})/;
+/**
+ * The opening line of a fenced code block: up to 3 spaces, then 3 or more `` ` `` or `~`. A run
+ * of `` ` `` opens a block only when no `` ` `` follows it on the line, since the info string of
+ * a backtick fence cannot contain one.
+ */
+const FENCE = /^ {0,3}(`{3,}(?=[^`]*$)|~{3,})/;
 
 /** A line made only of fence characters, which may close a fenced code block. */
 const FENCE_CLOSE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
 
 /** A code span, an `![[target|label]]` embed or an `![alt](target "title")` image. */
 const INLINE =
-  /(?<!`)(`+)(?!`)(?:[^\n]|\n(?![ \t]*\n))*?(?<!`)\1(?!`)|!\[\[([^\]\n]+)\]\]|!\[([^\]\n]*)\]\((<[^>\n]*>|[^)\s]+)(?:\s+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?\)/g;
+  /(?<!`)(`+)(?!`)(?:[^\n]|\n(?![ \t]*\r?\n))*?(?<!`)\1(?!`)|!\[\[([^\]\n]+)\]\]|!\[([^\]\n]*)\]\((<[^>\n]*>|[^)\s]+)(?:\s+(?:"[^"\n]*"|'[^'\n]*'|\([^)\n]*\)))?\)/g;
 
 /** A label of `![[target|label]]` that sets the display size (`200`, `100x50`). */
 const SIZE_LABEL = /^\d+(x\d+)?$/;
@@ -105,8 +109,10 @@ export async function listVaultFiles(vaultRoot: string): Promise<string[]> {
 /**
  * Calls `replace` for each image reference outside fenced code blocks and code spans, in body
  * order, and puts its return value in place of the reference; `null` keeps the reference as
- * written. A code span does not cross a blank line. The target of `![alt](target)` loses its
- * enclosing `<` and `>` and a trailing title (`"title"`, `'title'` or `(title)`), and is
+ * written. A line whose run of `` ` `` is followed by another `` ` `` does not open a fenced
+ * code block. A code span does not cross a blank line, whether lines end in `\n` or `\r\n`.
+ * The target of `![alt](target)` ends at its first `)` unless enclosed in `<` and `>`; it loses
+ * those brackets and a trailing title (`"title"`, `'title'` or `(title)`), and is
  * percent-decoded when it decodes. References whose target starts with `http:` or `https:` never
  * reach `replace`.
  */

@@ -313,4 +313,29 @@ describe("resolveImages", () => {
       images: [],
     });
   });
+
+  it("行の後ろにバッククォートがある行はフェンスとみなさない", async () => {
+    expect(
+      await rewrite(
+        "```bash``` を使う\n\n![[a.png]]\n\n``` `x` ```\n![[a.png]]\n",
+      ),
+    ).toBe(
+      `\`\`\`bash\`\`\` を使う\n\n![](image:${HASH_A}.png)\n\n\`\`\` \`x\` \`\`\`\n![](image:${HASH_A}.png)\n`,
+    );
+  });
+
+  it("チルダのフェンスは情報文字列にバッククォートがあっても開く", async () => {
+    const markdown = "~~~ `x`\n![[missing.png]]\n~~~\n";
+    expect(await resolve(markdown)).toEqual({
+      ok: true,
+      markdown,
+      images: [],
+    });
+  });
+
+  it("CRLF の空行もまたがずにバッククォートの間の参照を解決する", async () => {
+    expect(await rewrite("a\r\n`b\r\n\r\n![[a.png]] c`\r\n")).toBe(
+      `a\r\n\`b\r\n\r\n![](image:${HASH_A}.png) c\`\r\n`,
+    );
+  });
 });
