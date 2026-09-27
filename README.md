@@ -26,11 +26,13 @@ bun create astro@latest -- --template basics
 │   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the <Font /> tags; sets --font-body on html
-│   └── pages/
-│       ├── [lang]/
-│       │   └── index.astro   # /ja/ and /en/
-│       └── index.astro
+│   │   └── Layout.astro       # <head> with the <Font /> tags; imports tokens.css; sets --font-body on html
+│   ├── pages/
+│   │   ├── [lang]/
+│   │   │   └── index.astro   # /ja/ and /en/
+│   │   └── index.astro
+│   └── styles/
+│       └── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>
 ├── workers/
 │   └── publish/          # Publish Worker, separate from the site and deployed on its own
 │       ├── src/

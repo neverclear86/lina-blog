@@ -1,0 +1,73 @@
+/*
+ * Color tokens for every page, imported by `src/layouts/Layout.astro`.
+ *
+ * The theme is the `data-theme` attribute on `<html>` ("light" or "dark"). `:root` holds the
+ * light values, which also apply when the attribute is missing, and `:root[data-theme="dark"]`
+ * overrides only the colors that change with the theme. Their values are copied from `.root` and
+ * `.root.dark` in `design/CBMain.dc.html`; the hex digits are lowercase because Biome formats
+ * them so.
+ *
+ * The colors in the second group stay the same in both themes. They are named after the color
+ * rather than a role because the design uses each of them for several roles (text, fills, dots
+ * and shadows).
+ */
+:root {
+  color-scheme: light;
+
+  /* Colors that change with the theme. */
+  --bg: #eceae5;
+  --fg: #232427;
+  --muted: #5a5b5f;
+  --line: #232427;
+  --hair: #cfcbc3;
+  --grid: #d9d6cf;
+  --surf: #f8f7f3;
+  --inv: #232427;
+  --invfg: #f8f7f3;
+  --invmuted: #a9a8a3;
+  --shadow: #232427;
+  --ph: #e2dfd8;
+  --chip: #e2dfd8;
+  --cbg: #232427;
+  --cfg: #f8f7f3;
+  --cmuted: #a9a8a3;
+  --cline: #55565b;
+  --cgrid: #2f3034;
+  --fshadow: #e8731a;
+  --num: #e8731a;
+
+  /* Colors that stay the same in both themes. */
+  --ink: #232427;
+  --orange: #e8731a;
+  --pink: #f08fa6;
+  --blush: #fbe3e3;
+  --green: #8bbf5a;
+  --paper: #f8f7f3;
+  --paper-muted: #a9a8a3;
+  --field: #ffffff;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #17181b;
+  --fg: #eceae5;
+  --muted: #a3a3a0;
+  --line: #5e6167;
+  --hair: #34363b;
+  --grid: #26282c;
+  --surf: #222428;
+  --inv: #eceae5;
+  --invfg: #17181b;
+  --invmuted: #55565b;
+  --shadow: #eceae5;
+  --ph: #2a2c31;
+  --chip: #2e3035;
+  --cbg: #e4e1da;
+  --cfg: #232427;
+  --cmuted: #5a5b5f;
+  --cline: #9e9b94;
+  --cgrid: #d6d3cc;
+  --fshadow: #232427;
+  --num: #b85510;
+}
