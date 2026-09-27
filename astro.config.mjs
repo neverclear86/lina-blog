@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import cloudflare from "@astrojs/cloudflare";
 import { satteri } from "@astrojs/markdown-satteri";
-import { defineConfig, fontProviders } from "astro/config";
+import { defineConfig, envField, fontProviders } from "astro/config";
 import sharp from "sharp";
 import {
   ANSI_ART_MAX_COLUMNS,
@@ -117,6 +117,18 @@ export default defineConfig({
   vite: { plugins: [linaAnsiArt()] },
   // Sessions are not used; this also keeps the adapter from provisioning a KV namespace.
   session: false,
+  // Turnstile site key of the contact form, public and read at build time because the page is
+  // prerendered; set it in the environment or `.env`. The default is Cloudflare's test site key,
+  // whose widget always passes with a dummy token that a production secret key rejects.
+  env: {
+    schema: {
+      TURNSTILE_SITE_KEY: envField.string({
+        context: "client",
+        access: "public",
+        default: "1x00000000000000000000AA",
+      }),
+    },
+  },
   // Every locale, including the default, has a URL prefix (`/ja/`, `/en/`). Pages outside
   // `src/pages/[lang]/`, such as `/blog/`, have none; see the i18n() note in `src/fetch.ts`.
   i18n: {
