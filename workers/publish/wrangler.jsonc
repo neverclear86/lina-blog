@@ -1,7 +1,8 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   // Publish Worker, deployed separately from the site Worker in the root wrangler.jsonc.
-  // PUBLISH_TOKEN is a secret: `wrangler secret put` in production, `.dev.vars` locally.
+  // PUBLISH_TOKEN and GITHUB_TOKEN are secrets: `wrangler secret put` in production,
+  // `.dev.vars` locally. GITHUB_API_URL is only for pointing `wrangler dev` at a local mock.
   "name": "lina-blog-publish",
   "main": "src/app.ts",
   "compatibility_date": "2026-09-25",
