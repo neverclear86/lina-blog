@@ -67,6 +67,8 @@ Blog posts are Markdown files in `src/content/blog/`, committed by the publishin
 Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes and the blog frontmatter schema; `src/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 
+Colors are tested the same way. `src/styles/tokens.test.ts` checks that every foreground and background token pair used for text reaches 4.5:1 (WCAG AA) in both themes, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--fg)` and so on) instead; inline SVG takes `currentColor`.
+
 To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
 
 ## 🎨 CSS

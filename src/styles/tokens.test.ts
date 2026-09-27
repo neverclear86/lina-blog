@@ -64,10 +64,10 @@ describe("tokens.css", () => {
     expect(light).toMatchObject(expected);
   });
 
-  it("ダークのトークンはデザインの .root.dark の変数をすべて同じ値で持つ", () => {
+  it("ダークのトークンはデザインの .root.dark の変数を --num のほかは同じ値で持つ", () => {
     const expected = customProperties(declarations(design, ".root.dark"));
-    expect(expected).toHaveProperty("--num");
-    expect(customProperties(dark)).toEqual(expected);
+    expect(expected["--num"]).toBe("#b85510");
+    expect(customProperties(dark)).toEqual({ ...expected, "--num": "#a04a0e" });
   });
 
   it("アクセント色とインク色はテーマに依らないトークンとして :root にだけある", () => {
@@ -81,4 +81,91 @@ describe("tokens.css", () => {
     expect(light["color-scheme"]).toBe("light");
     expect(dark["color-scheme"]).toBe("dark");
   });
+});
+
+/**
+ * Foreground and background tokens of every text color in the design, checked in both themes.
+ *
+ * Text is judged against the fill under it; the 1px lines of `.grid` and `.cgrid` are not counted
+ * as background. Every pair must reach 4.5:1: none relies on the 3:1 allowance for large text.
+ * `--orange` is not a text color on `--bg` (2.53:1 in the light theme): text in `--orange` is
+ * limited to decorative marks hidden from assistive technology. `--invmuted` is used only on
+ * `--inv`.
+ */
+const TEXT_PAIRS: readonly (readonly [
+  foreground: string,
+  background: string,
+])[] = [
+  ["--fg", "--bg"],
+  ["--fg", "--surf"],
+  ["--fg", "--chip"],
+  ["--muted", "--bg"],
+  ["--muted", "--surf"],
+  ["--muted", "--ph"],
+  ["--invfg", "--inv"],
+  ["--invmuted", "--inv"],
+  ["--cfg", "--cbg"],
+  ["--cmuted", "--cbg"],
+  ["--num", "--cbg"],
+  ["--ink", "--orange"],
+  ["--ink", "--pink"],
+  ["--ink", "--blush"],
+  ["--ink", "--paper"],
+  ["--ink", "--field"],
+  ["--paper-muted", "--ink"],
+];
+
+/**
+ * Returns the WCAG 2.2 contrast ratio of two `#rrggbb` colors, from 1 to 21.
+ *
+ * The order of the arguments does not matter: the lighter color is always the numerator.
+ */
+function contrastRatio(a: string, b: string): number {
+  const [lighter, darker] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/** Returns the relative luminance of a `#rrggbb` color as WCAG 2.2 defines it. */
+function luminance(color: string): number {
+  const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/.exec(color);
+  if (!match) {
+    throw new Error(`not a #rrggbb color: ${color}`);
+  }
+  const [r, g, b] = match.slice(1).map((hex) => {
+    const c = Number.parseInt(hex, 16) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+describe("tokens.css のコントラスト", () => {
+  const light = customProperties(declarations(tokens, ":root"));
+  const themes = {
+    light,
+    dark: {
+      ...light,
+      ...customProperties(declarations(tokens, ':root[data-theme="dark"]')),
+    },
+  };
+
+  it("contrastRatio は白と黒で 21、同じ色で 1、デザインのダークの --num で 3.7 を返し、#rrggbb でない値で投げる", () => {
+    expect(contrastRatio("#ffffff", "#000000")).toBeCloseTo(21, 5);
+    expect(contrastRatio("#000000", "#ffffff")).toBeCloseTo(21, 5);
+    expect(contrastRatio("#232427", "#232427")).toBe(1);
+    expect(contrastRatio("#b85510", "#e4e1da")).toBeCloseTo(3.7, 2);
+    expect(() => contrastRatio("var(--fg)", "#000000")).toThrow(
+      "not a #rrggbb color",
+    );
+  });
+
+  it.each(Object.entries(themes))(
+    "%s のテキストの色の対はすべて 4.5:1 以上になる",
+    (_theme, colors) => {
+      const failures = TEXT_PAIRS.flatMap(([foreground, background]) => {
+        const ratio = contrastRatio(colors[foreground], colors[background]);
+        return ratio < 4.5 ? [`${foreground} / ${background}: ${ratio}`] : [];
+      });
+      expect(failures).toEqual([]);
+    },
+  );
 });

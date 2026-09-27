@@ -4,12 +4,16 @@
  * The theme is the `data-theme` attribute on `<html>` ("light" or "dark"). `:root` holds the
  * light values, which also apply when the attribute is missing, and `:root[data-theme="dark"]`
  * overrides only the colors that change with the theme. Their values are copied from `.root` and
- * `.root.dark` in `design/CBMain.dc.html`; the hex digits are lowercase because Biome formats
- * them so.
+ * `.root.dark` in `design/CBMain.dc.html`, except the dark `--num`: the design's `#b85510` is
+ * 3.7:1 on the dark `--cbg`, so it is darkened to `#a04a0e` (4.62:1). The hex digits are lowercase
+ * because Biome formats them so.
  *
  * The colors in the second group stay the same in both themes. They are named after the color
  * rather than a role because the design uses each of them for several roles (text, fills, dots
  * and shadows).
+ *
+ * `tokens.test.ts` lists every foreground and background pair used for text and checks that each
+ * reaches 4.5:1 (WCAG AA) in both themes. Components use these tokens instead of color values.
  */
 :root {
   color-scheme: light;
@@ -69,5 +73,5 @@
   --cline: #9e9b94;
   --cgrid: #d6d3cc;
   --fshadow: #232427;
-  --num: #b85510;
+  --num: #a04a0e;
 }
