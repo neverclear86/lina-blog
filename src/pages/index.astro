@@ -1,13 +1,14 @@
 ---
 import AboutFullBody from "../components/AboutFullBody.astro";
 import HeroStanding from "../components/HeroStanding.astro";
+import Logo from "../components/Logo.astro";
 import PixelArt from "../components/PixelArt.astro";
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
   <main>
-    <h1>ikili.pro</h1>
+    <h1><Logo size={36} alt="" />ikili.pro</h1>
     <p>準備中です。</p>
     <PixelArt />
     <div class="preview-standing"><HeroStanding /></div>
@@ -29,5 +30,17 @@ import Layout from "../layouts/Layout.astro";
 
 .preview-full-body {
   width: 151px;
+}
+
+main {
+  color-scheme: light dark;
+  background: Canvas;
+  color: CanvasText;
+}
+:global(:root[data-theme="light"]) main {
+  color-scheme: light;
+}
+:global(:root[data-theme="dark"]) main {
+  color-scheme: dark;
 }
 </style>
