@@ -23,7 +23,7 @@ bun create astro@latest -- --template basics
 │   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro
+│   │   └── Layout.astro       # <head> with the <Font /> tags; sets --font-body on html
 │   └── pages/
 │       ├── [lang]/
 │       │   └── index.astro   # /ja/ and /en/
@@ -36,7 +36,7 @@ bun create astro@latest -- --template basics
 │       │   └── env.ts    # Bindings (PUBLISH_TOKEN)
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
-├── astro.config.mjs      # Cloudflare adapter; pages are prerendered by default
+├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts; pages are prerendered by default
 ├── biome.json
 ├── wrangler.jsonc
 └── package.json
@@ -50,6 +50,25 @@ Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes an
 `workers/publish/src/app.ts` are tested with `app.request()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 
 To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+
+## 🔤 Fonts
+
+Fonts are self-hosted with the Astro Fonts API (`fonts` in `astro.config.mjs`). `astro build`
+downloads them from Google Fonts, and pages load them from `/_astro/fonts/`, never from a font
+CDN. `src/layouts/Layout.astro` emits the `@font-face` rules on every page and sets
+`--font-body` on `html`. No font file is preloaded.
+
+| CSS variable     | Font            | Weights  | Used for                                                        |
+| :--------------- | :-------------- | :------- | :-------------------------------------------------------------- |
+| `--font-body`    | Zen Maru Gothic | 500, 900 | Everything by default: Japanese and body text, navigation, buttons |
+| `--font-display` | Saira Condensed | 600, 800 | Large English headings such as LINA and ABOUT (800), TSUKUSU (600) |
+| `--font-mono`    | JetBrains Mono  | 400, 500 | Small labels such as `$ whoami`, dates and the terminal bar      |
+
+Components use these variables and never name a font. Form controls (`button`, `input`,
+`select`, `textarea`) do not inherit `font-family` from `html`, so components set
+`font: inherit` on them. Zen Maru Gothic 700 in the design is written as `font-weight: 900`,
+because 700 is not loaded. `font-synthesis-weight: none` on `html` keeps the browser from
+faking a weight that is not loaded.
 
 ## 🧞 Commands
 

@@ -1,7 +1,7 @@
 // @ts-check
 import { existsSync, readFileSync } from "node:fs";
 import cloudflare from "@astrojs/cloudflare";
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
 
 /** Same pattern Astro uses to read a page's `export const prerender`. */
@@ -56,4 +56,48 @@ export default defineConfig({
     defaultLocale: DEFAULT_LOCALE,
     routing: { prefixDefaultLocale: true },
   },
+  // Fonts are downloaded from Google Fonts during `astro build` and served from /_astro/fonts/,
+  // so pages never request a font CDN. Google splits Zen Maru Gothic's Japanese glyphs into
+  // numbered unicode-range chunks without a subset name, which are always kept; `subsets` only
+  // drops the named Latin Extended, Greek and Cyrillic chunks. Browsers download only the chunks
+  // whose characters a page uses. The design's Zen Maru Gothic 700 is loaded as 900.
+  fonts: [
+    {
+      provider: fontProviders.google(),
+      name: "Zen Maru Gothic",
+      cssVariable: "--font-body",
+      weights: [500, 900],
+      styles: ["normal"],
+      subsets: ["latin"],
+      display: "swap",
+      fallbacks: [
+        "Hiragino Maru Gothic ProN",
+        "Hiragino Sans",
+        "Yu Gothic",
+        "sans-serif",
+      ],
+      // The generated size-adjust is measured on Latin glyphs and does not fit full-width ones.
+      optimizedFallbacks: false,
+    },
+    {
+      provider: fontProviders.google(),
+      name: "Saira Condensed",
+      cssVariable: "--font-display",
+      weights: [600, 800],
+      styles: ["normal"],
+      subsets: ["latin"],
+      display: "swap",
+      fallbacks: ["sans-serif"],
+    },
+    {
+      provider: fontProviders.google(),
+      name: "JetBrains Mono",
+      cssVariable: "--font-mono",
+      weights: [400, 500],
+      styles: ["normal"],
+      subsets: ["latin"],
+      display: "swap",
+      fallbacks: ["monospace"],
+    },
+  ],
 });
