@@ -1,12 +1,15 @@
 /**
  * Links to the profiles on other services, shared by `/llms.txt` (`src/llms.ts`), the text
- * version of the site (`src/text-site.ts`) and the video list of the Latest section
- * (`src/components/LatestVideoList.astro`).
+ * version of the site (`src/text-site.ts`), the video list of the Latest section
+ * (`src/components/LatestVideoList.astro`) and the icon row of the hero
+ * (`src/components/Hero.astro`).
  */
 import type { Locale } from "./i18n/locales";
 
 /** A profile on another service. */
 export interface ProfileLink {
+  /** Service of the profile, which picks its icon in the hero (`src/components/Hero.astro`). */
+  id: "youtube" | "twitter" | "github" | "nostr" | "zenn";
   /** Name of the service in each locale. */
   label: Record<Locale, string>;
   /** URL of the profile. */
@@ -30,21 +33,25 @@ export const YOUTUBE_URL = "https://www.youtube.com/@LinaTsukusu";
  */
 export const PROFILE_LINKS: readonly ProfileLink[] = [
   {
+    id: "youtube",
     label: { ja: "YouTube", en: "YouTube" },
     url: YOUTUBE_URL,
     note: { ja: "動画と配信", en: "Videos and streams" },
   },
   {
+    id: "twitter",
     label: { ja: "Twitter(自称X)", en: "Twitter (self-proclaimed X)" },
     url: "https://x.com/TsukusuLina",
     note: { ja: "近況", en: "Updates" },
   },
   {
+    id: "github",
     label: { ja: "GitHub", en: "GitHub" },
     url: "https://github.com/neverclear86",
     note: { ja: "ソースコード", en: "Source code" },
   },
   {
+    id: "nostr",
     label: { ja: "Nostr", en: "Nostr" },
     url: "https://nostter.app/npub1es86m387vusxe66jjp200eqkn3lcxsxudeg2g50zz0yjx5ggvt8sgctaxz",
     note: { ja: "近況", en: "Updates" },
@@ -52,6 +59,7 @@ export const PROFILE_LINKS: readonly ProfileLink[] = [
       "nostr:npub1es86m387vusxe66jjp200eqkn3lcxsxudeg2g50zz0yjx5ggvt8sgctaxz",
   },
   {
+    id: "zenn",
     label: { ja: "Zenn", en: "Zenn" },
     url: "https://zenn.dev/linatsukusu",
     note: { ja: "技術記事", en: "Tech articles" },
