@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import cloudflare from "@astrojs/cloudflare";
 import { satteri } from "@astrojs/markdown-satteri";
+import sitemap from "@astrojs/sitemap";
 import { defineConfig, envField, fontProviders } from "astro/config";
 import sharp from "sharp";
 import {
@@ -15,6 +16,7 @@ import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
 import { codeFilename } from "./src/markdown/code-filename.ts";
 import { tableAlignToClass } from "./src/markdown/table-align.ts";
 import { youtubeEmbed } from "./src/markdown/youtube.ts";
+import { isSitemapPage, withXDefault } from "./src/sitemap.ts";
 
 /** Same pattern Astro uses to read a page's `export const prerender`. */
 const PRERENDER_EXPORT = /^\s*export\s+const\s+prerender\s*=\s*(true|false);?/m;
@@ -96,7 +98,8 @@ function linaAnsiArt() {
 
 // https://astro.build/config
 export default defineConfig({
-  // Origin of absolute URLs, such as the links in /llms.txt and /rss.xml.
+  // Origin of absolute URLs, such as the links in /llms.txt and /rss.xml, the sitemap and the
+  // Sitemap line of /robots.txt.
   site: "https://ikili.pro",
   markdown: {
     // Sätteri is Astro's default processor. It is set explicitly to add the plugins in
@@ -113,7 +116,20 @@ export default defineConfig({
     // The default `cloudflare-binding` uses Cloudflare Images, which can incur charges.
     imageService: "compile",
   }),
-  integrations: [prerenderByDefault(), devPages()],
+  integrations: [
+    prerenderByDefault(),
+    devPages(),
+    // `@astrojs/sitemap` writes /sitemap-index.xml at build time, linking each page to the same
+    // page in the other locales; `src/sitemap.ts` filters the pages and adds `x-default`.
+    sitemap({
+      filter: isSitemapPage,
+      serialize: withXDefault,
+      i18n: {
+        defaultLocale: DEFAULT_LOCALE,
+        locales: Object.fromEntries(LOCALES.map((locale) => [locale, locale])),
+      },
+    }),
+  ],
   vite: { plugins: [linaAnsiArt()] },
   // Sessions are not used; this also keeps the adapter from provisioning a KV namespace.
   session: false,
