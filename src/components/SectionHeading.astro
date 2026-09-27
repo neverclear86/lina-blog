@@ -1,0 +1,99 @@
+---
+/**
+ * A section heading: a small monospace label such as `~/about`, then the heading element with
+ * the English title in Saira Condensed and the Japanese subtitle.
+ *
+ * Both titles are in the heading element, so its name reads "ABOUT 創好リナってこんな人", and
+ * the English title has `lang="en"`. Below 768px the subtitle goes under the English title;
+ * from 768px they sit side by side, aligned at the bottom. The default slot, such as a lead
+ * paragraph or a "see all" link, goes under the titles below 1024px and to their right from
+ * 1024px.
+ */
+interface Props {
+  /** Label above the heading, such as `~/about`. */
+  label: string;
+  /** English title, such as `ABOUT`. */
+  title: string;
+  /** Subtitle in the page's language, such as `創好リナってこんな人`. */
+  subtitle: string;
+  /** Heading element, chosen by the level of the section in the page. */
+  as?: "h1" | "h2" | "h3";
+}
+
+const { label, title, subtitle, as: Heading = "h2" } = Astro.props;
+---
+
+<div class="section-heading">
+  <div class="titles">
+    <span class="label">{label}</span>
+    <Heading class="heading"
+      ><span class="en" lang="en">{title}</span>{" "}<span class="ja"
+        >{subtitle}</span
+      ></Heading
+    >
+  </div>
+  {Astro.slots.has("default") && (
+  <div class="aside">
+    <slot />
+  </div>
+)}
+</div>
+
+<style>
+.section-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 1024px) {
+  .section-heading {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 48px;
+  }
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.heading {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .heading {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 20px;
+  }
+}
+
+.en {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(64px, 15vw, 120px);
+  line-height: 0.8;
+  letter-spacing: -2px;
+}
+
+.ja {
+  font-size: 22px;
+  font-weight: 900;
+  padding-bottom: 4px;
+}
+</style>

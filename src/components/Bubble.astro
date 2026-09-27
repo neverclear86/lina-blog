@@ -1,0 +1,35 @@
+---
+/**
+ * A speech bubble: `--ink` text in weight 900 on a `--blush` notched shape (`.shape`) with a
+ * hard shadow (`.shadow`). The default slot holds the lines, stacked with a small gap. The
+ * bubble is as wide as its text and wraps it within the width of its parent.
+ */
+---
+
+<div class="shadow bubble-frame">
+  <div class="shape bubble"><slot /></div>
+</div>
+
+<style>
+.bubble-frame {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background: var(--blush);
+  color: var(--ink);
+  font-weight: 900;
+}
+
+@media (min-width: 768px) {
+  .bubble {
+    gap: 4px;
+    padding: 14px 20px;
+  }
+}
+</style>
