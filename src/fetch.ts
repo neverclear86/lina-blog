@@ -5,11 +5,14 @@ import api, { type ApiEnv } from "./api";
 
 const app = new Hono<ApiEnv>();
 
-// Worker routes go before the Astro handlers; `pages()` answers 404 for anything it does not match.
+// Worker routes go before the Astro handlers. For a path that nothing matches, `middleware()`
+// answers 404 without calling next, and Astro serves the prerendered `src/pages/404.astro`.
 app.route("/", api);
 
-app.use(actions());
+// `middleware()` goes before `actions()`: `actions()` throws when no route matches and the
+// only 404 route is prerendered, which would turn every unmatched path into a 500.
 app.use(middleware());
+app.use(actions());
 app.use(pages());
 // `pages()` does not call next, so i18n() is never reached and `astro build` warns about it.
 // Keep it after `pages()`: with prefixDefaultLocale it answers 404 for paths without a locale
