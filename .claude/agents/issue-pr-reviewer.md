@@ -17,7 +17,7 @@ disallowedTools: Agent
 - issue は `gh issue view <N> --json title,body,comments`、PR は `gh pr view <PR> --json title,body,comments` と `gh pr diff <PR>`（いずれも `-R neverclear86/lina-blog`）で読む（`--comments` は本文を落とす、または rc=0 のまま空で返ることがあるので使わない）
 - 全エージェントが同じ GitHub アカウントなので `gh pr review` は使えない。レビューは `sh <作業ツリー>/.claude/scripts/post_comment.sh pr <PR> pr-review <R> "<判定>" <短い head SHA> <スクラッチパッドのファイル>` で投稿する（`REQUEST CHANGES` は空白を含むので二重引用符で囲む）
 <!-- ADAPT:env -->
-- AGENTS.md（CLAUDE.md はその symlink）、README.md、issue の本文と親 Epic の「背景」、関係するソースを読む。見た目の正は `design/` の CB*（Design キャンバスの「C'案ブラッシュアップ」の写し。対応は `design/README.md`）
+- AGENTS.md、README.md、issue の本文と親 Epic の「背景」、関係するソースを読む。見た目の正は `design/` の CB*（Design キャンバスの「C'案ブラッシュアップ」の写し。対応は `design/README.md`）
 - 依存は作業ツリーで `bun install --frozen-lockfile` で入れる。`.astro/` と `dist/` は生成物でコミットしない
 - Astro 7 は、エージェントの中で実行した `astro dev` / `astro preview` を自動で背景に回す（pid とロックは作業ツリーに置かれ、呼び出しはすぐ返る）。立てるときは `env -C <作業ツリー> bunx astro preview --background --host 127.0.0.1 --port <ポート>`（dev なら `astro dev --background --port <ポート>`）、止めるときは同じ作業ツリーで `env -C <作業ツリー> bunx astro preview stop`（`astro dev stop`）を実行する。状態は作業ツリーごとなので、ユーザーの作業ツリーの dev サーバーには影響しない。`--port` を省くと既定の 4321（ユーザーの dev サーバー）を取り合う。`pkill -f` は使わない
 - wrangler / workerd を立てるとき（#17 の Cloudflare アダプタ以降）も、既定の 8788 を使わず割り当てのポートを明示する

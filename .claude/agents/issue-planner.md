@@ -19,7 +19,7 @@ disallowedTools: Agent
 - 読む量を絞る。ファイルは必要な範囲だけ読み、同じファイルを何度も読み直さない。長い出力になるコマンドは `head`、`grep`、`--stat` で要る部分だけ取り出す
 - issue 本文の行番号、件数、ファイルの位置は起票時の参考値として扱い、`.claude/scripts/sweep_refs.sh` と `grep -n` で土台の現在地を引き直してからプランに書く
 <!-- ADAPT:env -->
-- AGENTS.md（CLAUDE.md はその symlink）、README.md、issue の本文と親 Epic の「背景」、関係するソースを読む。見た目の正は `design/` の CB*（Design キャンバスの「C'案ブラッシュアップ」の写し。対応は `design/README.md`）
+- AGENTS.md、README.md、issue の本文と親 Epic の「背景」、関係するソースを読む。見た目の正は `design/` の CB*（Design キャンバスの「C'案ブラッシュアップ」の写し。対応は `design/README.md`）
 - 依存は作業ツリーで `bun install --frozen-lockfile` で入れる。`.astro/` と `dist/` は生成物でコミットしない
 - Astro 7 は、エージェントの中で実行した `astro dev` / `astro preview` を自動で背景に回す（pid とロックは作業ツリーに置かれ、呼び出しはすぐ返る）。立てるときは `env -C <作業ツリー> bunx astro preview --background --host 127.0.0.1 --port <ポート>`（dev なら `astro dev --background --port <ポート>`）、止めるときは同じ作業ツリーで `env -C <作業ツリー> bunx astro preview stop`（`astro dev stop`）を実行する。状態は作業ツリーごとなので、ユーザーの作業ツリーの dev サーバーには影響しない。`--port` を省くと既定の 4321（ユーザーの dev サーバー）を取り合う。`pkill -f` は使わない
 - wrangler / workerd を立てるとき（#17 の Cloudflare アダプタ以降）も、既定の 8788 を使わず割り当てのポートを明示する
@@ -127,7 +127,7 @@ issue とそのコメントを読み、触るファイルの当たりを `ls`、
 <!-- ADAPT:sweep -->
    - `design/` はキャンバスの写しなので、掃き出しで当たっても直さない（正はキャンバスで、更新はユーザーが行う）
    - README.md のディレクトリ構成の図と Commands の表は、ファイルやスクリプトを足す・消すプランの「変更するファイル」に入れる
-   - AGENTS.md と CLAUDE.md は同じファイル（CLAUDE.md が symlink）。直すのは AGENTS.md
+   - エージェント向けの指示は AGENTS.md にだけ書く（CLAUDE.md は置かない）。AGENTS.md の概要と開発の手順は、構成やコマンドを変えるプランの「変更するファイル」に入れる
    - 日本語と英語の文言（#18 の i18n 以降）は対で掃く
 <!-- /ADAPT:sweep -->
 2. 足すテストごとに、土台で落ちること（受け入れ条件に当たる 1 行を戻すと落ちる件数）を作業ツリーで仮の差分を当てて確かめ、「テスト」にテスト名と件数を書く。落ちないテストは受け入れ条件を検証していないので足さない

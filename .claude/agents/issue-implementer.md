@@ -31,7 +31,7 @@ hooks:
 - 読む量を絞る。大きいファイルは Read の offset と limit で要る範囲だけ読み、一度読んだファイルを全文で読み直さない。build、テスト、CI の出力は全文を流さず、失敗の箇所と最後の要約だけを `tail`、`grep` で取り出す（この段階の費用の大半は、伸びた文脈をリクエストのたびに読み直す分である）
 - プランどおりに作れない箇所が見つかったら、勝手に設計を変えずに、その箇所と理由と代案を指示されたファイルに書き、status を deviation にして返す（小さな表記の違いは PR 本文の「プランからの変更」に書けばよい）。プランの版が上がって「続き」を頼まれたら、作業ツリーとブランチはそのまま使い、新しい版との差分だけを直す
 <!-- ADAPT:env -->
-- AGENTS.md（CLAUDE.md はその symlink）、README.md、issue の本文と親 Epic の「背景」、関係するソースを読む。見た目の正は `design/` の CB*（Design キャンバスの「C'案ブラッシュアップ」の写し。対応は `design/README.md`）
+- AGENTS.md、README.md、issue の本文と親 Epic の「背景」、関係するソースを読む。見た目の正は `design/` の CB*（Design キャンバスの「C'案ブラッシュアップ」の写し。対応は `design/README.md`）
 - 依存は作業ツリーで `bun install --frozen-lockfile` で入れる。`.astro/` と `dist/` は生成物でコミットしない
 - Astro 7 は、エージェントの中で実行した `astro dev` / `astro preview` を自動で背景に回す（pid とロックは作業ツリーに置かれ、呼び出しはすぐ返る）。立てるときは `env -C <作業ツリー> bunx astro preview --background --host 127.0.0.1 --port <ポート>`（dev なら `astro dev --background --port <ポート>`）、止めるときは同じ作業ツリーで `env -C <作業ツリー> bunx astro preview stop`（`astro dev stop`）を実行する。状態は作業ツリーごとなので、ユーザーの作業ツリーの dev サーバーには影響しない。`--port` を省くと既定の 4321（ユーザーの dev サーバー）を取り合う。`pkill -f` は使わない
 - wrangler / workerd を立てるとき（#17 の Cloudflare アダプタ以降）も、既定の 8788 を使わず割り当てのポートを明示する

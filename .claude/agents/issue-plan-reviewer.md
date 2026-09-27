@@ -18,7 +18,7 @@ disallowedTools: Agent
 - issue は `gh issue view <N> -R neverclear86/lina-blog --json title,body,comments` で読む（`--comments` は本文を落とす、または rc=0 のまま空で返ることがあるので使わない）
 - 読む量を絞る。ファイルは必要な範囲だけ読み、同じファイルを何度も読み直さない。長い出力になるコマンドは `head`、`grep`、`--stat` で要る部分だけ取り出す
 <!-- ADAPT:env -->
-- AGENTS.md（CLAUDE.md はその symlink）、README.md、issue の本文と親 Epic の「背景」、関係するソースを読む。見た目の正は `design/` の CB*（Design キャンバスの「C'案ブラッシュアップ」の写し。対応は `design/README.md`）
+- AGENTS.md、README.md、issue の本文と親 Epic の「背景」、関係するソースを読む。見た目の正は `design/` の CB*（Design キャンバスの「C'案ブラッシュアップ」の写し。対応は `design/README.md`）
 - 依存は作業ツリーで `bun install --frozen-lockfile` で入れる。`.astro/` と `dist/` は生成物でコミットしない
 - Astro 7 は、エージェントの中で実行した `astro dev` / `astro preview` を自動で背景に回す（pid とロックは作業ツリーに置かれ、呼び出しはすぐ返る）。立てるときは `env -C <作業ツリー> bunx astro preview --background --host 127.0.0.1 --port <ポート>`（dev なら `astro dev --background --port <ポート>`）、止めるときは同じ作業ツリーで `env -C <作業ツリー> bunx astro preview stop`（`astro dev stop`）を実行する。状態は作業ツリーごとなので、ユーザーの作業ツリーの dev サーバーには影響しない。`--port` を省くと既定の 4321（ユーザーの dev サーバー）を取り合う。`pkill -f` は使わない
 - wrangler / workerd を立てるとき（#17 の Cloudflare アダプタ以降）も、既定の 8788 を使わず割り当てのポートを明示する
