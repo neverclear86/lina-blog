@@ -8,7 +8,8 @@
 #   ユーザーの作業ツリーの下                         何もせず 0 で終わる（定義はユーザーの
 #                                                    作業ツリーを編集しないと定めているので、
 #                                                    ここで整形が走るのは異常であり、黙って直さない）
-#   整形のコマンドが無い                             何もせず 0 で終わる
+#   整形のコマンドが無い、コマンドが 127 で終わる    何もせず 0 で終わる（127 は道具が無いの意。版を選ぶ
+#                                                    ラッパーが合う版を見つけられないときなど。CI が検査する）
 #   整形が失敗（構文エラーなど）                     出力を stderr に出して 2 で終わる（エージェントに見える）
 # hook の cwd はセッションの cwd（ユーザーの作業ツリー）なので、パスは絶対パスで扱う。
 # ユーザーの作業ツリーは Claude Code が hook に渡す CLAUDE_PROJECT_DIR（無ければ cwd）から取る。
@@ -36,8 +37,8 @@ tree=$(git -C "$(dirname "$file")" rev-parse --show-toplevel 2> /dev/null) || ex
 command -v ${format_file_cmd%% *} > /dev/null 2>&1 || exit 0
 
 # shellcheck disable=SC2086
-if ! out=$(cd "$tree" && $format_file_cmd "$file" 2>&1); then
-  printf 'hook_format: %s %s failed\n%s\n' "$format_file_cmd" "$file" "$out" >&2
-  exit 2
-fi
-exit 0
+out=$(cd "$tree" && $format_file_cmd "$file" 2>&1)
+status=$?
+case $status in 0 | 127) exit 0 ;; esac
+printf 'hook_format: %s %s failed\n%s\n' "$format_file_cmd" "$file" "$out" >&2
+exit 2

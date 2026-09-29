@@ -36,6 +36,8 @@ export const meta = {
 //   dryRun:     { [n]: シナリオ名 } を渡すとエージェントを立てずに制御の流れだけ確かめる
 //   dryRunPrompts: true なら dry run の trace に label と依頼文の全文を入れる（導入の後に依頼文を読んで確かめるため）
 //   modules:    dry run のときだけ CONFIG.modules を上書きする（モジュールを切った流れを確かめるため。実行では無視する）
+//   sonnet:     false なら Sonnet に振る段階（定数 SONNET の説明）も定義の frontmatter のモデル（opus）で立てる（比較と切り戻しのため。既定は true）
+//   dryRunModels: true なら dry run の trace に label と、上書きした model / effort を入れる（振り分けと昇格を確かめるため）
 // ---------------------------------------------------------------------------
 
 // --- リポジトリごとの設定 ------------------------------------------------------
@@ -52,6 +54,8 @@ const CONFIG = {
   // docker のプロジェクト名の接頭辞（ports が true のとき。ユーザーの compose のプロジェクト名と重ねない）
   projectPrefix: 'lb',
   window: 4,
+  // マージの前に、base とマージした結果の build（MERGE_BUILD_CMD）を使い捨ての作業ツリーで確かめるか
+  mergeBuild: true,
   modules: {
     split: true, // 大きい issue をサブ issue に分ける。false なら分け方の案を添えて blocked で返す
     design: true, // UI を変える issue でプランの前にデザインの方針を決める
@@ -89,6 +93,11 @@ const decisions = a.decisions || {}
 const dry = a.dryRun || null
 // dry run だけ args.modules でモジュールの有無を上書きできる（実行では CONFIG のまま）
 const MODULES = dry && a.modules ? { ...CONFIG.modules, ...a.modules } : CONFIG.modules
+// 書く側の最初の 1 回を Sonnet / high で立て、差し戻されたら定義の frontmatter のモデル（opus / medium）に昇格する。
+// Sonnet にするのは、tier light のプランの版 1、tier light の最初の実装（引き継いだプランを含む）、PR ごとに最初の指摘への対応と
+// 条件の取り込み、最初の rebase、PR の検索、マージ。判定、tier full のプラン、tier none の実装、レビューは opus のまま。
+// Sonnet の medium はコードの作業で high より大きく落ちるので使わない。agent() の model と effort は frontmatter より優先される
+const SONNET = a.sonnet === false ? {} : { model: 'sonnet', effort: 'high' }
 
 // --- スキーマ（エージェントの型ごとに 1 つ。型・モデル・effort・スキーマが同じ agent はキャッシュの接頭辞を共有する） ---
 const VERDICT = { type: 'string', enum: ['APPROVE', 'REQUEST CHANGES', 'NEEDS_USER'] }
@@ -173,7 +182,7 @@ const S = {
   merger: {
     type: 'object',
     properties: {
-      status: { type: 'string', enum: ['merged', 'conflict', 'not_ready'], description: 'merged: マージした / conflict: base と衝突していて rebase が要る / not_ready: 承認や CI の条件を満たさない' },
+      status: { type: 'string', enum: ['merged', 'conflict', 'not_ready'], description: 'merged: マージした / conflict: base と衝突している（mergeBuild のリポジトリでは、base とマージした結果が build を通らないときも）ので rebase が要る / not_ready: 承認や CI の条件を満たさない' },
       sha: { type: 'string', description: 'マージのコミット' }, issueClosed: { type: 'boolean' }, problem: { type: 'string' },
       closedParents: { type: 'array', items: { type: 'integer' }, description: '兄弟がすべて閉じたので閉じた親 issue の番号。無ければ空' },
       openParent: { type: 'integer', description: '兄弟がすべて閉じたのに gh issue close が拒否されて閉じられなかった親 issue の番号' },
@@ -248,7 +257,7 @@ const trace = []
 
 /** エージェントを 1 体立て、null（打ち切りや落ちた）を段階つきの例外にする */
 async function call(stage, label, prompt, opts) {
-  if (dry) trace.push(a.dryRunPrompts ? { label, prompt } : label)
+  if (dry) trace.push(a.dryRunPrompts ? { label, prompt } : a.dryRunModels ? { label, model: opts.model || null, effort: opts.effort || null } : label)
   const result = dry ? fake(label, opts, prompt) : await agent(prompt, { ...opts, label })
   if (result === null || result === undefined) throw new StageError(stage, `${label} が結果を返さなかった`)
   return result
@@ -264,6 +273,7 @@ function env(issue, idx) {
     planWt: `${a.scratchpad}/wt-${issue.n}-plan`,
     wt: `${a.scratchpad}/wt-${issue.n}`,
     reviewWt: `${a.scratchpad}/wt-${issue.n}-review`,
+    mergeWt: `${a.scratchpad}/wt-${issue.n}-merge`,
     port: p, project: `${CONFIG.projectPrefix}-issue${issue.n}`,
     reviewPort: CONFIG.ports ? p + 5 : null, reviewProject: `${CONFIG.projectPrefix}-review${issue.n}`,
     depPlans: [], depsMerged: false,
@@ -490,7 +500,7 @@ ${SAFETY}
 - PR レビューが APPROVE を出した head: ${reviewApprovedHead}
 ${MODULES.gate ? `- 最終確認が APPROVE を出した head: ${approvedHead}` : `- 最終確認の段階は無い。PR レビューの APPROVE（と条件への対応）の後の head: ${approvedHead}`}${head !== approvedHead ? '（その後に rebase で head が変わった。差分が rebase だけであることを確かめてからマージする）' : ''}
 ${rebaseGateUrl ? `- rebase の差分は${MODULES.gate ? '最終確認' : ' PR レビュアー'}が再確認して APPROVE を出した（${rebaseGateUrl}。再確認が見た head: ${rebaseGateHead}）。${reviewApprovedHead} から ${rebaseGateHead} までの差分は再確認が見たものなので、rebase だけであることの確認と kind=fix との一致の照合は \`git range-diff origin/${BASE} ${rebaseGateHead} ${head}\` に置き換え、そこまでの \`!\` と \`>\` の行を not_ready の理由にしない\n` : ''}${conditionsUrl ? `- レビューの APPROVE の後に、条件への対応が入っている（最後の対応コメント: ${conditionsUrl}。マーカー kind=fix）\n` : '- レビューの APPROVE の後に条件への対応は無い\n'}- 作業ツリー（マージの前に消す）: ${e.wt}、${e.reviewWt}、${e.planWt}
-- マージのコミットの本文（トレーラー 2 行。マージの方法は定義の「マージ」）:
+${CONFIG.mergeBuild ? `- ${BASE} とマージした結果の build の検査に使うビルド検査の作業ツリー: ${e.mergeWt}（build の後に消す）\n` : ''}- マージのコミットの本文（トレーラー 2 行。マージの方法は定義の「マージ」）:
   ${a.trailers.coAuthoredBy}
   ${a.trailers.claudeSession}
 返答（構造化出力）: status（merged / conflict / not_ready）、マージのコミット、issue が閉じたか、閉じた親 issue（closedParents）、閉じられなかった親 issue（openParent）、rebase の差分にレビューが要るか（needsReview）、問題があればその内容。`,
@@ -499,8 +509,9 @@ ${rebaseGateUrl ? `- rebase の差分は${MODULES.gate ? '最終確認' : ' PR �
 \`gh pr list -R ${REPO} --head ${e.branch} --state open --json number,url,headRefOid\` で PR を引く。無ければ found を false にする。
 ${MODULES.ci ? `あれば \`gh pr checks <番号> -R ${REPO} --json bucket\` を見て、全部が pass か skipping なら ciPassed を true、それ以外（fail、pending、cancel）なら false にする。` : 'このリポジトリに CI は無いので、ciPassed は false にする（検査を通したかはこの調べ方では分からない）。'}
 返答（構造化出力）: found、PR の番号と URL、head（headRefOid）、ciPassed。`,
-  rebase: (e, pr) => `PR #${pr}（issue #${e.n}、ブランチ ${e.branch}）が ${BASE} と衝突している。作業ツリー ${e.wt}（無ければ \`git -C ${REPO_DIR} fetch origin ${e.branch} && git -C ${REPO_DIR} worktree add ${e.wt} ${e.branch}\` で作る）で \`git fetch origin ${BASE} && git rebase origin/${BASE}\` を行い、衝突を解いて定義の「rebase を頼まれたら」の build とテストを通し、\`git push --force-with-lease\` してほしい。
-${portsNote(e)}rebase 以外の変更を入れない。
+  // mergeBuild のリポジトリでは、マージ担当の conflict は base との衝突と、base とマージした結果の build の失敗の 2 つ（定義の「rebase を頼まれたら」）
+  rebase: (e, pr, problem) => `PR #${pr}（issue #${e.n}、ブランチ ${e.branch}）が ${BASE} と衝突している${CONFIG.mergeBuild ? `、または ${BASE} とマージした結果が build を通らない（マージ担当の判断: ${problem || '衝突'}）` : ''}。作業ツリー ${e.wt}（無ければ \`git -C ${REPO_DIR} fetch origin ${e.branch} && git -C ${REPO_DIR} worktree add ${e.wt} ${e.branch}\` で作る）で \`git fetch origin ${BASE} && git rebase origin/${BASE}\` を行い、衝突を解いて定義の「rebase を頼まれたら」の build とテストを通し、\`git -C ${e.wt} push --force-with-lease\` してほしい（他のコマンドと連結せず、単独の Bash 呼び出しで行う）。
+${portsNote(e)}rebase 以外の変更を入れない${CONFIG.mergeBuild ? `（衝突が無くても build が落ちるときだけ、${BASE} に合わせる最小の直しを rebase のコミットに含め、reason にその箇所を書く）` : ''}。
 ${ciNote(pr)}${SAFETY}
 返答（構造化出力）: status は rebased（解けない衝突があれば blocked にして reason に書く）、新しい head のコミット、ciPassed。`,
 }
@@ -551,9 +562,11 @@ async function planStage(e, issue, state, prReviewUrl) {
   let v = issue.prevPlan ? prevVersion(issue) : 0, r = 0
   while (true) {
     v++
+    // tier light の版 1 だけ Sonnet。版 2 以降、tier none の見込み超え、PR レビューの設計の must から書くプランは opus
+    const planModel = v === 1 && state.tier === 'light' && !prReviewUrl && !issue.prevPlan ? SONNET : {}
     const plan = await call('plan', `Plan #${e.n} v${v}`,
       v === 1 ? P.plan1(e, issue, designUrl, prReviewUrl) : r === 0 ? P.planNext(e, v, r, issue.prevPlan, issue.prevReview) : P.planNext(e, v, r),
-      { agentType: 'issue-planner', phase: 'プラン', schema: S.planner })
+      { agentType: 'issue-planner', phase: 'プラン', schema: S.planner, ...planModel })
     if (plan.status === 'question') return { blocked: { stage: 'plan', questions: plan.questions || [plan.summary] } }
     if (plan.status === 'split') {
       // PR がすでにある（tier none の設計 must を受けて書くプラン）なら、分割はできない
@@ -606,9 +619,11 @@ async function revisePlan(e, state, reportFile, why) {
 /** 実装と PR 作成。逸脱はプランの版を上げてから続きを実装させる */
 async function implementStage(e, issue, state) {
   let noPlan = state.tier === 'none'
+  // tier light の最初の実装だけ Sonnet（引き継いだプランも tier light）。逸脱した後の続きと tier none / full は opus
+  const implModel = state.tier === 'light' ? SONNET : {}
   let impl = await call('implement', `Implement #${e.n}`,
     noPlan ? P.implementNoPlan(e, issue) : P.implement(e, issue, state.postUrl, state.conditions),
-    { agentType: 'issue-implementer', phase: '実装', schema: S.implementer })
+    { agentType: 'issue-implementer', phase: '実装', schema: S.implementer, ...implModel })
   let replans = 0
   while (impl.status === 'deviation') {
     // tier none には上げるプランが無いので、見込みが外れたらプランを書かせ、途中の作業ツリーから続きを実装させる（tier の記録は none のまま残す）
@@ -643,14 +658,16 @@ async function implementStage(e, issue, state) {
 /** 実装が PR の番号か head を返さなかったとき、ブランチの PR を gh で引いて補う（無ければ空。PR が完成しているのに実装を走り直すのを避ける） */
 async function lookupPr(e) {
   log(`#${e.n}: 実装が PR の番号か head を返さなかった。ブランチ ${e.branch} の PR を gh で引いて補う`)
-  const found = await call('implement', `Lookup #${e.n}`, P.lookupPr(e), { phase: '実装', schema: S.prLookup, effort: 'low' })
+  const found = await call('implement', `Lookup #${e.n}`, P.lookupPr(e), { agentType: 'issue-pr-lookup', phase: '実装', schema: S.prLookup, ...SONNET, effort: 'low' })
   if (!found.found) return {}
   return { pr: found.pr, prUrl: found.prUrl, head: found.head, ciPassed: found.ciPassed }
 }
 
-/** 指摘への対応を新しい実装エージェントにさせる */
-async function fixRound(e, state, label, prompt, phase) {
-  const fix = await call('fix', label, prompt, { agentType: 'issue-implementer', phase, schema: S.implementer })
+/** 指摘への対応を新しい実装エージェントにさせる。PR ごとに最初の対応と条件の取り込みは Sonnet、2 回目以降の対応は opus に昇格する */
+async function fixRound(e, state, label, prompt, phase, conditions = false) {
+  const model = conditions || state.fixes === 0 ? SONNET : {}
+  if (!conditions) state.fixes++
+  const fix = await call('fix', label, prompt, { agentType: 'issue-implementer', phase, schema: S.implementer, ...model })
   if (fix.status === 'blocked' || fix.status === 'deviation') return { blocked: { stage: 'fix', questions: [fix.reason || '指摘への対応が進められない'] } }
   if (!fix.commentUrl || !fix.head) throw new StageError('fix', `${label} が対応コメントの URL か head を返さなかった`)
   if (fix.ciPassed !== true) return { blocked: { stage: 'fix', questions: [`対応コミット ${fix.head} の CI が通っていない（${fix.reason || '理由の報告なし'}）`] } }
@@ -667,7 +684,7 @@ async function applyPrConditions(e, state, rev, phase) {
   if (!conds.length) { state.conditionsUrl = null; return {} }
   state.prConditionCount += conds.length
   log(`#${e.n}: PR #${state.pr} のレビューは APPROVE だが条件が ${conds.length} 件ある。再レビューせずに直させる`)
-  const fix = await fixRound(e, state, `Fix conditions PR #${state.pr}`, P.fixConditions(e, state.pr, rev.commentUrl, conds), phase)
+  const fix = await fixRound(e, state, `Fix conditions PR #${state.pr}`, P.fixConditions(e, state.pr, rev.commentUrl, conds), phase, true)
   if (fix.blocked) return fix
   state.conditionsUrl = fix.commentUrl
   state.head = fix.head
@@ -775,7 +792,7 @@ async function recheckStage(e, state, problem) {
 }
 
 /**
- * マージ。衝突なら rebase させて再試行。1 件ずつ。閉じられなかった親 issue は log に出して結果に残す。
+ * マージ。衝突（mergeBuild なら base とマージした結果の build の失敗も）なら、マージ担当の problem を添えて rebase させて再試行。1 件ずつ。閉じられなかった親 issue は log に出して結果に残す。
  * マージ担当が rebase の差分にレビューが要ると判断したら（needsReview）、{ review: 理由 } を返して呼び出し側が最終確認に再確認させる。
  * reReviewed は再確認の後のやり直しで、マージ・確かめ直し・rebase の label に re-review を付けて 1 回目と区別する（retrospective は label で集計し、同じ label は先の結果を採る）
  */
@@ -785,7 +802,7 @@ async function mergeStage(e, state, reReviewed = false) {
     const tag = reReviewed ? 're-review' : null
     const label = (part) => `Merge PR #${state.pr}${tag || part ? ` (${[tag, part].filter(Boolean).join(', ')})` : ''}`
     for (let t = 0; t <= MAX_REBASES; t++) {
-      const m = await call('merge', t === 0 && !notReady ? label(null) : label(`retry ${t}${notReady ? ' recheck' : ''}`), P.merge(e, state.pr, state.head, state.approvedHead, state.reviewApprovedHead, state.conditionsUrl, state.rebaseGateUrl, state.rebaseGateHead), { agentType: 'issue-merger', phase: 'マージ', schema: S.merger })
+      const m = await call('merge', t === 0 && !notReady ? label(null) : label(`retry ${t}${notReady ? ' recheck' : ''}`), P.merge(e, state.pr, state.head, state.approvedHead, state.reviewApprovedHead, state.conditionsUrl, state.rebaseGateUrl, state.rebaseGateHead), { agentType: 'issue-merger', phase: 'マージ', schema: S.merger, ...SONNET })
       if (m.status === 'merged') {
         state.mergeSha = m.sha; state.issueClosed = m.issueClosed !== false; state.mergeSeq = ++mergeSeq
         state.closedParents = m.closedParents || []; state.openParent = m.openParent || null
@@ -801,8 +818,8 @@ async function mergeStage(e, state, reReviewed = false) {
         continue
       }
       if (t === MAX_REBASES) return { stalled: { stage: 'merge', reason: `rebase を ${t} 回しても衝突が解けない: ${m.problem || ''}` } }
-      log(`#${e.n}: PR #${state.pr} が ${BASE} と衝突しているので rebase させる`)
-      const rb = await call('rebase', `Rebase PR #${state.pr} (${tag ? `${tag}, ` : ''}${t + 1})`, P.rebase(e, state.pr), { agentType: 'issue-implementer', phase: 'マージ', schema: S.implementer })
+      log(`#${e.n}: PR #${state.pr} が ${BASE} と衝突している${CONFIG.mergeBuild ? 'か、マージした結果が build を通らない' : ''}ので rebase させる（${m.problem || ''}）`)
+      const rb = await call('rebase', `Rebase PR #${state.pr} (${tag ? `${tag}, ` : ''}${t + 1})`, P.rebase(e, state.pr, m.problem), { agentType: 'issue-implementer', phase: 'マージ', schema: S.implementer, ...(t === 0 ? SONNET : {}) })
       if (rb.status !== 'rebased' || !rb.head) return { stalled: { stage: 'merge', reason: `rebase の衝突に設計の判断が要る: ${rb.reason || rb.status}` } }
       if (rb.ciPassed !== true) return { stalled: { stage: 'merge', reason: `rebase 後の CI が通っていない: ${rb.reason || ''}` } }
       state.head = rb.head
@@ -854,7 +871,7 @@ async function runIssue(issue, idx) {
   const e = env(issue, idx)
   const state = {
     n: issue.n, base: e.base, tier: TIERS.includes(issue.tier) ? issue.tier : null,
-    planRounds: 0, planInherited: false, version: 0, prRounds: 0, gateRounds: 0, nits: 0, prConditionCount: 0, implMusts: 0, lessons: [], lessonsDone: false,
+    planRounds: 0, planInherited: false, version: 0, prRounds: 0, gateRounds: 0, fixes: 0, nits: 0, prConditionCount: 0, implMusts: 0, lessons: [], lessonsDone: false,
     designUrl: issue.designUrl || null, postUrl: null, postFile: null, conditions: null,
     pr: null, head: null, approveUrl: null, reviewApprovedHead: null, conditionsUrl: null,
     mergeSha: null, issueClosed: null, closedParents: [], openParent: null, gateUrl: null, rebaseGateUrl: null, rebaseGateHead: null,
@@ -1032,7 +1049,7 @@ function fake(label, opts, prompt) {
   }
   if (t === 'issue-pr-reviewer') {
     if (sc === 'pr-needs-user') return { verdict: 'NEEDS_USER', must: 0, should: 0, nit: 0, commentUrl: `https://example/pr#needs-user`, questions: ['エラーを握るか落とすか'] }
-    const approveAt = ['pr2', 'design-must', 'tier-none-design-must', 'null-fix', 'fix-blocked'].includes(sc) ? 2 : 1
+    const approveAt = ['pr2', 'pr2-gate', 'design-must', 'tier-none-design-must', 'null-fix', 'fix-blocked'].includes(sc) ? 2 : 1
     const inGate = opts.phase === '最終確認'
     // 最終確認の段階が無い実行では、依頼文が「## まとめ」を頼んだ APPROVE だけが学びを返す
     const lessons = prompt.includes('「## まとめ」を別のコメントとして 1 本投稿し') ? ['PR レビューのまとめの学び'] : undefined
@@ -1043,14 +1060,16 @@ function fake(label, opts, prompt) {
   }
   if (t === 'issue-final-gate') {
     if (sc === 'gate-needs-user') return { verdict: 'NEEDS_USER', must: 0, should: 0, nit: 0, commentUrl: `https://example/pr#gate-needs-user`, questions: ['受け入れ条件の解釈が 2 通りある'] }
-    // gate: ラウンド 1 で差し戻し / not-ready-review-reject: rebase の差分の再確認（ラウンド 2）で差し戻し
-    const ok = (sc !== 'gate' || r >= 2) && !(sc === 'not-ready-review-reject' && r === 2)
+    // gate / pr2-gate: ラウンド 1 で差し戻し / not-ready-review-reject: rebase の差分の再確認（ラウンド 2）で差し戻し
+    const ok = (!['gate', 'pr2-gate'].includes(sc) || r >= 2) && !(sc === 'not-ready-review-reject' && r === 2)
     // 学びは依頼文が「## まとめ」を頼んだときだけ返す（ふりかえりを入れないリポジトリでは頼まない）
     const lessons = prompt.includes('「## まとめ」を別のコメントとして 1 本投稿する') ? ['プランの「検証の手順」に cwd を書かせると再現が 1 回で通る'] : undefined
     return ok ? { verdict: 'APPROVE', must: 0, should: 0, nit: 0, commentUrl: `https://example/pr#gate-${r}`, lessons } : { verdict: 'REQUEST CHANGES', must: 1, should: 0, nit: 0, commentUrl: `https://example/pr#gate-${r}` }
   }
   if (t === 'issue-merger') {
     if (sc === 'conflict' && !label.includes('retry')) return { status: 'conflict', problem: 'CONFLICTING' }
+    // merge-build: 字面の衝突は無いが、base とマージした結果の build が落ちる（mergeBuild のリポジトリだけ。依頼文にビルド検査の作業ツリーがあるときに返す）
+    if (sc === 'merge-build' && !label.includes('retry') && prompt.includes('ビルド検査の作業ツリー')) return { status: 'conflict', problem: 'マージした結果の build が落ちた: src/a の foo の引数の数が合わない' }
     // not-ready-review 系: 最初のマージで衝突 → rebase → 確かめ直しで rebase の差分にレビューが要ると判断し、最終確認の再確認の後（re-review）にマージする。
     // -conflict は再確認の後のマージでもう一度衝突する / -reject は再確認が差し戻す（gate 側） / not-ready-fix は条件対応の後のコミットが kind=fix と一致しないと判断する
     if (sc.startsWith('not-ready-review') && !/retry|re-review/.test(label)) return { status: 'conflict', problem: 'CONFLICTING' }

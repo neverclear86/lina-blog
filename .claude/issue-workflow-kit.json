@@ -1,6 +1,6 @@
 {
   "kit": "issue-workflow-kit",
-  "kitCommit": "3a6a6e405cbe8ec497c0b01763f2a82c96a93e8c",
+  "kitCommit": "36eb74122490073d4faafe97ad3fc64f5336d380",
   "config": {
     "values": {
       "REPO": "neverclear86/lina-blog",
@@ -21,7 +21,8 @@
       "FORMAT_EXT_RE": "[.](ts|tsx|js|jsx|mjs|cjs|json|jsonc|astro|css)$",
       "FORMAT_FILE_CMD": "bunx biome format --write --no-errors-on-unmatched --files-ignore-unknown=true",
       "PUSH_CHECK_CMD": "bunx biome ci",
-      "PROJECT_MARKER_FILE": "biome.json"
+      "PROJECT_MARKER_FILE": "biome.json",
+      "MERGE_BUILD_CMD": "bun install --frozen-lockfile && bunx astro check"
     },
     "modules": {
       "split": true,
@@ -38,7 +39,11 @@
       "長く動くプロセスを立てる": true,
       "base が既定ブランチでない": false,
       "テストが外部の API に接続する": false,
-      "テストが固定のポートを使う": false
+      "テストが固定のポートを使う": false,
+      "導入先に編集や停止で走る project hooks がある": false,
+      "build が外部 API を叩く": false,
+      "複数の platform 向けにイメージを作る": false,
+      "変更履歴のファイルを保っている": false
     }
   },
   "files": [
@@ -48,16 +53,19 @@
     ".claude/agents/issue-merger.md",
     ".claude/agents/issue-plan-reviewer.md",
     ".claude/agents/issue-planner.md",
+    ".claude/agents/issue-pr-lookup.md",
     ".claude/agents/issue-pr-reviewer.md",
     ".claude/agents/issue-retro-implementer.md",
     ".claude/agents/issue-retrospective.md",
     ".claude/scripts/check_procedure.sh",
+    ".claude/scripts/dryrun.mjs",
     ".claude/scripts/hook_format.sh",
     ".claude/scripts/hook_pr_body_gate.sh",
     ".claude/scripts/hook_push_check.sh",
     ".claude/scripts/post_comment.sh",
     ".claude/scripts/pr_facts.sh",
     ".claude/scripts/sweep_refs.sh",
+    ".claude/scripts/verify_workflow.py",
     ".claude/scripts/wfstats.py",
     ".claude/skills/issue-workflow/SKILL.md",
     ".claude/skills/issue-workflow/references/formats.md",

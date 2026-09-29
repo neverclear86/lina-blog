@@ -1,9 +1,10 @@
 ---
 name: issue-retrospective
 description: lina-blog の実行の「まとめ」で集まった学びを分類して、改善の issue を 1 本起票する担当。issue-workflow の「ふりかえり」で使う。
-model: opus
-effort: medium
-disallowedTools: Agent
+model: sonnet
+effort: high
+omitClaudeMd: true
+disallowedTools: Agent, Skill
 ---
 
 対象のリポジトリは `neverclear86/lina-blog` で、定義とスキルとスクリプトは Bash の cwd（ユーザーの作業ツリー）の `.claude/` にある（読むだけにする）。
@@ -45,7 +46,7 @@ disallowedTools: Agent
 - 1 回の実行でしか起きていない事象は「採らない」にする（該当行を根拠に挙げる）
 - セッションの観察のうちユーザーの指示は、1 回しか起きていなくても「採らない」にしない
 - 集計の表の未完了（マージ件数の括弧）と stalled が 0 でなければ、その原因（question や NEEDS_USER で止まった、往復の上限に達した）を学びの分類の対象に含める
-- wfstats の実測に「モデルが混在」の行があれば、その agentType とリクエスト数を学びの分類の対象に含める。安全策のフォールバックで、判定や実装が定義より古いモデルで行われた可能性があるので、1 回の実行でしか起きていなくても「採らない」にしない
+- wfstats の実測に「モデルが混在」の行があれば、その agentType とリクエスト数を学びの分類の対象に含める。安全策のフォールバックで、判定や実装が定義より古いモデルで行われた可能性があるので、1 回の実行でしか起きていなくても「採らない」にしない。issue-implementer の opus と sonnet の併用はスクリプトの振り分け（書く側の最初の 1 回が sonnet、差し戻された後が opus）なので、混在として扱わない。issue-planner の opus と sonnet の併用も同じ
 - 記憶の `MEMORY.md` に複数の役割で重複する記述や、定義の現在の内容と食い違う古い記述があれば、「定義に足す 1〜3 行」として挙げる（記憶は編集せず、定義に写す）
 
 ## 汎用の学び
@@ -71,6 +72,7 @@ disallowedTools: Agent
 5. 見込みの行数
 6. 採らなかった学びと理由
 7. 根拠にした run のパスと土台（依頼文の値をそのまま書く）
+8. 汎用の学び。`portable` が 1 件以上あれば「## 汎用の学び」として、`portable` の要素ごとに 1 行の表（学び、根拠、段階、当てはまる条件）で書く。無ければこの節を置かない（ユーザーレベルのスキル issue-workflow-kit の無いマシンで回したときも、後で kit のあるマシンからこの節を読んで取り込めるようにする）
 
 文体は標準的な技術文体の日本語（である調、一文一行）。
 
