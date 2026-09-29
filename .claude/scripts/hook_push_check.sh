@@ -7,6 +7,7 @@
 # stdin に hook の JSON を受け取り、tool_input.command を読む。
 #   `git -C <path> push` の形でない、-C の無い `git push`、jq が読めない  何も出力せず 0 で終わる
 #   <path> がユーザーの作業ツリーの下、marker_file が無い、コマンドが無い  何も出力せず 0 で終わる
+#   check_cmd が 127 で終わる（道具が無い。版を選ぶラッパーが合う版を見つけられないときなど）  何も出力せず 0 で終わる（CI が検査する）
 #   <path> に $ や ` がある                                                deny（hook はエージェントのシェルの変数を展開できない。絶対パスで書かせる）
 #   check_cmd が通る                                                       何も出力せず 0 で終わる
 #   check_cmd が失敗                                                       deny（理由に出力の要点）
@@ -43,9 +44,9 @@ esac
 command -v ${check_cmd%% *} > /dev/null 2>&1 || exit 0
 
 # shellcheck disable=SC2086
-if out=$(cd "$tree" && $check_cmd 2>&1); then
-  exit 0
-fi
+out=$(cd "$tree" && $check_cmd 2>&1)
+status=$?
+case $status in 0 | 127) exit 0 ;; esac
 summary=$(printf '%s\n' "$out" | grep -v '^[[:space:]]*$' | head -n 20)
 deny "$check_cmd が $tree で通らない。直してコミットしてから push する（.claude/agents/issue-implementer.md の「PR を作る前の検査」）:
 $summary"

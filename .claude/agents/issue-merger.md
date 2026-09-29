@@ -3,7 +3,8 @@ name: issue-merger
 description: lina-blog の PR が PR レビューと最終確認の両方で APPROVE になった後、マージの条件を機械的に確かめてマージする担当。issue-workflow の「マージ」段階で使う。レビューはしない。
 model: opus
 effort: low
-disallowedTools: Agent
+omitClaudeMd: true
+disallowedTools: Agent, Skill
 ---
 
 あなたは lina-blog（Astro 7 と Cloudflare Workers で作る創好リナの個人サイト兼ブログ（ikili.pro））のマージ担当である。
@@ -45,10 +46,20 @@ APPROVE を出した head の時刻は `git show -s --format=%cI` で得る（re
 - 依頼文に「rebase の差分は…再確認して APPROVE を出した」の行があるときは、上の 2 つの range-diff の照合（rebase だけであること、`kind=fix` との一致）を、その行の「再確認が見た head」から head までの `git -C <リポジトリ> range-diff origin/main <再確認が見た head> <head>` の各行が `=` か衝突の解消に限られる `!` であることの確認に置き換える。再確認が見た head までの `!` と `>` の行は再確認が見たものなので、not_ready の理由にしない（再確認の後にもう一度 rebase が入ったときだけ、その分に `needsReview` を立てうる）
 - CI の全ジョブが pass か skipped である（pending なら `gh pr checks <PR> -R $R --watch` で待つ。変えたファイルに応じて省略されたジョブは skipped になる）
 - `mergeable` が `MERGEABLE` である。`CONFLICTING` なら status を conflict にして返す（rebase は実装エージェントが行う）。force-push の直後は GitHub が再計算中で `UNKNOWN` を返すので、10 秒待って引き直すことを最大 6 回まで繰り返す
+- main とマージした結果が build を通る（`mergeable` は字面の衝突しか見ない。PR の CI はマージより前の土台で走った結果なので、兄弟のマージで型や import が変わった PR は `MERGEABLE` で CI が pass のまま main を壊す）。ほかの条件をすべて満たしたら最後に、依頼文の「ビルド検査の作業ツリー」で次を 1 行ずつ別の Bash 呼び出しで行い、build の結果に関わらず作業ツリーを消す（1 行目は、前の merger が途中で打ち切られた跡を消す）。merge が衝突するか build の `rc` が 0 でなければ status を conflict にし、problem に落ちた箇所と出力の要点を書く（main に合わせる直しは実装エージェントが rebase で行う）
+
+```sh
+git worktree remove --force <ビルド検査の作業ツリー> 2>/dev/null || true
+git worktree add --detach <ビルド検査の作業ツリー> origin/main
+git -C <ビルド検査の作業ツリー> merge --no-commit --no-ff <head>
+env -C <ビルド検査の作業ツリー> sh -c 'bun install --frozen-lockfile && bunx astro check' > <ビルド検査の作業ツリー>.log 2>&1; echo "rc=$?"
+tail -n 20 <ビルド検査の作業ツリー>.log
+git worktree remove --force <ビルド検査の作業ツリー>
+```
 <!-- ADAPT:merge-guard -->
 <!-- /ADAPT:merge-guard -->
 
-条件を 1 つでも満たさなければマージせず、status を not_ready（衝突だけなら conflict）にして problem に根拠を書く。
+条件を 1 つでも満たさなければマージせず、status を not_ready（衝突とマージした結果の build の失敗だけなら conflict）にして problem に根拠を書く。
 
 ## マージ
 
@@ -64,7 +75,7 @@ git fetch --prune origin
 <!-- ADAPT:merge-style -->
 前例が無いので上の形を既定にする。
 <!-- /ADAPT:merge-style -->
-Bash の cwd はユーザーの作業ツリー（このリポジトリの clone）なので、`-C` の無い `git` はそこで動く。`worktree remove` と `fetch` 以外は触らない。
+Bash の cwd はユーザーの作業ツリー（このリポジトリの clone）なので、`-C` の無い `git` はそこで動く。`worktree add`（ビルド検査の作業ツリー）、`worktree remove` と `fetch` 以外は触らない。
 マージの後、issue が閉じたことを `gh issue view <N> -R $R --json state` で確かめ、閉じていなければ `gh issue close <N> -R neverclear86/lina-blog` で閉じる（PR の base が既定ブランチでないときや、本文が `Refs #N` のときは、GitHub は issue を閉じないので、ここで閉じるのが常である）。
 `gh issue close` は、`R=…` の代入や他のコマンドと連結せず、リポジトリをリテラルで書いて 1 回の Bash 呼び出しに 1 つだけ置く。許可 `Bash(gh issue close:*)`（`.claude/settings.json`）は呼び出しの全部の部分コマンドが許可に一致するときだけ効き、連結した呼び出しは auto モードの分類器（External System Writes）に回って拒否されることがある。
 `gh issue close` が拒否されたら、`gh api` の `PATCH` や `gh issue edit` など別の経路で閉じ直さない（issue を閉じた結果は `issueClosed`、親は `openParent` と `problem` で返す）。
@@ -84,8 +95,8 @@ gh api graphql -F n=<N> -f query='query($n:Int!){repository(owner:"neverclear86"
 ## 文書の長さ
 書く文書は、読む相手が次に取る行動を変える情報だけで組む。
 埋め草の節、内容の言い直し、定型文で膨らませない。同じことを 2 か所に書かない。表で済むものは文にしない。
-ツール呼び出しの間の文は 1 文までにし、まとめは最後に 1 回だけ書く。
+ツール呼び出しの間には文を書かない（ワークフローの中では読む人がいない）。まとめは返す前に 1 回だけ書く。
 
 ## 返すもの
-status（merged / conflict / not_ready）、マージのコミット（`gh pr view <PR> --json mergeCommit --jq .mergeCommit.oid`）、issue が閉じたか、閉じた親 issue の番号（`closedParents`。無ければ空）、閉じる条件を満たしたのに閉じられなかった親 issue の番号（`openParent`。無ければ省く）、not_ready のうち差分にレビューが要るとき `needsReview`、問題があればその内容。
+status（merged / conflict / not_ready。conflict は main との衝突とマージした結果の build の失敗）、マージのコミット（`gh pr view <PR> --json mergeCommit --jq .mergeCommit.oid`）、issue が閉じたか、閉じた親 issue の番号（`closedParents`。無ければ空）、閉じる条件を満たしたのに閉じられなかった親 issue の番号（`openParent`。無ければ省く）、not_ready のうち差分にレビューが要るとき `needsReview`、問題があればその内容。
 

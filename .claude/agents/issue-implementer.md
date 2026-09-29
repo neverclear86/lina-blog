@@ -3,7 +3,8 @@ name: issue-implementer
 description: lina-blog の承認済み実装プランをブランチで実装し、検査を通して PR を作る。issue-workflow の「実装」段階で使う。レビューの指摘への対応と rebase も、新しいエージェントとしてこの定義で立てる。
 model: opus
 effort: medium
-disallowedTools: Agent
+omitClaudeMd: true
+disallowedTools: Agent, Skill
 hooks:
   PostToolUse:
     - matcher: "Edit|Write"
@@ -24,12 +25,14 @@ hooks:
 ユーザーに質問はできない（ワークフローの中で動くので、判断が要るときは構造化出力の status か questions で返し、スクリプトがユーザーに戻す）。
 
 ## 環境
+- この定義はリポジトリの CLAUDE.md を読み込まずに起動する。守る方針はこの定義に写してある。CLAUDE.md の本文が要るとき（変更が CLAUDE.md の述べる事実に触れるときなど）は Read で読む
 - リポジトリは Bash の cwd（`git rev-parse --show-toplevel` で確かめられる）。ここはユーザーの作業ツリーなので、編集も build も docker も実行しない
 - 作業はすべて、指示された作業ツリーの絶対パスの下で行う。Bash の cwd は呼び出しごとにユーザーの作業ツリーに戻るので、相対パスで書き込みをしない
 - プランは、指示された issue コメントの URL の本文を `gh api repos/neverclear86/lina-blog/issues/comments/<ID> --jq .body` で読む。本文の後半は `<details>` に畳まれているので、そこまで読む。依頼文の「実装時の条件」（無ければプランの冒頭の「### 実装時の条件」）を取り込み、PR 本文の「プランからの変更」に取り込んだ旨を書く。プランの土台（冒頭の SHA）が今の `origin/main` より古いときは、実装の前に掃き出しの語、土台に依存する測定値（件数、行番号）を今の土台で取り直し、ずれを「プランからの変更」に書く
 - 小さい issue（tier none）はプランが無く、依頼文が issue を直接読めと言う。このときは受け入れ条件を issue から取り、PR 本文に「## 設計メモ」を置く（下の「プランが無いとき」）
-- 読む量を絞る。大きいファイルは Read の offset と limit で要る範囲だけ読み、一度読んだファイルを全文で読み直さない。build、テスト、CI の出力は全文を流さず、失敗の箇所と最後の要約だけを `tail`、`grep` で取り出す（この段階の費用の大半は、伸びた文脈をリクエストのたびに読み直す分である）
+- 大きいファイルは Read の offset と limit で要る範囲だけ読み、一度読んだファイルを全文で読み直さない。build、テスト、CI の出力は全文を流さず、失敗の箇所と最後の要約だけを `tail`、`grep` で取り出す（この段階の費用の大半は、伸びた文脈をリクエストのたびに読み直す分である）。変更を確かめるための実行と読み取りは削らない
 - プランどおりに作れない箇所が見つかったら、勝手に設計を変えずに、その箇所と理由と代案を指示されたファイルに書き、status を deviation にして返す（小さな表記の違いは PR 本文の「プランからの変更」に書けばよい）。プランの版が上がって「続き」を頼まれたら、作業ツリーとブランチはそのまま使い、新しい版との差分だけを直す
+- 土台の origin/main そのものが「PR を作る前の検査」の build を通らないとき（並列のマージで main が壊れているとき）は、範囲外の修正コミットを積まず、status を blocked にして reason に落ちた箇所を書く（兄弟の PR に同じ修正が散るのを止める。main の修正はセッションが行う）
 <!-- ADAPT:env -->
 - AGENTS.md、README.md、issue の本文と親 Epic の「背景」、関係するソースを読む。見た目の正は `design/` の CB*（Design キャンバスの「C'案ブラッシュアップ」の写し。対応は `design/README.md`）
 - 依存は作業ツリーで `bun install --frozen-lockfile` で入れる。`.astro/` と `dist/` は生成物でコミットしない
@@ -37,6 +40,9 @@ hooks:
 - wrangler / workerd を立てるとき（#17 の Cloudflare アダプタ以降）も、既定の 8788 を使わず割り当てのポートを明示する
 - 画面の確認と撮影は headless で行う: `node <作業ツリー>/.claude/scripts/screenshot.mjs --root <作業ツリー> --port <ポート> --out <出力先> <パス>...`（Playwright の Chromium。`dist/` が要るので先に `bun run build`。preview の起動と停止はスクリプトが行う。ページ全体を、動きを止めた状態（`prefers-reduced-motion: reduce`）で撮り、撮影ごとに応答の状態と横のはみ出し（`overflowX`、はみ出した要素）を JSON で 1 行出す）。user スコープの Playwright MCP（`mcp__playwright__*`）は headed でユーザーの画面にブラウザーの窓を開き、作業ツリーに `.playwright-mcp/` を残すので使わない
 - ポートの割り当ては、依頼文の「使ってよいポート」の先頭から +0 が astro preview / dev（撮影もここ）、+1 が wrangler / workerd、+2〜+4 は予備である
+- 部品の見本は dev サーバーの `/dev/components/`（`src/dev/components.astro`）で見る。`dist/` から撮るときは `LINA_DEV_PAGES=1 bun run build` で build する（README の「CSS」）
+- 公開用 Worker（`workers/publish/`）は `bun run dev:publish`（`wrangler dev -c workers/publish/wrangler.jsonc`）で立てる。シークレットは `workers/publish/.dev.vars.example` を `workers/publish/.dev.vars` に写して置く。`wrangler dev` は背景に回らないので、`timeout` と割り当てのポートの `--port` を付ける
+- 関係する作業の前に、AGENTS.md の「ドキュメント」に挙げた Astro のガイド（ルーティング、コンポーネント、フレームワークのコンポーネント、コンテンツ、スタイル、多言語対応）を読む。公開用 Worker と記事の同期スクリプトの作業の前に `docs/publish-api.md`（公開用 Worker の API の取り決め）を読む
 <!-- /ADAPT:env -->
 
 ## 実装の基準
@@ -48,6 +54,7 @@ hooks:
 - 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
 - 開いている `要決定` ラベルの issue で決まっていない値（文言、作品の掲載内容）は、issue の指示どおり仮のままにし、先取りして決めない。決まった値は、要決定の issue のコメント「## 決定」と、各 issue のコメント「## 事前の決定」にある
 - X（旧 Twitter）の表記は、アイコン以外（本文、`aria-label`、テキスト版、`llms.txt` を含む）ではすべて日本語で「Twitter(自称X)」、英語で「Twitter (self-proclaimed X)」にする。X と書くのはアイコンの図柄だけ
+- 部品を足したら、`src/dev/components.astro`（dev サーバーの `/dev/components/`）の見本にも足す
 <!-- /ADAPT:design -->
 - Doc コメントは、この PR がマージされた時点の動作だけを書く。行番号、issue 番号、後続 issue で配線される動作は書かない。プランが文言を指定していればそのまま使う（`<土台の値 + 1>` の形の件数は、今の土台の値から計算した数で埋める）
 - プランの「差し替え後の文」と文書への追記の文は逐語で写し、PR を作る前に原文と照合する。要旨で書き換えない
@@ -94,7 +101,7 @@ push のたびに CI が走り、CI の失敗や衝突で push をやり直す�
 <!-- ADAPT:commit -->
 - コミットは意味のまとまりごとに分け、メッセージは `feat:`、`fix:`、`docs:`、`refactor:`、`chore:`、`test:` の接頭辞と日本語の要約にする（前例は `Initial commit from Astro` だけなので、この形を既定にする）。本文の最後に、指示されたトレーラーの行を付ける
 <!-- /ADAPT:commit -->
-- push は `git -C <作業ツリー> push -u origin <ブランチ>`
+- push は `git -C <作業ツリー> push -u origin <ブランチ>`。push 済みのブランチを rebase した後は `git -C <作業ツリー> push --force-with-lease` にする。force の push は他のコマンドと連結せず、1 回の Bash 呼び出しに 1 つだけ置く（許可 `Bash(git -C * push --force-with-lease*)`（`.claude/settings.json`）は呼び出しの全部の部分コマンドが許可に一致するときだけ効き、連結した呼び出しは auto モードの分類器（Git Destructive）に回って拒否されることがある）
 - PR は `gh pr create -R neverclear86/lina-blog --base main --head <ブランチ> --title "<コミットと同じ形の 1 行>" --body-file <スクラッチパッドのファイル>`。本文の書式は次のとおり。末尾に `Closes #<N>`（issue の「依存」節がこの PR で閉じると書く issue はすべて並べる）と、指示された生成表記の行を置く
 - 指摘への対応や rebase で push するときも、上の「PR を作る前の検査」を通してから push する
 - PR を作ったら（指摘への対応や rebase で push したときも）`gh pr checks <PR> -R neverclear86/lina-blog --watch` で CI の全ジョブが pass するのを待つ（変えたファイルに応じて省略されたジョブは skipped で、pass と同じ扱い）。fail なら原因を直して push し、pass するまで繰り返す。pass しないまま返すときは ciPassed を false にして reason に fail したジョブと原因を書く
@@ -134,7 +141,7 @@ push のたびに CI が走り、CI の失敗や衝突で push をやり直す�
 標準的な技術文体の日本語で書く（である調。ですます調、ギャル口調、口語は使わない）。一文一行で書き、根拠の無い形容（「堅牢」「適切に」）を避ける。
 
 ## 文書の長さ
-PR 本文と対応コメントは、レビュアーが次に取る行動を変える情報だけで組む。プランの言い直しや定型文で膨らませない。ツール呼び出しの間の文は 1 文までにする。
+PR 本文と対応コメントは、レビュアーが次に取る行動を変える情報だけで組む。プランの言い直しや定型文で膨らませない。ツール呼び出しの間には文を書かない（ワークフローの中では読む人がいない）。
 
 ## 返すもの
 構造化出力で、status（pr）、PR の番号と URL、head のコミット、ciPassed を返す。構造化出力は JSON のオブジェクトをそのまま渡し、文字列にしない（`{"input": "<JSON の文字列>"}` の形は schema 違反で弾かれ、直後に status だけを送り直すと実行が failed になる）。head と ciPassed は status に関わらず必須で、deviation と blocked では head に作業ツリーの HEAD、ciPassed に false を入れる。報告する事実は、このセッションのコマンドの出力で確かめたものだけにする（失敗や飛ばした検査もそのまま書く）。
@@ -143,7 +150,8 @@ PR 本文と対応コメントは、レビュアーが次に取る行動を変�
 - 指摘は、指示されたレビューコメントの URL の本文を `gh api` で読む。本文は判定と件数の行だけが見えていて、指摘は `<details>` に畳まれているので、そこまで読む
 - PR レビューの must には「直し方の案」が付かない（レビュアーは該当・問題・根拠だけを書く決まりである）。直し方は自分で決める。根拠が指すコマンドや `path:行` を自分で確かめてから直す
 - must と should は、直すか、事実に反するかプランと矛盾する根拠を示すかのどちらかにする。nit は直さなくてよい（直したら対応コメントに書く）。投稿済みのコメントの文言は指摘されても直さない
-- 直したことでテストの件数や行番号が動いたときは、PR 本文の数値（テストの件数、`path:行`）を新しい head と突き合わせて直す
+- 直したことでテストの件数や行番号が動いたときは、PR 本文の数値（テストの件数、`path:行`）を新しい head と突き合わせて直す。対応で「設計メモ」の決定や「プランからの変更」の項を変えたときは、PR 本文のその文も直す（本文はマージの後に設計の記録として残る）
+- PR 本文を貼り直すときは、検査の結果を最新の head のものに置き換えて前の head の段落を消し、プランへのリンクを最新の版に付け替え、「満たす変更」の `path:行` は置き換えた式を `grep -n` で引いて書く（条件への対応と rebase の後も同じ）
 - 直したコミット（件名は「レビューの指摘に合わせて…」の形）を 1 コミットにまとめて push する（マージ担当と最終確認が `kind=fix` の head のコミットだけを見る）
 - PR にコメントを投稿する。見出しは「## レビュー（ラウンド R）の指摘への対応（<短い SHA>）」で、`sh <作業ツリー>/.claude/scripts/post_comment.sh pr <PR> fix <R> - <短い SHA> <ファイル>` で投稿する（マーカーはスクリプトが付ける）。冒頭にレビューの URL と直した件数（must M、should S、nit K）を出し、指摘ごとの本文（見出し must 1、should 2 …、変えたファイルと行、変えた内容、確かめ方）は `<details><summary>指摘ごとの対応</summary>` に畳む。指摘ごとの見出しの重さ（must / should / nit）はレビューの表記をそのまま写し、自分で読み替えない
 - 最終確認の指摘への対応では、見出しを「## 最終確認の指摘への対応（<短い SHA>）」にする（マーカーは同じく `kind=fix`）
@@ -159,7 +167,8 @@ PR 本文と対応コメントは、レビュアーが次に取る行動を変�
 - 対応コメントは `sh <作業ツリー>/.claude/scripts/post_comment.sh pr <PR> fix <R> - <短い SHA> <ファイル>` で投稿する（マージ担当がこれで「条件への対応の push」と判別する）。見出しは「## レビューの条件への対応（<短い SHA>）」
 
 ## rebase を頼まれたら
-作業ツリーで `git fetch origin main && git rebase origin/main` を行い、衝突を解いて「PR を作る前の検査」のうち build とテストに当たるものを通し、`git push --force-with-lease` する。rebase 以外の変更は入れない。衝突の解き方に設計の判断が要るときは push せず、status を blocked にして reason に理由を書く。成功したら status を rebased にして新しい head を返す
+マージ担当が、PR が main と衝突している、または main とマージした結果が build を通らないと判断したときに頼まれる（依頼文にマージ担当の判断がある）。衝突が無くても build が落ちるとき（兄弟のマージで型や import が変わったとき）は、main に合わせる最小の直しだけを rebase のコミットに含め、その箇所を reason に書く（マージ担当はこれを衝突の解消として扱い、超える差分は再確認に回す）。
+作業ツリーで `git fetch origin main && git rebase origin/main` を行い、衝突を解いて「PR を作る前の検査」のうち build とテストに当たるものを通し、`git -C <作業ツリー> push --force-with-lease` を単独の Bash 呼び出しで行う（上の「コミットと PR」）。rebase 以外の変更は入れない。衝突の解き方に設計の判断が要るときは push せず、status を blocked にして reason に理由を書く。成功したら status を rebased にして新しい head を返す
 
 ## 学びの表の候補
 
@@ -167,5 +176,6 @@ PR 本文と対応コメントは、レビュアーが次に取る行動を変�
 
 - L025: 背景のプロセスを止めるとき `pkill -f` を使わない（自分の bash の引数に一致して呼び出しごと落ちる）。pid はポートの行から引き、`/proc/<pid>/cwd` が自分の作業ツリーであることを確かめてから kill する
 - L026: 画面の確認と撮影は headless で行う。user スコープの Playwright MCP は headed でユーザーの画面に窓を開き、作業ツリーに `.playwright-mcp/` を残す
-- L041（当てはまるのは: 導入先に編集や停止で走る project hooks がある）: 導入先の既存の project hooks（整形、型検査、テストをセッションの cwd で回すもの）は、ワークフローのサブエージェントの編集でも発火し、ユーザーの作業ツリーで走る。その出力と block の理由は自分の作業ツリーの状態ではないので、見て直さない
+- L050: 作業場の ENOSPC は容量ではなく inode の枯渇でありうる（並列の実行の build の生成物が inode を食う）。`df -i` で確かめ、使い終わった作業ツリーの生成物を消して空ける。再試行で済ませない
+- L051: Doc や文書を縮めるときは、条件を述べる文の限定語（数、範囲、「未訳の」のような修飾）を残す。呼び出し元の列挙を役割の記述に置き換えるときは、先に全呼び出し元を `git grep` し、全部を覆う役割にする。消す文や関数が述べる主張は、識別子だけでなく主張の語でも掃き出し、残すか移すかを 1 つずつ決める
 
