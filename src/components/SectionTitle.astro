@@ -9,10 +9,11 @@
  * A "\n" in `title` breaks the line. The number chip, the line and the path are hidden from
  * assistive technology, because the path only repeats the name.
  *
- * The `link` slot takes an `<a>`. The component draws it as a label with a 44px high target, in
- * the color of the English name and without an underline at rest; it does not style the hovered
- * or focused link. A caller writes the arrow as `<span aria-hidden="true">→</span>`, so that
- * the name of the link is its visible text.
+ * The `link` slot takes an `<a>`. The component draws it as a one-line label with a 44px high
+ * target, in the color of the English name and without an underline at rest; it does not style
+ * the hovered or focused link. A caller writes a space and then the arrow as
+ * `<span aria-hidden="true">→</span>`, so that the name of the link is its visible text. The
+ * link is a block, not a flex box, so that the space stays between the text and the arrow.
  *
  * Below 768px the number chip is 12px, the path is hidden and the heading is 30px (`lg`) or 28px
  * (`md`). From 768px the heading is 40px, and from 900px it is 52px (`lg`) or 48px (`md`). `md`
@@ -119,9 +120,8 @@ const Name = title === undefined ? Heading : "span"; // without a title the name
 }
 
 .link :global(a) {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
+  display: block;
+  line-height: 44px;
 }
 
 .link :global(a:not(:hover, :focus-visible)) {
