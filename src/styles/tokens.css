@@ -3,32 +3,64 @@
  *
  * The theme is the `data-theme` attribute on `<html>` ("light" or "dark"). `:root` holds the
  * light values, which also apply when the attribute is missing, and `:root[data-theme="dark"]`
- * overrides only the colors that change with the theme. Their values are copied from `.root` and
- * `.root.dark` in `design/CBMain.dc.html`, except the dark `--num`: the design's `#b85510` is
- * 3.7:1 on the dark `--cbg`, so it is darkened to `#a04a0e` (4.62:1). `--icon-yt` and `--icon-x`
- * are not in the design: they are the only colors that the brand guidelines of YouTube and
- * Twitter (self-proclaimed X) allow for their marks (Almost Black and black, and white in the
- * dark theme). The hex digits are lowercase because Biome formats them so.
+ * overrides only the colors that change with the theme. `Layout.astro` renders the attribute as
+ * "dark", so the dark values apply unless `src/theme.ts` finds "light" saved.
  *
- * The colors in the second group stay the same in both themes. They are named after the color
- * rather than a role because the design uses each of them for several roles (text, fills, dots
- * and shadows). The `--code-*` colors of code blocks, which only `src/markdown/highlight.css`
- * uses, stay the same in both themes too.
+ * The plan A tokens are copied from `.lx` (dark) and `.lx.light` of `design/Main.dc.html`, with
+ * `--code` from `design/AArticle.dc.html` and `--ov` from `design/AMobile.dc.html`, under the
+ * design's names. `--focus-ring` is not in the design: the keyword orange is 2.53:1 on the light
+ * `--bg`, below the 3:1 of WCAG 2.2 SC 1.4.11, so it is the orange in the dark theme and the text
+ * color in the light theme.
  *
- * `tokens.test.ts` lists every foreground and background pair used for text and checks that each
- * reaches 4.5:1 (WCAG AA) in both themes, and checks that each icon color reaches 3:1 on `--surf`.
- * Components use these tokens instead of color values.
+ * The legacy tokens are the ones of the earlier design, copied from `.root` and `.root.dark` in
+ * `design/CBMain.dc.html`, except the dark `--num`: the design's `#b85510` is 3.7:1 on the dark
+ * `--cbg`, so it is darkened to `#a04a0e` (4.62:1). `--legacy-line`, `--legacy-grid` and
+ * `--legacy-ink` hold the values of `--line`, `--grid` and `--ink` in that design, whose names the
+ * plan A tokens use. `--icon-yt` and `--icon-x` are not in the design: they are the only colors
+ * that the brand guidelines of YouTube and Twitter (self-proclaimed X) allow for their marks
+ * (Almost Black and black, and white in the dark theme). The legacy tokens stay until the
+ * components of the earlier design are removed. The hex digits are lowercase because Biome formats
+ * them so.
+ *
+ * The colors in the group that stays the same in both themes are named after the color rather
+ * than a role because the design uses each of them for several roles (text, fills, dots and
+ * shadows). The `--code-*` colors of code blocks, which only `src/markdown/highlight.css` uses,
+ * stay the same in both themes too.
+ *
+ * `tokens.test.ts` checks the plan A tokens against the design, checks that every foreground and
+ * background pair used for text reaches 4.5:1 (WCAG AA) in both themes, and checks 3:1 for the
+ * icon colors on `--surf` and for `--focus-ring` on `--bg`, `--bg2` and `--panel`. Components use
+ * these tokens instead of color values.
  */
 :root {
   color-scheme: light;
 
-  /* Colors that change with the theme. */
+  /* Plan A tokens that change with the theme. */
   --bg: #eceae5;
-  --fg: #232427;
+  --bg2: #e2e0da;
+  --panel: #f6f5f1;
+  --hdr: rgba(236, 234, 229, 0.88);
+  --line: rgba(35, 36, 39, 0.14);
+  --line2: rgba(35, 36, 39, 0.3);
+  --grid: rgba(35, 36, 39, 0.06);
+  --text: #232427;
   --muted: #5a5b5f;
-  --line: #232427;
+  --acc-text: #232427;
+  --shade: rgba(236, 234, 229, 0.86);
+  --av-hard: rgba(35, 36, 39, 0.16);
+  --av-soft: rgba(35, 36, 39, 0.22);
+  --lg-n: #232427;
+  --lg-c: #5a5b5f;
+  --lg-r: #c9c6bf;
+  --code: #17181b;
+  --ov: rgba(236, 234, 229, 0.82);
+  --focus-ring: #232427;
+
+  /* Legacy tokens that change with the theme. */
+  --fg: #232427;
+  --legacy-line: #232427;
   --hair: #cfcbc3;
-  --grid: #d9d6cf;
+  --legacy-grid: #d9d6cf;
   --surf: #f8f7f3;
   --inv: #232427;
   --invfg: #f8f7f3;
@@ -47,7 +79,12 @@
   --icon-x: #000000;
 
   /* Colors that stay the same in both themes. */
-  --ink: #232427;
+  --keyword: #e8731a;
+  --keyword-hover: #f08534;
+  --ink: #17181b;
+  --ivory: #eceae5;
+  --comment: #a3a3a0;
+  --legacy-ink: #232427;
   --orange: #e8731a;
   --pink: #f08fa6;
   --blush: #fbe3e3;
@@ -76,11 +113,29 @@
   color-scheme: dark;
 
   --bg: #17181b;
-  --fg: #eceae5;
+  --bg2: #1c1e22;
+  --panel: #202227;
+  --hdr: rgba(23, 24, 27, 0.86);
+  --line: rgba(236, 234, 229, 0.12);
+  --line2: rgba(236, 234, 229, 0.26);
+  --grid: rgba(236, 234, 229, 0.045);
+  --text: #eceae5;
   --muted: #a3a3a0;
-  --line: #5e6167;
+  --acc-text: #e8731a;
+  --shade: rgba(23, 24, 27, 0.82);
+  --av-hard: rgba(0, 0, 0, 0.38);
+  --av-soft: rgba(0, 0, 0, 0.5);
+  --lg-n: #eceae5;
+  --lg-c: #a3a3a0;
+  --lg-r: #3a3c42;
+  --code: #121316;
+  --ov: rgba(23, 24, 27, 0.8);
+  --focus-ring: #e8731a;
+
+  --fg: #eceae5;
+  --legacy-line: #5e6167;
   --hair: #34363b;
-  --grid: #26282c;
+  --legacy-grid: #26282c;
   --surf: #222428;
   --inv: #eceae5;
   --invfg: #17181b;

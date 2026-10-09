@@ -3,8 +3,8 @@
  * The button that switches between the light and dark themes, the icon button in the headers
  * of `design/CBMain.dc.html` and `design/CBMobile.dc.html`. It shows the moon in the light
  * theme and the sun in the dark theme, and its name says which theme a click switches to. CSS
- * picks the icon and the name from `<html data-theme>`, so they match the theme from the first
- * paint and whenever `THEME_SCRIPT` in `src/theme.ts` changes it. A click runs `toggleTheme`.
+ * picks the icon and the name from `<html data-theme>`, which `THEME_SCRIPT` in `src/theme.ts`
+ * sets before the first paint, so they match the theme from then on. A click runs `toggleTheme`.
  * The icon is 18px below 768px and 20px from 768px.
  */
 import type { Locale } from "../i18n/locales";

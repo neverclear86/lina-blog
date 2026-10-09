@@ -23,8 +23,8 @@ interface Props {
   shadow?: "shadow" | "fshadow";
   /**
    * `surface` follows the theme (`--surf` and `--fg`, the bar in `--inv`). `paper` keeps the
-   * same colors in both themes (`--paper` and `--ink`, the bar in `--ink` and `--paper-muted`)
-   * and sets `--focus-ring` to `--ink`, for a form on `--cbg`.
+   * same colors in both themes (`--paper` and `--legacy-ink`, the bar in `--legacy-ink` and
+   * `--paper-muted`) and sets `--focus-ring` to `--legacy-ink`, for a form on `--cbg`.
    */
   tone?: "surface" | "paper";
   /** Whether the card lifts on hover and, for a link, on keyboard focus. */
@@ -96,10 +96,10 @@ const shadowClass = shadow === "fshadow" ? "shadowF" : "shadow";
 }
 
 .paper {
-  --focus-ring: var(--ink);
+  --focus-ring: var(--legacy-ink);
   color-scheme: light;
   background: var(--paper);
-  color: var(--ink);
+  color: var(--legacy-ink);
 }
 
 .tbar {
@@ -117,7 +117,7 @@ const shadowClass = shadow === "fshadow" ? "shadowF" : "shadow";
 }
 
 .paper .tbar {
-  background: var(--ink);
+  background: var(--legacy-ink);
   color: var(--paper-muted);
 }
 
