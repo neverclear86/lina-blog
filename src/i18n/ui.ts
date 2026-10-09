@@ -134,8 +134,6 @@ const ja = {
   "notFound.message": "このページは存在しないよ。",
   "notFound.subtitle": "ページが見つからないよ",
   "notFound.topLink": "日本語のトップページへ",
-  // Says that the site can also be read with curl; shown at the end of the strip of the hero.
-  "site.curlHint": "$ curl ikili.pro でも読めるよ",
   // Description of the site: the meta description and og:description of the pages that do not
   // pass their own, such as the top page.
   "site.description":
@@ -264,7 +262,6 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "notFound.message": "This page doesn't exist.",
     "notFound.subtitle": "Page not found",
     "notFound.topLink": "Go to the English top page",
-    "site.curlHint": "$ curl ikili.pro works too",
     "site.description":
       'Personal site and blog of Tsukusu Lina (創好リナ), a virtual "ikiri" programmer who makes videos and streams about playing with IT, mostly in Resonite.',
     "social.twitter": "Twitter (self-proclaimed X)",
