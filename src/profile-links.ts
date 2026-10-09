@@ -1,15 +1,14 @@
 /**
  * Links to the profiles on other services, shared by `/llms.txt` (`src/llms.ts`), the text
  * version of the site (`src/text-site.ts`), the large window and the video list of the Latest
- * section (`src/components/LatestVideoFeature.astro`, `src/components/LatestVideoList.astro`),
- * the icon row of the hero (`src/components/Hero.astro`) and the links column of the site footer
- * (`src/components/footer-links.ts`).
+ * section (`src/components/LatestVideoFeature.astro`, `src/components/LatestVideoList.astro`)
+ * and the links column of the site footer (`src/components/footer-links.ts`).
  */
 import type { Locale } from "./i18n/locales";
 
 /** A profile on another service. */
 export interface ProfileLink {
-  /** Service of the profile, which picks its icon in the hero (`src/components/Hero.astro`). */
+  /** Service of the profile. */
   id: "youtube" | "twitter" | "github" | "nostr" | "zenn";
   /** Name of the service in each locale. */
   label: Record<Locale, string>;
