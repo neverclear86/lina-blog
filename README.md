@@ -61,6 +61,7 @@ bun create astro@latest -- --template basics
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
 │   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
+│   │   ├── ContactForm.astro     # Contact form of the contact page in a window of plan A, sent with Turnstile
 │   │   ├── ContactSection.astro  # Contact section of the top page: heading, lead and the form in a paper terminal window, sent with Turnstile by its script
 │   │   ├── face-icon.ts          # Picks the brand kit files of a face mark or avatar from its size and tone, unit-tested
 │   │   ├── FaceIcon.astro        # Face mark or avatar from the brand kit SVGs, switched with the theme; tone="inverse" for the mark on --inv and --cbg faces
@@ -75,11 +76,11 @@ bun create astro@latest -- --template basics
 │   │   ├── LatestVideoList.astro # Latest section: the next videos as small windows with JST dates, and the YouTube channel button; hidden below 768px
 │   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for --inv faces
 │   │   ├── NameLogo.astro        # Name logo of the brand kit as inline SVG: compact, full and full-sub, painted with the --lg-* tokens
-│   │   ├── PageHead.astro        # Head of the blog pages: grid background, diagonal band and the slot with an h1
+│   │   ├── PageHead.astro        # Head of the blog pages and the contact page: grid background, diagonal band and the slot with an h1
 │   │   ├── PostRows.astro        # Window of blog posts: ls -lt command line with a command slot, rows with JST date, tags, PR and title, or one empty line
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level and the contact variant are props
 │   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line, path and link, and the Japanese heading; the size is a prop
-│   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, unit-tested
+│   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, and the path of the contact page, unit-tested
 │   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
 │   │   ├── SiteHeader.astro      # Site header: compact name logo, navigation 00 top to 04 works, JA / EN, theme switch, contact button; sticky from 1024px, and a popover menu below
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
@@ -112,6 +113,8 @@ bun create astro@latest -- --template basics
 │   ├── pages/
 │   │   ├── 404.astro     # /404.html: the 404 page, served for every path with no file
 │   │   ├── [lang]/
+│   │   │   ├── contact/
+│   │   │   │   └── index.astro   # /ja/contact/ and /en/contact/: the contact form
 │   │   │   ├── index.astro   # /ja/ and /en/
 │   │   │   └── works/
 │   │   │       └── [slug].astro  # /ja/works/<slug>/ and /en/works/<slug>/ for the works with hasPage
@@ -377,7 +380,7 @@ disabled; it is rate-limited and meant for development.
 - In production, register it with `bunx wrangler secret put TURNSTILE_SECRET_KEY`.
 - Locally, put it in `.dev.vars` at the root of the repository (ignored by git). `wrangler dev`, which `bun run preview:wrangler` runs, reads it and prints `Using secrets defined in .dev.vars` on startup.
 
-The contact form (`src/components/ContactSection.astro`) renders the widget with the site key `TURNSTILE_SITE_KEY`, a public variable declared with `astro:env` in `astro.config.mjs`. Pages are prerendered, so `astro build` reads it from the environment or from `.env` at the root of the repository (ignored by git), not from `.dev.vars`. Without it the build uses Cloudflare's test site key `1x00000000000000000000AA`, whose widget always passes with the dummy token `XXXX.DUMMY.TOKEN.XXXX`. A production secret key rejects that token, so a production build must set the real site key.
+The contact forms (`src/components/ContactForm.astro` on the contact page and `src/components/ContactSection.astro` on the top page) render the widget with the site key `TURNSTILE_SITE_KEY`, a public variable declared with `astro:env` in `astro.config.mjs`. Pages are prerendered, so `astro build` reads it from the environment or from `.env` at the root of the repository (ignored by git), not from `.dev.vars`. Without it the build uses Cloudflare's test site key `1x00000000000000000000AA`, whose widget always passes with the dummy token `XXXX.DUMMY.TOKEN.XXXX`. A production secret key rejects that token, so a production build must set the real site key.
 
 Locally, use one of Cloudflare's test secret keys instead of the production key:
 

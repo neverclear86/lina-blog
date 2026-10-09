@@ -50,9 +50,12 @@ const ja = {
   "blog.tagPage.diary.subtitle": "日記の記事",
   "blog.tagPage.tech.noPosts": "技術の記事はまだありません。",
   "blog.tagPage.tech.subtitle": "技術の記事",
-  // Contact section of the top page.
+  // Contact page and the contact section of the top page.
   "contact.subtitle": "お問い合わせ",
-  "contact.lead": "お仕事のご相談やコラボのお誘いなど、お気軽にどうぞ。",
+  "contact.lead": "お仕事のご相談、コラボのお誘いなどはこちらから。",
+  "contact.title": "お問い合わせ",
+  "contact.description":
+    "創好リナへのお問い合わせのフォームです。お仕事のご相談、コラボのお誘いなどはこちらから。",
   "contact.kind": "ご用件",
   "contact.kind.work": "お仕事のご相談",
   "contact.kind.collab": "コラボのお誘い",
@@ -200,7 +203,10 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "blog.tagPage.tech.subtitle": "Tech posts",
     "contact.subtitle": "Get in touch",
     "contact.lead":
-      "Feel free to reach out about work, collaborations, or anything else.",
+      "For work inquiries, collaborations and more, get in touch here.",
+    "contact.title": "Contact",
+    "contact.description":
+      "The contact form for Tsukusu Lina, for work inquiries, collaborations and more.",
     "contact.kind": "Topic",
     "contact.kind.work": "Work inquiry",
     "contact.kind.collab": "Collaboration",

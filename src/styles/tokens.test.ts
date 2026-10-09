@@ -329,6 +329,19 @@ const FOCUS_PAIRS: readonly (readonly [
 ])[] = A_FILLS.map((fill) => ["--focus-ring", fill]);
 
 /**
+ * Borders of the fields of the contact form (`src/components/ContactForm.astro`) on the fills
+ * they sit between: a field's border is `--muted`, or `--acc-text` while `aria-invalid`, and a
+ * field is `--bg` inside a `--panel` window. A border is a graphical object, so it must reach 3:1
+ * (WCAG 2.2 SC 1.4.11) on both. Every pair is also in `A_TEXT_PAIRS`, whose 4.5:1 fails first.
+ */
+const FIELD_BORDER_PAIRS: readonly (readonly [
+  foreground: string,
+  background: string,
+])[] = ["--muted", "--acc-text"].flatMap((border) =>
+  ["--panel", "--bg"].map((fill) => [border, fill] as const),
+);
+
+/**
  * Icon colors of `src/components/icons/` on the face of `IconLink` (`--surf`), checked in both
  * themes. An icon is a graphical object, so it must reach 3:1 (WCAG 2.2 SC 1.4.11).
  */
@@ -547,6 +560,19 @@ describe("tokens.css のコントラスト", () => {
       expect(
         contrastRatio(colors["--keyword"], colors["--code"]),
       ).toBeGreaterThanOrEqual(3);
+    },
+  );
+
+  it.each(Object.entries(themes))(
+    "%s のお問い合わせの入力欄の枠は --panel と --bg の上で 3:1 以上になる",
+    (_theme, colors) => {
+      const failures = FIELD_BORDER_PAIRS.flatMap(
+        ([foreground, background]) => {
+          const ratio = contrastRatio(colors[foreground], colors[background]);
+          return ratio < 3 ? [`${foreground} / ${background}: ${ratio}`] : [];
+        },
+      );
+      expect(failures).toEqual([]);
     },
   );
 
