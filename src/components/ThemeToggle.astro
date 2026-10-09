@@ -1,11 +1,16 @@
 ---
 /**
- * The button that switches between the light and dark themes, the icon button in the headers
- * of `design/CBMain.dc.html` and `design/CBMobile.dc.html`. It shows the moon in the light
- * theme and the sun in the dark theme, and its name says which theme a click switches to. CSS
- * picks the icon and the name from `<html data-theme>`, which `THEME_SCRIPT` in `src/theme.ts`
- * sets before the first paint, so they match the theme from then on. A click runs `toggleTheme`.
- * The icon is 18px below 768px and 20px from 768px.
+ * The button that switches between the light and dark themes. CSS picks what it shows from
+ * `<html data-theme>`, which `THEME_SCRIPT` in `src/theme.ts` sets before the first paint, so it
+ * matches the theme from then on. A click runs `toggleTheme`.
+ *
+ * `variant="icon"` is the icon button of the earlier design. It shows the moon in the light theme
+ * and the sun in the dark theme, and its name says which theme a click switches to. The icon is
+ * 18px below 768px and 20px from 768px.
+ *
+ * `variant="labeled"` is the button of the header of `design/Main.dc.html`: a sun and the name
+ * of the current theme, `dark` or `light`. Its name is that text, the hidden text
+ * `theme.nameSeparator` and the name of the theme a click switches to.
  */
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
@@ -14,47 +19,81 @@ import IconButton from "./IconButton.astro";
 interface Props {
   /** Language of the button's name. */
   lang: Locale;
+  /** Look of the button. Defaults to "icon". */
+  variant?: "icon" | "labeled";
 }
 
-const { lang } = Astro.props;
+const { lang, variant = "icon" } = Astro.props;
 ---
 
-<IconButton class="theme-toggle">
-  <svg
-    class="moon"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"></path>
-  </svg>
-  <svg
-    class="sun"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    aria-hidden="true"
-  >
-    <circle cx="12" cy="12" r="4"></circle>
-    <path
-      d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
-    ></path>
-  </svg>
-  <Fragment slot="label"
-    ><span class="to-dark">{translate(lang, "theme.toDark")}</span
-    ><span class="to-light">{translate(lang, "theme.toLight")}</span></Fragment
-  >
-</IconButton>
+{variant === "labeled" ? (
+  <button class="theme-toggle iconbtn labeled" type="button">
+    <svg
+      class="labeled-sun"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="4"></circle>
+      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+    </svg>
+    <span class="now-light">
+      light
+      <span class="sr-only">
+        {translate(lang, "theme.nameSeparator")}
+        {translate(lang, "theme.toDark")}
+      </span>
+    </span>
+    <span class="now-dark">
+      dark
+      <span class="sr-only">
+        {translate(lang, "theme.nameSeparator")}
+        {translate(lang, "theme.toLight")}
+      </span>
+    </span>
+  </button>
+) : (
+  <IconButton class="theme-toggle">
+    <svg
+      class="moon"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"></path>
+    </svg>
+    <svg
+      class="sun"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="4"></circle>
+      <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+    </svg>
+    <Fragment slot="label">
+      <span class="to-dark">{translate(lang, "theme.toDark")}</span>
+      <span class="to-light">{translate(lang, "theme.toLight")}</span>
+    </Fragment>
+  </IconButton>
+)}
 
 <script>
 import { toggleTheme } from "../theme";
@@ -95,5 +134,41 @@ svg {
     width: 20px;
     height: 20px;
   }
+}
+
+.labeled {
+  position: relative;
+  width: auto;
+  min-width: 44px;
+  padding: 0 10px;
+  gap: 8px;
+  font: 12px var(--font-mono);
+}
+
+.labeled-sun {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.now-dark {
+  display: none;
+}
+
+:global(:root[data-theme="dark"]) .now-light {
+  display: none;
+}
+
+:global(:root[data-theme="dark"]) .now-dark {
+  display: inline;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 </style>

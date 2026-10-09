@@ -80,9 +80,9 @@ bun create astro@latest -- --template basics
 │   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line, path and link, and the Japanese heading; the size is a prop
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, unit-tested
 │   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
-│   │   ├── SiteHeader.astro      # Site header: compact name logo, navigation, JA / EN, theme switch, contact button, and a popover menu below 1024px
+│   │   ├── SiteHeader.astro      # Site header: compact name logo, navigation 00 top to 04 works, JA / EN, theme switch, contact button; sticky from 1024px, and a popover menu below
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
-│   │   ├── ThemeToggle.astro     # Theme switch: moon or sun, and a name that says the next theme
+│   │   ├── ThemeToggle.astro     # Theme switch: an icon button with a name that says the next theme, or a button with a sun and the current theme
 │   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
 │   │   ├── WorkTile.astro        # Window tile of a work: ~/works/<title>, a line of description and the technology tags; a link or a plain box
 │   │   ├── Works.astro           # Works section of the top page (04 works): the heading and a WorkTile per work, from the works collection
