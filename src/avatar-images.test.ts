@@ -77,6 +77,12 @@ describe("avatarAlt", () => {
   });
 });
 
+describe("THUMBS_UP_BAND", () => {
+  it("sizes は 900px 未満で 128px、900px 以上で 374px を指す", () => {
+    expect(THUMBS_UP_BAND.sizes).toBe("(max-width: 899px) 128px, 374px");
+  });
+});
+
 describe("THUMBS_UP_ARTICLE", () => {
   it("帯と同じ画像と alt で、sizes だけが記事の 340px になる", () => {
     expect(THUMBS_UP_ARTICLE).toEqual({ ...THUMBS_UP_BAND, sizes: "340px" });

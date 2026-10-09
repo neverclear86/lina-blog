@@ -313,6 +313,8 @@ const A_TEXT_PAIRS: readonly (readonly [
   ["--keyword", "--code"],
   ["--ink", "--keyword"],
   ["--ink", "--keyword-hover"],
+  ["--ivory", "--ink"],
+  ["--keyword", "--ink"],
 ];
 
 /**

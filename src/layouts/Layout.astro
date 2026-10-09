@@ -99,7 +99,6 @@ const openGraph = openGraphTags({
     <meta name="generator" content={Astro.generator}>
     <title>{pageTitle}</title>
     <Font cssVariable="--font-body" />
-    <Font cssVariable="--font-display" />
     <Font cssVariable="--font-mono-latin" />
     {/* Elements that a page adds to <head> with slot="head". */}
     <slot name="head" />
@@ -137,9 +136,9 @@ body {
 }
 
 /* Every element except form controls (which need `font: inherit`) inherits Zen Kaku Gothic New;
-   components set var(--font-mono) where the design uses JetBrains Mono, and var(--font-display)
-   where the old design uses Saira Condensed. --font-mono is the JetBrains Mono list followed by
-   --font-body, so Japanese in a monospace label is drawn in the loaded Zen Kaku Gothic New. */
+   components set var(--font-mono) where the design uses JetBrains Mono. --font-mono is the
+   JetBrains Mono list followed by --font-body, so Japanese in a monospace label is drawn in the
+   loaded Zen Kaku Gothic New. */
 html {
   --font-mono: var(--font-mono-latin), var(--font-body);
   font-family: var(--font-body);

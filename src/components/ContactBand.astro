@@ -1,0 +1,221 @@
+---
+/**
+ * The contact band of the top page, `#contact`: the prompt `$ mail lina`, the heading, the lead
+ * and a button to the contact page (`contactPagePath`) on `--keyword` with diagonal stripes, and
+ * the thumbs-up of Lina (`THUMBS_UP_BAND`) at the right edge. The values are copied from the
+ * `#contact` section of `design/Main.dc.html` and `design/AMobile.dc.html`.
+ *
+ * The text is `--ink` on `--keyword` in both themes, and the band sets `--focus-ring` to `--ink`
+ * because the ring of the dark theme, `--keyword`, would vanish on it. The stripes are drawn by
+ * `::before` of `.flow`, which starts 52px (44px below 900px) left of the band.
+ *
+ * From 900px the text and the button are in a row that wraps, and the image is 300px high.
+ * Below 900px the text and the button are in a column beside the image, which is 128px wide,
+ * and below 360px the image is hidden.
+ */
+import { Picture } from "astro:assets";
+import { avatarAlt, THUMBS_UP_BAND } from "../avatar-images";
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import { contactPagePath } from "./site-nav";
+
+interface Props {
+  /** Language of the page, for the strings from `src/i18n/ui.ts`. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
+---
+
+<section id="contact" class="band">
+  <div class="flow" aria-hidden="true"></div>
+  <div class="inner">
+    <div class="copy">
+      <div class="text">
+        <span class="prompt">$ mail lina</span>
+        <h2>{t("contact.title")}</h2>
+        <p>{t("contact.lead")}</p>
+      </div>
+      <a class="btn btn-ink open" href={contactPagePath(lang)}
+        >{t("contact.open")}{" "}<span class="nudge" aria-hidden="true"
+          >→</span
+        ></a
+      >
+    </div>
+    <div class="art">
+      <Picture
+        src={THUMBS_UP_BAND.src}
+        alt={avatarAlt(THUMBS_UP_BAND, lang)}
+        formats={["avif", "webp"]}
+        fallbackFormat="webp"
+        widths={THUMBS_UP_BAND.widths}
+        sizes={THUMBS_UP_BAND.sizes}
+        class="av-shadow thumbs"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+.band {
+  --focus-ring: var(--ink);
+  position: relative;
+  overflow: hidden;
+  background: var(--keyword);
+  color: var(--ink);
+}
+
+.flow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.flow::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -44px;
+  right: 0;
+  background: repeating-linear-gradient(
+    112deg,
+    transparent 0 18px,
+    color-mix(in srgb, var(--ink) 8%, transparent) 18px 20px
+  );
+}
+
+.inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 128px;
+  gap: 4px;
+  align-items: end;
+  box-sizing: border-box;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 0 0 16px;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 32px 0;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.prompt {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.8;
+  font-weight: 500;
+}
+
+.open {
+  align-self: flex-start;
+  min-height: 48px;
+  padding: 0 18px;
+}
+
+.nudge {
+  display: inline-block;
+}
+
+.thumbs {
+  display: block;
+  width: 128px;
+  height: auto;
+}
+
+@media (max-width: 899px) {
+  .thumbs {
+    filter: drop-shadow(12px 8px 0 var(--av-hard))
+      drop-shadow(0 20px 28px var(--av-soft));
+  }
+}
+
+@media (min-width: 900px) {
+  .flow::before {
+    left: -52px;
+    background: repeating-linear-gradient(
+      112deg,
+      transparent 0 22px,
+      color-mix(in srgb, var(--ink) 8%, transparent) 22px 24px
+    );
+  }
+
+  .inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 24px;
+    padding: 0 64px;
+  }
+
+  .copy {
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px 48px;
+    padding: 56px 0;
+  }
+
+  .text {
+    gap: 12px;
+    max-width: 560px;
+  }
+
+  .prompt {
+    font-size: 14px;
+  }
+
+  h2 {
+    font-size: 48px;
+    line-height: 1.1;
+  }
+
+  p {
+    font-size: 16px;
+    line-height: 1.9;
+  }
+
+  .open {
+    align-self: auto;
+    min-height: 52px;
+    padding: 0 28px;
+  }
+
+  .thumbs {
+    width: auto;
+    height: 300px;
+  }
+}
+
+@media (max-width: 359px) {
+  .inner {
+    grid-template-columns: minmax(0, 1fr);
+    padding-right: 16px;
+  }
+
+  .art {
+    display: none;
+  }
+}
+</style>

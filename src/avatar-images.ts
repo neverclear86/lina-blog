@@ -97,7 +97,7 @@ export const THUMBS_UP_BAND: AvatarImage = {
   src: lgtmBastup,
   altKey: "avatar.thumbsUpAlt",
   widths: [128, 256, 340, 374, 680, 748],
-  sizes: "(max-width: 767px) 128px, 374px",
+  sizes: "(max-width: 899px) 128px, 374px",
   priority: false,
 };
 

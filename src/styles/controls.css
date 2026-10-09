@@ -1,23 +1,26 @@
 /*
  * Buttons, icon links and page switch links of plan A, imported by `src/layouts/Layout.astro`
  * after `shapes.css`. The values are copied from `.btn`, `.btn-acc`, `.btn-ghost`, `.sq` and `.ws`
- * of `design/Main.dc.html` and from `.iconbtn` of `design/AArticleMobile.dc.html`. Colors come
+ * of `design/Main.dc.html` and from `.iconbtn` of `design/AArticleMobile.dc.html`. `.btn-ink`
+ * takes the colors of the button in the `#contact` section of `design/Main.dc.html`. Colors come
  * only from the tokens in `tokens.css`.
  *
- * `.btn` is a 46px high link for text, `.btn-acc` fills it with `--keyword`, and `.btn-ghost`
- * draws a `--line2` border instead. `.sq` is a 44px square link for an icon, and `.iconbtn` is a
- * 44px square `<button>` for an icon; `.iconbtn-acc` fills it with `--keyword`, for the menu.
- * The sizes do not change with the width, and a page that needs another size overrides them.
+ * `.btn` is a 46px high link for text, `.btn-acc` fills it with `--keyword`, `.btn-ink` fills it
+ * with `--ink` and sets its text in `--ivory`, and `.btn-ghost` draws a `--line2` border instead.
+ * `.sq` is a 44px square link for an icon, and `.iconbtn` is a 44px square `<button>` for an
+ * icon; `.iconbtn-acc` fills it with `--keyword`, for the menu. The sizes do not change with the
+ * width, and a page that needs another size overrides them.
  *
  * `.ws` is a 30px high link in JetBrains Mono 12px for switching between pages, such as the tag
  * filter. The link of the current page is `.ws.on`: `--ink` on `--keyword`, bold, and unchanged
  * by hover. The other links fill with `--panel` on hover and on keyboard focus (and `.is-hover`
  * and `.is-focus`), keep the color of their text and draw no underline in either theme.
  *
- * Hover and keyboard focus look the same: `.btn-acc` fills with `--keyword-hover`, and the border
- * of `.btn-ghost`, `.sq` and `.iconbtn` becomes `--keyword`. `.is-hover` and `.is-focus` show the
- * two states without the pointer or the keyboard, for the samples in `src/dev/components.astro`.
- * The outline of the focus comes from `global.css`.
+ * Hover and keyboard focus look the same: `.btn-acc` fills with `--keyword-hover`, the text of
+ * `.btn-ink` becomes `--keyword`, and the border of `.btn-ghost`, `.sq` and `.iconbtn` becomes
+ * `--keyword`. `.is-hover` and `.is-focus` show the two states without the pointer or the
+ * keyboard, for the samples in `src/dev/components.astro`. The outline of the focus comes from
+ * `global.css`.
  *
  * `.btn` is written for `<a>`. It sets no `color`, so `.btn-ghost` takes the color of the link
  * from `global.css`, which is `--keyword` while hovered in the dark theme, and it sets
@@ -40,6 +43,11 @@
 .btn-acc {
   background: var(--keyword);
   color: var(--ink);
+}
+
+.btn-ink {
+  background: var(--ink);
+  color: var(--ivory);
 }
 
 .btn-ghost {
@@ -80,6 +88,10 @@
 
 .btn-acc:is(:hover, :focus-visible, .is-hover, .is-focus) {
   background: var(--keyword-hover);
+}
+
+.btn-ink:is(:hover, :focus-visible, .is-hover, .is-focus) {
+  color: var(--keyword);
 }
 
 :is(.btn-ghost, .sq, .iconbtn):is(
