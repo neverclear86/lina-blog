@@ -264,6 +264,12 @@ export function readingMinutes(body: string | undefined): number {
   return Math.max(1, Math.ceil(characters / CHARACTERS_PER_MINUTE));
 }
 
+/**
+ * `id` that Sätteri gives the visually hidden `h2` of the footnotes of a post. That `h2` is not a
+ * section of the post, so it is not an item of the table of contents.
+ */
+const FOOTNOTE_LABEL_ID = "footnote-label";
+
 /** An item of the table of contents of a post: the text of an `h2` and its `id`. */
 export interface BlogPostTocItem {
   /** `id` of the `h2`, which the link of the item points at as `#<slug>`. */
@@ -274,7 +280,8 @@ export interface BlogPostTocItem {
 
 /**
  * Returns the items of the table of contents of a post, one for each `h2` of `headings` that
- * has an `id` and a text, in the order of the post. `headings` is what `render()` returns.
+ * has an `id` and a text, in the order of the post. The `h2` of the footnotes is left out.
+ * `headings` is what `render()` returns.
  */
 export function blogPostToc(
   headings: readonly MarkdownHeading[],
@@ -284,6 +291,7 @@ export function blogPostToc(
       (heading) =>
         heading.depth === 2 &&
         heading.slug !== "" &&
+        heading.slug !== FOOTNOTE_LABEL_ID &&
         heading.text.trim() !== "",
     )
     .map(({ slug, text }) => ({ slug, text }));

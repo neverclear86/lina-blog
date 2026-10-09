@@ -351,4 +351,16 @@ describe("blogPostToc", () => {
       ]),
     ).toEqual([{ slug: "ok", text: "残る" }]);
   });
+
+  it("脚注の節の h2（id が footnote-label）は項目にしない", () => {
+    expect(
+      blogPostToc([
+        heading(2, "first", "最初"),
+        heading(2, "footnote-label", "Footnotes"),
+      ]),
+    ).toEqual([{ slug: "first", text: "最初" }]);
+    expect(blogPostToc([heading(2, "footnote-label", "Footnotes")])).toEqual(
+      [],
+    );
+  });
 });
