@@ -7,6 +7,10 @@
  * `lang` (`navLinks` and `homeSectionPath` in `./site-nav`), and the item of the current page has
  * `aria-current="page"` and a pink underline.
  *
+ * The cursor of the logo blinks (`.blink-on` in `src/styles/motion.css`), except while the logo of
+ * the hero of the top page (`.hero-logo` in `Hero`) is in the viewport, that is, has no
+ * `data-offscreen`: that logo blinks in its place, so that one cursor blinks on a screen.
+ *
  * The header stays in the page flow, 60px high below 768px and 72px from 768px. The side padding is
  * 18px on the left and 14px on the right below 768px, 32px from 768px and 64px from 1280px. From
  * 1024px the navigation, the language switch and the contact button sit in the header. Below 1024px
@@ -36,7 +40,7 @@ const languages = languageLinks(lang, pathname);
 
 <header class="site-header">
   <a
-    class="brand"
+    class="brand blink-on"
     href={homeSectionPath(lang, "top")}
     aria-label={translate(lang, "header.homeLabel")}
   >
@@ -162,6 +166,10 @@ a {
   width: 82px;
   height: 44px;
   text-decoration: none;
+}
+/* The logo of the hero blinks while it is in the viewport (see `Hero.astro`), so this one stays. */
+:global(:root:has(.hero-logo:not([data-offscreen]))) .brand :global(.cur) {
+  animation: none;
 }
 @media (min-width: 768px) {
   .site-header {

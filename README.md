@@ -62,7 +62,7 @@ bun create astro@latest -- --template basics
 │   │   ├── ContactSection.astro  # Contact section of the top page: heading, lead and the form in a paper terminal window, sent with Turnstile by its script
 │   │   ├── face-icon.ts          # Picks the brand kit files of a face mark or avatar from its size and tone, unit-tested
 │   │   ├── FaceIcon.astro        # Face mark or avatar from the brand kit SVGs, switched with the theme; tone="inverse" for the mark on --inv and --cbg faces
-│   │   ├── Hero.astro            # Hero of the top page: LINA, TSUKUSU, name, tagline chip, intro and profile links
+│   │   ├── Hero.astro            # Hero of the top page: full-sub name logo with a blinking cursor, tagline chip, intro and profile links
 │   │   ├── IconButton.astro      # Square icon-only button, named by an aria-label or a hidden label slot
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
@@ -127,7 +127,7 @@ bun create astro@latest -- --template basics
 │       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ghost) and icon links (.sq, .iconbtn) of plan A
 │       ├── global.css    # body colors and their fade, the links, the keyboard focus outline, and the grid backgrounds (.grid, .cgrid)
 │       ├── labels.css    # Labels of plan A: .label, .tag and the category chip .chip-acc
-│       ├── motion.css    # Animations that keep running (.bob, .caret, .a-typeLoop) and the section reveal on scroll (.reveal), stopped under reduced motion
+│       ├── motion.css    # Animations that keep running (.bob, .blink-on, .caret, .a-typeLoop) and the section reveal on scroll (.reveal), stopped under reduced motion
 │       ├── shapes.css    # Notched corners, hard shadows and the lift
 │       ├── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
 │       └── window.css    # Windows (.win), corner ticks (.ticks, .ticks-acc), grid and stripe backgrounds and the avatar shadow of plan A
@@ -182,7 +182,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ghost`) and icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) of plan A |
 | `window.css` | Plan A windows (`.win`; a link window turns its border on hover), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid and stripe backgrounds (`.gridbg`, `.stripes`) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions under `prefers-reduced-motion: reduce` |
 | `labels.css` | Labels of plan A: the caption `.label`, the bordered tag `.tag` and the orange category chip `.chip-acc` |
-| `motion.css` | Animations that keep running: the pixel art bob (`.bob`), the blinking cursor (`.caret`) and the typed command (`.a-typeLoop`); and the section reveal on scroll (`.reveal`), enabled only inside `@supports (animation-timeline: view())`. All are stopped under `prefers-reduced-motion: reduce` |
+| `motion.css` | Animations that keep running: the pixel art bob (`.bob`), the blinking cursors (`.caret`, and `.blink-on` for the name logo) and the typed command (`.a-typeLoop`); and the section reveal on scroll (`.reveal`), enabled only inside `@supports (animation-timeline: view())`. All are stopped under `prefers-reduced-motion: reduce` |
 
 A global file holds only what several components share.
 Styles that belong to one component go in that component's scoped `<style>`.
@@ -213,7 +213,7 @@ CDN. `src/layouts/Layout.astro` emits the `@font-face` rules on every page, sets
 | :--------------- | :---------------------------------------------------- | :------------ | :-------------------------------------------------------------------------------------------------------------------- |
 | `--font-body`    | Zen Kaku Gothic New                                   | 400, 700, 900 | Everything by default: Japanese and body text, headings, navigation, buttons                                          |
 | `--font-mono`    | JetBrains Mono, then Zen Kaku Gothic New for Japanese | 400-800       | Labels, numbers, dates and code                                                                                       |
-| `--font-display` | Saira Condensed                                       | 600, 800      | Old design only: LINA and ABOUT (800) and TSUKUSU (600) in `Hero.astro` and `SectionHeading.astro`; removed with them |
+| `--font-display` | Saira Condensed                                       | 600, 800      | Old design only: ABOUT (800) in `SectionHeading.astro`; removed with it                                               |
 
 Components use these variables and never name a font. Form controls (`button`, `input`,
 `select`, `textarea`) do not inherit `font-family` from `html`, so components set
