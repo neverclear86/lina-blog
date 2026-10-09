@@ -72,7 +72,7 @@ bun create astro@latest -- --template basics
 │   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band, name logo with a blinking cursor, heading, intro, button to the latest video, the account window, the stripes below and HeroPoses in the right column
 │   │   ├── HeroAccount.astro     # Account window of the hero: avatar, @LinaTsukusu and six link squares
 │   │   ├── HeroPoses.astro       # Right column of the hero: four poses switched by a button, ruler and table
-│   │   ├── IconButton.astro      # Square icon-only button, named by an aria-label or a hidden label slot
+│   │   ├── IconButton.astro      # Square icon-only button of the earlier design (only the dev samples use it), named by an aria-label or a hidden label slot
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
@@ -87,9 +87,9 @@ bun create astro@latest -- --template basics
 │   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line, path and link, and the Japanese heading; the size is a prop
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, the path of the contact page, and which section of the top page the reader is in, unit-tested
 │   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
-│   │   ├── SiteHeader.astro      # Site header: compact name logo, navigation 00 top to 04 works, JA / EN, theme switch, contact button; sticky from 1024px, an indicator on the top page that follows the section being read, and a popover menu below
+│   │   ├── SiteHeader.astro      # Site header, sticky: compact name logo; from 1024px the navigation 00 top to 04 works with an indicator on the top page that follows the section being read, JA / EN, theme switch and contact button, below 1024px the theme switch and a menu button that opens a popover sheet
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
-│   │   ├── ThemeToggle.astro     # Theme switch: an icon button with a name that says the next theme, or a button with a sun and the current theme
+│   │   ├── ThemeToggle.astro     # Theme switch: an .iconbtn that shows the moon or the sun with a name that says the next theme, or a button with a sun and the current theme
 │   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
 │   │   ├── three-view-tabs.ts    # Which view of the avatar a key, a swipe or a tap selects, and the swipe gesture, unit-tested
 │   │   ├── WorkTile.astro        # Window tile of a work: ~/works/<title>, a line of description and the technology tags; a link or a plain box
