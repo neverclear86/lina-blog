@@ -5,7 +5,7 @@
 import type { YouTubeFeedResult, YouTubeVideo } from "./youtube-feed";
 
 /** How many videos the Latest section shows: one on the large card and the rest in the list. */
-export const LATEST_VIDEOS_SHOWN = 3;
+export const LATEST_VIDEOS_SHOWN = 4;
 
 /** Formats a date as YYYY-MM-DD in Japan time, where the videos are published. */
 const VIDEO_DATE_FORMAT = new Intl.DateTimeFormat("en-CA", {

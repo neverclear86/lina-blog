@@ -765,10 +765,10 @@ const sampleVideos: YouTubeVideo[] = [
           <LatestVideoFeature lang="ja" video={undefined} />
         </div>
         <div class="latest-list-sample">
-          <LatestVideoList lang="ja" videos={sampleVideos.slice(1)} />
+          <LatestVideoList lang="ja" videos={sampleVideos} />
         </div>
         <div class="latest-list-narrow" lang="en">
-          <LatestVideoList lang="en" videos={sampleVideos.slice(1)} />
+          <LatestVideoList lang="en" videos={sampleVideos.slice(0, 1)} />
         </div>
         <div class="latest-list-sample">
           <LatestVideoList lang="ja" videos={[]} />
@@ -1025,8 +1025,15 @@ const sampleVideos: YouTubeVideo[] = [
   padding-top: 72px;
 }
 
+/* About the width of the right column of the Latest section at 1280px in the design. */
 .latest-list-sample {
-  max-width: 536px;
+  max-width: 380px;
+}
+
+/* The column is hidden below 768px; the samples stay visible at any width. */
+.latest-list-sample :global(.latest-video-list),
+.latest-list-narrow :global(.latest-video-list) {
+  display: flex;
 }
 
 /* Width of a card in the two columns of the post list at 1440px on this page. */
