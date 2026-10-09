@@ -260,3 +260,21 @@ describe("記事の本文のリンク", () => {
     expect(found?.body).toContain("text-decoration-line: underline;");
   });
 });
+
+describe("記事の一覧の行", () => {
+  it("行のリンクは自分に下線を引かず、ライトのホバーとフォーカスではタイトルにだけ 2px の --keyword の下線を引く", () => {
+    const all = rulesOf(styleOf(source("components/PostRows.astro")));
+    const row = all.find((rule) => rule.selector === ".row");
+    expect(row?.body).toContain("text-decoration: none;");
+    const underlined = all.filter((rule) =>
+      rule.body.includes("text-decoration: underline;"),
+    );
+    expect(underlined.map((rule) => rule.selector)).toEqual([
+      ':global(:root:not([data-theme="dark"])) .row:is(:hover, :focus-visible) .title',
+    ]);
+    expect(underlined[0].body).toContain(
+      "text-decoration-color: var(--keyword);",
+    );
+    expect(underlined[0].body).toContain("text-decoration-thickness: 2px;");
+  });
+});

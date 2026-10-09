@@ -1,0 +1,288 @@
+---
+/**
+ * A window of blog posts: a command line `$ ls -lt <path>`, then one row for each post, in the
+ * order given. A row links to `/blog/<slug>/` and shows the date in Japan time, every tag of
+ * the post in `lang`, a `PR` tag after them when the post has a sponsor, and the title. Without
+ * posts, one line of `emptyText` takes the place of the rows. From 768px, the `action` slot sits
+ * at the right end of the command line; below 768px it is hidden.
+ *
+ * The posts are in Japanese only. When `lang` is not `"ja"`, a `JA` tag hidden from assistive
+ * technology follows the tags, the title has `lang="ja"`, the link name ends with a visually
+ * hidden "(in Japanese)" in `lang`, and the rows have `hreflang="ja"`.
+ *
+ * From 900px a row has four columns: the date, the tags (stacked in 84px), the title and an
+ * arrow. From 768px to 899px it has two columns: the tags and the date above the title, and
+ * the arrow. Below 768px it has one column without the arrow. A long title wraps and is never
+ * cut. The window has no `overflow: hidden`, so that the focus ring of a row is not cut.
+ *
+ * The rows are links and the tags are not, as `.tag` is not interactive (`labels.css`).
+ */
+import type { BlogFrontmatter } from "../blog-schema";
+import type { Locale } from "../i18n/locales";
+import { translate, type UiKey } from "../i18n/ui";
+import type { BlogTag } from "../latest-posts";
+import { formatVideoDate } from "../latest-videos";
+
+interface Props {
+  /** Path in the command, such as `~/blog` or `~/blog/tags/tech`. */
+  path: string;
+  /** Posts to show, in the order they are shown. */
+  posts: readonly {
+    data: Pick<BlogFrontmatter, "title" | "slug" | "date" | "tags" | "sponsor">;
+  }[];
+  /** Text shown when `posts` is empty, such as "まだ記事はありません。". */
+  emptyText: string;
+  /** Language of the page, for the tag labels. Defaults to `"ja"`. */
+  lang?: Locale;
+}
+
+/** UI string key of the label of each tag. */
+const TAG_LABEL_KEYS = {
+  制作記: "blog.tag.devlog",
+  技術: "blog.tag.tech",
+  日記: "blog.tag.diary",
+} as const satisfies Record<BlogTag, UiKey>;
+
+const { path, posts, emptyText, lang = "ja" } = Astro.props;
+const inJapanese = lang !== "ja";
+const hreflang = inJapanese ? "ja" : undefined;
+---
+
+<div class="win rows">
+  <div class="command">
+    <span
+      ><span aria-hidden="true">$ </span>ls -lt{" "}
+      <span class="dir">{path}</span></span
+    >
+    {Astro.slots.has("action") && (
+  <span class="action">
+    <slot name="action" />
+  </span>
+)}
+  </div>
+  {posts.length === 0 ? (
+  <p class="empty">{emptyText}</p>
+) : (
+  <ul class="list">
+    {posts.map(({ data }) => (
+      <li>
+        <a class="row" href={`/blog/${data.slug}/`} hreflang={hreflang}>
+          <span class="meta">
+            <time class="label date" datetime={data.date.toISOString()}>
+              {formatVideoDate(data.date)}
+            </time>
+            <span class="tags">
+              {data.tags.map((tag) => (
+                <span class="tag">{translate(lang, TAG_LABEL_KEYS[tag])}</span>
+              ))}
+              {data.sponsor && <span class="tag pr">PR</span>}
+              {inJapanese && (
+                <span class="tag" aria-hidden="true">
+                  JA
+                </span>
+              )}
+            </span>
+          </span>
+          <strong class="title" lang={inJapanese ? "ja" : undefined}>
+            {data.title}
+          </strong>
+          {inJapanese && (
+            <span class="sr-only">
+              {" "}
+              {translate(lang, "latest.blog.inJapanese")}
+            </span>
+          )}
+          <span class="arrow" aria-hidden="true">
+            →
+          </span>
+        </a>
+      </li>
+    ))}
+  </ul>
+)}
+</div>
+
+<style>
+.command {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dir {
+  color: var(--text);
+}
+
+.action {
+  display: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  position: relative;
+  display: grid;
+  box-sizing: border-box;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px 12px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+  text-decoration: none;
+}
+
+.row:focus-visible {
+  outline-offset: -4px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tags {
+  display: contents;
+}
+
+.date {
+  order: 1;
+}
+
+.pr {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 15px;
+}
+
+.arrow {
+  display: none;
+  font-family: var(--font-mono);
+}
+
+.empty {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  color: var(--muted);
+}
+
+:global(:root:not([data-theme="dark"])) .row:is(:hover, :focus-visible) .title {
+  text-decoration: underline;
+  text-decoration-color: var(--keyword);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+@media (min-width: 768px) {
+  .command {
+    padding: 16px 20px;
+    font-size: 13px;
+  }
+
+  .action {
+    display: block;
+  }
+
+  .row {
+    grid-template-columns: minmax(0, 1fr) 24px;
+    padding: 12px 16px;
+  }
+
+  .meta {
+    grid-column: 1;
+  }
+
+  .title {
+    grid-column: 1;
+    font-size: 16px;
+  }
+
+  .arrow {
+    display: block;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+
+  .empty {
+    padding-inline: 20px;
+  }
+}
+
+@media (min-width: 900px) {
+  .row {
+    grid-template-columns: 120px 84px minmax(0, 1fr) 24px;
+    gap: 16px;
+    align-items: center;
+    min-height: 56px;
+    padding: 0 20px;
+  }
+
+  .meta {
+    display: contents;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-width: 0;
+    padding-block: 8px;
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .date {
+    order: 0;
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 13px;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+
+  .title {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .arrow {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .empty {
+    display: flex;
+    align-items: center;
+    min-height: 56px;
+    padding-block: 0;
+  }
+}
+</style>

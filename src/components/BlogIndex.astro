@@ -2,7 +2,7 @@
 /**
  * The main part of a page of blog posts, `/blog/` or a tag's page `/blog/tags/<slug>/`: the head
  * (`PageHead`) with the breadcrumb, the `h1` and the tag filter, and below it the posts as
- * `PostList`. Both kinds of page share this layout, so the filter and the cards stay in place.
+ * `PostRows`. Both kinds of page share this layout, so the filter and the rows stay in place.
  *
  * The breadcrumb ends with the current page, which is not a link. The tag filter is a row of
  * `.ws` links to `/blog/` and the page of each tag, without JavaScript. The last element of the
@@ -14,13 +14,13 @@ import { blogCrumbs, blogListText, tagFilterLinks } from "../blog-pages";
 import { translate } from "../i18n/ui";
 import type { BlogTag } from "../latest-posts";
 import PageHead from "./PageHead.astro";
-import PostList from "./PostList.astro";
+import PostRows from "./PostRows.astro";
 
 interface Props {
   /** Tag of the page, or undefined for `/blog/`, which lists every post. */
   tag?: BlogTag;
   /** Posts of the page, newest first. */
-  posts: ComponentProps<typeof PostList>["posts"];
+  posts: ComponentProps<typeof PostRows>["posts"];
 }
 
 const { tag, posts } = Astro.props;
@@ -62,7 +62,11 @@ const crumbs = blogCrumbs(tag);
     </nav>
   </PageHead>
   <div class="list">
-    <PostList posts={posts} emptyText={translate("ja", text.noPosts)} />
+    <PostRows
+      path={text.label}
+      posts={posts}
+      emptyText={translate("ja", text.noPosts)}
+    />
   </div>
 </main>
 
