@@ -41,6 +41,36 @@ describe("navLinks", () => {
     expect(navLinks("ja", "/en/").some((l) => l.current)).toBe(false);
   });
 
+  it("作品のページではつくったものだけを現在地にする", () => {
+    expect(
+      navLinks("ja", "/ja/works/ikili-pro/")
+        .filter((l) => l.current)
+        .map((l) => l.key),
+    ).toEqual(["nav.works"]);
+  });
+
+  it("英語の作品のページでもつくったものだけを現在地にする", () => {
+    expect(
+      navLinks("en", "/en/works/ikili-pro/")
+        .filter((l) => l.current)
+        .map((l) => l.key),
+    ).toEqual(["nav.works"]);
+  });
+
+  it("別の言語の作品のパスではつくったものを現在地にしない", () => {
+    expect(navLinks("ja", "/en/works/ikili-pro/").some((l) => l.current)).toBe(
+      false,
+    );
+  });
+
+  it("/blog/ 以下の works を含むパスではつくったものを現在地にしない", () => {
+    expect(
+      navLinks("ja", "/blog/works/")
+        .filter((l) => l.current)
+        .map((l) => l.key),
+    ).toEqual(["nav.blog"]);
+  });
+
   it("/blog/ 以下のページではブログだけを現在地にする", () => {
     expect(
       navLinks("ja", "/blog/hello/")

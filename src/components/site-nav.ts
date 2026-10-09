@@ -26,16 +26,17 @@ export interface NavLink {
  * Returns the items of the main navigation in order. `nav.top`, `nav.about`, `nav.works` and
  * `nav.latest` link to their sections of the top page of `lang`, and `nav.blog` links to
  * `/blog/`, which has no locale prefix. `nav.top` is current on the top page of `lang` (`/ja/`,
- * or `/ja` without the trailing slash), and `nav.blog` on `/blog/` and the pages under it; the
- * other items are never current.
+ * or `/ja` without the trailing slash), `nav.works` on the pages under `/<lang>/works/` and
+ * `nav.blog` on `/blog/` and the pages under it; the other items are never current.
  */
 export function navLinks(lang: Locale, pathname: string): NavLink[] {
   const isTop = pathname === `/${lang}/` || pathname === `/${lang}`;
+  const isWork = pathname.startsWith(`/${lang}/works/`);
   const isBlog = pathname.startsWith(BLOG_PATH);
   return [
     { key: "nav.top", href: homeSectionPath(lang, "top"), current: isTop },
     { key: "nav.about", href: homeSectionPath(lang, "about"), current: false },
-    { key: "nav.works", href: homeSectionPath(lang, "works"), current: false },
+    { key: "nav.works", href: homeSectionPath(lang, "works"), current: isWork },
     {
       key: "nav.latest",
       href: homeSectionPath(lang, "latest"),

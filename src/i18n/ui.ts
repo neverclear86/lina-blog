@@ -129,13 +129,11 @@ const ja = {
   "social.twitter": "Twitter(自称X)",
   "theme.toDark": "ダークテーマに切り替え",
   "theme.toLight": "ライトテーマに切り替え",
-  // Link from the page of a work back to the Works section of the home page.
-  "works.back": "つくったものに戻る",
-  // Text hidden from the eyes after the title of a work tile that links to another site.
+  // Name of the breadcrumb on the page of a work.
+  "works.breadcrumb": "パンくず",
+  // Text hidden from the eyes after a link to another site: the title of a work tile or a link of a work's page.
   "works.external": "（外部サイト）",
   "works.links": "リンク",
-  // Subtitle next to the title of a work on its page.
-  "works.pageSubtitle": "つくったもの",
   // Name of the list of the technologies of a work.
   "works.tech": "使用技術",
 } as const;
@@ -249,10 +247,9 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "social.twitter": "Twitter (self-proclaimed X)",
     "theme.toDark": "Switch to dark theme",
     "theme.toLight": "Switch to light theme",
-    "works.back": "Back to Works",
+    "works.breadcrumb": "Breadcrumb",
     "works.external": "(external site)",
     "works.links": "Links",
-    "works.pageSubtitle": "Project",
     "works.tech": "Tech stack",
   },
 };
