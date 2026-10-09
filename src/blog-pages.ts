@@ -1,13 +1,18 @@
 /**
  * Paths, texts, breadcrumbs and tag filter links of the pages of blog posts: `/blog/`, which
  * lists every post, `/blog/tags/<slug>/`, which lists the posts of one tag, and `/blog/<slug>/`,
- * a post. For a post's page it also gives the parts of its breadcrumb, its date and its reading
- * time.
+ * a post. For a post's page it also gives the posts next to it and the parts of its breadcrumb,
+ * its date and its reading time.
  */
 import { type BlogFrontmatter, blogSchema } from "./blog-schema";
 import { homeSectionPath } from "./components/site-nav";
 import type { UiKey } from "./i18n/ui";
-import { type BlogTag, tagPath, tagSlug } from "./latest-posts";
+import {
+  type BlogTag,
+  postsNewestFirst,
+  tagPath,
+  tagSlug,
+} from "./latest-posts";
 import { formatVideoDate } from "./latest-videos";
 
 /** Path of the page that lists every post. */
@@ -138,17 +143,47 @@ export function blogCrumbs(tag: BlogTag | undefined): BlogCrumb[] {
   ];
 }
 
+/** The posts next to a post in the order of `/blog/`, newest first. `undefined` at an end. */
+export interface AdjacentPosts<T> {
+  /** The post one step older, shown as `prev`. `undefined` for the oldest post. */
+  prev: T | undefined;
+  /** The post one step newer, shown as `next`. `undefined` for the newest post. */
+  next: T | undefined;
+}
+
+/**
+ * Returns the posts next to the post with `slug` in the order of `postsNewestFirst(posts)`, the
+ * order of `/blog/`: `prev` is the one right after it (one step older) and `next` the one right
+ * before it (one step newer). Posts with the same date keep their order in `posts`, as in that
+ * list. Both are `undefined` when `posts` has no other post or none has `slug`. `posts` is not
+ * changed.
+ */
+export function adjacentPosts<
+  T extends { data: Pick<BlogFrontmatter, "date" | "slug"> },
+>(posts: readonly T[], slug: string): AdjacentPosts<T> {
+  const ordered = postsNewestFirst(posts);
+  const index = ordered.findIndex((post) => post.data.slug === slug);
+  if (index === -1) {
+    return { prev: undefined, next: undefined };
+  }
+  return {
+    prev: ordered[index + 1],
+    next: index === 0 ? undefined : ordered[index - 1],
+  };
+}
+
 /**
  * Returns the `getStaticPaths` entries of the pages of posts: one for each of `posts`, in its
- * order, with the post as the prop `post`. The slug of an entry is the post's `data.slug`, which
- * is also the `id` of the entry in the `blog` collection.
+ * order, with the post as the prop `post` and the posts next to it as the props `prev` and
+ * `next` (see `adjacentPosts`). The slug of an entry is the post's `data.slug`, which is also
+ * the `id` of the entry in the `blog` collection.
  */
 export function blogPostPaths<
-  T extends { data: Pick<BlogFrontmatter, "slug"> },
+  T extends { data: Pick<BlogFrontmatter, "date" | "slug"> },
 >(posts: readonly T[]) {
   return posts.map((post) => ({
     params: { slug: post.data.slug },
-    props: { post },
+    props: { post, ...adjacentPosts(posts, post.data.slug) },
   }));
 }
 

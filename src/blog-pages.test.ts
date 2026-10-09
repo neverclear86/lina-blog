@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  adjacentPosts,
   blogCrumbs,
   blogListText,
   blogPostBreadcrumb,
@@ -11,6 +12,11 @@ import {
 } from "./blog-pages";
 import { translate } from "./i18n/ui";
 import type { BlogTag } from "./latest-posts";
+
+/** A post as `adjacentPosts` needs it: a slug and a date in `YYYY-MM-DD`. */
+function post(slug: string, date: string) {
+  return { data: { slug, date: new Date(date) } };
+}
 
 describe("blogTagPagePaths", () => {
   it("記事が無くても、制作記・技術・日記の 3 つのタグのページをこの順に出す", () => {
@@ -116,8 +122,12 @@ describe("blogCrumbs", () => {
 
 describe("blogPostPaths", () => {
   it("記事 1 件につき /blog/<slug>/ の経路を 1 件、記事の順に出し、記事を props に渡す", () => {
-    const first = { data: { slug: "first-post-slug" } };
-    const second = { data: { slug: "second-post-slug" } };
+    const first = {
+      data: { slug: "first-post-slug", date: new Date("2026-01-01") },
+    };
+    const second = {
+      data: { slug: "second-post-slug", date: new Date("2026-02-01") },
+    };
     const paths = blogPostPaths([first, second]);
     expect(paths.map((path) => path.params)).toEqual([
       { slug: "first-post-slug" },
@@ -129,6 +139,78 @@ describe("blogPostPaths", () => {
 
   it("記事が 0 件なら経路も 0 件にする", () => {
     expect(blogPostPaths([])).toEqual([]);
+  });
+
+  it("props に、その記事の 1 つ古い記事を prev、1 つ新しい記事を next として渡す", () => {
+    const middle = post("middle", "2026-01-01");
+    const newest = post("newest", "2026-02-01");
+    const oldest = post("oldest", "2025-12-01");
+    const paths = blogPostPaths([middle, newest, oldest]);
+    expect(paths.map((path) => [path.props.prev, path.props.next])).toEqual([
+      [oldest, newest],
+      [middle, undefined],
+      [undefined, middle],
+    ]);
+  });
+});
+
+describe("adjacentPosts", () => {
+  const middle = post("middle", "2026-01-01");
+  const oldest = post("oldest", "2025-12-01");
+  const newest = post("newest", "2026-02-01");
+
+  it("中ほどの記事は、1 つ古い記事を prev、1 つ新しい記事を next にする", () => {
+    expect(adjacentPosts([middle, oldest, newest], "middle")).toEqual({
+      prev: oldest,
+      next: newest,
+    });
+  });
+
+  it("最古の記事は prev が無く、next は 1 つ新しい記事にする", () => {
+    expect(adjacentPosts([middle, oldest, newest], "oldest")).toEqual({
+      prev: undefined,
+      next: middle,
+    });
+  });
+
+  it("最新の記事は next が無く、prev は 1 つ古い記事にする", () => {
+    expect(adjacentPosts([middle, oldest, newest], "newest")).toEqual({
+      prev: middle,
+      next: undefined,
+    });
+  });
+
+  it("記事が 1 件なら prev も next も無い", () => {
+    expect(adjacentPosts([middle], "middle")).toEqual({
+      prev: undefined,
+      next: undefined,
+    });
+  });
+
+  it("同じ日付の記事は postsNewestFirst と同じく posts の順で、先の記事を新しい側にする", () => {
+    const first = post("first", "2026-01-01");
+    const second = post("second", "2026-01-01");
+    expect(adjacentPosts([first, second], "first")).toEqual({
+      prev: second,
+      next: undefined,
+    });
+    expect(adjacentPosts([first, second], "second")).toEqual({
+      prev: undefined,
+      next: first,
+    });
+  });
+
+  it("posts に無い slug には prev も next も無い", () => {
+    expect(adjacentPosts([middle, oldest, newest], "missing")).toEqual({
+      prev: undefined,
+      next: undefined,
+    });
+  });
+
+  it("posts を並べ替えない", () => {
+    const posts = [middle, oldest, newest];
+    adjacentPosts(posts, "middle");
+    expect(posts).toEqual([middle, oldest, newest]);
   });
 });
 

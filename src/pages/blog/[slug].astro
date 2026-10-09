@@ -6,7 +6,9 @@
  * the reading time and the author. Below it, `<Content />` in `ArticleBody` fills a column of at
  * most 760px. From 1024px an empty column of 240px stands at its left, so that the body keeps its
  * place when something is put in that column. A post with `sponsor` has its PR notice
- * (`SponsorNotice`) between the head and the columns. `emoji` is not shown.
+ * (`SponsorNotice`) between the head and the columns. `emoji` is not shown. At the end of that
+ * column, `PostNav` holds the links to the posts one step older (`prev`) and one step newer
+ * (`next`), which `getStaticPaths` gives as props.
  *
  * A diagonal band at the right of the head is drawn with `::before`. It is 64px wide below 768px,
  * where the rows of the head keep clear of it with a right padding, and 120px wide from 1280px,
@@ -23,6 +25,7 @@ import {
   readingMinutes,
 } from "../../blog-pages";
 import ArticleBody from "../../components/ArticleBody.astro";
+import PostNav from "../../components/PostNav.astro";
 import SponsorNotice from "../../components/SponsorNotice.astro";
 import { homeSectionPath } from "../../components/site-nav";
 import { translate } from "../../i18n/ui";
@@ -34,9 +37,11 @@ export const getStaticPaths = (async () =>
 
 interface Props {
   post: CollectionEntry<"blog">;
+  prev: CollectionEntry<"blog"> | undefined;
+  next: CollectionEntry<"blog"> | undefined;
 }
 
-const { post } = Astro.props;
+const { post, prev, next } = Astro.props;
 const { title, slug, date, tags, topics, sponsor, description } = post.data;
 const { Content } = await render(post);
 const crumb = blogPostBreadcrumb(slug, date);
@@ -107,6 +112,7 @@ const notice = sponsorNotice(sponsor);
         <div class="toc-col"></div>
         <div class="text">
           <ArticleBody lang="ja"><Content /></ArticleBody>
+          <PostNav prev={prev} next={next} />
         </div>
       </div>
     </div>

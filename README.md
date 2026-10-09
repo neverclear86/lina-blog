@@ -24,7 +24,7 @@ bun create astro@latest -- --template basics
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
 │   ├── avatar-images.ts  # The nine v2.1 avatar images of src/assets/ with their alt keys, widths, sizes and priority, unit-tested
-│   ├── blog-pages.ts     # Paths of /blog/<slug>/ and /blog/tags/<slug>/, the heading texts, the breadcrumbs, the tag filter links, and the breadcrumb, date and reading time of a post, unit-tested
+│   ├── blog-pages.ts     # Paths of /blog/<slug>/ and /blog/tags/<slug>/, the heading texts, the breadcrumbs, the tag filter links, the breadcrumb, date and reading time of a post, and the posts next to it, unit-tested
 │   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
@@ -83,6 +83,7 @@ bun create astro@latest -- --template basics
 │   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for --inv faces
 │   │   ├── NameLogo.astro        # Name logo of the brand kit as inline SVG: compact, full and full-sub, painted with the --lg-* tokens
 │   │   ├── PageHead.astro        # Head of the blog pages and the contact page: grid background, diagonal band and the slot with an h1
+│   │   ├── PostNav.astro         # Links to the posts one step older (prev) and newer (next) at the end of a post's page; nothing when there are none
 │   │   ├── PostRows.astro        # Window of blog posts: ls -lt command line with a command slot, rows with JST date, tags, PR and title, or one empty line
 │   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line, path and link, and the Japanese heading; the size is a prop
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, the path of the contact page, and which section of the top page the reader is in, unit-tested
@@ -214,7 +215,7 @@ Without JavaScript, the page keeps the dark theme that `Layout.astro` renders.
 `astro dev` serves them at `/dev/components/` and `/dev/markdown/`, and `astro build` leaves them out of `dist/` unless `LINA_DEV_PAGES=1` is set.
 Add `?theme=dark` or `?theme=light` to the URL of `/dev/components/` to see that theme whatever is saved.
 To capture them with `.claude/scripts/screenshot.mjs`, which serves `dist/`, build with `LINA_DEV_PAGES=1 bun run build`.
-That build also loads the posts in `src/content/blog-dev/` (see “Project Structure”), so pages that list posts, such as `/blog/`, and the page of a post, such as `/blog/dev-preview-sample/`, can be captured with posts in them.
+That build also loads the posts in `src/content/blog-dev/` (see “Project Structure”), so pages that list posts, such as `/blog/`, and the page of a post, such as `/blog/dev-preview-sample/` with an older and a newer post beside it, can be captured with posts in them.
 A new component adds its samples to `/dev/components/`, and a new Markdown syntax adds its examples to `src/markdown/sample.md`.
 
 ## 🔤 Fonts
