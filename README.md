@@ -14,6 +14,7 @@ bun create astro@latest -- --template basics
 │   ├── markdown.md       # How to write an article body: Markdown, and the message boxes and the accordion written as raw HTML
 │   └── publish-api.md    # API contract between the article sync script and the publishing Worker
 ├── public/
+│   ├── _headers          # Security headers of the static files; the Worker sends the same values
 │   └── favicon/          # Favicons from the brand kit, unchanged: the mark /li on ink as SVG, and PNGs of 32, 180 and 192 pixels
 ├── scripts/
 │   ├── avatars/          # Makes the avatar images in src/assets/ from the v2.1 originals (bun run import:avatars), unit-tested
@@ -166,7 +167,7 @@ bun create astro@latest -- --template basics
 └── package.json
 ```
 
-Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` and `/api/*` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets, and a `GET` for a path with no file gets `/404.html` (`src/pages/404.astro`) with status 404 without starting the Worker (`assets.not_found_handling`), so a page that exports `prerender = false` must also be added to `assets.run_worker_first`. `/` has no page: the route in `src/api.ts` answers command-line clients such as curl (`src/user-agent.ts`) with `text/plain`, and redirects other clients to `/en/` when `Accept-Language` prefers English over Japanese and to `/ja/` otherwise. The text is the text art `/ansi/color.txt`, a blank line and the text version `/text/en.txt` or `/text/ja.txt`, chosen by `Accept-Language` in the same way, which the Worker fetches through the `ASSETS` binding (`assets.binding` in `wrangler.jsonc`). Without the text art it is the text version alone; without the text version it is a short notice with the top page's URL and status 503. All three responses carry `Vary: User-Agent, Accept-Language`. Every response of `/` also carries the security headers of Hono's `secureHeaders()` with its defaults (`Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: no-referrer` and others), added by middleware in `src/api.ts`, because a `_headers` file applies to static assets only and not to responses from the Worker. Do not add `src/pages/index.astro`, because the adapter serves a prerendered page before the Hono app sees the request. Requests to `/` and `/api/*` go to the Hono app in `src/fetch.ts`, which serves the routes in `src/api.ts`; a request that no route matches, such as `/api/nope` or a `POST` to `/`, gets the same 404 page from Astro's handlers. Astro calls that app with the request only, so `src/fetch.ts` passes the Worker's bindings and secrets (`env` from `cloudflare:workers`) to it.
+Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` and `/api/*` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets, and a `GET` for a path with no file gets `/404.html` (`src/pages/404.astro`) with status 404 without starting the Worker (`assets.not_found_handling`), so a page that exports `prerender = false` must also be added to `assets.run_worker_first`. `/` has no page: the route in `src/api.ts` answers command-line clients such as curl (`src/user-agent.ts`) with `text/plain`, and redirects other clients to `/en/` when `Accept-Language` prefers English over Japanese and to `/ja/` otherwise. The text is the text art `/ansi/color.txt`, a blank line and the text version `/text/en.txt` or `/text/ja.txt`, chosen by `Accept-Language` in the same way, which the Worker fetches through the `ASSETS` binding (`assets.binding` in `wrangler.jsonc`). Without the text art it is the text version alone; without the text version it is a short notice with the top page's URL and status 503. All three responses carry `Vary: User-Agent, Accept-Language`. Every response of `/` and `/api/*` also carries the security headers of Hono's `secureHeaders()`, added by middleware in `src/api.ts`, because a `_headers` file applies to static assets only and not to responses from the Worker. `Content-Security-Policy` (`frame-ancestors 'none'` only), `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options`, `Permissions-Policy` and `Strict-Transport-Security` take the values of the `/*` rule in `public/_headers`, and `src/api.test.ts` checks that both agree; the other headers, such as `Cross-Origin-Opener-Policy`, keep Hono's defaults. Do not add `src/pages/index.astro`, because the adapter serves a prerendered page before the Hono app sees the request. Requests to `/` and `/api/*` go to the Hono app in `src/fetch.ts`, which serves the routes in `src/api.ts`; a request that no route matches, such as `/api/nope` or a `POST` to `/`, gets the same 404 page from Astro's handlers. Astro calls that app with the request only, so `src/fetch.ts` passes the Worker's bindings and secrets (`env` from `cloudflare:workers`) to it.
 
 Pages that exist in every language go in `src/pages/[lang]/` and are generated once for each locale in `src/i18n/locales.ts` (`/ja/`, `/en/`); their UI strings come from `src/i18n/ui.ts`. Pages outside `[lang]/`, such as the Japanese-only blog under `/blog/`, have no language prefix. Astro's `i18n()` handler in `src/fetch.ts` is never reached, so `astro build` warns that the project does not call it; running it would answer 404 for those unprefixed paths. The layout links every page to the same path in the other locales (`src/i18n/paths.ts`); a page without a language prefix links to the other locale's top page. Every page also has a canonical link and hreflang alternates, as absolute URLs under `site` in `astro.config.mjs` (`canonicalUrl` and `alternateLinks` in `src/i18n/paths.ts`): a page under `[lang]/` lists itself in each locale and `x-default` pointing to `/`, and a page without a language prefix lists only itself, in Japanese.
 
@@ -296,21 +297,22 @@ when a display size changes. `/dev/components/` shows all nine; they are written
 only while a page uses them, so build with `LINA_DEV_PAGES=1` to see them.
 
 Every file whose name carries a content hash, images and fonts included, is written to
-`/_astro/`. The repository has no `_headers` file: the Cloudflare adapter writes
-`dist/client/_headers` during `astro build` with one rule, and Workers Static Assets serves
-the other files with its default.
+`/_astro/`. `astro build` copies `public/_headers` to `dist/client/_headers`, and the
+Cloudflare adapter puts its `/_astro/*` rule before the rules of that file. `public/_headers`
+sets only security headers, on `/*` (see Project Structure), so `Cache-Control` comes from the
+adapter's rule and from the Workers Static Assets default.
 
 | Path        | `Cache-Control`                         | Set by                                  |
 | :---------- | :-------------------------------------- | :-------------------------------------- |
-| `/_astro/*` | `public, max-age=31536000, immutable`   | The Cloudflare adapter (`_headers`)     |
+| `/_astro/*` | `public, max-age=31536000, immutable`   | The Cloudflare adapter (`dist/client/_headers`) |
 | HTML pages  | `public, max-age=0, must-revalidate`    | The Workers Static Assets default (with an `ETag`) |
 | `/favicon/*` | `public, max-age=0, must-revalidate`   | The Workers Static Assets default (with an `ETag`) |
 
 HTML is revalidated on every request, so a deploy shows up at once and a page never points
 at hashed files that the deploy removed. The adapter skips its rule when a `_headers` file in
-`public/` already sets `Cache-Control` on a rule that matches `/_astro/*`, such as `/*`. A
-`public/_headers` added later must therefore not set `Cache-Control` on `/*`, or the hashed
-files lose their long cache.
+`public/` already sets `Cache-Control` on a rule that matches `/_astro/*`, such as `/*`.
+`public/_headers` must therefore not set `Cache-Control` on `/*`, or the hashed files lose
+their long cache; a test in `src/api.test.ts` fails when it does.
 
 Article images are not build output. The publish Worker stores them in the R2 bucket
 `lina-blog-images` under a content-hash name with `public, max-age=31536000, immutable`, and

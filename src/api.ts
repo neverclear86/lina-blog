@@ -54,6 +54,31 @@ const CONTACT_KIND_LABELS: Record<ContactKind, string> = {
  */
 const api = new Hono<ApiEnv>();
 
+// A `_headers` file applies to static assets only, not to responses from this Worker, so
+// `secureHeaders()` adds the security headers to every response of `/` and `/api/*`. The values
+// of `Content-Security-Policy`, `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options`,
+// `Permissions-Policy` and `Strict-Transport-Security` are those of the `/*` rule in
+// `public/_headers`; `Strict-Transport-Security` and the other headers keep Hono's defaults.
+// It is registered before the routes, because a route that answers without calling `next()`
+// skips the middleware registered after it.
+const securityHeaders = secureHeaders({
+  contentSecurityPolicy: { frameAncestors: ["'none'"] },
+  xFrameOptions: "DENY",
+  referrerPolicy: "strict-origin-when-cross-origin",
+  permissionsPolicy: {
+    accelerometer: [],
+    camera: [],
+    geolocation: [],
+    gyroscope: [],
+    magnetometer: [],
+    microphone: [],
+    payment: [],
+    usb: [],
+  },
+});
+api.use("/", securityHeaders);
+api.use("/api/*", securityHeaders);
+
 api.get("/api/health", (c) => c.json({ ok: true }));
 
 // Validates the form, verifies the Turnstile token, then sends the notification, and answers
@@ -118,12 +143,6 @@ api.post("/api/contact", async (c) => {
 function redirectToLocale(c: Context): Response {
   return c.redirect(`/${negotiateLocale(c.req.header("Accept-Language"))}/`);
 }
-
-// A `_headers` file applies to static assets only, not to responses from this Worker, so
-// `secureHeaders()` adds Hono's default set (`Strict-Transport-Security`,
-// `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy:
-// no-referrer` and others) to every response of `/`. It runs for `/` only, not for `/api/*`.
-api.use("/", secureHeaders());
 
 /** Path of the text art that `/` shows command-line clients above the text version. */
 const ANSI_ART_PATH = "/ansi/color.txt";

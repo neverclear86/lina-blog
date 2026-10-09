@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import {
   afterEach,
   beforeEach,
@@ -12,17 +13,20 @@ import { type TurnstileVerification, verifyTurnstile } from "./turnstile";
 
 vi.mock("./turnstile", () => ({ verifyTurnstile: vi.fn() }));
 
-/** Headers that `secureHeaders()` adds with its defaults, keyed by lower-case name. */
+/**
+ * Headers that `secureHeaders()` in `src/api.ts` adds, keyed by lower-case name: Hono's
+ * defaults, with `Referrer-Policy` and `X-Frame-Options` set to the values of `public/_headers`.
+ */
 const SECURITY_HEADERS = {
   "cross-origin-opener-policy": "same-origin",
   "cross-origin-resource-policy": "same-origin",
   "origin-agent-cluster": "?1",
-  "referrer-policy": "no-referrer",
+  "referrer-policy": "strict-origin-when-cross-origin",
   "strict-transport-security": "max-age=15552000; includeSubDomains",
   "x-content-type-options": "nosniff",
   "x-dns-prefetch-control": "off",
   "x-download-options": "noopen",
-  "x-frame-options": "SAMEORIGIN",
+  "x-frame-options": "DENY",
   "x-permitted-cross-domain-policies": "none",
   "x-xss-protection": "0",
 };
@@ -46,6 +50,25 @@ function assetsWith(
         : new Response(body);
     }),
   };
+}
+
+/** Headers of the `/*` rule in `public/_headers`, keyed by lower-case name. */
+function staticHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
+  let inRule = false;
+  for (const line of readFileSync("public/_headers", "utf8").split("\n")) {
+    if (line.trim() === "" || line.startsWith("#")) continue;
+    if (!/^\s/.test(line)) {
+      inRule = line.trim() === "/*";
+      continue;
+    }
+    if (!inRule) continue;
+    const colon = line.indexOf(":");
+    headers[line.slice(0, colon).trim().toLowerCase()] = line
+      .slice(colon + 1)
+      .trim();
+  }
+  return headers;
 }
 
 describe("api", () => {
@@ -103,12 +126,46 @@ describe("api", () => {
     },
   );
 
-  it("/api/* の応答にはセキュリティヘッダーを付けない", async () => {
+  it("/api/* の応答にもセキュリティヘッダーを付ける", async () => {
     const res = await api.request("/api/health");
-    for (const name of Object.keys(SECURITY_HEADERS)) {
-      expect(res.headers.has(name)).toBe(false);
-    }
+    expect(Object.fromEntries(res.headers)).toMatchObject(SECURITY_HEADERS);
   });
+
+  it("public/_headers の /* は 6 つのセキュリティヘッダーだけを付け、Cache-Control を付けない", () => {
+    expect(staticHeaders()).toEqual({
+      "content-security-policy": "frame-ancestors 'none'",
+      "x-frame-options": "DENY",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-content-type-options": "nosniff",
+      "permissions-policy":
+        "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()",
+      "strict-transport-security": "max-age=15552000; includeSubDomains",
+    });
+  });
+
+  it.each<[string, string, RequestInit]>([
+    ["GET /", "/", {}],
+    ["GET / (curl)", "/", { headers: { "User-Agent": "curl/8.22.0" } }],
+    ["GET /api/health", "/api/health", {}],
+    ["GET /api/unknown", "/api/unknown", {}],
+    [
+      "POST /api/contact",
+      "/api/contact",
+      { method: "POST", body: new FormData() },
+    ],
+  ])(
+    "%s の応答は public/_headers の /* と同じ値を付ける",
+    async (_name, path, init) => {
+      const res = await api.request(path, init, {
+        ASSETS: assetsWith({ "/text/ja.txt": "x" }),
+        CONTACT_MAIL: { send: vi.fn() },
+      });
+      const headers = Object.fromEntries(res.headers);
+      for (const [name, value] of Object.entries(staticHeaders())) {
+        expect(headers[name], name).toBe(value);
+      }
+    },
+  );
 });
 
 describe("POST /api/contact", () => {
