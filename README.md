@@ -53,7 +53,7 @@ bun create astro@latest -- --template basics
 │   │   ├── logo-light.png  # Logo (light theme)
 │   │   └── logo-white.png  # White logo (dark theme, or inverse faces on the light theme)
 │   ├── components/
-│   │   ├── About.astro           # About section: heading, lead and three terminal cards
+│   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, code file names, YouTube embeds)
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
