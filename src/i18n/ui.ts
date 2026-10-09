@@ -81,6 +81,8 @@ const ja = {
     "確認が終わるまで少し待ってから、もう一度送信してください。",
   // Name after "© <year>" in the site footer.
   "footer.copyrightHolder": "創好リナ",
+  // Name of the link from the logo in the site header to the top page.
+  "header.homeLabel": "ikili.pro トップ",
   // Hero of the top page; "hero.intro" shows from 768px and "hero.introShort" below it.
   "hero.intro":
     "配信もするし、開発もする。ITで遊ぶ動画と配信を、Resoniteを中心に届けています。",
@@ -212,6 +214,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "contact.status.waiting":
       "Please wait for the verification to finish, then send again.",
     "footer.copyrightHolder": "Tsukusu Lina",
+    "header.homeLabel": "ikili.pro home",
     "hero.intro":
       "I stream, and I build software. I make videos and streams about having fun with IT, mostly in Resonite.",
     "hero.introShort":

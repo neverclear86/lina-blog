@@ -7,7 +7,7 @@ import logoWhite from "../assets/logo-white.png";
  * The ikili.pro logo, in the color that stands out on the face it is drawn on.
  *
  * `tone="default"`, for faces such as `--bg`, is black on the light theme and white on the dark
- * theme. `tone="inverse"`, for the inverted faces `--inv` and `--cbg`, is white on the light
+ * theme. `tone="inverse"`, for the inverted face `--inv`, is white on the light
  * theme and black on the dark theme.
  *
  * Both images are rendered as `<picture>` elements with AVIF and WebP sources at 1x and 2x
@@ -26,8 +26,8 @@ interface Props {
    */
   alt: string;
   /**
-   * Face the logo is drawn on: "default" for faces such as `--bg`, or "inverse" for `--inv`
-   * and `--cbg`. Defaults to "default".
+   * Face the logo is drawn on: "default" for faces such as `--bg`, or "inverse" for the inverted
+   * face `--inv`. Defaults to "default".
    */
   tone?: "default" | "inverse";
 }
