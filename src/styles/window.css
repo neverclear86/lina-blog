@@ -37,7 +37,8 @@
  * `.gridbg` draws `--grid` lines every 48px on `--bg`. `.stripes` is an 18px band of diagonal
  * stripes in the keyword orange and `--ink` that repeat every 40px. `.av-shadow` gives an image
  * with a transparent background a hard shadow (`--av-hard`) to the bottom right and a soft one
- * (`--av-soft`) below.
+ * (`--av-soft`) below. Up to 767px the lines of `.gridbg` are 32px apart, `.stripes` is 14px
+ * high and repeats every 32px, and the shadow of `.av-shadow` is 12px 8px and 0 20px 28px.
  */
 
 @property --wa {
@@ -203,6 +204,22 @@ a.win:focus-visible::before,
 .av-shadow {
   filter: drop-shadow(16px 12px 0 var(--av-hard))
     drop-shadow(0 28px 36px var(--av-soft));
+}
+
+@media (max-width: 767px) {
+  .gridbg {
+    background-size: 32px 32px;
+  }
+
+  .stripes {
+    height: 14px;
+    background-size: 32px 32px;
+  }
+
+  .av-shadow {
+    filter: drop-shadow(12px 8px 0 var(--av-hard))
+      drop-shadow(0 20px 28px var(--av-soft));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
