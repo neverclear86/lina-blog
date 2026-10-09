@@ -9,6 +9,10 @@
  * because the ring of the dark theme, `--keyword`, would vanish on it. The stripes are drawn by
  * `::before` of `.flow`, which starts 52px (44px below 900px) left of the band.
  *
+ * The stripes move right by 51.78px (43.14px below 900px) every 4s and start again, which is two
+ * repeats of the stripes along the band, so the restart does not show. The arrow of the button
+ * moves 5px right and back every 1.4s. Under `prefers-reduced-motion: reduce` neither moves.
+ *
  * From 900px the text and the button are in a row that wraps, and the image is 300px high.
  * Below 900px the text and the button are in a column beside the image, which is 128px wide,
  * and below 360px the image is hidden.
@@ -79,11 +83,19 @@ const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
   bottom: 0;
   left: -44px;
   right: 0;
+  --flow-shift: 43.14px;
   background: repeating-linear-gradient(
     112deg,
     transparent 0 18px,
     color-mix(in srgb, var(--ink) 8%, transparent) 18px 20px
   );
+  animation: flow 4s linear infinite;
+}
+
+@keyframes flow {
+  to {
+    translate: var(--flow-shift) 0;
+  }
 }
 
 .inner {
@@ -138,6 +150,17 @@ p {
 
 .nudge {
   display: inline-block;
+  animation: nudge 1.4s ease-in-out infinite;
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 5px 0;
+  }
 }
 
 .thumbs {
@@ -156,6 +179,7 @@ p {
 @media (min-width: 900px) {
   .flow::before {
     left: -52px;
+    --flow-shift: 51.78px;
     background: repeating-linear-gradient(
       112deg,
       transparent 0 22px,
@@ -216,6 +240,13 @@ p {
 
   .art {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow::before,
+  .nudge {
+    animation: none;
   }
 }
 </style>
