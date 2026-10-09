@@ -32,6 +32,8 @@ disallowedTools: Agent, Skill
 - ライトとダークの両方での見え方と、テキストの色の WCAG AA のコントラスト
 - `prefers-reduced-motion: reduce` での最終状態
 - 英語の文言の下書き（issue が確認を受けると言うものは、決めた文言を一覧にしてユーザーの確認に回す）
+- 受け入れ条件に書く制約（スマホでは出さない、寸法、切り抜き）は `design/` の写しの値を見てから書く。出し方に依存する寸法は「A案の見た目に沿う」に留め、土台でも満たせない検査（`overflowing` の既知の隠しラベルなど）は「土台と同じ値」と書く
+- 受け入れ条件のうち確認を受ける事項は、確認者（ユーザー）と場所（PR 本文）を書く
 - X（旧 Twitter）の表記: アイコン以外（本文、`aria-label` を含む）では日本語で「Twitter(自称X)」、英語で「Twitter (self-proclaimed X)」にする
 <!-- /ADAPT:ui-decide -->
 

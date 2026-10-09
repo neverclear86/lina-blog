@@ -68,7 +68,7 @@ push のたびに CI が走り、CI の失敗や衝突で push をやり直す�
 - **rebase**: `git fetch origin main && git rebase origin/main`。衝突があれば解く（設計の判断が要るときは push せず status を blocked にする）。rebase の後、プランが足す新しい識別子を作業ツリーで `git grep` し、土台より後にマージされた変更と同じ名前が無いことを確かめる
 <!-- ADAPT:checks -->
 - **依存**: `bun install --frozen-lockfile`。`package.json` を変えたら `bun install` で `bun.lock` を更新してコミットに含める
-- **整形と lint**: `bunx biome check --write` で直せるものを直し（差分をコミットに含める）、`bunx biome ci` を通す
+- **整形と lint**: `bunx biome check --write <変更したファイル>...` で直せるものを直し（差分をコミットに含める。変更していないファイルは整形しない）、`bunx biome ci` を通す
 - **型**: `bunx astro check`
 - **テスト**: `bun run test`（vitest）
 - **build**: `bun run build`
@@ -81,6 +81,7 @@ push のたびに CI が走り、CI の失敗や衝突で push をやり直す�
 - UI を変える issue（`ui: true`）でだけ、main と作業ブランチの両方の画面を撮り（同じ初期状態を作ってから）、PR を作った直後に `gh pr comment <PR> --attach <png>` で「変更前」「変更後」を貼る。貼るのは変えた画面だけで、全画面の一式は貼らない。見た目の変わった画面が 1 つも無いとき（リファクタリングなど）は貼らず、「テストと検証」に「変更前と変更後の一式を撮って比べ、見た目の変わった画面は無い」と 1 行書く。UI を変えない issue では撮らない
 <!-- ADAPT:screenshots -->
 - 撮影は `node <作業ツリー>/.claude/scripts/screenshot.mjs --root <作業ツリー> --port <ポート +0> --out <出力先> <パス>...`（Playwright の headless Chromium。幅ごと・テーマごとにページ全体を `<名前>-<幅>-<light|dark>.png` で撮り、動きは止める）。幅は 1440 と 390 で、issue の完了条件が中間の幅（768、1024）を言うときは `--widths 1440,1024,768,390` を付け、出力の `overflowX` が 0 であることを「テストと検証」に書く。変更前（main）の撮影は、main にこのスクリプトが無ければ、作業ツリーのスクリプトを `--root` に main の作業ツリーを渡して使う。貼るのは 1440 と 390 だけでよい。i18n（#18）の後は日本語と英語のページを両方撮る
+- 要素だけを撮るときは `--selector <css>` を付ける（要素を画面に入れてから撮り、`<名前>-<selector の slug>-<幅>-<テーマ>.png` に出す。出力の `box` が要素の大きさである）。自前の probe で撮るときは、テーマは `localStorage` の `theme` で決まる（`src/theme.ts` は OS の設定を読まない）ので `addInitScript` で置き、`networkidle` で開いてから `document.documentElement.dataset.theme` を出して意図したテーマであることを確かめ、撮った画像を Read で開いて対象が写っていることを見てから貼る
 <!-- /ADAPT:screenshots -->
 
 ## docker を使うときの安全策（ユーザーの docker と同じ daemon を共有している）

@@ -779,6 +779,9 @@ def main():
     if run_ids:
         for r in set(run_ids) - {m[0] for m in runs_meta}:
             print(f"warning: run {r} が {opts.base} に見つからない（またはドライラン）", file=sys.stderr)
+        if not runs_meta:
+            print("error: 指定した run が 1 件も見つからない。run id（`wf_*`）を渡す。journal の複写のパスは渡せない", file=sys.stderr)
+            sys.exit(2)
     runs_data = [load_run(run_id, session_id, wf_dir) for run_id, session_id, wf_dir in runs_meta]
     # runを開始時刻順に
     runs_data.sort(key=lambda r: r['run_t_min'] or datetime.min.replace(tzinfo=timezone.utc))
