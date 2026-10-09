@@ -4,6 +4,7 @@
  * from the locales in `src/i18n/locales.ts` and the Japanese labels of `PROFILE_LINKS` in
  * `src/profile-links.ts`.
  */
+import { contactPagePath } from "./components/site-nav";
 import { LOCALES, type Locale } from "./i18n/locales";
 import { PROFILE_LINKS } from "./profile-links";
 
@@ -13,9 +14,15 @@ const TOP_PAGE_LABELS: Record<Locale, string> = {
   en: "トップ（英語）",
 };
 
+/** Link text of each locale's contact page. The type requires one for every locale. */
+const CONTACT_PAGE_LABELS: Record<Locale, string> = {
+  ja: "お問い合わせ（日本語）",
+  en: "お問い合わせ（英語）",
+};
+
 /**
- * Returns the `/llms.txt` text: the site name, a quoted summary, the top page of each locale
- * as an absolute URL under `site`, and the profile links, ending with one newline.
+ * Returns the `/llms.txt` text: the site name, a quoted summary, the top page and the contact page
+ * of each locale as absolute URLs under `site`, and the profile links, ending with one newline.
  *
  * @param site Astro's `site`, the origin of the absolute URLs.
  * @throws When `site` is undefined, because `astro.config.mjs` does not set it.
@@ -38,6 +45,10 @@ export function buildLlmsTxt(site: URL | undefined): string {
     ...LOCALES.map(
       (locale) =>
         `- [${TOP_PAGE_LABELS[locale]}](${new URL(`/${locale}/`, site).toString()})`,
+    ),
+    ...LOCALES.map(
+      (locale) =>
+        `- [${CONTACT_PAGE_LABELS[locale]}](${new URL(contactPagePath(locale), site).toString()})`,
     ),
     "",
     "## リンク",

@@ -160,8 +160,8 @@ describe("SiteHeader の全幅", () => {
   });
 
   it("お問い合わせは .btn.btn-acc を全幅で置く", () => {
-    expect(markup).toContain(
-      '<a class="btn btn-acc" href={homeSectionPath(lang, "contact")}>',
+    expect(markup).toMatch(
+      /<a\s+class="btn btn-acc"\s+href=\{contactPagePath\(lang\)\}\s+aria-current=\{contactCurrent\}\s*>/,
     );
     expect(body(base, ".menu-contact .btn")).toContain("display: flex");
     expect(body(base, ".menu-contact .btn")).toContain("flex: 1");

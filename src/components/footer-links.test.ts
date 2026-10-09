@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { footerProfileLinks, footerSiteLinks } from "./footer-links";
 
 describe("footerSiteLinks", () => {
-  it("日本語のページではトップ・プロフィール・ブログ・つくったもの・お問い合わせの順に、言語のトップとその節と /blog/ を指す", () => {
+  it("日本語のページではトップ・プロフィール・ブログ・つくったもの・お問い合わせの順に、言語のトップとその節と /blog/ とお問い合わせのページを指す", () => {
     expect(footerSiteLinks("ja").map(({ key, href }) => [key, href])).toEqual([
       ["nav.top", "/ja/"],
       ["nav.about", "/ja/#about"],
       ["nav.blog", "/blog/"],
       ["nav.works", "/ja/#works"],
-      ["nav.contact", "/ja/#contact"],
+      ["nav.contact", "/ja/contact/"],
     ]);
   });
 
@@ -18,7 +18,7 @@ describe("footerSiteLinks", () => {
       "/en/#about",
       "/blog/",
       "/en/#works",
-      "/en/#contact",
+      "/en/contact/",
     ]);
   });
 });

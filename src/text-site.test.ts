@@ -171,11 +171,22 @@ describe("buildTextSite", () => {
     },
   );
 
-  it.each(["ja", "en"] as const)(
-    "%s: お問い合わせの節に言語のトップページの絶対 URL を載せる",
-    (locale) => {
+  it.each([
+    [
+      "ja",
+      "お仕事のご相談やコラボのお誘いなどはこちらから。",
+      "フォーム: https://example.com/ja/contact/",
+    ],
+    [
+      "en",
+      "For work inquiries, collaborations and more,",
+      "use the form: https://example.com/en/contact/",
+    ],
+  ] as const)(
+    "%s: お問い合わせの節の末尾に、誘いの行と、言語のお問い合わせのページの絶対 URL の行を載せる",
+    (locale, lead, form) => {
       const lines = buildTextSite(locale, [], site).split("\n");
-      expect(lines.at(-2)).toBe(`  https://example.com/${locale}/`);
+      expect(lines.slice(-3, -1)).toEqual([lead, form]);
     },
   );
 

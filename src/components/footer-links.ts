@@ -3,7 +3,7 @@ import { FEED_PATH } from "../blog-rss";
 import type { Locale } from "../i18n/locales";
 import type { UiKey } from "../i18n/ui";
 import { PROFILE_LINKS } from "../profile-links";
-import { homeSectionPath } from "./site-nav";
+import { contactPagePath, homeSectionPath } from "./site-nav";
 
 /**
  * Which footer a page shows: "full" has the name logo, the site and links columns and the band
@@ -20,8 +20,9 @@ export interface FooterSiteLink {
 }
 
 /**
- * Returns the links of the site column in order: the top page of `lang`, then its profile,
- * works and contact sections, with the blog (`/blog/`, which has no locale prefix) third.
+ * Returns the links of the site column in order: the top page of `lang`, then its profile
+ * section, the blog (`/blog/`, which has no locale prefix), its works section and the contact
+ * page (`contactPagePath`).
  */
 export function footerSiteLinks(lang: Locale): FooterSiteLink[] {
   return [
@@ -29,7 +30,7 @@ export function footerSiteLinks(lang: Locale): FooterSiteLink[] {
     { key: "nav.about", href: homeSectionPath(lang, "about") },
     { key: "nav.blog", href: "/blog/" },
     { key: "nav.works", href: homeSectionPath(lang, "works") },
-    { key: "nav.contact", href: homeSectionPath(lang, "contact") },
+    { key: "nav.contact", href: contactPagePath(lang) },
   ];
 }
 

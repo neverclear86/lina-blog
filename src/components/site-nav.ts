@@ -6,13 +6,7 @@ import { LOCALES, type Locale } from "../i18n/locales";
 import { localizedPath } from "../i18n/paths";
 
 /** A section of the top page that the header links to, used as the fragment of the link. */
-export type HomeSection =
-  | "top"
-  | "about"
-  | "latest"
-  | "blog"
-  | "works"
-  | "contact";
+export type HomeSection = "top" | "about" | "latest" | "blog" | "works";
 
 /** Path of the blog, which has no locale prefix. */
 const BLOG_PATH = "/blog/";
@@ -30,6 +24,15 @@ export function homeSectionPath(lang: Locale, section: HomeSection): string {
 /** Returns the path of the contact page of `lang`, such as `/ja/contact/`. */
 export function contactPagePath(lang: Locale): string {
   return `/${lang}/contact/`;
+}
+
+/**
+ * Returns whether the page at `pathname` is the contact page of `lang` (`/ja/contact/`, or
+ * `/ja/contact` without the trailing slash), for `aria-current="page"` of the contact button.
+ */
+export function isContactPage(lang: Locale, pathname: string): boolean {
+  const path = contactPagePath(lang);
+  return pathname === path || pathname === path.slice(0, -1);
 }
 
 /** Returns true when `pathname` is the top page of `lang`: `/ja/`, or `/ja` without the slash. */

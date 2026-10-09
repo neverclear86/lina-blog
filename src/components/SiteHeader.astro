@@ -10,6 +10,10 @@
  * page has `aria-current` and a `--keyword` face. The language switch shows the language of the
  * page as text and links to the others; a page that exists only in Japanese shows `JA` alone.
  *
+ * The contact button, in the header and in the menu, links to the contact page
+ * (`contactPagePath`) and has `aria-current="page"` on that page (`isContactPage`); its look
+ * does not change.
+ *
  * On the top page (`isTopPath` in `./site-nav`) the navigation follows the scroll: the item of
  * the section that the reader is in (`currentSectionIndex` in `./site-nav`) has
  * `aria-current="location"`, and its `--keyword` face is the block `.nav-ind`, which slides
@@ -32,7 +36,9 @@ import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import NameLogo from "./NameLogo.astro";
 import {
+  contactPagePath,
   homeSectionPath,
+  isContactPage,
   isTopPath,
   languageLinks,
   navLinks,
@@ -48,6 +54,7 @@ const { lang } = Astro.props;
 const pathname = Astro.url.pathname;
 const nav = navLinks(lang, pathname);
 const languages = languageLinks(lang, pathname);
+const contactCurrent = isContactPage(lang, pathname) ? "page" : undefined;
 const follow = isTopPath(lang, pathname);
 ---
 
@@ -106,7 +113,11 @@ const follow = isTopPath(lang, pathname);
       <div class="theme-narrow">
         <ThemeToggle lang={lang} />
       </div>
-      <a class="btn btn-acc contact" href={homeSectionPath(lang, "contact")}>
+      <a
+        class="btn btn-acc contact"
+        href={contactPagePath(lang)}
+        aria-current={contactCurrent}
+      >
         {translate(lang, "nav.contact")}
       </a>
       <button
@@ -176,7 +187,11 @@ const follow = isTopPath(lang, pathname);
 ))}
     </div>
     <div class="menu-contact">
-      <a class="btn btn-acc" href={homeSectionPath(lang, "contact")}>
+      <a
+        class="btn btn-acc"
+        href={contactPagePath(lang)}
+        aria-current={contactCurrent}
+      >
         {translate(lang, "nav.contact")}
       </a>
     </div>
