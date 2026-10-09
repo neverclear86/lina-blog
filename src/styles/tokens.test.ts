@@ -2,26 +2,6 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 /**
- * The `.root` and `.root.dark` rules of `CBMain.dc.html`, the design copy the tokens were taken
- * from, without their `transition`. The design copy is kept outside the repository, so the rules
- * are written here.
- */
-const design = `
-.root {
-  --bg: #ECEAE5; --fg: #232427; --muted: #5A5B5F; --line: #232427; --hair: #CFCBC3;
-  --grid: #D9D6CF; --surf: #F8F7F3; --inv: #232427; --invfg: #F8F7F3; --invmuted: #A9A8A3;
-  --shadow: #232427; --ph: #E2DFD8; --chip: #E2DFD8; --cbg: #232427; --cfg: #F8F7F3;
-  --cmuted: #A9A8A3; --cline: #55565B; --cgrid: #2F3034; --fshadow: #E8731A; --num: #E8731A;
-}
-.root.dark {
-  --bg: #17181B; --fg: #ECEAE5; --muted: #A3A3A0; --line: #5E6167; --hair: #34363B;
-  --grid: #26282C; --surf: #222428; --inv: #ECEAE5; --invfg: #17181B; --invmuted: #55565B;
-  --shadow: #ECEAE5; --ph: #2A2C31; --chip: #2E3035; --cbg: #E4E1DA; --cfg: #232427;
-  --cmuted: #5A5B5F; --cline: #9E9B94; --cgrid: #D6D3CC; --fshadow: #232427; --num: #B85510;
-}
-`;
-
-/**
  * The `.lx` (dark) and `.lx.light` rules of `Main.dc.html` with `--code` of `AArticle.dc.html` and
  * `--ov` of `AMobile.dc.html` added. The design copies are kept outside the repository, so the
  * rules are written here.
@@ -87,20 +67,6 @@ function customProperties(
   );
 }
 
-/**
- * Renames the properties `--line` and `--grid` of a rule of the earlier design to the names
- * `tokens.css` gives them, `--legacy-line` and `--legacy-grid`.
- */
-function legacy(rule: Record<string, string>): Record<string, string> {
-  const renamed: Record<string, string> = {
-    "--line": "--legacy-line",
-    "--grid": "--legacy-grid",
-  };
-  return Object.fromEntries(
-    Object.entries(rule).map(([name, value]) => [renamed[name] ?? name, value]),
-  );
-}
-
 const FOCUS_RING = { light: "#232427", dark: "#e8731a" };
 
 const THEME_INDEPENDENT = {
@@ -109,33 +75,11 @@ const THEME_INDEPENDENT = {
   "--ink": "#17181b",
   "--ivory": "#eceae5",
   "--comment": "#a3a3a0",
-  "--legacy-ink": "#232427",
-  "--orange": "#e8731a",
-  "--pink": "#f08fa6",
-  "--blush": "#fbe3e3",
-  "--green": "#8bbf5a",
-  "--paper": "#f8f7f3",
-  "--paper-muted": "#a9a8a3",
-  "--field": "#ffffff",
 };
 
 describe("tokens.css", () => {
   const light = declarations(tokens, ":root");
   const dark = declarations(tokens, ':root[data-theme="dark"]');
-
-  it("ライトのトークンはデザインの .root の変数を --line と --grid を --legacy- 付きにしてすべて同じ値で持つ", () => {
-    const expected = legacy(customProperties(declarations(design, ".root")));
-    expect(expected).toHaveProperty("--num");
-    expect(light).toMatchObject(expected);
-  });
-
-  it("ダークのトークンはデザインの .root.dark の変数を --line と --grid を --legacy- 付きにして --num のほかは同じ値で持つ", () => {
-    const expected = legacy(
-      customProperties(declarations(design, ".root.dark")),
-    );
-    expect(expected["--num"]).toBe("#b85510");
-    expect(dark).toMatchObject({ ...expected, "--num": "#a04a0e" });
-  });
 
   it("ライトのトークンはデザインの A案 の .lx.light の変数を --hdr のほかは同じ値で持ち、--hdr は .88 でなく .9 にする", () => {
     const expected = customProperties(declarations(designA, ".lx.light"));
@@ -250,43 +194,10 @@ const CODE_BAR_PAIRS: readonly (readonly [
 ];
 
 /**
- * Foreground and background tokens of every text color in the design, checked in both themes.
- *
- * Text is judged against the fill under it; the 1px lines of `.grid` and `.cgrid` are not counted
- * as background. Every pair must reach 4.5:1: none relies on the 3:1 allowance for large text.
- * `--orange` is not a text color on `--bg` (2.53:1 in the light theme): text in `--orange` is
- * limited to decorative marks hidden from assistive technology. `--invmuted` is used only on
- * `--inv`. These are the pairs of the legacy tokens and of the code blocks (`CODE_TEXT_PAIRS`);
- * `A_TEXT_PAIRS` holds the plan A tokens'.
- */
-const TEXT_PAIRS: readonly (readonly [
-  foreground: string,
-  background: string,
-])[] = [
-  ["--fg", "--bg"],
-  ["--fg", "--surf"],
-  ["--fg", "--chip"],
-  ["--muted", "--bg"],
-  ["--muted", "--surf"],
-  ["--muted", "--ph"],
-  ["--invfg", "--inv"],
-  ["--invmuted", "--inv"],
-  ["--cfg", "--cbg"],
-  ["--cmuted", "--cbg"],
-  ["--num", "--cbg"],
-  ["--legacy-ink", "--orange"],
-  ["--legacy-ink", "--pink"],
-  ["--legacy-ink", "--blush"],
-  ["--legacy-ink", "--paper"],
-  ["--legacy-ink", "--field"],
-  ["--paper-muted", "--legacy-ink"],
-  ...CODE_TEXT_PAIRS,
-];
-
-/**
- * Foreground and background tokens of every text color of the plan A tokens, checked in both
- * themes. A background is a token, or `[translucent, under]` for a translucent token (`--hdr`,
- * `--shade`, `--ov`) laid over the fill that can come under it. Every pair must reach 4.5:1.
+ * Foreground and background tokens of every text color of the plan A tokens (the code blocks have
+ * `CODE_TEXT_PAIRS`), checked in both themes. A background is a token, or `[translucent, under]`
+ * for a translucent token (`--hdr`, `--shade`, `--ov`) laid over the fill that can come under it.
+ * Every pair must reach 4.5:1.
  *
  * Not checked: lines, shadows and the logo (a logotype is exempt from WCAG 1.4.3), and
  * `--keyword` as a text color on `--bg` (2.53:1 in the light theme), which is why `--acc-text`
@@ -344,21 +255,16 @@ const FIELD_BORDER_PAIRS: readonly (readonly [
 );
 
 /**
- * Icon colors of `src/components/icons/` on the legacy token `--surf` and on the face of `.sq`
- * (`--bg2`), checked in both themes. An icon is a graphical object, so it must reach 3:1
- * (WCAG 2.2 SC 1.4.11).
+ * Icon colors of `src/components/icons/` on the face of the account window (`--panel`), on the
+ * page (`--bg`) and on the face of `.sq` (`--bg2`), checked in both themes. An icon is a graphical
+ * object, so it must reach 3:1 (WCAG 2.2 SC 1.4.11).
  */
 const ICON_PAIRS: readonly (readonly [
   foreground: string,
   background: string,
-])[] = [
-  ["--fg", "--surf"],
-  ["--icon-yt", "--surf"],
-  ["--icon-x", "--surf"],
-  ["--fg", "--bg2"],
-  ["--icon-yt", "--bg2"],
-  ["--icon-x", "--bg2"],
-];
+])[] = ["--text", "--icon-yt", "--icon-x"].flatMap((icon) =>
+  ["--panel", "--bg", "--bg2"].map((fill) => [icon, fill] as const),
+);
 
 /**
  * Returns the WCAG 2.2 contrast ratio of two `#rrggbb` colors, from 1 to 21.
@@ -462,20 +368,20 @@ describe("tokens.css のコントラスト", () => {
     },
   };
 
-  it("contrastRatio は白と黒で 21、同じ色で 1、デザインのダークの --num で 3.7 を返し、#rrggbb でない値で投げる", () => {
+  it("contrastRatio は白と黒で 21、同じ色で 1、ダークの --muted と --bg で 7.02 を返し、#rrggbb でない値で投げる", () => {
     expect(contrastRatio("#ffffff", "#000000")).toBeCloseTo(21, 5);
     expect(contrastRatio("#000000", "#ffffff")).toBeCloseTo(21, 5);
     expect(contrastRatio("#232427", "#232427")).toBe(1);
-    expect(contrastRatio("#b85510", "#e4e1da")).toBeCloseTo(3.7, 2);
-    expect(() => contrastRatio("var(--fg)", "#000000")).toThrow(
+    expect(contrastRatio("#a3a3a0", "#17181b")).toBeCloseTo(7.02, 2);
+    expect(() => contrastRatio("var(--text)", "#000000")).toThrow(
       "not a #rrggbb color",
     );
   });
 
   it.each(Object.entries(themes))(
-    "%s のテキストの色の対はすべて 4.5:1 以上になる",
+    "%s のコードブロックの文字の色の対はすべて 4.5:1 以上になる",
     (_theme, colors) => {
-      const failures = TEXT_PAIRS.flatMap(([foreground, background]) => {
+      const failures = CODE_TEXT_PAIRS.flatMap(([foreground, background]) => {
         const ratio = contrastRatio(colors[foreground], colors[background]);
         return ratio < 4.5 ? [`${foreground} / ${background}: ${ratio}`] : [];
       });
@@ -534,7 +440,7 @@ describe("tokens.css のコントラスト", () => {
       /* color: var(--in-comment); */
       .a { color: var(--b); outline-color: var(--outline); --code-color: var(--custom); }
       .b { color: var(--a); background: var(--c); background-color: var(--d); }
-      .c { color: var(--b); box-shadow: inset 3px 0 0 var(--shadow); color: red; }
+      .c { color: var(--b); box-shadow: inset 3px 0 0 var(--edge); color: red; }
     `;
     expect(tokensUsedFor(css, ["color"])).toEqual(["--a", "--b"]);
     expect(tokensUsedFor(css, ["background", "background-color"])).toEqual([
@@ -623,7 +529,7 @@ describe("tokens.css のコントラスト", () => {
   );
 
   it.each(Object.entries(themes))(
-    "%s のアイコンの色は --surf と --bg2 の上で 3:1 以上になる",
+    "%s のアイコンの色は --panel と --bg と --bg2 の上で 3:1 以上になる",
     (_theme, colors) => {
       const failures = ICON_PAIRS.flatMap(([foreground, background]) => {
         const ratio = contrastRatio(colors[foreground], colors[background]);

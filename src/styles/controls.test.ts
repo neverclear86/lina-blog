@@ -105,28 +105,24 @@ describe("リンクのホバー", () => {
   });
 });
 
+describe("body", () => {
+  it("body の文字色は --text で、テーマの切り替えに transition を使わない", () => {
+    const body = rules("global.css").find((rule) => rule.selector === "body");
+    expect(body?.body).toContain("color: var(--text)");
+    expect(body?.body).not.toContain("transition");
+  });
+});
+
 describe("フォーカスの輪", () => {
   it("global.css が 2px の --focus-ring の輪を :focus-visible と .is-focus に描く", () => {
     const found = withDeclaration(
       "global.css",
-      "outline: 2px solid var(--focus-ring, var(--fg))",
+      "outline: 2px solid var(--focus-ring)",
     );
     expect(found).toHaveLength(1);
     expect(found[0].selector).toContain(":focus-visible");
     expect(found[0].selector).toContain(".is-focus");
     expect(found[0].body).toContain("outline-offset: 2px");
-  });
-
-  it("shapes.css は輪の太さと色を持たず、:has(> .lift) の輪の距離だけを持つ", () => {
-    const declarations = rules("shapes.css").flatMap((rule) =>
-      rule.body.split(";").map((part) => part.trim()),
-    );
-    expect(declarations.filter((part) => part.startsWith("outline:"))).toEqual(
-      [],
-    );
-    expect(
-      declarations.filter((part) => part === "outline-offset: 5px"),
-    ).toHaveLength(1);
   });
 });
 
@@ -234,14 +230,6 @@ describe("ボタンとアイコンのリンク", () => {
 });
 
 describe("配線", () => {
-  it("Layout は controls.css を shapes.css の後に読み込む", () => {
-    const layout = source("layouts/Layout.astro");
-    const shapes = layout.indexOf('import "../styles/shapes.css"');
-    const controls = layout.indexOf('import "../styles/controls.css"');
-    expect(shapes).toBeGreaterThanOrEqual(0);
-    expect(controls).toBeGreaterThan(shapes);
-  });
-
   it("記事一覧の頭は PageHead の中にパンくずと h1 と絞り込みを置き、絞り込みのリンクに .ws と現在地の .on を付ける", () => {
     const index = source("components/BlogIndex.astro");
     const head = index.slice(

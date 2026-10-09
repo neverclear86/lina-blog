@@ -15,15 +15,9 @@
  * a code block (`--code`) is 4.44:1 for `--muted`, the text of its navigation, and at 0.9 it is
  * 4.63:1.
  *
- * The legacy tokens are the ones of the earlier design, copied from `.root` and `.root.dark` in
- * `design/CBMain.dc.html`, except the dark `--num`: the design's `#b85510` is 3.7:1 on the dark
- * `--cbg`, so it is darkened to `#a04a0e` (4.62:1). `--legacy-line`, `--legacy-grid` and
- * `--legacy-ink` hold the values of `--line`, `--grid` and `--ink` in that design, whose names the
- * plan A tokens use. `--icon-yt` and `--icon-x` are not in the design: they are the only colors
- * that the brand guidelines of YouTube and Twitter (self-proclaimed X) allow for their marks
- * (Almost Black and black, and white in the dark theme). The legacy tokens stay until the
- * components of the earlier design are removed. The hex digits are lowercase because Biome formats
- * them so.
+ * `--icon-yt` and `--icon-x` are not in the design: they are the only colors that the brand
+ * guidelines of YouTube and Twitter (self-proclaimed X) allow for their marks (Almost Black and
+ * black, and white in the dark theme). The hex digits are lowercase because Biome formats them so.
  *
  * The colors in the group that stays the same in both themes are named after the color rather
  * than a role because the design uses each of them for several roles (text, fills, dots and
@@ -36,9 +30,9 @@
  *
  * `tokens.test.ts` checks the plan A tokens against the design, checks that every foreground and
  * background pair used for text reaches 4.5:1 (WCAG AA) in both themes, and checks 3:1 for the
- * icon colors on `--surf` and `--bg2`, for `--focus-ring` on `--bg`, `--bg2` and `--panel`, for
- * the diff bars of code blocks on their lines and for the focus ring of code blocks (`--keyword`)
- * on `--code`. Components use these tokens instead of color values.
+ * icon colors on `--panel`, `--bg` and `--bg2`, for `--focus-ring` on `--bg`, `--bg2` and
+ * `--panel`, for the diff bars of code blocks on their lines and for the focus ring of code blocks
+ * (`--keyword`) on `--code`. Components use these tokens instead of color values.
  */
 :root {
   color-scheme: light;
@@ -64,25 +58,7 @@
   --ov: rgba(236, 234, 229, 0.82);
   --focus-ring: #232427;
 
-  /* Legacy tokens that change with the theme. */
-  --fg: #232427;
-  --legacy-line: #232427;
-  --hair: #cfcbc3;
-  --legacy-grid: #d9d6cf;
-  --surf: #f8f7f3;
-  --inv: #232427;
-  --invfg: #f8f7f3;
-  --invmuted: #a9a8a3;
-  --shadow: #232427;
-  --ph: #e2dfd8;
-  --chip: #e2dfd8;
-  --cbg: #232427;
-  --cfg: #f8f7f3;
-  --cmuted: #a9a8a3;
-  --cline: #55565b;
-  --cgrid: #2f3034;
-  --fshadow: #e8731a;
-  --num: #e8731a;
+  /* Icon colors that change with the theme. */
   --icon-yt: #212121;
   --icon-x: #000000;
 
@@ -92,14 +68,6 @@
   --ink: #17181b;
   --ivory: #eceae5;
   --comment: #a3a3a0;
-  --legacy-ink: #232427;
-  --orange: #e8731a;
-  --pink: #f08fa6;
-  --blush: #fbe3e3;
-  --green: #8bbf5a;
-  --paper: #f8f7f3;
-  --paper-muted: #a9a8a3;
-  --field: #ffffff;
 
   /* Colors of code blocks, the same in both themes. */
   --code-fg: #eceae5;
@@ -141,24 +109,6 @@
   --ov: rgba(23, 24, 27, 0.8);
   --focus-ring: #e8731a;
 
-  --fg: #eceae5;
-  --legacy-line: #5e6167;
-  --hair: #34363b;
-  --legacy-grid: #26282c;
-  --surf: #222428;
-  --inv: #eceae5;
-  --invfg: #17181b;
-  --invmuted: #55565b;
-  --shadow: #eceae5;
-  --ph: #2a2c31;
-  --chip: #2e3035;
-  --cbg: #e4e1da;
-  --cfg: #232427;
-  --cmuted: #5a5b5f;
-  --cline: #9e9b94;
-  --cgrid: #d6d3cc;
-  --fshadow: #232427;
-  --num: #a04a0e;
   --icon-yt: #ffffff;
   --icon-x: #ffffff;
 }

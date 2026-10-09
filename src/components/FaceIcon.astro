@@ -20,7 +20,7 @@ import {
  *
  * `kind="mark"` is the face alone, in the color that stands out on the face it is drawn on:
  * `tone="default"`, for faces such as `--bg`, is the dark mark on the light theme and the ivory
- * mark on the dark theme, and `tone="inverse"`, for the inverted faces `--inv` and `--cbg`, is
+ * mark on the dark theme, and `tone="inverse"`, for faces in the text color (`--text`), is
  * the other way round. `kind="avatar"` is the face on a square ground of its own (ivory on ink in
  * the dark theme, dark on ivory in the light theme), so it takes no tone. `size` picks the
  * version of the kit: see `markFiles` and `avatarFiles` in `face-icon.ts`.
@@ -45,8 +45,8 @@ type Props = {
   | {
       kind: "mark";
       /**
-       * Face the mark is drawn on: "default" for faces such as `--bg`, or "inverse" for `--inv`
-       * and `--cbg`. Defaults to "default".
+       * Face the mark is drawn on: "default" for faces such as `--bg`, or "inverse" for `--text`.
+       * Defaults to "default".
        */
       tone?: FaceTone;
     }

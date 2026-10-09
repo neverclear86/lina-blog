@@ -1,45 +1,14 @@
 /*
- * Global element styles and decorations for every page, imported by `src/layouts/Layout.astro`
- * after `tokens.css`. Colors come only from the tokens in `tokens.css`.
+ * Global element styles for every page, imported by `src/layouts/Layout.astro` after
+ * `tokens.css`. Colors come only from the tokens in `tokens.css`.
  */
 
 /*
- * The page fades between the themes, as `.root` does in `design/CBMain.dc.html`, and switches at
- * once under `prefers-reduced-motion: reduce`. Elements with their own background, such as the
- * `--surf` faces, switch at once.
+ * The theme switches at once: `.lx` of `design/Main.dc.html` has no transition on its colors.
  */
 body {
   background-color: var(--bg);
-  color: var(--fg);
-  transition:
-    background-color 0.3s,
-    color 0.3s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body {
-    transition: none;
-  }
-}
-
-/*
- * Grid backgrounds: 1px lines every 48px, copied from `.grid` and `.cgrid` in
- * `design/CBMain.dc.html`. `.grid` draws `--legacy-grid` lines for sections on `--bg`, and `.cgrid`
- * draws `--cgrid` lines for sections on `--cbg`. They set only `background-image` and
- * `background-size`, so the element keeps its own `background-color`.
- */
-.grid {
-  background-image:
-    linear-gradient(var(--legacy-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--legacy-grid) 1px, transparent 1px);
-  background-size: 48px 48px;
-}
-
-.cgrid {
-  background-image:
-    linear-gradient(var(--cgrid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--cgrid) 1px, transparent 1px);
-  background-size: 48px 48px;
+  color: var(--text);
 }
 
 /*
@@ -51,7 +20,7 @@ body {
  * samples in `src/dev/components.astro`.
  *
  * Every selector is inside `:where()`, so that a rule of a part, whose specificity is higher,
- * always wins and the parts of the earlier design keep their look.
+ * always wins.
  */
 :where(a) {
   color: inherit;
@@ -77,12 +46,11 @@ body {
 
 /*
  * Keyboard focus draws a 2px outline in `--focus-ring`, 2px away from the element; `.is-focus`
- * draws it without the keyboard. A section on another background, such as `--cbg`, sets its own
- * `--focus-ring`.
+ * draws it without the keyboard.
  */
 :focus-visible,
 .is-focus {
-  outline: 2px solid var(--focus-ring, var(--fg));
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 

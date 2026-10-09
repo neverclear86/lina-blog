@@ -97,12 +97,12 @@ describe("色の直書き", () => {
       '<a href="#about" style={pixelWidth}>about</a>',
       "<style>",
       "/* was #232427 */",
-      "#main { color: var(--fg); background: color-mix(in srgb, var(--bg) 50%, transparent); }",
+      "#main { color: var(--text); background: color-mix(in srgb, var(--bg) 50%, transparent); }",
       "</style>",
     ].join("\n");
     expect(hardcodedColors("a.astro", astro)).toEqual([]);
     expect(
-      hardcodedColors("a.css", "/* #fff */ a { color: var(--fg); }"),
+      hardcodedColors("a.css", "/* #fff */ a { color: var(--text); }"),
     ).toEqual([]);
   });
 });

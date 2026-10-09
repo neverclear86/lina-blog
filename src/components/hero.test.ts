@@ -442,15 +442,13 @@ describe("Hero の初回表示の演出", () => {
       /@media \(max-width: 767px\) \{\s*\.rv \{\s*--rv-dy: 16px;/,
     );
     expect(MOTION).toMatch(
-      /@media \(prefers-reduced-motion: reduce\) \{[^@]*\.rv,[^@]*animation: none/,
+      /@media \(prefers-reduced-motion: reduce\) \{[^@]*\.rv \{\s*animation: none/,
     );
   });
 
   it("band-in は下から上へ開く", () => {
     const keyframes = MOTION.slice(MOTION.indexOf("@keyframes band-in"));
-    expect(
-      keyframes.slice(0, keyframes.indexOf("@keyframes typeLoop")),
-    ).toMatch(
+    expect(keyframes.slice(0, keyframes.indexOf(".blink-on"))).toMatch(
       /from\s*\{\s*clip-path: inset\(100% 0 0 0\);\s*\}\s*to\s*\{\s*clip-path: inset\(0 0 0 0\);/,
     );
   });
