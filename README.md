@@ -67,7 +67,7 @@ bun create astro@latest -- --template basics
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
-│   │   ├── LatestPosts.astro     # Blog column of the Latest section: newest posts with tag chips
+│   │   ├── LatestPosts.astro     # Blog block of the Latest section: newest posts with tag chips
 │   │   ├── LatestVideoFeature.astro # Latest section: newest video as a latest.mp4 card with a NEW chip
 │   │   ├── LatestVideoList.astro # Latest section: the next videos as small windows with JST dates, and the YouTube channel button; hidden below 768px
 │   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for --inv faces

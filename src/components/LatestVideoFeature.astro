@@ -1,8 +1,7 @@
 ---
 /**
  * The large card of the Latest section for the newest video: a `latest.mp4` terminal window with
- * the thumbnail and a `NEW` chip, then the title, all in one link to the watch page. The pixel
- * art stands on the card, outside the link.
+ * the thumbnail and a `NEW` chip, then the title, all in one link to the watch page.
  *
  * Without a video, such as when the feed could not be read, the window shows a message in place
  * of the thumbnail and is not a link.
@@ -11,7 +10,6 @@ import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import type { YouTubeVideo } from "../youtube-feed";
 import Chip from "./Chip.astro";
-import PixelArt from "./PixelArt.astro";
 import TerminalCard from "./TerminalCard.astro";
 
 interface Props {
@@ -23,13 +21,12 @@ interface Props {
 
 const { lang, video } = Astro.props;
 
-// Width of the left column of LatestSection: up to 720px from 1024px, one column below.
+// Width of the card in LatestSection: two thirds of the content from 1280px, all of it below.
 const SIZES =
-  "(min-width: 1224px) 720px, (min-width: 1024px) calc(100vw - 504px), (min-width: 768px) calc(100vw - 64px), calc(100vw - 32px)";
+  "(min-width: 1280px) calc((min(100vw, 1440px) - 142px) * 2 / 3), (min-width: 900px) calc(100vw - 128px), (min-width: 768px) calc(100vw - 40px), calc(100vw - 32px)";
 ---
 
 <div class="latest-video-feature">
-  <div class="pixel"><PixelArt bob /></div>
   {video ? (
   <a class="link" href={video.url}>
     <TerminalCard title="latest.mp4">
@@ -63,17 +60,6 @@ const SIZES =
 </div>
 
 <style>
-.latest-video-feature {
-  position: relative;
-}
-
-.pixel {
-  position: absolute;
-  top: -62px;
-  right: 100px;
-  display: flex;
-}
-
 .link {
   display: block;
   color: var(--fg);

@@ -1,36 +1,44 @@
 ---
 /**
- * The Latest section of the home page: the `~/latest` heading, then a grid of two columns.
+ * The Latest section of the home page, on the `--bg2` ground of plan A: the heading bar
+ * (`02` / `latest` / `~/latest`) with the heading `latest.title`, then a grid of the
+ * `video-feature` slot and the `video-list` slot, then the `blog` slot.
  *
- * The left column shows the `video-feature` slot. The right column shows the `video-list`
- * slot and then the `blog` slot, 32px apart. From 1024px the columns sit side by side, the
- * left one up to 720px wide and the right one at least 320px wide; below 1024px they stack
- * in the order of the DOM. Empty slots leave the heading and the grid in place.
+ * The grid is one column below 1280px. From 1280px the `video-feature` slot takes two thirds
+ * and the `video-list` slot one third. The slots are the grid items themselves, so the root
+ * element of a slot can hide itself and leave no gap. The `blog` slot sits under the grid, 56px
+ * below it (96px from 768px). A slot left empty leaves the heading and the rest in place.
+ *
+ * The content is at most 1440px wide and centered, and the ground fills the width. The side
+ * padding is 16px, 20px from 768px and 64px from 900px.
  */
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
-import SectionHeading from "./SectionHeading.astro";
+import SectionTitle from "./SectionTitle.astro";
 
 interface Props {
-  /** Locale of the page, which chooses the subtitle. */
+  /** Locale of the page, which chooses the heading. */
   lang: Locale;
 }
 
 const { lang } = Astro.props;
 ---
 
-<section id="latest" class="reveal">
-  <SectionHeading
-    label="~/latest"
-    title="LATEST"
-    subtitle={translate(lang, "latest.subtitle")}
-  />
-  <div class="columns">
-    <div class="column">
-      <slot name="video-feature" />
+<section id="latest">
+  <div class="inner">
+    <div class="head">
+      <SectionTitle
+        no="02"
+        label="latest"
+        path="~/latest"
+        title={translate(lang, "latest.title")}
+      />
     </div>
-    <div class="column side">
+    <div class="windows">
+      <slot name="video-feature" />
       <slot name="video-list" />
+    </div>
+    <div class="blog">
       <slot name="blog" />
     </div>
   </div>
@@ -38,46 +46,58 @@ const { lang } = Astro.props;
 
 <style>
 #latest {
-  display: flex;
-  flex-direction: column;
-  /* 72px rather than the design's 44px: the pixel art on the large video card rises 62px above
-     the grid and would cover the subtitle. */
-  gap: 72px;
-  padding: 88px 16px;
-  border-bottom: 1px solid var(--legacy-line);
+  border-top: 1px solid var(--line);
+  background: var(--bg2);
+}
+
+.inner {
+  box-sizing: border-box;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 48px 16px;
+}
+
+.head {
+  margin-bottom: 16px;
+}
+
+.windows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.windows > :global(*) {
+  min-width: 0;
+}
+
+.blog {
+  margin-top: 56px;
 }
 
 @media (min-width: 768px) {
-  #latest {
-    padding-inline: 32px;
+  .inner {
+    padding: 100px 20px;
+  }
+
+  .head {
+    margin-bottom: 40px;
+  }
+
+  .blog {
+    margin-top: 96px;
   }
 }
 
-@media (min-width: 1024px) {
-  #latest {
+@media (min-width: 900px) {
+  .inner {
     padding-inline: 64px;
   }
 }
 
-.columns {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 56px;
-}
-
-@media (min-width: 1024px) {
-  .columns {
-    grid-template-columns: minmax(0, 720px) minmax(320px, 1fr);
+@media (min-width: 1280px) {
+  .windows {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   }
-}
-
-.column {
-  min-width: 0;
-}
-
-.side {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
 }
 </style>
