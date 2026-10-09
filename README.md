@@ -37,7 +37,7 @@ bun create astro@latest -- --template basics
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
 │   ├── og-font.ts        # Downloads the OGP fonts (headings and labels) as TrueType from Google Fonts, unit-tested
 │   ├── page-meta.ts      # Description (default from ui.ts) and Open Graph tags of a page, unit-tested
-│   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro and footer-links.ts
+│   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro, hero-account.ts and footer-links.ts
 │   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
 │   ├── text-site.ts      # Builds the text version of the site for curl (80 columns), unit-tested
 │   ├── theme.ts          # Theme key and values, the inline script that sets <html data-theme> and the toggle, unit-tested
@@ -66,7 +66,9 @@ bun create astro@latest -- --template basics
 │   │   ├── face-icon.ts          # Picks the brand kit files of a face mark or avatar from its size and tone, unit-tested
 │   │   ├── FaceIcon.astro        # Face mark or avatar from the brand kit SVGs, switched with the theme; tone="inverse" for the mark on --inv and --cbg faces
 │   │   ├── footer-links.ts       # Link targets of the footer columns and the footer variants, unit-tested
-│   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band, name logo with a blinking cursor, heading, intro, button to the latest video and the stripes below
+│   │   ├── hero-account.ts       # Links of the account window of the hero, with the icon each one shows, unit-tested
+│   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band, name logo with a blinking cursor, heading, intro, button to the latest video, the account window and the stripes below
+│   │   ├── HeroAccount.astro     # Account window of the hero: avatar, @LinaTsukusu and six link squares
 │   │   ├── IconButton.astro      # Square icon-only button, named by an aria-label or a hidden label slot
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
@@ -89,7 +91,7 @@ bun create astro@latest -- --template basics
 │   │   ├── three-view-tabs.ts    # Which view of the avatar a key, a swipe or a tap selects, and the swipe gesture, unit-tested
 │   │   ├── WorkTile.astro        # Window tile of a work: ~/works/<title>, a line of description and the technology tags; a link or a plain box
 │   │   ├── Works.astro           # Works section of the top page (04 works): the heading and a WorkTile per work, from the works collection
-│   │   └── icons/                # Service icons for IconLink; sources and terms in icons/README.md
+│   │   └── icons/                # Service icons for IconLink and HeroAccount; sources and terms in icons/README.md
 │   ├── content/
 │   │   ├── blog-dev/     # Posts for checking how pages look; loaded by astro dev (or with LINA_DEV_PAGES=1)
 │   │   └── works/        # Works, one YAML file per work (placeholder data), with placeholder.png
@@ -169,12 +171,12 @@ Blog posts are Markdown files in `src/content/blog/`, committed by the publishin
 
 Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are highlighted at build time by `src/markdown/highlight.ts`, which gives tokens role classes such as `hl-keyword` instead of inline styles; `markdown.syntaxHighlight` is off so Astro's own Shiki does not run. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player. An accordion is written as raw HTML (`<details>` and `<summary>`), and how to write one is in `docs/markdown.md`. An `<aside class="note">` or `<aside class="warning">` written as raw HTML in an article is styled as a message box (`docs/markdown.md` shows how to write one).
 
-`astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the works, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt`, the Latest section of the home page and the links column of the site footer use as well.
+`astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the works, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt`, the Latest section of the home page, the account window of the hero and the links column of the site footer use as well.
 
 Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema, the RSS items and the Markdown plugins; `src/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`, and the plugins in `src/markdown/` with Sätteri's `markdownToHtml()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 
-Colors are tested the same way. `src/styles/tokens.test.ts` checks that the plan A tokens have the values of the design, that every foreground and background token pair used for text (a translucent background is laid over each fill that can come under it) reaches 4.5:1 (WCAG AA) in both themes and that every icon color reaches 3:1 on `--surf`, `--focus-ring` on the page backgrounds, every diff bar of a code block on its line and the focus ring of a code block on `--code`, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--fg)` and so on) instead; inline SVG takes `currentColor`. The service icons in `src/components/icons/` are also checked by `icons.test.ts`: their `fill` and `stroke` are only `currentColor` or `none`, because named colors such as `black` pass the check above.
+Colors are tested the same way. `src/styles/tokens.test.ts` checks that the plan A tokens have the values of the design, that every foreground and background token pair used for text (a translucent background is laid over each fill that can come under it) reaches 4.5:1 (WCAG AA) in both themes and that every icon color reaches 3:1 on `--surf` and `--bg2`, `--focus-ring` on the page backgrounds, every diff bar of a code block on its line and the focus ring of a code block on `--code`, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--fg)` and so on) instead; inline SVG takes `currentColor`. The service icons in `src/components/icons/` are also checked by `icons.test.ts`: their `fill` and `stroke` are only `currentColor` or `none`, because named colors such as `black` pass the check above.
 
 To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
 
