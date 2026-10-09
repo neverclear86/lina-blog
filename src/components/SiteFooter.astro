@@ -1,13 +1,15 @@
 ---
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
-import FaceIcon from "./FaceIcon.astro";
+import NameLogo from "./NameLogo.astro";
 
 /**
- * The footer at the end of every page: the inverse face mark and "© <year> <name>" on the left,
- * and the curl hint in JetBrains Mono on the right. It is a band of its own on `--cbg` with the
- * `.cgrid` lines, so it looks the same on every page. Below 768px the two parts stack, aligned
- * to the left.
+ * The footer at the end of every page: the full name logo and "© <year> <name>" in a column on
+ * the left, and the curl hint in JetBrains Mono on the right. It sits on the page background
+ * `--bg` under a 1px `--line` at its top edge, and its text is `--muted`. The logo is 296px wide
+ * below 1024px and 420px from 1024px, and never wider than the footer, so that a slash is 32px
+ * high or more, the smallest size of the kit; on a screen narrower than 328px the logo shrinks
+ * with the screen and goes below it. Below 768px the two parts stack, aligned to the left.
  *
  * The year is the year of the build.
  */
@@ -20,9 +22,9 @@ const { lang } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
-<footer class="site-footer cgrid">
+<footer class="site-footer">
   <div class="owner">
-    <FaceIcon kind="mark" size={28} alt="" tone="inverse" />
+    <NameLogo variant="full" label="/tsukusu/lina $_" />
     <span>© {year} {translate(lang, "footer.copyrightHolder")}</span>
   </div>
   <span class="curl">{translate(lang, "site.curlHint")}</span>
@@ -35,15 +37,15 @@ const year = new Date().getFullYear();
   align-items: flex-start;
   gap: 12px;
   padding: 28px 16px 40px;
-  border-top: 1px solid var(--cline);
-  background-color: var(--cbg);
-  color: var(--cmuted);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
   font-size: 13px;
 }
 .owner {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 16px;
+  width: min(296px, 100%);
 }
 .curl {
   font-family: var(--font-mono);
@@ -54,6 +56,11 @@ const year = new Date().getFullYear();
     align-items: center;
     justify-content: space-between;
     padding-inline: 32px;
+  }
+}
+@media (min-width: 1024px) {
+  .owner {
+    width: min(420px, 100%);
   }
 }
 @media (min-width: 1280px) {

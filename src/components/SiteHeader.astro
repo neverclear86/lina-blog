@@ -1,10 +1,10 @@
 ---
 /**
  * The site header of every page, copied from the `<header>` of `design/CBMain.dc.html` and
- * `design/CBMobile.dc.html`: the logo and `ikili.pro` linking to the top of the top page, the
- * main navigation, the language switch, the theme toggle and the contact button. The navigation
- * and the contact button point to the sections of the top page of `lang` (`navLinks` and
- * `homeSectionPath` in `./site-nav`), and the item of the current page has
+ * `design/CBMobile.dc.html` except for its logo: the name logo (`NameLogo`, `compact`) linking to
+ * the top of the top page, the main navigation, the language switch, the theme toggle and the
+ * contact button. The navigation and the contact button point to the sections of the top page of
+ * `lang` (`navLinks` and `homeSectionPath` in `./site-nav`), and the item of the current page has
  * `aria-current="page"` and a pink underline.
  *
  * The header stays in the page flow, 60px high below 768px and 72px from 768px. The side padding is
@@ -19,7 +19,7 @@ import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import Button from "./Button.astro";
 import IconButton from "./IconButton.astro";
-import Logo from "./Logo.astro";
+import NameLogo from "./NameLogo.astro";
 import { homeSectionPath, languageLinks, navLinks } from "./site-nav";
 import ThemeToggle from "./ThemeToggle.astro";
 
@@ -35,8 +35,12 @@ const languages = languageLinks(lang, pathname);
 ---
 
 <header class="site-header">
-  <a class="brand" href={homeSectionPath(lang, "top")}>
-    <Logo size={36} alt="" /><span class="brand-name">ikili.pro</span>
+  <a
+    class="brand"
+    href={homeSectionPath(lang, "top")}
+    aria-label={translate(lang, "header.homeLabel")}
+  >
+    <NameLogo variant="compact" />
   </a>
   <nav class="site-nav" aria-label={translate(lang, "nav.label")}>
     {nav.map((item) => (
@@ -155,29 +159,17 @@ a {
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  width: 82px;
+  height: 44px;
   text-decoration: none;
-}
-.brand-name {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 500;
-}
-.brand :global(img) {
-  width: 30px;
-  height: 30px;
 }
 @media (min-width: 768px) {
   .site-header {
     height: 72px;
     padding: 0 32px;
   }
-  .brand-name {
-    font-size: 15px;
-  }
-  .brand :global(img) {
-    width: 36px;
-    height: 36px;
+  .brand {
+    width: 92px;
   }
 }
 .site-nav,
