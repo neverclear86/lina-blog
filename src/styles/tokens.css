@@ -28,6 +28,8 @@
  * stay the same in both themes too, because a code block is dark in both: its background is
  * `--code`, which changes only between the two dark values of the design. `--code-fg`,
  * `--code-comment` and `--code-keyword` have the values of `--ivory`, `--comment` and `--keyword`.
+ * `--code-line` is the line under the title of a code block and `--code-line2` a stronger line
+ * on a code block. They have the values of `--line` and `--line2` in the dark theme.
  *
  * `tokens.test.ts` checks the plan A tokens against the design, checks that every foreground and
  * background pair used for text reaches 4.5:1 (WCAG AA) in both themes, and checks 3:1 for the
@@ -109,6 +111,8 @@
   --code-del-bg: #2a1b1f;
   --code-add-bar: #8bbf5a;
   --code-del-bar: #f08fa6;
+  --code-line: rgba(236, 234, 229, 0.12);
+  --code-line2: rgba(236, 234, 229, 0.26);
 }
 
 :root[data-theme="dark"] {

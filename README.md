@@ -54,7 +54,7 @@ bun create astro@latest -- --template basics
 │   │   └── logo-white.png  # White logo (dark theme, or inverse faces on the light theme)
 │   ├── components/
 │   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
-│   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, code file names, YouTube embeds)
+│   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, YouTube embeds)
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: stacked below 1200px, in a row from 1200px
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
@@ -102,8 +102,8 @@ bun create astro@latest -- --template basics
 │   ├── layouts/
 │   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, shapes.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
-│   │   ├── code-filename.ts  # Sätteri mdast plugin: code block file names as <figure>, unit-tested
-│   │   ├── highlight.css     # Code block frame and role colors
+│   │   ├── code-filename.ts  # Sätteri mdast plugin: code blocks as a window <figure> with a title (file name, language or text), unit-tested
+│   │   ├── highlight.css     # Code block window (frame and title) and role colors
 │   │   ├── highlight.ts      # Shiki highlighting of code blocks with role classes, unit-tested
 │   │   ├── sample.md         # Sample article shown at /dev/markdown/
 │   │   ├── table-align.ts    # Sätteri hast plugin: table alignment as classes, unit-tested

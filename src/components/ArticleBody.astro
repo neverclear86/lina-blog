@@ -4,12 +4,12 @@
  * (h2 to h4, with the marks `##` and `###` before h2 and h3), paragraphs, `strong`, inline code,
  * lists, block quotes, images and horizontal rules. The type is 16px below 768px and 17px from
  * 768px. It also styles the other elements that Sätteri and the plugins in src/markdown/ output:
- * GFM tables, task lists, footnotes, the file names of code blocks, YouTube embeds and links. A
- * link is underlined, because `global.css` leaves a link plain and the text color alone would
- * not set it apart (WCAG 1.4.1). The rules reach those elements through `:global()` under
- * `.article-body`, so they apply only inside this wrapper. The wrapper sets no width: the page
- * around it decides the column. Code blocks are styled by the imported
- * src/markdown/highlight.css, whose rules match `pre.shiki`.
+ * GFM tables, task lists, footnotes, YouTube embeds and links. A link is underlined, because
+ * `global.css` leaves a link plain and the text color alone would not set it apart (WCAG 1.4.1).
+ * The rules reach those elements through `:global()` under `.article-body`, so they apply only
+ * inside this wrapper. The wrapper sets no width: the page around it decides the column. The
+ * windows of code blocks are styled by the imported src/markdown/highlight.css, whose rules match
+ * `figure.code-window` and `pre.shiki`.
  */
 import "../markdown/highlight.css";
 ---
@@ -221,41 +221,6 @@ import "../markdown/highlight.css";
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-.article-body :global(figure.code-file) {
-  margin: 1em 0;
-}
-
-.article-body :global(.code-file > pre) {
-  margin: 0;
-}
-
-.article-body :global(.code-file > figcaption) {
-  position: relative;
-  min-height: 34px;
-  box-sizing: border-box;
-  padding: 9px 14px 9px 79px;
-  background: var(--inv);
-  color: var(--invmuted);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 16px;
-  overflow-wrap: anywhere;
-}
-
-.article-body :global(.code-file > figcaption)::before {
-  content: "";
-  position: absolute;
-  top: 11.5px;
-  left: 14px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: var(--pink);
-  box-shadow:
-    19px 0 0 var(--orange),
-    38px 0 0 var(--green);
 }
 
 .article-body :global(.youtube-embed) {
