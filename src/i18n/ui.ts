@@ -77,6 +77,9 @@ const ja = {
     "確認が終わるまで少し待ってから、もう一度送信してください。",
   // Name after "© <year>" in the site footer.
   "footer.copyrightHolder": "創好リナ",
+  // Names of the two <nav> of the site footer: the pages of the site and the links to profiles.
+  "footer.linksLabel": "リンク",
+  "footer.siteLabel": "サイト",
   // Name of the link from the logo in the site header to the top page.
   "header.homeLabel": "ikili.pro トップ",
   // Hero of the top page; "hero.intro" shows from 768px and "hero.introShort" below it.
@@ -117,7 +120,7 @@ const ja = {
   "notFound.message": "このページは存在しないよ。",
   "notFound.subtitle": "ページが見つからないよ",
   "notFound.topLink": "日本語のトップページへ",
-  // Says that the site can also be read with curl; shown in the site footer.
+  // Says that the site can also be read with curl; shown at the end of the strip of the hero.
   "site.curlHint": "$ curl ikili.pro でも読めるよ",
   // Description of the site: the meta description and og:description of the pages that do not
   // pass their own, such as the top page.
@@ -206,6 +209,8 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "contact.status.waiting":
       "Please wait for the verification to finish, then send again.",
     "footer.copyrightHolder": "Tsukusu Lina",
+    "footer.linksLabel": "Links",
+    "footer.siteLabel": "Site",
     "header.homeLabel": "ikili.pro home",
     "hero.intro":
       "I stream, and I build software. I make videos and streams about having fun with IT, mostly in Resonite.",

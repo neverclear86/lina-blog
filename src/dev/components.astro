@@ -25,6 +25,7 @@ import PixelArt from "../components/PixelArt.astro";
 import PostRows from "../components/PostRows.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import SectionTitle from "../components/SectionTitle.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 import Tape from "../components/Tape.astro";
 import TerminalCard from "../components/TerminalCard.astro";
 import WorkTile from "../components/WorkTile.astro";
@@ -1021,6 +1022,11 @@ const sampleVideos: YouTubeVideo[] = [
         <IconLink href="#english" label="Zenn"><ZennIcon /></IconLink>
         <IconLink href="#english" label="RSS"><RssIcon /></IconLink>
       </div>
+    </section>
+    <section id="site-footer">
+      <h2>サイトのフッター</h2>
+      <SiteFooter lang="en" />
+      <SiteFooter lang="ja" variant="compact" />
     </section>
     <section id="motion" class="reveal">
       <h2>動き</h2>

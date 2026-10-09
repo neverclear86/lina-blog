@@ -1,70 +1,214 @@
 ---
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
+import FaceIcon from "./FaceIcon.astro";
+import {
+  type FooterVariant,
+  footerProfileLinks,
+  footerSiteLinks,
+} from "./footer-links";
 import NameLogo from "./NameLogo.astro";
 
 /**
- * The footer at the end of every page: the full name logo and "© <year> <name>" in a column on
- * the left, and the curl hint in JetBrains Mono on the right. It sits on the page background
- * `--bg` under a 1px `--line` at its top edge, and its text is `--muted`. The logo is 296px wide
- * below 1024px and 420px from 1024px, and never wider than the footer, so that a slash is 32px
- * high or more, the smallest size of the kit; on a screen narrower than 328px the logo shrinks
- * with the screen and goes below it. Below 768px the two parts stack, aligned to the left.
+ * The footer at the end of every page, on the page background `--bg`, with text in `--text` and
+ * captions in `--muted`.
+ *
+ * `variant="full"` has the full name logo, the `site` column (the pages of the site,
+ * `footerSiteLinks`), the `links` column (the profiles and RSS, `footerProfileLinks`) and, under
+ * them, a band with "© <year> <name> / LinaTsukusu" and the face mark with `ikili.pro`. From
+ * 1024px the logo and the two columns share the width as 2fr 1fr 1fr and the logo is 420px wide
+ * at most. From 768px to 1023px the logo has a row of its own and the columns share the row
+ * under it. From 768px a 1px `--line` runs along the top edge of the footer and of the band.
+ * Below 768px only the logo and "© <year> <name>" remain, without the lines, as in the design for
+ * phones. The logo is 296px wide below 1024px and never wider than its column, so that a slash is
+ * 32px high or more, the smallest size of the kit; on a screen narrower than 328px the logo
+ * shrinks with the screen and goes below it.
+ *
+ * `variant="compact"` has only the face mark and the copyright, as the design draws the footer
+ * of an article, under a 1px `--line` at its top edge; "/ LinaTsukusu" shows from 768px. The face
+ * mark is 28px at every width, because a mark needs a square of 27px or more.
  *
  * The year is the year of the build.
  */
 interface Props {
   /** Language of the page, for the strings of the footer. */
   lang: Locale;
+  /** Footer to show: "full" or "compact". Defaults to "full". */
+  variant?: FooterVariant;
 }
 
-const { lang } = Astro.props;
+const { lang, variant = "full" } = Astro.props;
 const year = new Date().getFullYear();
+const copyright = `© ${year} ${translate(lang, "footer.copyrightHolder")}`;
+const ID = " / LinaTsukusu";
+const siteLinks = footerSiteLinks(lang);
+const profileLinks = footerProfileLinks(lang);
 ---
 
-<footer class="site-footer">
-  <div class="owner">
-    <NameLogo variant="full" label="/tsukusu/lina $_" />
-    <span>© {year} {translate(lang, "footer.copyrightHolder")}</span>
+<footer class:list={["site-footer", variant]}>
+  {variant === "full" ? (
+  <>
+    <div class="main">
+      <div class="logo">
+        <NameLogo variant="full" label="/tsukusu/lina $_" />
+      </div>
+      <nav class="column" aria-label={translate(lang, "footer.siteLabel")}>
+        <span class="label head" aria-hidden="true">
+          site
+        </span>
+        <ul>
+          {siteLinks.map(({ key, href }) => (
+            <li>
+              <a href={href}>{translate(lang, key)}</a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <nav class="column" aria-label={translate(lang, "footer.linksLabel")}>
+        <span class="label head" aria-hidden="true">
+          links
+        </span>
+        <ul>
+          {profileLinks.map(({ label, href, rel }) => (
+            <li>
+              <a href={href} rel={rel}>
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+    <div class="band">
+      <span class="label">
+        {copyright}
+        <span class="id">{ID}</span>
+      </span>
+      <span class="badge">
+        <FaceIcon kind="mark" size={28} alt="" />
+        <span class="label">ikili.pro</span>
+      </span>
+    </div>
+  </>
+) : (
+  <div class="solo">
+    <FaceIcon kind="mark" size={28} alt="" />
+    <span class="label">
+      {copyright}
+      <span class="id">{ID}</span>
+    </span>
   </div>
-  <span class="curl">{translate(lang, "site.curlHint")}</span>
+)}
 </footer>
 
 <style>
 .site-footer {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 28px 16px 40px;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 13px;
+  color: var(--text);
+  font-size: 14px;
 }
-.owner {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.main,
+.band,
+.solo {
+  box-sizing: border-box;
+  max-width: 1440px;
+  margin-inline: auto;
+}
+.main {
+  display: grid;
+  gap: 18px;
+  padding: 36px 16px 18px;
+}
+.logo {
+  min-width: 0;
   width: min(296px, 100%);
 }
-.curl {
-  font-family: var(--font-mono);
+.column {
+  display: none;
+}
+.band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0 16px 28px;
+}
+.badge {
+  display: none;
+}
+.id {
+  display: none;
+}
+.compact {
+  border-top: 1px solid var(--line);
+}
+.solo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 16px;
+}
+ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+li a {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+.head {
+  margin-bottom: 8px;
 }
 @media (min-width: 768px) {
-  .site-footer {
-    flex-direction: row;
+  .full {
+    border-top: 1px solid var(--line);
+  }
+  .main {
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    padding: 64px 32px 32px;
+  }
+  .logo {
+    grid-column: 1 / -1;
+  }
+  .column {
+    display: flex;
+    flex-direction: column;
+  }
+  .band {
+    gap: 12px;
+    padding: 18px 32px 28px;
+    border-top: 1px solid var(--line);
+  }
+  .badge {
+    display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding-inline: 32px;
+    gap: 10px;
+  }
+  .id {
+    display: inline;
+  }
+  .solo {
+    gap: 12px;
+    padding: 28px 32px;
   }
 }
 @media (min-width: 1024px) {
-  .owner {
+  .main {
+    grid-template-columns: 2fr 1fr 1fr;
+    padding-inline: 64px;
+  }
+  .logo {
+    grid-column: auto;
     width: min(420px, 100%);
   }
-}
-@media (min-width: 1280px) {
-  .site-footer {
+  .band,
+  .solo {
     padding-inline: 64px;
   }
 }
