@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   blogCrumbs,
   blogListText,
+  blogPostBreadcrumb,
+  blogPostDate,
+  blogPostPaths,
   blogTagPagePaths,
+  readingMinutes,
   tagFilterLinks,
 } from "./blog-pages";
 import { translate } from "./i18n/ui";
@@ -107,5 +111,123 @@ describe("blogCrumbs", () => {
       { text: "tech" },
       { text: "diary" },
     ]);
+  });
+});
+
+describe("blogPostPaths", () => {
+  it("記事 1 件につき /blog/<slug>/ の経路を 1 件、記事の順に出し、記事を props に渡す", () => {
+    const first = { data: { slug: "first-post-slug" } };
+    const second = { data: { slug: "second-post-slug" } };
+    const paths = blogPostPaths([first, second]);
+    expect(paths.map((path) => path.params)).toEqual([
+      { slug: "first-post-slug" },
+      { slug: "second-post-slug" },
+    ]);
+    expect(paths[0]?.props.post).toBe(first);
+    expect(paths[1]?.props.post).toBe(second);
+  });
+
+  it("記事が 0 件なら経路も 0 件にする", () => {
+    expect(blogPostPaths([])).toEqual([]);
+  });
+});
+
+describe("blogPostBreadcrumb", () => {
+  it("年は日本時間の日付の年にする（UTC では前の年の 12/31 でも、日本では元日になる）", () => {
+    expect(
+      blogPostBreadcrumb("new-year-post", new Date("2025-12-31T15:00:00Z")),
+    ).toEqual({ year: "2026", file: "new-year-post.md" });
+  });
+
+  it("日本時間の大晦日の夜は前の年にする", () => {
+    expect(
+      blogPostBreadcrumb("late-post", new Date("2025-12-31T14:59:59Z")).year,
+    ).toBe("2025");
+  });
+
+  it("末尾は slug に .md を付けたファイル名にする", () => {
+    expect(
+      blogPostBreadcrumb("my-first-article", new Date("2026-05-01T00:00:00Z"))
+        .file,
+    ).toBe("my-first-article.md");
+  });
+});
+
+describe("blogPostDate", () => {
+  const date = new Date("2025-12-31T15:00:00Z");
+
+  it("表示は日本時間の YYYY.MM.DD にする", () => {
+    expect(blogPostDate(date).text).toBe("2026.01.01");
+  });
+
+  it("datetime は UTC の ISO 8601 にする", () => {
+    expect(blogPostDate(date).dateTime).toBe("2025-12-31T15:00:00.000Z");
+  });
+});
+
+describe("readingMinutes", () => {
+  const chars = (n: number) => "あ".repeat(n);
+  const fence = "`".repeat(3);
+
+  it("500 字までは 1 分、501 字から 2 分にする", () => {
+    expect(
+      [499, 500, 501, 1000, 1001].map((n) => readingMinutes(chars(n))),
+    ).toEqual([1, 1, 2, 2, 3]);
+  });
+
+  it("本文が空か無いときは 1 分にする", () => {
+    expect([readingMinutes(""), readingMinutes(undefined)]).toEqual([1, 1]);
+  });
+
+  it("空白、全角の空白、改行は数えない", () => {
+    expect(readingMinutes(`${chars(250)} 　\n\r\n\t${chars(250)}`)).toBe(1);
+    expect(readingMinutes(`${chars(500)} あ`)).toBe(2);
+  });
+
+  it("コードポイント 1 つを 1 字と数える（絵文字や𠮷を 2 字にしない）", () => {
+    expect(readingMinutes("𠮷".repeat(500))).toBe(1);
+    expect(readingMinutes(`${"𠮷".repeat(500)}😀`)).toBe(2);
+  });
+
+  it("バッククォートのフェンスのコードブロックは、フェンスの行ごと数えない", () => {
+    const body = [chars(500), `${fence}ts`, chars(2000), fence, ""].join("\n");
+    expect(readingMinutes(body)).toBe(1);
+  });
+
+  it("チルダのフェンスのコードブロックも数えない", () => {
+    const body = [chars(500), "~~~", chars(2000), "~~~", ""].join("\n");
+    expect(readingMinutes(body)).toBe(1);
+  });
+
+  it("閉じていないフェンスは本文の終わりまでコードとして数えない", () => {
+    const body = [chars(500), fence, chars(2000), ""].join("\n");
+    expect(readingMinutes(body)).toBe(1);
+  });
+
+  it("開いたフェンスより短いフェンスと別の文字のフェンスでは閉じず、同じ長さ以上で閉じる", () => {
+    const body = [
+      `${"`".repeat(4)}md`,
+      fence,
+      "~~~~",
+      chars(2000),
+      "`".repeat(5),
+      chars(501),
+    ].join("\n");
+    expect(readingMinutes(body)).toBe(2);
+  });
+
+  it("コードブロックの後の本文は数える", () => {
+    const body = [fence, chars(2000), fence, chars(501)].join("\n");
+    expect(readingMinutes(body)).toBe(2);
+  });
+
+  it("同じ行で閉じるバッククォート 3 つのインラインコードはフェンスにしない", () => {
+    const body = [`${fence}コード${fence}`, chars(500)].join("\n");
+    expect(readingMinutes(body)).toBe(2);
+  });
+
+  it("フェンスの外のインラインコードと Markdown の記号は数える", () => {
+    const body = [`## ${chars(496)}`, "`a`"].join("\n");
+    expect(readingMinutes(body)).toBe(2);
   });
 });
