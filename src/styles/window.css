@@ -17,6 +17,13 @@
  * direct `<summary>` is hovered or has keyboard focus, and its transition stops under
  * `prefers-reduced-motion: reduce` too.
  *
+ * The message boxes of an article, `aside.note` and `aside.warning` under `.article-body`, take the
+ * panel and the ring of `.win` and `.win::before` through the selector
+ * `:where(.article-body aside:is(.note, .warning))`, so an article never writes `win`. They are
+ * not links, so their ring does not turn. The `:where()` gives that selector no specificity, so
+ * the rules in `src/components/ArticleBody.astro` that change them win whatever the order of the
+ * stylesheets.
+ *
  * `.ticks` draws four `--muted` L-shaped ticks, 16px long and 1.5px thick, at the corners of its
  * box with `background`, so it replaces the `background-color` of the element.
  * `.ticks-acc` draws four keyword orange ticks, 14px long and 2px thick, on its `::after`, which
@@ -44,14 +51,16 @@
 }
 
 .win,
-.article-body details {
+.article-body details,
+:where(.article-body aside:is(.note, .warning)) {
   position: relative;
   background: var(--panel);
   border-radius: 6px;
 }
 
 .win::before,
-.article-body details::before {
+.article-body details::before,
+:where(.article-body aside:is(.note, .warning))::before {
   --wa: 0deg;
   --wb: 360deg;
 

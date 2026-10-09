@@ -31,7 +31,7 @@ Astro のドキュメント: https://docs.astro.build
 
 公開用 Worker と記事の同期スクリプトの作業の前に、[公開用 Worker の API の取り決め](docs/publish-api.md)を読む。
 
-記事の本文の書き方（Markdown と、記事に生の HTML で書くアコーディオン）の作業の前に、[記事の本文の書き方](docs/markdown.md)を読む。
+記事の本文の書き方（Markdown と、記事に生の HTML で書くメッセージボックスとアコーディオン）の作業の前に、[記事の本文の書き方](docs/markdown.md)を読む。
 
 ## issue ワークフロー
 

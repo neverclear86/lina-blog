@@ -11,7 +11,7 @@ bun create astro@latest -- --template basics
 ```text
 /
 ├── docs/
-│   ├── markdown.md       # How to write an article body: Markdown and the accordion written as raw HTML
+│   ├── markdown.md       # How to write an article body: Markdown, and the message boxes and the accordion written as raw HTML
 │   └── publish-api.md    # API contract between the article sync script and the publishing Worker
 ├── public/
 │   └── favicon/          # Favicons from the brand kit, unchanged: the mark /li on ink as SVG, and PNGs of 32, 180 and 192 pixels
@@ -55,7 +55,7 @@ bun create astro@latest -- --template basics
 │   │   └── logo-white.png  # White logo (dark theme, or inverse faces on the light theme)
 │   ├── components/
 │   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
-│   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, YouTube embeds, accordions)
+│   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, YouTube embeds, accordions, message boxes)
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: stacked below 1200px, in a row from 1200px
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
@@ -130,11 +130,11 @@ bun create astro@latest -- --template basics
 │   └── styles/
 │       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ghost), icon links (.sq, .iconbtn) and page switch links (.ws) of plan A
 │       ├── global.css    # body colors and their fade, the links, the keyboard focus outline, and the grid backgrounds (.grid, .cgrid)
-│       ├── labels.css    # Labels of plan A: .label, .tag and the category chip .chip-acc
+│       ├── labels.css    # Labels of plan A: .label (shared with the labels of an article's message boxes), .tag and the category chip .chip-acc
 │       ├── motion.css    # Animations that keep running (.bob, .blink-on, .caret, .a-typeLoop) and the section reveal on scroll (.reveal), stopped under reduced motion
 │       ├── shapes.css    # Notched corners, hard shadows and the lift
 │       ├── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
-│       └── window.css    # Windows (.win, and .article-body details for the accordions of articles), corner ticks (.ticks, .ticks-acc), grid and stripe backgrounds and the avatar shadow of plan A
+│       └── window.css    # Windows (.win, shared with the accordions and the message boxes of articles), corner ticks (.ticks, .ticks-acc), grid and stripe backgrounds and the avatar shadow of plan A
 ├── workers/
 │   └── publish/          # Publish Worker, separate from the site and deployed on its own
 │       ├── src/
@@ -162,7 +162,7 @@ Pages that exist in every language go in `src/pages/[lang]/` and are generated o
 
 Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema. `astro build` leaves them out unless `LINA_DEV_PAGES=1` is set (see “CSS”); with it they reach `dist/` like other posts, in `/blog/`, the tag pages, the latest posts on the home page, `/rss.xml` and the text version, so that build is only for screenshots and is never deployed.
 
-Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are highlighted at build time by `src/markdown/highlight.ts`, which gives tokens role classes such as `hl-keyword` instead of inline styles; `markdown.syntaxHighlight` is off so Astro's own Shiki does not run. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player. An accordion is written as raw HTML (`<details>` and `<summary>`), and how to write one is in `docs/markdown.md`.
+Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are highlighted at build time by `src/markdown/highlight.ts`, which gives tokens role classes such as `hl-keyword` instead of inline styles; `markdown.syntaxHighlight` is off so Astro's own Shiki does not run. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player. An accordion is written as raw HTML (`<details>` and `<summary>`), and how to write one is in `docs/markdown.md`. An `<aside class="note">` or `<aside class="warning">` written as raw HTML in an article is styled as a message box (`docs/markdown.md` shows how to write one).
 
 `astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the works, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt`, the Latest section and the hero of the home page, and the links column of the site footer use as well.
 
@@ -184,8 +184,8 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | `global.css` | Styles of `body` (colors and their fade between the themes), the links, the keyboard focus outline and decorations used across pages, such as `.grid` and `.cgrid` |
 | `shapes.css` | Notched corners (`.shape`, `.shapeL`, `.shapeS`), hard shadows (`.shadow`, `.shadowF`, `.shadowInk`) and the hover lift (`.lift`) |
 | `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ghost`), icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) and page switch links (`.ws`, `.ws.on`) of plan A |
-| `window.css` | Plan A windows (`.win` and `.article-body details`; a link window turns its border on hover, and an accordion while its `<summary>` is hovered or focused), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid and stripe backgrounds (`.gridbg`, `.stripes`) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions under `prefers-reduced-motion: reduce` |
-| `labels.css` | Labels of plan A: the caption `.label`, the bordered tag `.tag` and the orange category chip `.chip-acc` |
+| `window.css` | Plan A windows (`.win`, `.article-body details` and an article's message boxes; a link window turns its border on hover, and an accordion while its `<summary>` is hovered or focused), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid and stripe backgrounds (`.gridbg`, `.stripes`) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions under `prefers-reduced-motion: reduce` |
+| `labels.css` | Labels of plan A: the caption `.label` (whose declarations the labels of an article's message boxes share), the bordered tag `.tag` and the orange category chip `.chip-acc` |
 | `motion.css` | Animations that keep running: the pixel art bob (`.bob`), the blinking cursors (`.caret`, and `.blink-on` for the name logo) and the typed command (`.a-typeLoop`); and the section reveal on scroll (`.reveal`), enabled only inside `@supports (animation-timeline: view())`. All are stopped under `prefers-reduced-motion: reduce` |
 
 A global file holds only what several components share.
@@ -453,7 +453,7 @@ curl -sS -X POST http://localhost:8787/api/contact -F kind=work -F name=Lina \
 ## 📚 Docs
 
 - [Publishing Worker API](docs/publish-api.md) (in Japanese): the contract between the article sync script and the publishing Worker, covering authentication, requests and responses, errors, the list of published articles and its content hash, and the processing order and retries.
-- [Writing an article body](docs/markdown.md) (in Japanese): the Markdown of an article, the accordion written as raw HTML, and the rules that HTML follows.
+- [Writing an article body](docs/markdown.md) (in Japanese): the Markdown of an article, the message boxes and the accordion written as raw HTML, and the rules that HTML follows.
 
 ## 📄 License
 
