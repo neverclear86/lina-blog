@@ -1,0 +1,360 @@
+---
+/**
+ * The page of a blog post, `/blog/<slug>/`, in Japanese only. The head is on the grid background
+ * (`.gridbg`) and holds the breadcrumb `~ / blog / <year> / <slug>.md`, the category chips
+ * (`tags`), the topic tags (`topics`, none when the post has no topics), the `h1`, and the date,
+ * the reading time and the author. Below it, `<Content />` in `ArticleBody` fills a column of at
+ * most 760px. From 1024px an empty column of 240px stands at its left, so that the body keeps its
+ * place when something is put in that column. `emoji` is not shown.
+ *
+ * A diagonal band at the right of the head is drawn with `::before`. It is 64px wide below 768px,
+ * where the rows of the head keep clear of it with a right padding, and 120px wide from 1280px,
+ * where a hatched line beside it is drawn with `::after`; from 768px to 1279px there is no band.
+ * The date, the reading time and the author are a row of text below 768px, without the author,
+ * and a table on the `--shade` background from 768px. The page has the compact footer.
+ */
+import { type CollectionEntry, getCollection, render } from "astro:content";
+import type { GetStaticPaths } from "astro";
+import {
+  blogPostBreadcrumb,
+  blogPostDate,
+  blogPostPaths,
+  readingMinutes,
+} from "../../blog-pages";
+import ArticleBody from "../../components/ArticleBody.astro";
+import { homeSectionPath } from "../../components/site-nav";
+import { translate } from "../../i18n/ui";
+import Layout from "../../layouts/Layout.astro";
+
+export const getStaticPaths = (async () =>
+  blogPostPaths(await getCollection("blog"))) satisfies GetStaticPaths;
+
+interface Props {
+  post: CollectionEntry<"blog">;
+}
+
+const { post } = Astro.props;
+const { title, slug, date, tags, topics, description } = post.data;
+const { Content } = await render(post);
+const crumb = blogPostBreadcrumb(slug, date);
+const published = blogPostDate(date);
+const minutes = readingMinutes(post.body);
+---
+
+<Layout lang="ja" title={title} description={description} footer="compact">
+  <main>
+    <section class="head gridbg">
+      <div class="head-inner">
+        <nav aria-label={translate("ja", "nav.breadcrumb")}>
+          <ol class="crumbs">
+            <li>
+              <a href={homeSectionPath("ja", "top")}>~</a>
+              <span aria-hidden="true">/</span>
+            </li>
+            <li>
+              <a href="/blog/">blog</a>
+              <span aria-hidden="true">/</span>
+            </li>
+            <li>
+              <span>{crumb.year}</span>
+              <span aria-hidden="true">/</span>
+            </li>
+            <li>
+              <span class="file" aria-current="page">{crumb.file}</span>
+            </li>
+          </ol>
+        </nav>
+        <ul class="chips">
+          {tags.map((tag) => (
+  <li>
+    <span class="chip-acc">{tag}</span>
+  </li>
+))}
+          {(topics ?? []).map((topic) => (
+  <li>
+    <span class="tag">{topic}</span>
+  </li>
+))}
+        </ul>
+        <h1>{title}</h1>
+        <dl class="meta">
+          <div class="cell">
+            <dt class="label" lang="en">date</dt>
+            <dd><time datetime={published.dateTime}>{published.text}</time></dd>
+          </div>
+          <div class="cell">
+            <dt class="label" lang="en">read</dt>
+            <dd lang="en">{minutes} min</dd>
+          </div>
+          <div class="cell author">
+            <dt class="label" lang="en">author</dt>
+            <dd>{translate("ja", "blog.author")}</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+    <div class="body">
+      <div class="cols">
+        <div class="toc-col"></div>
+        <div class="text">
+          <ArticleBody><Content /></ArticleBody>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+.head {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  background-size: 32px 32px;
+}
+.head::before,
+.head::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  transform: rotate(22deg);
+}
+.head::before {
+  top: -40%;
+  right: -40px;
+  width: 64px;
+  height: 200%;
+  background: var(--keyword);
+}
+.head::after {
+  display: none;
+}
+.head-inner {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 28px 16px 24px;
+}
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0 24px 0 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.crumbs li {
+  display: flex;
+  align-items: center;
+}
+.crumbs a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+}
+.file {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0 24px 0 0;
+  list-style: none;
+}
+.chips li {
+  display: flex;
+  min-width: 0;
+}
+.chip-acc {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+h1 {
+  max-width: 900px;
+  margin: 0;
+  padding-right: 56px;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0;
+  padding-right: 64px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.meta dd {
+  margin: 0;
+}
+.meta dt {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.cell {
+  min-width: 0;
+}
+.author {
+  display: none;
+}
+.body {
+  box-sizing: border-box;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+.toc-col {
+  display: none;
+}
+.text {
+  min-width: 0;
+  max-width: 760px;
+}
+
+@media (min-width: 768px) {
+  .head {
+    background-size: 48px 48px;
+  }
+  .head::before {
+    display: none;
+  }
+  .head-inner {
+    gap: 22px;
+    padding: 64px 20px 48px;
+  }
+  .crumbs {
+    gap: 4px;
+    padding: 0;
+    font-size: 13px;
+  }
+  .crumbs li {
+    gap: 4px;
+  }
+  .chips {
+    gap: 8px;
+    padding: 0;
+  }
+  .chip-acc {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  .chips .tag {
+    height: 24px;
+    padding: 0 9px;
+    line-height: 22px;
+  }
+  h1 {
+    padding-right: 0;
+    font-size: 32px;
+    line-height: 1.3;
+  }
+  .meta {
+    gap: 0;
+    max-width: 900px;
+    padding-right: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--shade);
+    font-size: 14px;
+    color: var(--text);
+  }
+  .meta dt {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+  .cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 20px;
+  }
+  .cell:first-child {
+    padding-left: 0;
+  }
+  .cell:not(:last-child) {
+    border-right: 1px solid var(--line);
+  }
+  .author {
+    display: flex;
+    font-family: var(--font-body);
+    font-weight: 700;
+  }
+  .body {
+    padding: 56px 20px 96px;
+  }
+}
+
+@media (min-width: 900px) {
+  .head-inner {
+    padding: 64px 64px 48px;
+  }
+  h1 {
+    font-size: 52px;
+  }
+  .body {
+    padding: 56px 64px 96px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .toc-col {
+    display: block;
+    flex: 0 0 240px;
+  }
+  .cols {
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+  }
+  .text {
+    flex: 1 1 0;
+  }
+}
+
+@media (min-width: 1280px) {
+  .head::before {
+    display: block;
+    top: -60%;
+    right: 6%;
+    width: 120px;
+    height: 220%;
+  }
+  .head::after {
+    display: block;
+    top: -60%;
+    right: calc(6% + 150px);
+    width: 28px;
+    height: 220%;
+    opacity: 0.7;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--keyword) 0 5px,
+      transparent 5px 15px
+    );
+  }
+}
+</style>
