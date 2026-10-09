@@ -80,9 +80,9 @@ bun create astro@latest -- --template basics
 │   │   ├── PostRows.astro        # Window of blog posts: ls -lt command line with a command slot, rows with JST date, tags, PR and title, or one empty line
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level and the contact variant are props
 │   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line, path and link, and the Japanese heading; the size is a prop
-│   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, and the path of the contact page, unit-tested
+│   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, the path of the contact page, and which section of the top page the reader is in, unit-tested
 │   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
-│   │   ├── SiteHeader.astro      # Site header: compact name logo, navigation 00 top to 04 works, JA / EN, theme switch, contact button; sticky from 1024px, and a popover menu below
+│   │   ├── SiteHeader.astro      # Site header: compact name logo, navigation 00 top to 04 works, JA / EN, theme switch, contact button; sticky from 1024px, an indicator on the top page that follows the section being read, and a popover menu below
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: an icon button with a name that says the next theme, or a button with a sun and the current theme
 │   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href

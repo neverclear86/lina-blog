@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   contactPagePath,
+  currentSectionIndex,
   homeSectionPath,
+  isTopPath,
   languageLinks,
   navLinks,
+  SECTION_LINE,
 } from "./site-nav";
 
 describe("homeSectionPath", () => {
@@ -116,5 +119,43 @@ describe("languageLinks", () => {
       { locale: "ja", href: "/404", current: true },
       { locale: "en", href: "/en/", current: false },
     ]);
+  });
+});
+
+describe("isTopPath", () => {
+  it("言語のトップのパスは末尾のスラッシュの有無によらず真で、他のパスは偽", () => {
+    expect(isTopPath("ja", "/ja/")).toBe(true);
+    expect(isTopPath("ja", "/ja")).toBe(true);
+    expect(isTopPath("ja", "/en/")).toBe(false);
+    expect(isTopPath("ja", "/ja/works/ikili-pro/")).toBe(false);
+    expect(isTopPath("ja", "/blog/")).toBe(false);
+  });
+});
+
+describe("currentSectionIndex", () => {
+  it("どの節も線より上に無いときは 0 を返す", () => {
+    expect(currentSectionIndex([300, 900, 1500, 2100, 2700])).toBe(0);
+  });
+
+  it("線より上に上端がある節のうち、いちばん下のものを返す", () => {
+    expect(currentSectionIndex([-1200, -400, 100, 900, 1700])).toBe(2);
+  });
+
+  it("ページ内の並びがナビの並びと違っても、いちばん下の節を返す", () => {
+    expect(currentSectionIndex([-3000, -2000, 120, -500, 900])).toBe(2);
+  });
+
+  it("上端が線と等しい節はまだ入っていない", () => {
+    expect(currentSectionIndex([-500, SECTION_LINE])).toBe(0);
+    expect(currentSectionIndex([-500, SECTION_LINE - 1])).toBe(1);
+  });
+
+  it("ページに無い節は飛ばす", () => {
+    expect(currentSectionIndex([-1200, -400, null, 900, 1700])).toBe(1);
+    expect(currentSectionIndex([null, null])).toBe(0);
+  });
+
+  it("上端が同じ節は並びの後ろのものを返す", () => {
+    expect(currentSectionIndex([-500, 50, 50, 900])).toBe(2);
   });
 });

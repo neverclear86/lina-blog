@@ -1,6 +1,6 @@
 /**
  * Link targets of the site: the navigation and the language switch of the site header
- * (`SiteHeader.astro`), and the contact page.
+ * (`SiteHeader.astro`), the contact page, and which section of the top page the reader is in.
  */
 import { LOCALES, type Locale } from "../i18n/locales";
 import { localizedPath } from "../i18n/paths";
@@ -32,6 +32,11 @@ export function contactPagePath(lang: Locale): string {
   return `/${lang}/contact/`;
 }
 
+/** Returns true when `pathname` is the top page of `lang`: `/ja/`, or `/ja` without the slash. */
+export function isTopPath(lang: Locale, pathname: string): boolean {
+  return pathname === `/${lang}/` || pathname === `/${lang}`;
+}
+
 /** Value of `aria-current` of the item of the page: "page" or "true". */
 export type NavCurrent = "page" | "true";
 
@@ -52,10 +57,11 @@ export interface NavLink {
  *
  * `03 blog` is current with "page" on `/blog/` itself and with "true" on the pages under it, such
  * as an article or a list of a tag. `04 works` is current with "true" on the pages under
- * `/ja/works/`. No other page has a current item, including the top page.
+ * `/ja/works/`. No other page has a current item from this function; on the top page the
+ * header marks the section that the reader is in instead (`currentSectionIndex`).
  */
 export function navLinks(lang: Locale, pathname: string): NavLink[] {
-  const isTop = pathname === `/${lang}/` || pathname === `/${lang}`;
+  const isTop = isTopPath(lang, pathname);
   const isBlogIndex = pathname === BLOG_PATH || pathname === "/blog";
   const isWork = pathname.startsWith(`/${lang}/works/`);
   const blogCurrent: NavCurrent | undefined = isBlogIndex
@@ -110,4 +116,34 @@ export function languageLinks(lang: Locale, pathname: string): LanguageLink[] {
       ? current
       : { locale, href: localizedPath(pathname, locale), current: false },
   );
+}
+
+/**
+ * Distance from the top of the viewport above which a section counts as the one the reader is
+ * in. It is more than the 61px of the sticky header and the 72px below the top at which a link
+ * to a section lands (`scroll-margin-top` in `global.css`), so the section of a clicked item
+ * is the current one.
+ */
+export const SECTION_LINE = 160;
+
+/**
+ * Returns the index of the section that the reader is in. `tops` has, for each item of the
+ * navigation in order, the distance from the top of the viewport to the top of its section, or
+ * `null` when the page has no such section. The section is the one whose top is nearest to
+ * `line` among those above it, whatever the order of the sections in the page; of two with the
+ * same top, the later item. It is 0 when no section is above `line`.
+ */
+export function currentSectionIndex(
+  tops: readonly (number | null)[],
+  line: number = SECTION_LINE,
+): number {
+  let current = 0;
+  let nearest = Number.NEGATIVE_INFINITY;
+  tops.forEach((top, index) => {
+    if (top !== null && top < line && top >= nearest) {
+      current = index;
+      nearest = top;
+    }
+  });
+  return current;
 }
