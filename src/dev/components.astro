@@ -1,5 +1,7 @@
 ---
+import { Picture } from "astro:assets";
 import type { ComponentProps } from "astro/types";
+import { AVATAR_IMAGES, avatarAlt } from "../avatar-images";
 import Bubble from "../components/Bubble.astro";
 import Button from "../components/Button.astro";
 import Chip from "../components/Chip.astro";
@@ -486,6 +488,31 @@ const sampleVideos: YouTubeVideo[] = [
       </div>
     </section>
 
+    <section id="avatar">
+      <h2>アバター（v2.1）</h2>
+      <div class="row">
+        {AVATAR_IMAGES.map((avatar) => (
+  <figure class="avatar-sample" data-name={avatar.name}>
+    <Picture
+      src={avatar.src}
+      alt={avatarAlt(avatar, "ja")}
+      formats={["avif", "webp"]}
+      fallbackFormat="webp"
+      widths={avatar.widths}
+      sizes={avatar.sizes}
+      priority={avatar.priority}
+      class="avatar-img"
+    />
+    <figcaption class="avatar-caption">
+      {avatar.name}
+      <br />
+      alt: {avatarAlt(avatar, "ja") || "（空）"}
+    </figcaption>
+  </figure>
+))}
+      </div>
+    </section>
+
     <section id="latest-posts">
       <h2>最新記事</h2>
       <div class="latest-samples">
@@ -754,6 +781,37 @@ section {
 .heading-aside {
   margin: 0;
   max-width: 480px;
+}
+
+.avatar-sample {
+  margin: 0;
+}
+
+.avatar-img {
+  display: block;
+  width: auto;
+  height: 400px;
+}
+
+.avatar-sample[data-name^="threeview"] .avatar-img {
+  height: 520px;
+}
+
+.avatar-sample[data-name="lgtm-bastup"] .avatar-img {
+  width: 340px;
+  height: auto;
+}
+
+.avatar-sample[data-name="hate"] .avatar-img {
+  width: 72px;
+  height: 96px;
+}
+
+.avatar-caption {
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .row + .row {
