@@ -23,7 +23,7 @@ const { width = "160px" } = Astro.props;
 ---
 
 <span class="tape" style={{ width }} aria-hidden="true"
-  ><span class="stripes"></span></span
+  ><span class="tape-stripes"></span></span
 >
 
 <style>
@@ -36,7 +36,7 @@ const { width = "160px" } = Astro.props;
   overflow: hidden;
 }
 
-.stripes {
+.tape-stripes {
   position: absolute;
   inset: 0 calc(-1 * var(--period)) 0 0;
   background-image: repeating-linear-gradient(
@@ -54,7 +54,7 @@ const { width = "160px" } = Astro.props;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stripes {
+  .tape-stripes {
     animation: none;
   }
 }

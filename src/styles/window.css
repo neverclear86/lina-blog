@@ -1,0 +1,175 @@
+/*
+ * Windows, corner ticks and background decorations of plan A, imported by
+ * `src/layouts/Layout.astro` after `shapes.css`. The values are copied from `design/Main.dc.html`,
+ * with the colors replaced by the tokens of `tokens.css`.
+ *
+ * `.win` is a panel (`--panel`, radius 6px) with a 1.5px border that fades from the keyword
+ * orange through `--line2` to `--line`. The border is `.win::before`, a gradient ring cut out
+ * with a mask (which uses `black` only for its opacity), and its angle is `140deg + --wa + --wb`.
+ * On `a.win`, on hover and on keyboard focus, `--wa` goes to 180deg and `--wb` to 0deg: `--wb`
+ * jumps at once and `--wa` turns for 0.7s, so the ring turns forward, and turns forward again
+ * when the hover ends. `.win.is-hover` and `.win.is-focus` show that state without hover or
+ * focus, for `src/dev/components.astro`. Under `prefers-reduced-motion: reduce` the angle changes
+ * without a transition.
+ *
+ * `.ticks` draws four `--muted` L-shaped ticks, 16px long and 1.5px thick, at the corners of its
+ * box with `background`, so it replaces the `background-color` of the element.
+ * `.ticks-acc` draws four keyword orange ticks, 14px long and 2px thick, on its `::after`, which
+ * covers its box. Inside an `.acct`, they move out by 8px over 0.28s while the `.acct` is
+ * hovered or an element in it has keyboard focus, and at once under
+ * `prefers-reduced-motion: reduce`. `.acct` has no style of its own: it marks the box whose
+ * hover and focus move the ticks. `.acct.is-hover` and `.acct.is-focus` show that state.
+ *
+ * `.gridbg` draws `--grid` lines every 48px on `--bg`. `.stripes` is an 18px band of diagonal
+ * stripes in the keyword orange and `--ink` that repeat every 40px. `.av-shadow` gives an image
+ * with a transparent background a hard shadow (`--av-hard`) to the bottom right and a soft one
+ * (`--av-soft`) below.
+ */
+
+@property --wa {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --wb {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.win {
+  position: relative;
+  background: var(--panel);
+  border-radius: 6px;
+}
+
+.win::before {
+  --wa: 0deg;
+  --wb: 360deg;
+
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(
+    calc(140deg + var(--wa) + var(--wb)),
+    var(--keyword) 0%,
+    color-mix(in srgb, var(--keyword) 25%, transparent) 35%,
+    var(--line2) 70%,
+    var(--line) 100%
+  );
+  -webkit-mask:
+    linear-gradient(black 0 0) content-box,
+    linear-gradient(black 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  transition:
+    --wa 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+    --wb 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+a.win:hover::before,
+a.win:focus-visible::before,
+.win.is-hover::before,
+.win.is-focus::before {
+  --wa: 180deg;
+  --wb: 0deg;
+
+  transition:
+    --wa 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+    --wb 0s;
+}
+
+.ticks {
+  background:
+    linear-gradient(var(--muted), var(--muted)) top left / 16px 1.5px no-repeat,
+    linear-gradient(var(--muted), var(--muted)) top left / 1.5px 16px no-repeat,
+    linear-gradient(var(--muted), var(--muted)) top right / 16px 1.5px no-repeat,
+    linear-gradient(var(--muted), var(--muted)) top right / 1.5px 16px no-repeat,
+    linear-gradient(var(--muted), var(--muted)) bottom left / 16px 1.5px
+    no-repeat,
+    linear-gradient(var(--muted), var(--muted)) bottom left / 1.5px 16px
+    no-repeat,
+    linear-gradient(var(--muted), var(--muted)) bottom right / 16px 1.5px
+    no-repeat,
+    linear-gradient(var(--muted), var(--muted)) bottom right / 1.5px 16px
+    no-repeat;
+}
+
+.ticks-acc {
+  position: relative;
+}
+
+.ticks-acc::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--keyword), var(--keyword)) top left / 14px 2px
+    no-repeat,
+    linear-gradient(var(--keyword), var(--keyword)) top left / 2px 14px
+    no-repeat,
+    linear-gradient(var(--keyword), var(--keyword)) top right / 14px 2px
+    no-repeat,
+    linear-gradient(var(--keyword), var(--keyword)) top right / 2px 14px
+    no-repeat,
+    linear-gradient(var(--keyword), var(--keyword)) bottom left / 14px 2px
+    no-repeat,
+    linear-gradient(var(--keyword), var(--keyword)) bottom left / 2px 14px
+    no-repeat,
+    linear-gradient(var(--keyword), var(--keyword)) bottom right / 14px 2px
+    no-repeat,
+    linear-gradient(var(--keyword), var(--keyword)) bottom right / 2px 14px
+    no-repeat;
+  transition: inset 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.acct:hover .ticks-acc::after,
+.acct:has(:focus-visible) .ticks-acc::after,
+.acct.is-hover .ticks-acc::after,
+.acct.is-focus .ticks-acc::after {
+  inset: -8px;
+}
+
+.gridbg {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.stripes {
+  height: 18px;
+  background:
+    linear-gradient(
+      -45deg,
+      var(--keyword) 25%,
+      var(--ink) 25%,
+      var(--ink) 50%,
+      var(--keyword) 50%,
+      var(--keyword) 75%,
+      var(--ink) 75%
+    )
+    0 0 / 40px 40px;
+}
+
+.av-shadow {
+  filter: drop-shadow(16px 12px 0 var(--av-hard))
+    drop-shadow(0 28px 36px var(--av-soft));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .win::before,
+  a.win:hover::before,
+  a.win:focus-visible::before,
+  .win.is-hover::before,
+  .win.is-focus::before,
+  .ticks-acc::after {
+    transition: none;
+  }
+}

@@ -1,7 +1,7 @@
 ---
-import { Picture } from "astro:assets";
+import { Image, Picture } from "astro:assets";
 import type { ComponentProps } from "astro/types";
-import { AVATAR_IMAGES, avatarAlt } from "../avatar-images";
+import { AVATAR_IMAGES, avatarAlt, THUMBS_UP_BAND } from "../avatar-images";
 import Bubble from "../components/Bubble.astro";
 import Button from "../components/Button.astro";
 import Chip from "../components/Chip.astro";
@@ -160,6 +160,44 @@ const sampleVideos: YouTubeVideo[] = [
   <main class="page">
     <h1>部品の確認</h1>
     <p><a href="?theme=light">ライト</a> / <a href="?theme=dark">ダーク</a></p>
+
+    <section id="a-window">
+      <h2>A案: 窓・角の目盛り・背景の装飾</h2>
+      <div class="a-samples">
+        <div class="win a-sample"><code>div.win</code></div>
+        <a class="win a-sample" href="#a-window"><code>a.win</code></a>
+        <a class="win is-hover a-sample" href="#a-window"
+          ><code>a.win.is-hover</code></a
+        >
+        <a class="win is-focus a-sample" href="#a-window"
+          ><code>a.win.is-focus</code></a
+        >
+        <div class="ticks a-sample"><code>div.ticks</code></div>
+        <div class="win acct a-sample">
+          <a class="ticks-acc a-inner" href="#a-window"
+            ><code>div.win.acct a.ticks-acc</code></a
+          >
+        </div>
+        <div class="win acct is-hover a-sample">
+          <div class="ticks-acc a-inner">
+            <code>div.win.acct.is-hover</code>
+          </div>
+        </div>
+        <div class="win acct is-focus a-sample">
+          <div class="ticks-acc a-inner">
+            <code>div.win.acct.is-focus</code>
+          </div>
+        </div>
+        <div class="gridbg a-sample"><code>div.gridbg</code></div>
+        <Image
+          src={THUMBS_UP_BAND.src}
+          alt=""
+          width={240}
+          class="av-shadow a-avatar"
+        />
+      </div>
+      <div class="stripes"></div>
+    </section>
 
     <section id="shapes">
       <h2>形と影</h2>
@@ -666,6 +704,36 @@ const sampleVideos: YouTubeVideo[] = [
 .latest-narrow,
 .latest-list-narrow {
   max-width: 320px;
+}
+
+.a-samples {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.a-sample {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 112px;
+  padding: 16px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.a-inner {
+  display: block;
+  padding: 6px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.a-avatar {
+  width: 120px;
+  height: auto;
 }
 
 .page {
