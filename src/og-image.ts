@@ -10,14 +10,17 @@
  * The images are built from the elements of plan A (`design/Main.dc.html` and
  * `design/AArticle.dc.html`) in its dark theme only: the ink ground with the 48px grid, the
  * orange slanted band with its hatch strip, the category chip, the caption in JetBrains Mono and
- * the title in Zen Kaku Gothic New. The logo is `src/assets/name-logo/t3_full_for-dark.svg`, the
- * brand kit's file as it is. An image has no avatar.
+ * the title in Zen Kaku Gothic New. The image of a sponsored post also has an ivory "PR" chip
+ * and, under the title, a row with the label and the name of the sponsor. The logo is
+ * `src/assets/name-logo/t3_full_for-dark.svg`, the brand kit's file as it is. An image has no
+ * avatar.
  */
 
 import { readFileSync } from "node:fs";
 import satori from "satori";
 import sharp from "sharp";
 import type { Locale } from "./i18n/locales";
+import { translate } from "./i18n/ui";
 import type { OgFont } from "./og-font";
 
 /** The element tree that Satori draws: `{ type, props }` objects, as in `React.createElement`. */
@@ -44,10 +47,19 @@ export const OG_COLORS = {
 export interface OgImageInput {
   /** The title of the page. It is cut after three lines, with an ellipsis. */
   title: string;
-  /** The language of the page. It sets the locale of the title and the path in the caption. */
+  /**
+   * The language of the page. It sets the locale of the title, the path in the caption and the
+   * label of the sponsor.
+   */
   lang: Locale;
   /** The category of a post, shown as a chip. Without it, the image has no chip. */
   category?: string;
+  /**
+   * The name of the sponsor of a post. A sponsored post gets a "PR" chip and, under the title,
+   * a row with the label and this name, which is cut after one line with an ellipsis. Without
+   * it, or when it is empty, the image has neither.
+   */
+  sponsor?: string;
 }
 
 /** The logo as a data URI, which Satori draws as an image. */
@@ -108,29 +120,59 @@ export async function renderOgPng(
 /**
  * Builds the element tree of an OGP image: a 1200x630 page that Satori can draw.
  *
- * @param input The title, language and category of the page.
+ * @param input The title, language, category and sponsor of the page.
  * @returns The element tree, to pass to {@link renderOgPng} with the fonts of `loadOgFonts`.
  */
 export function ogImageElement({
   title,
   lang,
   category,
+  sponsor,
 }: OgImageInput): OgElement {
   const { keyword } = OG_COLORS;
-  const chip = box(
+  const chip = (text: string, backgroundColor: string) =>
+    box(
+      {
+        display: "block",
+        maxWidth: 400,
+        padding: "4px 12px",
+        marginRight: 16,
+        overflow: "hidden",
+        whiteSpace: "nowrap",
+        backgroundColor,
+        color: OG_COLORS.ink,
+        fontWeight: 700,
+        letterSpacing: "0.1em",
+      },
+      text,
+    );
+  const titleBox = box(
     {
       display: "block",
-      maxWidth: 400,
-      padding: "4px 12px",
-      marginRight: 16,
-      overflow: "hidden",
-      whiteSpace: "nowrap",
-      backgroundColor: keyword,
-      color: OG_COLORS.ink,
-      fontWeight: 700,
-      letterSpacing: "0.1em",
+      width: TITLE_WIDTH,
+      fontSize: 64,
+      fontWeight: 900,
+      lineHeight: 1.3,
+      lineClamp: TITLE_LINES,
+      wordBreak: "break-word",
     },
-    category,
+    title,
+    { lang: LOCALE_TAGS[lang] },
+  );
+  const sponsorRow = box(
+    { display: "flex", alignItems: "center", fontSize: 26 },
+    [
+      box(
+        {
+          display: "flex",
+          flexShrink: 0,
+          marginRight: 16,
+          color: OG_COLORS.muted,
+        },
+        translate(lang, "og.sponsor.label"),
+      ),
+      box({ display: "block", fontWeight: 900, lineClamp: 1 }, sponsor),
+    ],
   );
   return box(
     {
@@ -170,23 +212,17 @@ export function ogImageElement({
               color: OG_COLORS.muted,
             },
             [
-              ...(category ? [chip] : []),
+              ...(category ? [chip(category, keyword)] : []),
+              ...(sponsor ? [chip("PR", OG_COLORS.text)] : []),
               box({ display: "flex" }, `ikili.pro/${lang}/`),
             ],
           ),
-          box(
-            {
-              display: "block",
-              width: TITLE_WIDTH,
-              fontSize: 64,
-              fontWeight: 900,
-              lineHeight: 1.3,
-              lineClamp: TITLE_LINES,
-              wordBreak: "break-word",
-            },
-            title,
-            { lang: LOCALE_TAGS[lang] },
-          ),
+          sponsor
+            ? box({ display: "flex", flexDirection: "column", gap: 20 }, [
+                titleBox,
+                sponsorRow,
+              ])
+            : titleBox,
           { type: "img", props: { src: LOGO_URI, width: 420, height: 52 } },
         ],
       ),
@@ -197,7 +233,7 @@ export function ogImageElement({
 /**
  * Draws an OGP image: the 1200x630 PNG of {@link ogImageElement}.
  *
- * @param input The title, language and category of the page.
+ * @param input The title, language, category and sponsor of the page.
  * @param fonts The fonts of `loadOgFonts`, which the tree names in `fontFamily`.
  * @returns The bytes of the PNG.
  * @throws Error from {@link renderOgPng}.
