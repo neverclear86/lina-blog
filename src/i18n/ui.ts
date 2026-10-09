@@ -144,7 +144,8 @@ const ja = {
   "works.breadcrumb": "パンくず",
   // Text hidden from the eyes after a link to another site: the title of a work tile or a link of a work's page.
   "works.external": "（外部サイト）",
-  "works.links": "リンク",
+  // Heading of the videos and posts related to a work, on its page.
+  "works.related": "関連する動画と記事",
   // Name of the list of the technologies of a work.
   "works.tech": "使用技術",
 } as const;
@@ -264,7 +265,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "theme.toLight": "Switch to light theme",
     "works.breadcrumb": "Breadcrumb",
     "works.external": "(external site)",
-    "works.links": "Links",
+    "works.related": "Related videos and posts",
     "works.tech": "Tech stack",
   },
 };

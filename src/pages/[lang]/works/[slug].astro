@@ -4,7 +4,6 @@ import { type CollectionEntry, getCollection } from "astro:content";
 import type { GetStaticPaths } from "astro";
 import FaceIcon from "../../../components/FaceIcon.astro";
 import { homeSectionPath } from "../../../components/site-nav";
-import TerminalCard from "../../../components/TerminalCard.astro";
 import type { Locale } from "../../../i18n/locales";
 import { translate } from "../../../i18n/ui";
 import Layout from "../../../layouts/Layout.astro";
@@ -34,7 +33,6 @@ const metaRows = rows.filter(
 const relatedRows = rows.filter(
   (row) => row.kind === "video" || row.kind === "blog",
 );
-const cardTitle = `~/works/${title}`;
 ---
 
 <Layout lang={lang} title={title} description={description[lang]}>
@@ -96,50 +94,51 @@ const cardTitle = `~/works/${title}`;
       </div>
     </section>
     <div class="body">
-      <div class:list={["top", { single: !thumbnail }]}>
-        {thumbnail && (
-  <div class="visual">
-    <TerminalCard title={cardTitle} lift={false}>
-      {thumbnail === "logo" ? (
-        <div class="thumb logo-face">
-          <FaceIcon kind="mark" size={120} alt="" tone="inverse" />
-        </div>
-      ) : (
-        <div class="thumb photo">
-          <Picture
-            src={thumbnail}
-            alt=""
-            formats={["avif", "webp"]}
-            widths={[400, 800, 1200, 1600]}
-            sizes="(min-width: 1024px) 60vw, 100vw"
-          />
-        </div>
-      )}
-    </TerminalCard>
+      {thumbnail === "logo" && (
+  <div class="thumb win gridbg logo">
+    <FaceIcon kind="mark" size={120} alt="" />
   </div>
 )}
-        <div class="info">
-          <p class="description">{description[lang]}</p>
-          {relatedRows.length > 0 && (
-  <section class="links">
-    <h2>{translate(lang, "works.links")}</h2>
-    <ul>
+      {thumbnail !== undefined && thumbnail !== "logo" && (
+  <div class="thumb win photo">
+    <Picture
+      src={thumbnail}
+      alt=""
+      formats={["avif", "webp"]}
+      widths={[400, 800, 1200, 1600]}
+      sizes="(min-width: 1028px) 900px, (min-width: 900px) calc(100vw - 128px), (min-width: 768px) calc(100vw - 40px), calc(100vw - 32px)"
+    />
+  </div>
+)}
+      <p class="description">{description[lang]}</p>
+      {relatedRows.length > 0 && (
+  <section class="related" aria-labelledby="related-heading">
+    <h2 class="label" id="related-heading">
+      {translate(lang, "works.related")}
+    </h2>
+    <ul class="tiles">
       {relatedRows.map((row) => (
         <li>
-          <a href={row.href}>
-            <span class="kind">{row.kind}</span>
-            <span class="text">
+          <a class="tile win" href={row.href}>
+            <span class="label">{row.kind}</span>
+            <strong>
               {row.text}
-              {row.external && <span aria-hidden="true"> ↗</span>}
-            </span>
+              {row.external && (
+                <>
+                  <span aria-hidden="true"> ↗</span>
+                  <span class="sr-only">
+                    {" "}
+                    {translate(lang, "works.external")}
+                  </span>
+                </>
+              )}
+            </strong>
           </a>
         </li>
       ))}
     </ul>
   </section>
 )}
-        </div>
-      </div>
     </div>
   </main>
 </Layout>
@@ -266,12 +265,6 @@ h1 {
   white-space: nowrap;
 }
 
-.body {
-  display: flex;
-  flex-direction: column;
-  padding: 56px 18px;
-}
-
 @media (min-width: 768px) {
   .head {
     background-size: 48px 48px;
@@ -325,10 +318,6 @@ h1 {
   .cell:last-child {
     border-right: 0;
   }
-
-  .body {
-    padding: 72px 40px;
-  }
 }
 
 @media (min-width: 900px) {
@@ -338,12 +327,6 @@ h1 {
 
   h1 {
     font-size: 52px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .body {
-    padding: 88px 64px;
   }
 }
 
@@ -376,40 +359,29 @@ h1 {
   }
 }
 
-.top {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: start;
-  gap: 32px;
-  margin-top: 32px;
+.body {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
 }
 
-@media (min-width: 768px) {
-  .top {
-    gap: 40px;
-    margin-top: 40px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .top {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    gap: 56px;
-    margin-top: 44px;
-  }
-
-  .top.single {
-    grid-template-columns: minmax(0, 720px);
-  }
-}
-
-.visual {
+.body > * {
   min-width: 0;
+  max-width: 900px;
+  margin: 0;
 }
 
 .thumb {
   display: flex;
+  align-items: center;
+  justify-content: center;
   aspect-ratio: 16 / 9;
+  overflow: hidden;
 }
 
 .photo :global(picture) {
@@ -417,82 +389,94 @@ h1 {
 }
 
 .photo :global(img) {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.logo-face {
-  align-items: center;
-  justify-content: center;
-  background: var(--inv);
-}
-
 @media (max-width: 767px) {
-  .logo-face :global(img) {
+  .logo :global(img) {
     width: 80px;
     height: 80px;
   }
 }
 
-.info {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  min-width: 0;
-}
-
-.single .info {
-  max-width: 720px;
-}
-
-.description {
-  margin: 0;
+.body > .description {
+  max-width: 760px;
   font-size: 17px;
   font-weight: 500;
-  line-height: 1.85;
-  color: var(--fg);
+  line-height: 1.9;
+  color: var(--text);
 }
 
-.links h2 {
+.related {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.related h2 {
   margin: 0;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--legacy-line);
-  font-size: 16px;
-  font-weight: 900;
+  font-weight: 400;
 }
 
-.links ul {
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.links a {
+.tiles li {
   display: flex;
-  align-items: baseline;
-  gap: 16px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--hair);
-  color: inherit;
+  min-width: 0;
+}
+
+.tile {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 18px 20px;
   text-decoration: none;
 }
 
-.links a:hover {
-  opacity: 0.8;
-}
-
-.kind {
-  flex: 0 0 96px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.text {
-  min-width: 0;
-  font-size: 16px;
-  font-weight: 900;
+.tile strong {
+  font-size: 15px;
+  line-height: 1.6;
   overflow-wrap: anywhere;
+}
+
+.tile:hover strong,
+.tile:focus-visible strong {
+  text-decoration: underline 2px var(--keyword);
+  text-underline-offset: 4px;
+}
+
+:root[data-theme="dark"] .tile:hover strong,
+:root[data-theme="dark"] .tile:focus-visible strong {
+  text-decoration: none;
+}
+
+@media (min-width: 768px) {
+  .body {
+    gap: 40px;
+    padding: 56px 20px 96px;
+  }
+
+  .body > .description {
+    font-size: 19px;
+    line-height: 2;
+  }
+}
+
+@media (min-width: 900px) {
+  .body {
+    padding-inline: 64px;
+  }
 }
 </style>
