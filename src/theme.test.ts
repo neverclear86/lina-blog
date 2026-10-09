@@ -11,32 +11,23 @@ import {
 interface ScriptOptions {
   stored?: string | null;
   readThrows?: boolean;
-  prefersDark: boolean;
 }
 
 /**
- * Runs `THEME_SCRIPT` against fake `document`, `localStorage` and `matchMedia`. The parameter
- * names shadow the globals, so the text that the page carries is what runs.
+ * Runs `THEME_SCRIPT` against fake `document`, `localStorage` and `matchMedia`, and returns the
+ * resulting `dataset.theme`. The parameter names shadow the globals, so the text that the page
+ * carries is what runs. `matchMedia` throws when it is called: the script must not read the OS
+ * setting.
  */
 function runThemeScript({
   stored = null,
   readThrows = false,
-  prefersDark,
-}: ScriptOptions) {
+}: ScriptOptions = {}) {
   const storage = new Map<string, string>();
   if (stored !== null) {
     storage.set(THEME_STORAGE_KEY, stored);
   }
   const documentElement = { dataset: {} as { theme?: string } };
-  const listeners: (() => void)[] = [];
-  const media = {
-    matches: prefersDark,
-    addEventListener(type: string, listener: () => void) {
-      if (type === "change") {
-        listeners.push(listener);
-      }
-    },
-  };
   const localStorage = {
     getItem(key: string) {
       if (readThrows) {
@@ -45,96 +36,57 @@ function runThemeScript({
       return storage.get(key) ?? null;
     },
   };
-  const matchMedia = (query: string) => {
-    expect(query).toBe("(prefers-color-scheme: dark)");
-    return media;
+  const matchMedia = () => {
+    throw new Error("the script must not read the OS setting");
   };
   new Function("document", "localStorage", "matchMedia", THEME_SCRIPT)(
     { documentElement },
     localStorage,
     matchMedia,
   );
-  return {
-    theme: () => documentElement.dataset.theme,
-    save: (value: string) => {
-      storage.set(THEME_STORAGE_KEY, value);
-    },
-    changeOs: (dark: boolean) => {
-      media.matches = dark;
-      for (const listener of listeners) {
-        listener();
-      }
-    },
-  };
+  return documentElement.dataset.theme;
 }
 
-const storedValues: (string | null)[] = [null, ...THEMES, "blue"];
-const inputs = storedValues.flatMap((stored) =>
-  [false, true].map((prefersDark) => ({ stored, prefersDark })),
-);
+const storedValues: (string | null)[] = [null, ...THEMES, "blue", ""];
 
 describe("resolveTheme", () => {
-  it("保存値が light か dark ならそれを返す", () => {
-    for (const stored of THEMES) {
-      expect(resolveTheme(stored, false)).toBe<Theme>(stored);
-      expect(resolveTheme(stored, true)).toBe<Theme>(stored);
-    }
+  it("保存値が light ならライトを返す", () => {
+    expect(resolveTheme("light")).toBe<Theme>("light");
   });
 
-  it("保存値が無いと OS の設定に従う", () => {
-    expect(resolveTheme(null, false)).toBe("light");
-    expect(resolveTheme(null, true)).toBe("dark");
+  it("保存値が dark ならダークを返す", () => {
+    expect(resolveTheme("dark")).toBe<Theme>("dark");
   });
 
-  it("保存値が light と dark 以外なら OS の設定に従う", () => {
-    expect(resolveTheme("blue", false)).toBe("light");
-    expect(resolveTheme("", true)).toBe("dark");
+  it("保存値が無いとダークを返す", () => {
+    expect(resolveTheme(null)).toBe<Theme>("dark");
+  });
+
+  it("保存値が light と dark 以外ならダークを返す", () => {
+    expect(resolveTheme("blue")).toBe<Theme>("dark");
+    expect(resolveTheme("")).toBe<Theme>("dark");
   });
 });
 
 describe("THEME_SCRIPT", () => {
-  it("最初の決定は resolveTheme と全ての入力で一致する", () => {
-    for (const { stored, prefersDark } of inputs) {
-      expect(
-        runThemeScript({ stored, prefersDark }).theme(),
-        JSON.stringify({ stored, prefersDark }),
-      ).toBe(resolveTheme(stored, prefersDark));
-    }
-  });
-
-  it("OS の設定の変更の後の決定は resolveTheme と全ての入力で一致する", () => {
-    for (const { stored, prefersDark } of inputs) {
-      const script = runThemeScript({ stored, prefersDark: !prefersDark });
-      script.changeOs(prefersDark);
-      expect(script.theme(), JSON.stringify({ stored, prefersDark })).toBe(
-        resolveTheme(stored, prefersDark),
+  it("決定は resolveTheme と全ての保存値で一致する", () => {
+    for (const stored of storedValues) {
+      expect(runThemeScript({ stored }), JSON.stringify({ stored })).toBe(
+        resolveTheme(stored),
       );
     }
   });
 
-  it("保存値が無い間は OS の設定の変更に追従する", () => {
-    const script = runThemeScript({ prefersDark: false });
-    expect(script.theme()).toBe("light");
-    script.changeOs(true);
-    expect(script.theme()).toBe("dark");
-    script.changeOs(false);
-    expect(script.theme()).toBe("light");
+  it("保存値が無いとダークにする", () => {
+    expect(runThemeScript()).toBe("dark");
   });
 
-  it("保存された後は OS の設定の変更に追従しない", () => {
-    const script = runThemeScript({ prefersDark: false });
-    script.save("light");
-    script.changeOs(true);
-    expect(script.theme()).toBe("light");
+  it("light が保存されているとライトにする", () => {
+    expect(runThemeScript({ stored: "light" })).toBe("light");
   });
 
-  it("localStorage の読み取りが例外を投げても OS の設定で決まる", () => {
-    expect(
-      runThemeScript({ readThrows: true, prefersDark: true }).theme(),
-    ).toBe("dark");
-    expect(
-      runThemeScript({ readThrows: true, prefersDark: false }).theme(),
-    ).toBe("light");
+  it("localStorage の読み取りが例外を投げてもダークにする", () => {
+    expect(runThemeScript({ readThrows: true })).toBe("dark");
   });
 });
 
