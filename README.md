@@ -148,7 +148,7 @@ Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/mark
 Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema, the RSS items and the Markdown plugins; `src/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`, and the plugins in `src/markdown/` with Sätteri's `markdownToHtml()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 
-Colors are tested the same way. `src/styles/tokens.test.ts` checks that every foreground and background token pair used for text reaches 4.5:1 (WCAG AA) in both themes and that every icon color reaches 3:1 on `--surf`, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--fg)` and so on) instead; inline SVG takes `currentColor`. The service icons in `src/components/icons/` are also checked by `icons.test.ts`: their `fill` and `stroke` are only `currentColor` or `none`, because named colors such as `black` pass the check above.
+Colors are tested the same way. `src/styles/tokens.test.ts` checks that the plan A tokens have the values of the design, that every foreground and background token pair used for text (a translucent background is laid over each fill that can come under it) reaches 4.5:1 (WCAG AA) in both themes and that every icon color reaches 3:1 on `--surf` and `--focus-ring` on the page backgrounds, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--fg)` and so on) instead; inline SVG takes `currentColor`. The service icons in `src/components/icons/` are also checked by `icons.test.ts`: their `fill` and `stroke` are only `currentColor` or `none`, because named colors such as `black` pass the check above.
 
 To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
 
@@ -159,7 +159,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 
 | File         | Holds                                                                      |
 | :----------- | :------------------------------------------------------------------------- |
-| `tokens.css` | Color tokens (CSS variables) for the light and dark themes                 |
+| `tokens.css` | Color tokens (CSS variables): the plan A tokens for the light and dark themes, the colors that stay the same in both themes, and the legacy tokens (including `--legacy-line`, `--legacy-grid` and `--legacy-ink`) kept until the components of the earlier design are removed |
 | `global.css` | Styles of `body` (colors and their fade between the themes) and decorations used across pages, such as `.grid` and `.cgrid` |
 | `shapes.css` | Notched corners (`.shape`, `.shapeL`, `.shapeS`), hard shadows (`.shadow`, `.shadowF`, `.shadowInk`), the hover lift (`.lift`) and the keyboard focus outline |
 | `motion.css` | Animations that keep running: the pixel art bob (`.bob`), the blinking cursor (`.caret`) and the typed command (`.a-typeLoop`); and the section reveal on scroll (`.reveal`), enabled only inside `@supports (animation-timeline: view())`. All are stopped under `prefers-reduced-motion: reduce` |
@@ -171,13 +171,13 @@ A component that must style an element outside its own markup, such as `<html da
 wraps only that selector in `:global()`.
 
 The inline script in the `<head>` of `src/layouts/Layout.astro` (`THEME_SCRIPT` in `src/theme.ts`) sets `<html data-theme>` before the first paint.
-It takes the value saved in `localStorage` under the key `theme` (`light` or `dark`), or `prefers-color-scheme` while nothing valid is saved, and follows changes of the OS setting until a theme is saved.
-Without JavaScript, the page keeps the light theme that `Layout.astro` renders.
-`src/components/ThemeToggle.astro` switches the theme with `toggleTheme` and saves it under the same key; when saving throws, the switch lasts only until the next page or a change of the OS setting.
+It sets the light theme when `localStorage` holds `light` under the key `theme`, and the dark theme in every other case: nothing saved, any other value, or `localStorage` throwing. It does not read `prefers-color-scheme` and does not follow changes of the OS setting.
+Without JavaScript, the page keeps the dark theme that `Layout.astro` renders.
+`src/components/ThemeToggle.astro` switches the theme with `toggleTheme` and saves it under the same key; when saving throws, the switch lasts only until the next page.
 
 `src/dev/components.astro` shows the shared shapes, the shared animations and the components on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
 `astro dev` serves them at `/dev/components/` and `/dev/markdown/`, and `astro build` leaves them out of `dist/` unless `LINA_DEV_PAGES=1` is set.
-Add `?theme=dark` or `?theme=light` to the URL of `/dev/components/` to see that theme whatever the OS setting is.
+Add `?theme=dark` or `?theme=light` to the URL of `/dev/components/` to see that theme whatever is saved.
 To capture them with `.claude/scripts/screenshot.mjs`, which serves `dist/`, build with `LINA_DEV_PAGES=1 bun run build`.
 A new component adds its samples to `/dev/components/`, and a new Markdown syntax adds its examples to `src/markdown/sample.md`.
 

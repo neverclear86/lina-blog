@@ -11,7 +11,7 @@
 type Props = {
   /** Height, padding and font size: "md" (44px, the header) or "lg" (54px, the form). */
   size?: "md" | "lg";
-  /** Shadow color: "shadow" (`--shadow`) or "ink" (`--ink`, on the paper form). */
+  /** Shadow color: "shadow" (`--shadow`) or "ink" (`--legacy-ink`, on the paper form). */
   shadow?: "shadow" | "ink";
   /** Classes for the outer element, such as a layout class of the caller. */
   class?: string;
@@ -85,7 +85,7 @@ button.button {
   align-items: center;
   box-sizing: border-box;
   background: var(--orange);
-  color: var(--ink);
+  color: var(--legacy-ink);
   font-weight: 900;
   white-space: nowrap;
 }

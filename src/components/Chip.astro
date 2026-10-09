@@ -8,7 +8,7 @@
  * `shapes.css`.
  */
 interface Props {
-  /** Colors: "pink" or "orange" with `--ink` text, or "neutral" (`--chip`, `--fg`). */
+  /** Colors: "pink" or "orange" with `--legacy-ink` text, or "neutral" (`--chip`, `--fg`). */
   tone?: "pink" | "orange" | "neutral";
   /** Tilts the chip by -4deg, like the one in the hero. */
   tilt?: boolean;
@@ -39,12 +39,12 @@ const { tone = "neutral", tilt = false, class: className } = Astro.props;
 
 .pink {
   background: var(--pink);
-  color: var(--ink);
+  color: var(--legacy-ink);
 }
 
 .orange {
   background: var(--orange);
-  color: var(--ink);
+  color: var(--legacy-ink);
 }
 
 .neutral {

@@ -24,14 +24,14 @@ body {
 
 /*
  * Grid backgrounds: 1px lines every 48px, copied from `.grid` and `.cgrid` in
- * `design/CBMain.dc.html`. `.grid` draws `--grid` lines for sections on `--bg`, and `.cgrid`
+ * `design/CBMain.dc.html`. `.grid` draws `--legacy-grid` lines for sections on `--bg`, and `.cgrid`
  * draws `--cgrid` lines for sections on `--cbg`. They set only `background-image` and
  * `background-size`, so the element keeps its own `background-color`.
  */
 .grid {
   background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    linear-gradient(var(--legacy-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--legacy-grid) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 

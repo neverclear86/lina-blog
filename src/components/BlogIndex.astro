@@ -36,12 +36,12 @@ const text = blogListText(tag);
   <nav class="filter" aria-label={translate("ja", "blog.filter.label")}>
     <ul>
       {tagFilterLinks(tag).map((link) => (
-        <li>
-          <a href={link.href} aria-current={link.current ? "page" : undefined}>
-            {translate("ja", link.key)}
-          </a>
-        </li>
-      ))}
+  <li>
+    <a href={link.href} aria-current={link.current ? "page" : undefined}>
+      {translate("ja", link.key)}
+    </a>
+  </li>
+))}
     </ul>
   </nav>
   <PostList posts={posts} emptyText={translate("ja", text.noPosts)} />
@@ -89,7 +89,7 @@ const text = blogListText(tag);
   margin: 0;
   padding: 0;
   list-style: none;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--legacy-line);
 }
 
 .filter a {
