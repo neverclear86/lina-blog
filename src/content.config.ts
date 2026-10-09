@@ -1,18 +1,22 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { blogSchema } from "./blog-schema";
+import { devPagesEnabled } from "./dev/dev-pages";
 import { workSchema } from "./work-schema";
 
 /**
  * Blog posts: Markdown files under `src/content/blog/`. The glob loader uses a post's `slug`
  * frontmatter as its entry id.
  *
- * `astro dev` also loads `src/content/blog-dev/`, posts for checking how pages look. They are
- * checked by the same schema, and `astro build` leaves them out.
+ * `astro dev` also loads `src/content/blog-dev/`, posts for checking how pages look, and so does
+ * `astro build` when `LINA_DEV_PAGES` is `1` (the same switch as the dev pages, `devPagesEnabled`).
+ * They are checked by the same schema. In that build they also reach `/blog/`, the tag pages, the latest posts
+ * on the home page, `/rss.xml` and the text version; without the variable `astro build` leaves
+ * them out.
  */
 const blog = defineCollection({
   loader: glob({
-    pattern: import.meta.env.DEV
+    pattern: devPagesEnabled(import.meta.env.DEV ? "dev" : "build", process.env)
       ? ["blog/**/*.md", "blog-dev/**/*.md"]
       : "blog/**/*.md",
     base: "./src/content",

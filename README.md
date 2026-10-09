@@ -29,7 +29,7 @@ bun create astro@latest -- --template basics
 │   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
 │   ├── contact-form.ts   # Contact form states before and after sending, their UI strings and the widget size, unit-tested
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
-│   ├── content.config.ts # blog and works collections: src/content/blog/ (and blog-dev/ in astro dev) checked by blog-schema.ts, src/content/works/ checked by work-schema.ts
+│   ├── content.config.ts # blog and works collections: src/content/blog/ (and blog-dev/ in astro dev or with LINA_DEV_PAGES=1) checked by blog-schema.ts, src/content/works/ checked by work-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── latest-videos.ts  # Splits the YouTube videos into the Latest card and list, JST dates, unit-tested
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
@@ -86,7 +86,7 @@ bun create astro@latest -- --template basics
 │   │   ├── Works.astro           # Works section of the top page (04 works): the heading and a WorkTile per work, from the works collection
 │   │   └── icons/                # Service icons for IconLink; sources and terms in icons/README.md
 │   ├── content/
-│   │   ├── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
+│   │   ├── blog-dev/     # Posts for checking how pages look; loaded by astro dev (or with LINA_DEV_PAGES=1)
 │   │   └── works/        # Works, one YAML file per work (placeholder data), with placeholder.png
 │   ├── dev/
 │   │   ├── components.astro  # /dev/components/: samples of the shared shapes, animations, components and avatar images
@@ -157,7 +157,7 @@ Pages are prerendered unless they export `prerender = false`. The Worker runs fi
 
 Pages that exist in every language go in `src/pages/[lang]/` and are generated once for each locale in `src/i18n/locales.ts` (`/ja/`, `/en/`); their UI strings come from `src/i18n/ui.ts`. Pages outside `[lang]/`, such as the Japanese-only blog under `/blog/`, have no language prefix. Astro's `i18n()` handler in `src/fetch.ts` is never reached, so `astro build` warns that the project does not call it; running it would answer 404 for those unprefixed paths. The layout links every page to the same path in the other locales (`src/i18n/paths.ts`); a page without a language prefix links to the other locale's top page. Every page also has a canonical link and hreflang alternates, as absolute URLs under `site` in `astro.config.mjs` (`canonicalUrl` and `alternateLinks` in `src/i18n/paths.ts`): a page under `[lang]/` lists itself in each locale and `x-default` pointing to `/`, and a page without a language prefix lists only itself, in Japanese.
 
-Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema, and `astro build` leaves them out, so they never reach `dist/`.
+Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema. `astro build` leaves them out unless `LINA_DEV_PAGES=1` is set (see “CSS”); with it they reach `dist/` like other posts, in `/blog/`, the tag pages, the latest posts on the home page, `/rss.xml` and the text version, so that build is only for screenshots and is never deployed.
 
 Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are highlighted at build time by `src/markdown/highlight.ts`, which gives tokens role classes such as `hl-keyword` instead of inline styles; `markdown.syntaxHighlight` is off so Astro's own Shiki does not run. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player.
 
@@ -200,6 +200,7 @@ Without JavaScript, the page keeps the dark theme that `Layout.astro` renders.
 `astro dev` serves them at `/dev/components/` and `/dev/markdown/`, and `astro build` leaves them out of `dist/` unless `LINA_DEV_PAGES=1` is set.
 Add `?theme=dark` or `?theme=light` to the URL of `/dev/components/` to see that theme whatever is saved.
 To capture them with `.claude/scripts/screenshot.mjs`, which serves `dist/`, build with `LINA_DEV_PAGES=1 bun run build`.
+That build also loads the posts in `src/content/blog-dev/` (see “Project Structure”), so pages that list posts, such as `/blog/`, can be captured with posts in them.
 A new component adds its samples to `/dev/components/`, and a new Markdown syntax adds its examples to `src/markdown/sample.md`.
 
 ## 🔤 Fonts
