@@ -35,6 +35,8 @@ const ja = {
   "avatar.note.qr": "袖のQRコード",
   "avatar.note.nail": "ネイル",
   "avatar.note.nametag": "ネームタグ",
+  // Name of the tab list of the three views of the avatar (src/components/AvatarThreeView.astro).
+  "avatar.tabsLabel": "アバターの向き",
   // Labels of the post tags. The Japanese labels are the tag names in the frontmatter.
   "blog.tag.devlog": "制作記",
   "blog.tag.diary": "日記",
@@ -186,6 +188,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "avatar.note.qr": "Sleeve QR",
     "avatar.note.nail": "Nails",
     "avatar.note.nametag": "Name tag",
+    "avatar.tabsLabel": "Avatar view",
     "blog.tag.devlog": "Devlog",
     "blog.tag.diary": "Diary",
     "blog.tag.tech": "Tech",
