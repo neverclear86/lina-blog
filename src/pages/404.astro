@@ -1,24 +1,37 @@
 ---
 import Button from "../components/Button.astro";
-import SectionHeading from "../components/SectionHeading.astro";
+import SectionTitle from "../components/SectionTitle.astro";
+import TerminalCard from "../components/TerminalCard.astro";
 import { translate } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout lang="ja">
   <main class="not-found">
-    <SectionHeading
+    <SectionTitle
       as="h1"
-      label="$ cd ~/404"
-      title="404"
-      subtitle={translate("ja", "notFound.subtitle")}
+      no="404"
+      label="not found"
+      path="~/404"
+      title={translate("ja", "notFound.subtitle")}
     />
-    <p lang="en">
-      {translate("en", "notFound.message")}{" "}<a href="/en/" hreflang="en"
-        >{translate("en", "notFound.topLink")}</a
-      >
-    </p>
-    <Button href="/ja/">{translate("ja", "notFound.back")}</Button>
+    <TerminalCard title="~/404" lift={false} class="card">
+      <div class="body">
+        <p class="shell" aria-hidden="true">
+          <span class="prompt">$</span>{" "}cd ~/404<br>
+          <span class="error">cd: no such file or directory: ~/404</span>
+        </p>
+        <p>{translate("ja", "notFound.message")}</p>
+        <p lang="en">
+          {translate("en", "notFound.message")}{" "}<a href="/en/" hreflang="en"
+            >{translate("en", "notFound.topLink")}</a
+          >
+        </p>
+        <Button href="/ja/" class="back"
+          >{translate("ja", "notFound.back")}</Button
+        >
+      </div>
+    </TerminalCard>
   </main>
 </Layout>
 
@@ -26,29 +39,63 @@ import Layout from "../layouts/Layout.astro";
 .not-found {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 44px;
-  padding: 88px 16px;
+  gap: 32px;
+  padding: 48px 16px 88px;
 }
 
 @media (min-width: 768px) {
   .not-found {
-    padding-inline: 32px;
+    gap: 44px;
+    padding: 100px 20px;
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 900px) {
   .not-found {
     padding-inline: 64px;
   }
 }
 
+.not-found :global(.card) {
+  width: 100%;
+  max-width: 720px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 26px 24px;
+}
+
 p {
   margin: 0;
+  line-height: 1.8;
+}
+
+.shell {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.prompt {
+  color: var(--acc-text);
+  font-weight: 700;
+}
+
+.error {
+  color: var(--fg);
 }
 
 a {
   color: inherit;
   text-decoration: underline;
+}
+
+.body :global(.back) {
+  margin-top: 8px;
 }
 </style>
