@@ -6,6 +6,9 @@ const ROOT = new URL("../../", import.meta.url);
 /** The kinds of message box an article can write, as the class of an `<aside>`. */
 const KINDS = ["note", "warning"];
 
+/** The class an article adds after the kind to show the face at the left of the box. */
+const FACE = "face";
+
 /** Reads a file by its path from the repository root. */
 function read(path: string): string {
   return readFileSync(new URL(path, ROOT), "utf8");
@@ -26,13 +29,22 @@ describe("サンプル記事のメッセージボックス", () => {
     }
   });
 
-  it("サンプル記事の <aside> は種類のクラスだけを持ち、win などの内部の名前を書かない", () => {
+  it("サンプル記事の <aside> は種類のクラスと face だけを持ち、win などの内部の名前を書かない", () => {
     const tags = sampleProse().match(/<aside\b[^>]*>/g) ?? [];
     expect(tags.length).toBeGreaterThanOrEqual(KINDS.length);
     for (const tag of tags) {
       const classes = tag.match(/^<aside class="([^"]*)">$/)?.[1].split(/\s+/);
-      expect(classes).toHaveLength(1);
       expect(KINDS).toContain(classes?.[0]);
+      expect(classes?.slice(1)).toEqual(
+        classes && classes.length > 1 ? [FACE] : [],
+      );
+    }
+  });
+
+  it("サンプル記事は種類ごとに顔ありの <aside> の例を持つ", () => {
+    const prose = sampleProse();
+    for (const kind of KINDS) {
+      expect(prose).toContain(`<aside class="${kind} ${FACE}">`);
     }
   });
 
@@ -53,5 +65,6 @@ describe("サンプル記事のメッセージボックス", () => {
     expect(rows.map((row) => row.split("|")[1].trim())).toEqual(
       KINDS.map((kind) => `\`${kind}\``),
     );
+    expect(section).toContain(`<aside class="note ${FACE}">`);
   });
 });

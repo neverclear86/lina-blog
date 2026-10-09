@@ -375,8 +375,8 @@ describe("記事のメッセージボックス", () => {
 
   it("警告だけが上端の縞を背景の 1 層目に持ち、地の --panel を最後の層に残す", () => {
     const warning = bodyOf(article(), "aside.warning") ?? "";
-    expect(warning).toMatch(/background:\s*repeating-linear-gradient\(/);
-    expect(warning).toMatch(/var\(--panel\);\s*$/);
+    expect(warning).toMatch(/--stripes:\s*repeating-linear-gradient\(/);
+    expect(warning).toMatch(/background: var\(--stripes\), var\(--panel\);/);
     expect(bodyOf(article(), "aside:is(.note, .warning)")).not.toContain(
       "gradient",
     );
@@ -392,5 +392,27 @@ describe("記事のメッセージボックス", () => {
     );
     expect(bodyOf(text, "aside.warning")).toContain("padding-top: 22px;");
     expect(bodyOf(article(), "aside.warning")).toContain("padding-top: 18px;");
+  });
+
+  it("face は hate.webp を背景の層に置き、768px 未満で 52px × 70px、以上で 72px × 96px にする", () => {
+    const face = bodyOf(article(), "aside:is(.note, .warning).face") ?? "";
+    expect(face).toContain(
+      '--face: url("../assets/hate.webp") 14px center / 52px 70px no-repeat;',
+    );
+    expect(face).toContain("min-height: 70px;");
+    expect(face).toContain("padding-left: 78px;");
+    expect(face).toContain("background: var(--face), var(--panel);");
+    const wideFace = bodyOf(wide(), "aside:is(.note, .warning).face") ?? "";
+    expect(wideFace).toContain(
+      '--face: url("../assets/hate.webp") 20px center / 72px 96px no-repeat;',
+    );
+    expect(wideFace).toContain("min-height: 96px;");
+    expect(wideFace).toContain("padding-left: 108px;");
+  });
+
+  it("顔ありの警告は縞を 1 層目、顔を 2 層目に置き、地の --panel を最後の層に残す", () => {
+    expect(bodyOf(article(), "aside.warning.face")).toContain(
+      "background: var(--stripes), var(--face), var(--panel);",
+    );
   });
 });
