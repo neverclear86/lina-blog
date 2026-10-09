@@ -22,8 +22,7 @@ import LatestVideoList from "../components/LatestVideoList.astro";
 import NameLogo from "../components/NameLogo.astro";
 import PageHead from "../components/PageHead.astro";
 import PixelArt from "../components/PixelArt.astro";
-import PostCard from "../components/PostCard.astro";
-import PostList from "../components/PostList.astro";
+import PostRows from "../components/PostRows.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import SectionTitle from "../components/SectionTitle.astro";
 import Tape from "../components/Tape.astro";
@@ -71,17 +70,16 @@ const samplePosts: ComponentProps<typeof LatestPosts>["posts"] = [
   },
 ];
 
-// Posts for the post list samples: a title that wraps to three lines or more at 390px, three
-// tags, a sponsor, a ZWJ emoji and a flag. They are not in date order, to show that the list
-// keeps the order it is given.
-const sampleListPosts: ComponentProps<typeof PostList>["posts"] = [
+// Posts for the post rows samples: a title that wraps to three lines or more at 390px, three
+// tags and a sponsor. They are not in date order, to show that the rows keep the order they are
+// given.
+const sampleListPosts: ComponentProps<typeof PostRows>["posts"] = [
   {
     data: {
       title: "サイトをAstroで作り直した話",
       slug: "sample-post-devlog",
       date: new Date("2026-09-20"),
       tags: ["制作記"],
-      emoji: "🛠️",
     },
   },
   {
@@ -91,7 +89,6 @@ const sampleListPosts: ComponentProps<typeof PostList>["posts"] = [
       slug: "sample-post-long-title",
       date: new Date("2026-09-12"),
       tags: ["技術", "制作記", "日記"],
-      emoji: "🧑‍💻",
     },
   },
   {
@@ -100,7 +97,6 @@ const sampleListPosts: ComponentProps<typeof PostList>["posts"] = [
       slug: "sample-post-diary",
       date: new Date("2026-08-20"),
       tags: ["日記"],
-      emoji: "🇯🇵",
     },
   },
   {
@@ -109,7 +105,6 @@ const sampleListPosts: ComponentProps<typeof PostList>["posts"] = [
       slug: "sample-post-sponsor",
       date: new Date("2026-08-28"),
       tags: ["技術"],
-      emoji: "⌨️",
       sponsor: { name: "サンプル株式会社" },
     },
   },
@@ -119,7 +114,6 @@ const sampleListPosts: ComponentProps<typeof PostList>["posts"] = [
       slug: "sample-post-short",
       date: new Date("2026-08-01"),
       tags: ["技術"],
-      emoji: "📝",
     },
   },
 ];
@@ -823,17 +817,27 @@ const sampleVideos: YouTubeVideo[] = [
     <section id="post-list">
       <h2>記事の一覧</h2>
       <div class="stack">
-        <PostList
+        <PostRows
+          path="~/blog"
           posts={sampleListPosts}
           emptyText={translate("ja", "latest.blog.noPosts")}
         />
-        <PostList
+        <PostRows
+          path="~/blog/tags/tech"
           posts={[]}
-          emptyText={translate("ja", "latest.blog.noPosts")}
+          emptyText={translate("ja", "blog.tagPage.tech.noPosts")}
         />
-        <div class="post-card-sample">
-          <PostCard post={sampleListPosts[0]} class="is-focus" />
-        </div>
+        <PostRows
+          path="~/blog"
+          posts={sampleListPosts}
+          emptyText={translate("en", "latest.blog.noPosts")}
+          lang="en"
+        >
+          <a slot="action" href="/blog/" hreflang="ja"
+            >{translate("en", "latest.blog.all")}{" "}
+            <span aria-hidden="true">→</span></a
+          >
+        </PostRows>
       </div>
     </section>
 
@@ -1084,11 +1088,6 @@ const sampleVideos: YouTubeVideo[] = [
 .latest-list-sample :global(.latest-video-list),
 .latest-list-narrow :global(.latest-video-list) {
   display: flex;
-}
-
-/* Width of a card in the two columns of the post list at 1440px on this page. */
-.post-card-sample {
-  max-width: 688px;
 }
 
 .latest-narrow,
