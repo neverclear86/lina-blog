@@ -52,10 +52,7 @@ bun create astro@latest -- --template basics
 │   ├── youtube-feed.ts   # Channel RSS feed to the newest videos at build time (WebP or JPEG thumbnails), unit-tested
 │   ├── assets/           # Images processed by astro:assets
 │   │   ├── <avatar>.webp   # Nine avatars of v2.1 (rohan, lgtm-fullbody, happy-fullbody, main-visual, threeview-front/side/back, lgtm-bastup, hate), made by scripts/avatars/ (see "Images and caching")
-│   │   ├── icon/           # Face mark and avatar SVGs of the brand kit (regular and small versions), used as they are by FaceIcon
-│   │   ├── logo-black.png  # Black logo (light theme, or inverse faces on the dark theme), optimized by astro:assets
-│   │   ├── logo-light.png  # Logo (light theme)
-│   │   └── logo-white.png  # White logo (dark theme, or inverse faces on the light theme)
+│   │   └── icon/           # Face mark and avatar SVGs of the brand kit (regular and small versions), used as they are by FaceIcon
 │   ├── components/
 │   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, YouTube embeds, accordions, message boxes) and puts the copy button on code blocks
@@ -63,8 +60,6 @@ bun create astro@latest -- --template basics
 │   │   ├── ArticleToc.astro      # Table of contents of a post: the neo-tree window in the left column from 1024px, a closed <details> before the body below it; the h2 being read is marked
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: in a row from 1200px, below it stacked or one at a time with tabs
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
-│   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
-│   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
 │   │   ├── ContactBand.astro     # Contact band of the top page: heading, lead, a button to the contact page and the thumbs-up
 │   │   ├── ContactForm.astro     # Contact form of the contact page in a window of plan A, sent with Turnstile
 │   │   ├── face-icon.ts          # Picks the brand kit files of a face mark or avatar from its size and tone, unit-tested
@@ -75,14 +70,10 @@ bun create astro@latest -- --template basics
 │   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band whose text and hatch flow, name logo with a blinking cursor, heading, intro, button to the latest video, the account window, the stripes below (flowing right) and HeroPoses in the right column; when the page opens, the left column rises in turn and the band and the hatch open upwards
 │   │   ├── HeroAccount.astro     # Account window of the hero: avatar, @LinaTsukusu and six link squares
 │   │   ├── HeroPoses.astro       # Right column of the hero: four poses switched by a button, ruler and table; when the page opens, the first pose slides in from the right
-│   │   ├── IconButton.astro      # Square icon-only button of the earlier design (only the dev samples use it), named by an aria-label or a hidden label slot
-│   │   ├── IconLink.astro        # Icon square with a label below, for the social links
-│   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
 │   │   ├── LatestPosts.astro     # Blog section of the home page: heading and a PostRows window of the newest posts
 │   │   ├── LatestVideoFeature.astro # Latest section: newest video as a large window with a NEW chip, or a no-signal window that links to the channel
 │   │   ├── LatestVideoList.astro # Latest section: the next videos as small windows with JST dates, and the YouTube channel button; hidden below 768px
-│   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for --inv faces
 │   │   ├── NameLogo.astro        # Name logo of the brand kit as inline SVG: compact, full and full-sub, painted with the --lg-* tokens
 │   │   ├── PageHead.astro        # Head of the blog pages and the contact page: grid background, diagonal band and the slot with an h1
 │   │   ├── PostNav.astro         # Links to the posts one step older (prev) and newer (next) at the end of a post's page; nothing when there are none
@@ -94,12 +85,11 @@ bun create astro@latest -- --template basics
 │   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
 │   │   ├── SiteHeader.astro      # Site header, sticky: compact name logo; from 1024px the navigation 00 top to 04 works with an indicator on the top page that follows the section being read, JA / EN, theme switch and contact button, below 1024px the theme switch and a menu button that opens a popover sheet; on a post's page a line under it for how far the reader is
 │   │   ├── SponsorNotice.astro   # PR window above the body of a sponsored blog post: orange PR chip and the sponsor's name
-│   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: an .iconbtn that shows the moon or the sun with a name that says the next theme, or a button with a sun and the current theme
 │   │   ├── three-view-tabs.ts    # Which view of the avatar a key, a swipe or a tap selects, and the swipe gesture, unit-tested
 │   │   ├── WorkTile.astro        # Window tile of a work: ~/works/<title>, a line of description and the technology tags; a link or a plain box
 │   │   ├── Works.astro           # Works section of the top page (04 works): the heading and a WorkTile per work, from the works collection
-│   │   └── icons/                # Service icons for IconLink and HeroAccount; sources and terms in icons/README.md
+│   │   └── icons/                # Service icons for HeroAccount; sources and terms in icons/README.md
 │   ├── content/
 │   │   ├── blog-dev/     # Posts for checking how pages look; loaded by astro dev (or with LINA_DEV_PAGES=1)
 │   │   └── works/        # Works, one YAML file per work (placeholder data), with placeholder.png
@@ -146,7 +136,7 @@ bun create astro@latest -- --template basics
 │       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ink, .btn-ghost), icon links (.sq, .iconbtn) and page switch links (.ws) of plan A
 │       ├── global.css    # body colors and their fade, the links, the keyboard focus outline, and the grid backgrounds (.grid, .cgrid)
 │       ├── labels.css    # Labels of plan A: .label (shared with the labels of an article's message boxes), .tag and the category chip .chip-acc
-│       ├── motion.css    # The blinking cursor of the name logo (.blink-on), the appearance when the page opens (.rv, band-in) and the animations of the old design that only the component samples use (.bob, .caret, .a-typeLoop, .reveal), stopped under reduced motion
+│       ├── motion.css    # The blinking cursor of the name logo (.blink-on), the appearance when the page opens (.rv, band-in) and the animations of the old design that only the component samples use (.caret, .a-typeLoop, .reveal), stopped under reduced motion
 │       ├── shapes.css    # Notched corners, hard shadows and the lift
 │       ├── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
 │       └── window.css    # Windows (.win, shared with the accordions and the message boxes of articles), corner ticks (.ticks, .ticks-acc), grid background, the stripe band (flowing right) and the avatar shadow of plan A
@@ -201,7 +191,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ink`, `.btn-ghost`), icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) and page switch links (`.ws`, `.ws.on`) of plan A |
 | `window.css` | Plan A windows (`.win`, `.article-body details` and an article's message boxes; a link window turns its border on hover, and an accordion while its `<summary>` is hovered or focused), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid background (`.gridbg`) and the stripe band (`.stripes`, flowing right) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions, and the flow of `.stripes` stops, under `prefers-reduced-motion: reduce` |
 | `labels.css` | Labels of plan A: the caption `.label` (whose declarations the labels of an article's message boxes share), the bordered tag `.tag` and the orange category chip `.chip-acc` |
-| `motion.css` | The animations a page uses: the blinking cursor of the name logo (`.blink-on`) and the appearance when the page opens (`.rv`, and the keyframes `band-in` that `Hero.astro` plays). The animations of the old design, which only `src/dev/components.astro` uses, are the pixel art bob (`.bob`), the blinking cursor (`.caret`), the typed command (`.a-typeLoop`) and the section reveal on scroll (`.reveal`, enabled only inside `@supports (animation-timeline: view())`). All are stopped under `prefers-reduced-motion: reduce` |
+| `motion.css` | The animations a page uses: the blinking cursor of the name logo (`.blink-on`) and the appearance when the page opens (`.rv`, and the keyframes `band-in` that `Hero.astro` plays). The animations of the old design, which only `src/dev/components.astro` uses, are the blinking cursor (`.caret`), the typed command (`.a-typeLoop`) and the section reveal on scroll (`.reveal`, enabled only inside `@supports (animation-timeline: view())`). All are stopped under `prefers-reduced-motion: reduce` |
 
 A global file holds only what several components share.
 Styles that belong to one component go in that component's scoped `<style>`.
@@ -248,10 +238,9 @@ repository or to `dist/`.
 
 ## 🖼️ Images and caching
 
-Raster images in `src/assets/` are rendered with `Picture` or `getImage` from `astro:assets`.
+Raster images in `src/assets/` are rendered with `Picture` from `astro:assets` on the pages.
 `astro build` converts them once (`imageService: "compile"`), so no image is transformed at
-request time. Photos and the logo are offered as AVIF and WebP at several widths or densities.
-The pixel art stays PNG at a fixed size, so no pixel is blended.
+request time. The avatars are offered as AVIF and WebP at several widths or densities.
 The favicons are files of the brand kit in `public/favicon/`, copied without changes, so their
 URLs do not change between builds.
 The face icons in `src/assets/icon/` are the SVG files of the brand kit, kept as they are:

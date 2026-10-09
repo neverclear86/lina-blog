@@ -31,15 +31,10 @@ const reachable = (roots: string[]) => {
 const COMPONENTS = reachable(astroFiles(resolve(SRC, "pages")));
 
 describe("ページから届く部品が使う動き", () => {
-  it("旧デザインの動きのクラスと部品を使わない", () => {
-    const classes = /(["\s])(bob|caret|a-typeLoop|reveal)(["\s])/;
+  it("旧デザインの動きのクラスを使わない", () => {
+    const classes = /(["\s])(caret|a-typeLoop|reveal)(["\s])/;
     const violations = [...COMPONENTS]
-      .filter(
-        ([, text]) =>
-          classes.test(text) ||
-          /import\s+(Kao|Tape)\b/.test(text) ||
-          /<PixelArt\b[^>]*\sbob\b/.test(text),
-      )
+      .filter(([, text]) => classes.test(text))
       .map(([path]) => relative(SRC, path));
     expect(violations).toEqual([]);
   });

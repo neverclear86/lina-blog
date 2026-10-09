@@ -344,8 +344,8 @@ const FIELD_BORDER_PAIRS: readonly (readonly [
 );
 
 /**
- * Icon colors of `src/components/icons/` on the face of `IconLink` (`--surf`) and on the face of
- * `.sq` (`--bg2`), checked in both themes. An icon is a graphical object, so it must reach 3:1
+ * Icon colors of `src/components/icons/` on the legacy token `--surf` and on the face of `.sq`
+ * (`--bg2`), checked in both themes. An icon is a graphical object, so it must reach 3:1
  * (WCAG 2.2 SC 1.4.11).
  */
 const ICON_PAIRS: readonly (readonly [

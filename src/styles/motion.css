@@ -3,14 +3,10 @@
  * The ones a page uses are `.blink-on`, which is `.blink-on .cur` in `design/Main.dc.html`, and
  * `.rv` with the keyframes `rv-up` and `band-in`, which follow the ones of the same names in
  * `design/Main.dc.html` (`design/AMobile.dc.html` raises `.rv` by 16px), except that `.rv` keeps
- * nothing after it ends. The other four, `.bob`, `.caret`, `.a-typeLoop` and `.reveal`, are of the
- * old design and no page uses them; they stay for the samples in `src/dev/components.astro`. The
- * keyframes and timings of `.bob`, `.caret` and `.a-typeLoop` are copied from `.bob`, `.cursor`
- * and `.a-typeLoop` in `design/CBMain.dc.html`; `.reveal` is not in the design.
- *
- * `.bob` moves an element up by 4px and back in two steps, for the pixel art
- * (`<PixelArt class="bob" />`). It sets `transform`, so it goes on the image itself, and another
- * effect that sets `transform`, such as `.lift`, goes on an element outside it.
+ * nothing after it ends. The other three, `.caret`, `.a-typeLoop` and `.reveal`, are of the old
+ * design and no page uses them; they stay for the samples in `src/dev/components.astro`. The
+ * keyframes and timings of `.caret` and `.a-typeLoop` are copied from `.cursor` and `.a-typeLoop`
+ * in `design/CBMain.dc.html`; `.reveal` is not in the design.
  *
  * `.caret` blinks the text cursor in `--orange`. The caller writes the glyph and hides it from
  * screen readers: `<span class="caret" aria-hidden="true">▍</span>`.
@@ -44,20 +40,10 @@
  * edge upwards with `clip-path`; the caller writes the `animation` (see `.band` and `.hatch` in
  * `src/components/Hero.astro`). Neither reads the theme, so switching it does not play them again.
  *
- * Under `prefers-reduced-motion: reduce` the six do not move: the pixel art stays in place, the
- * cursors stay shown, the whole command is shown, the sections are shown from the start and the
- * elements with `.rv` are shown whole at once. The callers of `band-in` stop it the same way.
+ * Under `prefers-reduced-motion: reduce` the five do not move: the cursors stay shown, the whole
+ * command is shown, the sections are shown from the start and the elements with `.rv` are shown
+ * whole at once. The callers of `band-in` stop it the same way.
  */
-@keyframes bob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
 @keyframes blink {
   0%,
   49% {
@@ -110,10 +96,6 @@
   }
 }
 
-.bob {
-  animation: bob 1.2s steps(2, jump-none) infinite;
-}
-
 .blink-on .cur {
   animation: blink 1.1s steps(1, end) infinite;
 }
@@ -151,7 +133,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bob,
   .blink-on .cur,
   .caret,
   .a-typeLoop,

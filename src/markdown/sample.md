@@ -45,7 +45,7 @@ h4 は本文と同じ大きさで、太さで区別する。
 
 画像は本文の幅を超えず、縦横の比を保って縮む。
 
-![立ち姿の創好リナ](../assets/lina-standing.webp)
+![立ち姿の創好リナ](../assets/lgtm-fullbody.webp)
 
 ## 区切り線
 

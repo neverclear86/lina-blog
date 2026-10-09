@@ -46,8 +46,7 @@ describe("Hero の飾りと窓の差し込み口", () => {
     expect(HERO).toMatch(/<a class="btn btn-acc latest rv" href="#latest">/);
   });
 
-  it("C'案の部品を使わない", () => {
-    expect(HERO).not.toMatch(/import (Kao|Chip|IconLink|Tape)\b/);
+  it("プロフィールのリンクの一覧 PROFILE_LINKS を使わない", () => {
     expect(HERO).not.toMatch(/PROFILE_LINKS/);
   });
 
