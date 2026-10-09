@@ -1,22 +1,11 @@
 /**
  * Orders and labels blog posts for the lists of posts and for the links between posts: the posts
- * newest first by date, the posts with a tag, the chip tone of each tag, and the URL slug and
- * path of each tag's list.
+ * newest first by date, the posts with a tag, and the URL slug and path of each tag's list.
  */
 import type { BlogFrontmatter } from "./blog-schema";
 
 /** A tag of a blog post, one of the values `blogSchema` allows. */
 export type BlogTag = BlogFrontmatter["tags"][number];
-
-/** Tone of the chip that shows a tag, one of the tones of `src/components/Chip.astro`. */
-export type TagChipTone = "orange" | "neutral";
-
-/** Tone of each tag's chip. A post about making something stands out in orange. */
-const TAG_CHIP_TONES: Record<BlogTag, TagChipTone> = {
-  制作記: "orange",
-  技術: "neutral",
-  日記: "neutral",
-};
 
 /** URL slug of a tag, used in the path of the tag's list and in its `blog.tag.*` UI key. */
 export type TagSlug = "devlog" | "tech" | "diary";
@@ -69,9 +58,4 @@ export function tagSlug(tag: BlogTag): TagSlug {
 /** Returns the path of the list of posts with `tag`, such as `/blog/tags/tech/`. */
 export function tagPath(tag: BlogTag): string {
   return `/blog/tags/${tagSlug(tag)}/`;
-}
-
-/** Returns the tone of the chip that shows `tag`. */
-export function tagChipTone(tag: BlogTag): TagChipTone {
-  return TAG_CHIP_TONES[tag];
 }

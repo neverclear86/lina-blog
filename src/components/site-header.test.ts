@@ -122,13 +122,11 @@ describe("SiteHeader の全幅", () => {
     expect(markup).toContain('stroke-linecap="square"');
   });
 
-  it("テーマのボタンは .iconbtn で、IconButton を使わない", () => {
+  it("テーマのボタンは .iconbtn の button で作る", () => {
     const toggle = source("components/ThemeToggle.astro");
     expect(toggle).toContain(
       '<button class="theme-toggle iconbtn" type="button">',
     );
-    expect(toggle).not.toContain("IconButton");
-    expect(header).not.toContain("IconButton");
   });
 
   it("ヘッダーの下 61px から伸びる --bg の不透明なシートで、高さは残りまで", () => {

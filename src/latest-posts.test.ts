@@ -4,7 +4,6 @@ import {
   newestPosts,
   postsNewestFirst,
   postsWithTag,
-  tagChipTone,
   tagPath,
   tagSlug,
 } from "./latest-posts";
@@ -52,20 +51,6 @@ describe("newestPosts", () => {
     const input = [...posts];
     newestPosts(input, 2);
     expect(input).toEqual(posts);
-  });
-});
-
-describe("tagChipTone", () => {
-  it("制作記は orange にする", () => {
-    expect(tagChipTone("制作記")).toBe("orange");
-  });
-
-  it("技術は neutral にする", () => {
-    expect(tagChipTone("技術")).toBe("neutral");
-  });
-
-  it("日記は neutral にする", () => {
-    expect(tagChipTone("日記")).toBe("neutral");
   });
 });
 
