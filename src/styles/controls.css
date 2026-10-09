@@ -1,6 +1,6 @@
 /*
  * Buttons, icon links and page switch links of plan A, imported by `src/layouts/Layout.astro`
- * after `shapes.css`. The values are copied from `.btn`, `.btn-acc`, `.btn-ghost`, `.sq` and `.ws`
+ * after `global.css`. The values are copied from `.btn`, `.btn-acc`, `.btn-ghost`, `.sq` and `.ws`
  * of `design/Main.dc.html` and from `.iconbtn` of `design/AArticleMobile.dc.html`. `.btn-ink`
  * takes the colors of the button in the `#contact` section of `design/Main.dc.html`. Colors come
  * only from the tokens in `tokens.css`.

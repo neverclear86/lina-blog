@@ -1,6 +1,6 @@
 /*
  * Windows, corner ticks and background decorations of plan A, imported by
- * `src/layouts/Layout.astro` after `shapes.css`. The values are copied from `design/Main.dc.html`
+ * `src/layouts/Layout.astro` after `controls.css`. The values are copied from `design/Main.dc.html`
  * and, up to 767px, from `design/AMobile.dc.html`, with the colors replaced by the tokens of
  * `tokens.css`.
  *

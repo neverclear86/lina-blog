@@ -63,7 +63,7 @@ bun create astro@latest -- --template basics
 │   │   ├── ContactBand.astro     # Contact band of the top page: heading, lead, a button to the contact page and the thumbs-up
 │   │   ├── ContactForm.astro     # Contact form of the contact page in a window of plan A, sent with Turnstile
 │   │   ├── face-icon.ts          # Picks the brand kit files of a face mark or avatar from its size and tone, unit-tested
-│   │   ├── FaceIcon.astro        # Face mark or avatar from the brand kit SVGs, switched with the theme; tone="inverse" for the mark on --inv and --cbg faces
+│   │   ├── FaceIcon.astro        # Face mark or avatar from the brand kit SVGs, switched with the theme; tone="inverse" for the mark on --text faces
 │   │   ├── footer-links.ts       # Link targets of the footer columns and the footer variants, unit-tested
 │   │   ├── hero-account.ts       # Links of the account window of the hero, with the icon each one shows, unit-tested
 │   │   ├── hero-poses.ts         # Rules of the pose switch of the hero, unit-tested
@@ -94,7 +94,7 @@ bun create astro@latest -- --template basics
 │   │   ├── blog-dev/     # Posts for checking how pages look; loaded by astro dev (or with LINA_DEV_PAGES=1)
 │   │   └── works/        # Works, one YAML file per work (placeholder data), with placeholder.png
 │   ├── dev/
-│   │   ├── components.astro  # /dev/components/: samples of the shared shapes, animations, components and avatar images
+│   │   ├── components.astro  # /dev/components/: samples of the plan A styles, components and avatar images
 │   │   ├── dev-pages.ts      # Adds the dev pages in astro dev (or with LINA_DEV_PAGES=1), unit-tested
 │   │   └── markdown.astro    # /dev/markdown/: sample article with every supported Markdown syntax
 │   ├── i18n/
@@ -103,7 +103,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, and the canonical and hreflang URLs of a page, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, shapes.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro, with the line of how far the reader is in a post when the readingProgress prop is set) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
+│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro, with the line of how far the reader is in a post when the readingProgress prop is set) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code blocks as a window <figure> with a title (file name, language or text), unit-tested
 │   │   ├── highlight.css     # Code block window (frame, title and copy button) and role colors
@@ -134,10 +134,9 @@ bun create astro@latest -- --template basics
 │   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
 │   └── styles/
 │       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ink, .btn-ghost), icon links (.sq, .iconbtn) and page switch links (.ws) of plan A
-│       ├── global.css    # body colors and their fade, the links, the keyboard focus outline, and the grid backgrounds (.grid, .cgrid)
+│       ├── global.css    # body colors, the links and the keyboard focus outline
 │       ├── labels.css    # Labels of plan A: .label (shared with the labels of an article's message boxes), .tag and the category chip .chip-acc
-│       ├── motion.css    # The blinking cursor of the name logo (.blink-on), the appearance when the page opens (.rv, band-in) and the animations of the old design that only the component samples use (.caret, .a-typeLoop, .reveal), stopped under reduced motion
-│       ├── shapes.css    # Notched corners, hard shadows and the lift
+│       ├── motion.css    # The blinking cursor of the name logo (.blink-on), the appearance when the page opens (.rv, band-in), stopped under reduced motion
 │       ├── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
 │       └── window.css    # Windows (.win, shared with the accordions and the message boxes of articles), corner ticks (.ticks, .ticks-acc), grid background, the stripe band (flowing right) and the avatar shadow of plan A
 ├── workers/
@@ -174,7 +173,7 @@ Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/mark
 Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema, the RSS items and the Markdown plugins; `src/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`, and the plugins in `src/markdown/` with Sätteri's `markdownToHtml()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
 
-Colors are tested the same way. `src/styles/tokens.test.ts` checks that the plan A tokens have the values of the design, that every foreground and background token pair used for text (a translucent background is laid over each fill that can come under it) reaches 4.5:1 (WCAG AA) in both themes and that every icon color reaches 3:1 on `--surf` and `--bg2`, `--focus-ring` on the page backgrounds, every diff bar of a code block on its line and the focus ring of a code block on `--code`, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--fg)` and so on) instead; inline SVG takes `currentColor`. The service icons in `src/components/icons/` are also checked by `icons.test.ts`: their `fill` and `stroke` are only `currentColor` or `none`, because named colors such as `black` pass the check above.
+Colors are tested the same way. `src/styles/tokens.test.ts` checks that the plan A tokens have the values of the design, that every foreground and background token pair used for text (a translucent background is laid over each fill that can come under it) reaches 4.5:1 (WCAG AA) in both themes and that every icon color reaches 3:1 on `--panel`, `--bg` and `--bg2`, `--focus-ring` on the page backgrounds, every diff bar of a code block on its line and the focus ring of a code block on `--code`, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--text)` and so on) instead; inline SVG takes `currentColor`. The service icons in `src/components/icons/` are also checked by `icons.test.ts`: their `fill` and `stroke` are only `currentColor` or `none`, because named colors such as `black` pass the check above. `src/styles/token-references.test.ts` fails when a `var(--name)` without a fallback in an `.astro`, `.css` or `.ts` file under `src/` reads a custom property that no file under `src/` defines (`--font-body` and `--font-mono-latin`, which the Fonts API defines, count as defined), because a browser does not report such a read and the property falls back to its inherited or initial value.
 
 To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
 
@@ -185,13 +184,12 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 
 | File         | Holds                                                                      |
 | :----------- | :------------------------------------------------------------------------- |
-| `tokens.css` | Color tokens (CSS variables): the plan A tokens for the light and dark themes, the colors that stay the same in both themes, and the legacy tokens (including `--legacy-line`, `--legacy-grid` and `--legacy-ink`) kept until the components of the earlier design are removed |
-| `global.css` | Styles of `body` (colors and their fade between the themes), the links, the keyboard focus outline and decorations used across pages, such as `.grid` and `.cgrid` |
-| `shapes.css` | Notched corners (`.shape`, `.shapeL`, `.shapeS`), hard shadows (`.shadow`, `.shadowF`, `.shadowInk`) and the hover lift (`.lift`) |
+| `tokens.css` | Color tokens (CSS variables): the plan A tokens for the light and dark themes, the icon colors of the services and the colors that stay the same in both themes |
+| `global.css` | Styles of `body` (colors, which switch with the theme at once), the links and the keyboard focus outline |
 | `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ink`, `.btn-ghost`), icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) and page switch links (`.ws`, `.ws.on`) of plan A |
 | `window.css` | Plan A windows (`.win`, `.article-body details` and an article's message boxes; a link window turns its border on hover, and an accordion while its `<summary>` is hovered or focused), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid background (`.gridbg`) and the stripe band (`.stripes`, flowing right) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions, and the flow of `.stripes` stops, under `prefers-reduced-motion: reduce` |
 | `labels.css` | Labels of plan A: the caption `.label` (whose declarations the labels of an article's message boxes share), the bordered tag `.tag` and the orange category chip `.chip-acc` |
-| `motion.css` | The animations a page uses: the blinking cursor of the name logo (`.blink-on`) and the appearance when the page opens (`.rv`, and the keyframes `band-in` that `Hero.astro` plays). The animations of the old design, which only `src/dev/components.astro` uses, are the blinking cursor (`.caret`), the typed command (`.a-typeLoop`) and the section reveal on scroll (`.reveal`, enabled only inside `@supports (animation-timeline: view())`). All are stopped under `prefers-reduced-motion: reduce` |
+| `motion.css` | The animations a page uses: the blinking cursor of the name logo (`.blink-on`) and the appearance when the page opens (`.rv`, and the keyframes `band-in` that `Hero.astro` plays). Both are stopped under `prefers-reduced-motion: reduce` |
 
 A global file holds only what several components share.
 Styles that belong to one component go in that component's scoped `<style>`.
@@ -204,7 +202,7 @@ It sets the light theme when `localStorage` holds `light` under the key `theme`,
 Without JavaScript, the page keeps the dark theme that `Layout.astro` renders.
 `src/components/ThemeToggle.astro` switches the theme with `toggleTheme` and saves it under the same key; when saving throws, the switch lasts only until the next page.
 
-`src/dev/components.astro` shows the shared shapes, the shared animations, the components and the avatar images on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
+`src/dev/components.astro` shows the plan A styles, the components and the avatar images on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
 `astro dev` serves them at `/dev/components/` and `/dev/markdown/`, and `astro build` leaves them out of `dist/` unless `LINA_DEV_PAGES=1` is set.
 Add `?theme=dark` or `?theme=light` to the URL of `/dev/components/` to see that theme whatever is saved.
 To capture them with `.claude/scripts/screenshot.mjs`, which serves `dist/`, build with `LINA_DEV_PAGES=1 bun run build`.

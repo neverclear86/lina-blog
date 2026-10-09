@@ -1,6 +1,6 @@
 /** Which files of the brand kit the face icons use, for a size and a face. */
 
-/** The face the mark is drawn on: "default" for `--bg`, "inverse" for `--inv` and `--cbg`. */
+/** The face the mark is drawn on: "default" for `--bg`, "inverse" for `--text`. */
 export type FaceTone = "default" | "inverse";
 
 /** A mark file of the kit (`icon-<color>.svg`), in the regular or the small version. */

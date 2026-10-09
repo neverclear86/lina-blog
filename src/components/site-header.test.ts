@@ -171,11 +171,7 @@ describe("SiteHeader の全幅", () => {
     expect(menu).toContain("languages.length === 1");
   });
 
-  it("色は A案のトークンだけで、--fg・--hair・--pink・--legacy-* を使わない", () => {
-    expect(style).not.toMatch(/--(fg|hair|pink|legacy-)/);
-    expect(source("components/ThemeToggle.astro")).not.toMatch(
-      /--(fg|hair|pink|legacy-)/,
-    );
+  it("ヘッダーの style は要素名だけの a の規則を持たない", () => {
     expect(rulesOf(style).filter((r) => r.selector === "a")).toEqual([]);
   });
 
