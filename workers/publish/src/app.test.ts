@@ -116,7 +116,10 @@ describe("GET /articles", () => {
   it("公開の記録の slug と hash を 200 で返す", async () => {
     stubGlobalFetch(
       JSON.stringify({
-        articles: { b: { hash: null }, a: { hash: HASH, date: "2026-09-01" } },
+        articles: {
+          b: { hash: null, date: "2026-09-01T00:00:00Z", images: [] },
+          a: { hash: HASH, date: "2026-09-01T00:00:00Z", images: [] },
+        },
       }),
     );
 

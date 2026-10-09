@@ -13,7 +13,8 @@
       "!!design",
       "!!public/favicon",
       "!!src/assets/icon",
-      "!!src/assets/name-logo"
+      "!!src/assets/name-logo",
+      "!!src/content/published.json"
     ]
   },
   "formatter": {
