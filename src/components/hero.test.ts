@@ -99,6 +99,28 @@ function declarationsOf(css: string, selector: string): string[] {
     .filter(Boolean);
 }
 
+/** Returns the text inside every `header { … }` block of `css`, joined. */
+function blockOf(css: string, header: string): string {
+  const blocks: string[] = [];
+  for (
+    let at = css.indexOf(header);
+    at >= 0;
+    at = css.indexOf(header, at + 1)
+  ) {
+    const open = css.indexOf("{", at);
+    let depth = 0;
+    for (let i = open; i < css.length; i++) {
+      depth += css[i] === "{" ? 1 : css[i] === "}" ? -1 : 0;
+      if (depth === 0) {
+        blocks.push(css.slice(open + 1, i));
+        break;
+      }
+    }
+  }
+  expect(blocks.length, header).toBeGreaterThan(0);
+  return blocks.join("\n");
+}
+
 describe("Hero の 767px 以下の組み", () => {
   const hero = mobileCss(HERO.slice(HERO.indexOf("<style>")));
   const poses = mobileCss(POSES.slice(POSES.indexOf("<style>")));
@@ -201,10 +223,109 @@ describe("Hero の 767px 以下の組み", () => {
       "background-size: 32px 32px",
     ]);
     expect(declarationsOf(windowCss, ".stripes")).toEqual(
-      expect.arrayContaining(["height: 14px", "background-size: 32px 32px"]),
+      expect.arrayContaining(["height: 14px", "--stripes-period: 32px"]),
     );
     expect(declarationsOf(windowCss, ".av-shadow").join(";")).toMatch(
       /drop-shadow\(12px 8px 0 var\(--av-hard\)\) drop-shadow\(0 20px 28px var\(--av-soft\)\)/,
+    );
+  });
+});
+
+describe("Hero の帯・斜線・下の帯の流れ", () => {
+  const noComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const style = () => noComments(HERO.slice(HERO.indexOf("<style>")));
+  const mobile = () => mobileCss(style());
+  const reduce = () =>
+    blockOf(style(), "@media (prefers-reduced-motion: reduce) {");
+  const windowCss = () => noComments(WINDOW_CSS);
+  const windowMobile = () => mobileCss(windowCss());
+  const windowReduce = () =>
+    blockOf(windowCss(), "@media (prefers-reduced-motion: reduce) {");
+
+  it("帯の文字は 8 回繰り返し、band-flow は 2 回分（-25%）で 1 周して継ぎ目が出ない", () => {
+    expect(HERO).toMatch(/const BAND_TEXT = [^\n]*\.repeat\(8\);/);
+    expect(style()).toMatch(
+      /@keyframes band-flow\s*\{\s*to\s*\{\s*translate: 0 -25%;/,
+    );
+  });
+
+  it("帯の文字は PC で 56s、767px 以下で 44s の linear infinite", () => {
+    expect(declarationsOf(style(), ".band-text")).toContain(
+      "animation: band-flow 56s linear infinite",
+    );
+    expect(declarationsOf(mobile(), ".band-text")).toContain(
+      "animation-duration: 44s",
+    );
+  });
+
+  it("斜線は ::before を 1 周期ぶん長くして上へずらし、.hatch 自身と background-position は動かさない", () => {
+    expect(declarationsOf(style(), ".hatch::before")).toEqual(
+      expect.arrayContaining([
+        "inset: 0 0 calc(-1 * var(--hatch-period))",
+        "animation: hatch-up 1.2s linear infinite",
+      ]),
+    );
+    expect(style()).toMatch(
+      /@keyframes hatch-up\s*\{\s*to\s*\{\s*translate: 0 calc\(-1 \* var\(--hatch-period\)\);/,
+    );
+    expect(declarationsOf(style(), ".hatch")).toContain("overflow: hidden");
+    expect(declarationsOf(style(), ".hatch").join("\n")).not.toMatch(
+      /animation/,
+    );
+    expect(style()).not.toMatch(/background-position/);
+  });
+
+  it("斜線の周期は --hatch-on と --hatch-period の 1 か所で、PC は 5px と 15px、767px 以下は 4px と 12px と 1s", () => {
+    expect(declarationsOf(style(), ".hatch")).toEqual(
+      expect.arrayContaining(["--hatch-on: 5px", "--hatch-period: 15px"]),
+    );
+    expect(declarationsOf(style(), ".hatch::before").join("\n")).toMatch(
+      /var\(--hatch-on\).*var\(--hatch-on\) var\(--hatch-period\)/,
+    );
+    expect(declarationsOf(style(), ".hatch").join("\n")).not.toMatch(
+      /background/,
+    );
+    expect(declarationsOf(mobile(), ".hatch")).toEqual(
+      expect.arrayContaining(["--hatch-on: 4px", "--hatch-period: 12px"]),
+    );
+    expect(declarationsOf(mobile(), ".hatch").join("\n")).not.toMatch(
+      /background/,
+    );
+    expect(declarationsOf(mobile(), ".hatch::before")).toEqual([
+      "animation-duration: 1s",
+    ]);
+  });
+
+  it("下の帯は ::before を 1 周期ぶん長くして右へずらし、PC は 40px で 1.6s、767px 以下は 32px で 1.4s", () => {
+    expect(declarationsOf(windowCss(), ".stripes")).toEqual(
+      expect.arrayContaining(["--stripes-period: 40px", "overflow: hidden"]),
+    );
+    expect(declarationsOf(windowCss(), ".stripes").join("\n")).not.toMatch(
+      /background/,
+    );
+    expect(declarationsOf(windowCss(), ".stripes::before")).toEqual(
+      expect.arrayContaining([
+        "inset: 0 calc(-1 * var(--stripes-period)) 0 0",
+        "animation: stripes-right 1.6s linear infinite",
+      ]),
+    );
+    expect(windowCss()).toMatch(
+      /@keyframes stripes-right\s*\{\s*from\s*\{\s*translate: calc\(-1 \* var\(--stripes-period\)\) 0;\s*\}\s*to\s*\{\s*translate: 0 0;/,
+    );
+    expect(declarationsOf(windowMobile(), ".stripes")).toEqual(
+      expect.arrayContaining(["--stripes-period: 32px", "height: 14px"]),
+    );
+    expect(declarationsOf(windowMobile(), ".stripes::before")).toEqual([
+      "animation-duration: 1.4s",
+    ]);
+  });
+
+  it("prefers-reduced-motion: reduce で帯の文字、斜線、下の帯の animation を止める", () => {
+    expect(reduce()).toMatch(
+      /\.band-text,\s*\.hatch::before\s*\{\s*animation: none;\s*\}/,
+    );
+    expect(windowReduce()).toMatch(
+      /\.stripes::before\s*\{\s*animation: none;\s*\}/,
     );
   });
 });
