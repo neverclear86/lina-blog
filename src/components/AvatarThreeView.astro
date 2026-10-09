@@ -1,0 +1,391 @@
+---
+/**
+ * The three views of the avatar v2.1 at the bottom of About: a bar with the labels `avatar` and
+ * `v2.1`, and a stage with a grid that holds a `figure` for each of front, side and back. A
+ * figure has the image of `THREE_VIEW`, the lines that point at its parts, and the name of each
+ * part (`<b>`, in the language of the page) over a code (`<small>`, the same in both languages).
+ *
+ * A line is a polyline in the coordinates of the image (`459 × 1100`, `316 × 1100` and
+ * `597 × 1100`) that ends in an orange square (`--keyword`) at the name. The lines are hidden
+ * from assistive technology, and the names are read. A name is placed at a percentage of the box
+ * of the image, with `top` and `left` or `right`, by the classes `.n-<id>` and `.front`, `.side`
+ * and `.back`, because the CSP does not allow the `style` attribute.
+ *
+ * The three figures are stacked below 1200px, with the back moved to the left so that its name
+ * stays on the screen, and stand in a row from 1200px. The images are 380px high below 768px
+ * (less on a narrower screen), 360px up to 900px, 440px up to 1199px, and from 1200px as high as
+ * `min(520px, calc((100vw - 698px) * 0.8))`. Below 768px the stage extends 16px past the parent
+ * on both sides, which is the edge of the screen when the parent has 16px of padding. The margin
+ * above the component is its own: 16px below 768px, 52px from 768px.
+ */
+import { Picture } from "astro:assets";
+import { type AvatarImage, avatarAlt, THREE_VIEW } from "../avatar-images";
+import type { Locale } from "../i18n/locales";
+import { translate, type UiKey } from "../i18n/ui";
+
+interface Props {
+  /** Language of the page, which picks the names of the parts and the `alt` of the images. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+
+/** A line from a part of the body to its name, and the square at the end of the line. */
+interface Line {
+  /** `points` of the polyline, in the coordinates of the image. */
+  points: string;
+  /** Top left corner of the 10 × 10 square, in the coordinates of the image. */
+  end: [number, number];
+}
+
+/** The name of a part and the side of the image that it is on. */
+interface Note {
+  /** Suffix of the class `n-<id>` that holds `top`. */
+  id: string;
+  side: "l" | "r";
+  key: UiKey;
+  /** The code under the name, which is not translated. */
+  small: string;
+}
+
+interface View {
+  /** `front`, `side` or `back`: the class of the figure and its caption. */
+  id: string;
+  avatar: AvatarImage;
+  viewBox: string;
+  lines: Line[];
+  notes: Note[];
+}
+
+const views: View[] = [
+  {
+    id: "front",
+    avatar: THREE_VIEW.front,
+    viewBox: "0 0 459 1100",
+    lines: [
+      { points: "130,16 90,-24 -70,-24", end: [-75, -29] },
+      { points: "170,352 240,282 529,282", end: [524, 277] },
+      { points: "95,636 45,686 -70,686", end: [-75, 681] },
+      { points: "119,1023 69,973 -70,973", end: [-75, 968] },
+    ],
+    notes: [
+      { id: "ahoge", side: "l", key: "avatar.note.ahoge", small: "ahoge" },
+      { id: "tie", side: "r", key: "avatar.note.tie", small: "tie · #E8731A" },
+      {
+        id: "zettai",
+        side: "l",
+        key: "avatar.note.zettai",
+        small: "zettai ryoiki",
+      },
+      {
+        id: "sneakers",
+        side: "l",
+        key: "avatar.note.sneakers",
+        small: "sneakers",
+      },
+    ],
+  },
+  {
+    id: "side",
+    avatar: THREE_VIEW.side,
+    viewBox: "0 0 316 1100",
+    lines: [
+      { points: "152,300 222,230 386,230", end: [381, 225] },
+      { points: "144,656 84,716 -70,716", end: [-75, 711] },
+    ],
+    notes: [
+      { id: "qr", side: "r", key: "avatar.note.qr", small: "qr code" },
+      { id: "nail", side: "l", key: "avatar.note.nail", small: "nail · blue" },
+    ],
+  },
+  {
+    id: "back",
+    avatar: THREE_VIEW.back,
+    viewBox: "0 0 597 1100",
+    lines: [{ points: "253,596 333,516 667,516", end: [662, 511] }],
+    notes: [
+      {
+        id: "nametag",
+        side: "r",
+        key: "avatar.note.nametag",
+        small: "/tsukusu/lina $_",
+      },
+    ],
+  },
+];
+---
+
+<div class="three-view">
+  <div class="head">
+    <span class="label name">avatar</span>
+    <span class="label">v2.1</span>
+  </div>
+  <div class="model-stage gridbg">
+    <div class="model-row">
+      {views.map((v) => (
+        <figure class:list={["fig", v.id]}>
+          <div class="fig-box">
+            <Picture
+              src={v.avatar.src}
+              alt={avatarAlt(v.avatar, lang)}
+              formats={["avif", "webp"]}
+              fallbackFormat="webp"
+              widths={v.avatar.widths}
+              sizes={v.avatar.sizes}
+              priority={v.avatar.priority}
+              class="fig-img"
+            />
+            <svg
+              class="co-svg"
+              viewBox={v.viewBox}
+              aria-hidden="true"
+              focusable="false"
+            >
+              {v.lines.map((line) => (
+                <>
+                  <polyline class="co-bg" points={line.points}></polyline>
+                  <polyline class="co-ln" points={line.points}></polyline>
+                  <rect
+                    class="co-end"
+                    x={line.end[0]}
+                    y={line.end[1]}
+                    width="10"
+                    height="10"
+                  ></rect>
+                </>
+              ))}
+            </svg>
+            {v.notes.map((n) => (
+              <span class={`co-t ${n.side} n-${n.id}`}>
+                <b>{translate(lang, n.key)}</b>
+                <small>{n.small}</small>
+              </span>
+            ))}
+          </div>
+          <figcaption>{v.id}</figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+.three-view {
+  margin: 16px -16px 0;
+}
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 16px 10px;
+}
+.label.name {
+  color: var(--text);
+}
+.model-stage {
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid var(--line2);
+  border-bottom: 1px solid var(--line2);
+}
+.model-stage.gridbg {
+  background-size: 32px 32px;
+}
+.model-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  padding: 36px 0 18px;
+}
+.fig {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.fig.back {
+  transform: translateX(-60px);
+}
+.fig-box {
+  position: relative;
+  height: min(380px, calc(183vw - 375px));
+}
+.fig-img {
+  display: block;
+  width: auto;
+  height: 100%;
+}
+figcaption {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.co-svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.co-svg polyline {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: miter;
+}
+.co-bg {
+  stroke: var(--bg);
+  stroke-width: 3;
+  opacity: 0.7;
+}
+.co-ln {
+  stroke: var(--text);
+  stroke-width: 0.8;
+}
+.co-end {
+  fill: var(--keyword);
+}
+.co-t {
+  position: absolute;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  white-space: nowrap;
+  line-height: 1.35;
+  pointer-events: none;
+}
+.co-t.r {
+  padding-left: 9px;
+}
+.co-t.l {
+  padding-right: 9px;
+  align-items: flex-end;
+  text-align: right;
+}
+.co-t b {
+  font-size: 13px;
+  font-weight: 700;
+}
+.co-t small {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.front .co-t.l {
+  right: 115.3%;
+}
+.front .co-t.r {
+  left: 115.3%;
+}
+.side .co-t.l {
+  right: 122.2%;
+}
+.side .co-t.r {
+  left: 122.2%;
+}
+.back .co-t.l {
+  right: 111.7%;
+}
+.back .co-t.r {
+  left: 111.7%;
+}
+.n-ahoge {
+  top: -2.18%;
+}
+.n-tie {
+  top: 25.64%;
+}
+.n-zettai {
+  top: 62.36%;
+}
+.n-sneakers {
+  top: 88.45%;
+}
+.n-qr {
+  top: 20.91%;
+}
+.n-nail {
+  top: 65.09%;
+}
+.n-nametag {
+  top: 46.91%;
+}
+
+@media (min-width: 768px) {
+  .three-view {
+    margin: 52px 0 0;
+  }
+  .head {
+    margin: 0 0 14px;
+  }
+  .model-stage {
+    overflow: visible;
+  }
+  .model-stage.gridbg {
+    background-size: 48px 48px;
+  }
+  .model-row {
+    padding: 48px 0 24px;
+  }
+  .fig {
+    gap: 18px;
+  }
+  .fig.back {
+    transform: translateX(-52px);
+  }
+  .fig-box {
+    height: 360px;
+  }
+  figcaption {
+    font-size: 11px;
+  }
+  .co-t {
+    gap: 2px;
+  }
+}
+
+@media (min-width: 901px) {
+  .fig.back {
+    transform: translateX(-64px);
+  }
+  .fig-box {
+    height: 440px;
+  }
+  .co-t.r {
+    padding-left: 12px;
+  }
+  .co-t.l {
+    padding-right: 12px;
+  }
+  .co-t b {
+    font-size: 15px;
+  }
+  .co-t small {
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .model-row {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 140px;
+    padding: 56px 160px 28px 130px;
+  }
+  .fig.back {
+    transform: none;
+  }
+  .fig-box {
+    height: min(520px, calc((100vw - 698px) * 0.8));
+  }
+}
+</style>

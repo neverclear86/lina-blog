@@ -3,6 +3,7 @@ import { Image, Picture } from "astro:assets";
 import type { ComponentProps } from "astro/types";
 import { AVATAR_IMAGES, avatarAlt, THUMBS_UP_BAND } from "../avatar-images";
 import ArticleBody from "../components/ArticleBody.astro";
+import AvatarThreeView from "../components/AvatarThreeView.astro";
 import Bubble from "../components/Bubble.astro";
 import Button from "../components/Button.astro";
 import Chip from "../components/Chip.astro";
@@ -344,6 +345,12 @@ const sampleVideos: YouTubeVideo[] = [
           link={{ href: "#a-works", external: true }}
         />
       </div>
+    </section>
+
+    <section id="a-three-view">
+      <h2>A案: アバターの三面図</h2>
+      <AvatarThreeView lang="ja" />
+      <div lang="en"><AvatarThreeView lang="en" /></div>
     </section>
 
     <section id="shapes">
