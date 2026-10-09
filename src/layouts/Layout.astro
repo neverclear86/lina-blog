@@ -1,6 +1,5 @@
 ---
-import { Font, getImage } from "astro:assets";
-import logo from "../assets/logo-light.png";
+import { Font } from "astro:assets";
 import { FEED_PATH, FEED_TITLE } from "../blog-rss";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
@@ -45,29 +44,6 @@ const openGraph = openGraphTags({
   description: metaDescription,
   url: canonical,
 });
-
-/**
- * Background of the favicons, the light `--bg` of the design. The logo is black on a transparent
- * background, so without it the icon disappears on dark tab bars and on iOS home screens.
- */
-const FAVICON_BACKGROUND = "#ECEAE5";
-
-/** Renders the logo as an opaque square PNG of `size` pixels for a favicon link. */
-function logoIcon(size: number) {
-  return getImage({
-    src: logo,
-    width: size,
-    height: size,
-    format: "png",
-    background: FAVICON_BACKGROUND,
-  });
-}
-
-const [icon32, icon192, appleTouchIcon] = await Promise.all([
-  logoIcon(32),
-  logoIcon(192),
-  logoIcon(180),
-]);
 ---
 
 <!doctype html>
@@ -77,9 +53,21 @@ const [icon32, icon192, appleTouchIcon] = await Promise.all([
     <meta name="viewport" content="width=device-width">
     {/* Sets <html data-theme> before the first paint; see THEME_SCRIPT in src/theme.ts. */}
     <script is:inline set:html={THEME_SCRIPT} />
-    <link rel="icon" type="image/png" sizes="32x32" href={icon32.src}>
-    <link rel="icon" type="image/png" sizes="192x192" href={icon192.src}>
-    <link rel="apple-touch-icon" href={appleTouchIcon.src}>
+    {/* The mark /li of the brand kit on ink, unchanged in public/favicon/. The PNGs are for browsers without SVG favicons and for home screens. */}
+    <link rel="icon" type="image/svg+xml" href="/favicon/t3_mark_on-ink.svg">
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/favicon/t3_mark_on-ink_32.png"
+    >
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/favicon/t3_mark_on-ink_192.png"
+    >
+    <link rel="apple-touch-icon" href="/favicon/t3_mark_on-ink_180.png">
     <link
       rel="alternate"
       type="application/rss+xml"
