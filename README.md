@@ -40,6 +40,7 @@ bun create astro@latest -- --template basics
 │   ├── page-meta.ts      # Description (default from ui.ts) and Open Graph tags of a page, unit-tested
 │   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro, hero-account.ts and footer-links.ts
 │   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
+│   ├── sponsor-notice.ts # PR notice of a sponsored blog post: label, sentence and rel="sponsored" link, unit-tested
 │   ├── text-site.ts      # Builds the text version of the site for curl (80 columns), unit-tested
 │   ├── theme.ts          # Theme key and values, the inline script that sets <html data-theme> and the toggle, unit-tested
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
@@ -87,6 +88,7 @@ bun create astro@latest -- --template basics
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, the path of the contact page, and which section of the top page the reader is in, unit-tested
 │   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
 │   │   ├── SiteHeader.astro      # Site header, sticky: compact name logo; from 1024px the navigation 00 top to 04 works with an indicator on the top page that follows the section being read, JA / EN, theme switch and contact button, below 1024px the theme switch and a menu button that opens a popover sheet
+│   │   ├── SponsorNotice.astro   # PR window above the body of a sponsored blog post: orange PR chip and the sponsor's name
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: an .iconbtn that shows the moon or the sun with a name that says the next theme, or a button with a sun and the current theme
 │   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href

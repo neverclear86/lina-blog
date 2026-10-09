@@ -30,12 +30,14 @@ import PixelArt from "../components/PixelArt.astro";
 import PostRows from "../components/PostRows.astro";
 import SectionTitle from "../components/SectionTitle.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import SponsorNotice from "../components/SponsorNotice.astro";
 import Tape from "../components/Tape.astro";
 import TerminalCard from "../components/TerminalCard.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import WorkTile from "../components/WorkTile.astro";
 import { translate } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
+import { sponsorNotice } from "../sponsor-notice";
 import type { YouTubeVideo } from "../youtube-feed";
 
 // Commands for the typing samples: 16 characters (the design) and 10.
@@ -75,6 +77,14 @@ const samplePosts: ComponentProps<typeof LatestPosts>["posts"] = [
     },
   },
 ];
+
+// Sponsors for the notice samples: one with a URL, whose name is a link, and one without.
+const sampleNotices = [
+  { name: "サンプル株式会社", url: "https://example.com/" },
+  { name: "サンプル株式会社" },
+]
+  .map(sponsorNotice)
+  .filter((notice) => notice !== undefined);
 
 // Posts for the post rows samples: a title that wraps to three lines or more at 390px, three
 // tags and a sponsor. They are not in date order, to show that the rows keep the order they are
@@ -841,6 +851,13 @@ const sampleVideos: YouTubeVideo[] = [
             <span aria-hidden="true">→</span></a
           >
         </PostRows>
+      </div>
+    </section>
+
+    <section id="sponsor-notice">
+      <h2>PR 表示</h2>
+      <div class="stack">
+        {sampleNotices.map((notice) => <SponsorNotice notice={notice} />)}
       </div>
     </section>
 

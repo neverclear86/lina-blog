@@ -1,0 +1,78 @@
+---
+/**
+ * Window that tells readers that a blog post is sponsored: an orange `PR` chip, then a sentence
+ * that names the sponsor, with the name linked when the notice has a link. The chip is hidden
+ * from assistive technology, because the sentence says "PR 記事" itself. The window has no margin
+ * and no width of its own, so the page decides where it stands. The caller shows it only for a
+ * post with `sponsor`.
+ */
+import type { SponsorNotice } from "../sponsor-notice";
+
+interface Props {
+  /** What to show, from `sponsorNotice`. */
+  notice: SponsorNotice;
+}
+
+const { label, before, name, link, after } = Astro.props.notice;
+---
+
+<div class="sponsor-notice win">
+  <span class="chip-acc" aria-hidden="true">{label}</span>
+  <p>
+    {before}{link ? (
+  <a class="name" href={link.href} rel={link.rel}>
+    {name}
+  </a>
+) : (
+  <strong class="name">{name}</strong>
+)}{after}
+  </p>
+</div>
+
+<style>
+.sponsor-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+}
+.chip-acc {
+  flex: none;
+  margin-top: 2px;
+}
+p {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.7;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.name {
+  font-weight: 700;
+}
+a.name {
+  text-decoration-line: underline;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 767px) {
+  .chip-acc {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 768px) {
+  .sponsor-notice {
+    gap: 12px;
+    padding: 16px 20px;
+  }
+  p {
+    font-size: 15px;
+    line-height: 1.8;
+  }
+}
+</style>

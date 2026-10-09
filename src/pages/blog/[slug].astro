@@ -5,7 +5,8 @@
  * (`tags`), the topic tags (`topics`, none when the post has no topics), the `h1`, and the date,
  * the reading time and the author. Below it, `<Content />` in `ArticleBody` fills a column of at
  * most 760px. From 1024px an empty column of 240px stands at its left, so that the body keeps its
- * place when something is put in that column. `emoji` is not shown.
+ * place when something is put in that column. A post with `sponsor` has its PR notice
+ * (`SponsorNotice`) between the head and the columns. `emoji` is not shown.
  *
  * A diagonal band at the right of the head is drawn with `::before`. It is 64px wide below 768px,
  * where the rows of the head keep clear of it with a right padding, and 120px wide from 1280px,
@@ -22,9 +23,11 @@ import {
   readingMinutes,
 } from "../../blog-pages";
 import ArticleBody from "../../components/ArticleBody.astro";
+import SponsorNotice from "../../components/SponsorNotice.astro";
 import { homeSectionPath } from "../../components/site-nav";
 import { translate } from "../../i18n/ui";
 import Layout from "../../layouts/Layout.astro";
+import { sponsorNotice } from "../../sponsor-notice";
 
 export const getStaticPaths = (async () =>
   blogPostPaths(await getCollection("blog"))) satisfies GetStaticPaths;
@@ -34,11 +37,12 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const { title, slug, date, tags, topics, description } = post.data;
+const { title, slug, date, tags, topics, sponsor, description } = post.data;
 const { Content } = await render(post);
 const crumb = blogPostBreadcrumb(slug, date);
 const published = blogPostDate(date);
 const minutes = readingMinutes(post.body);
+const notice = sponsorNotice(sponsor);
 ---
 
 <Layout lang="ja" title={title} description={description} footer="compact">
@@ -94,6 +98,11 @@ const minutes = readingMinutes(post.body);
       </div>
     </section>
     <div class="body">
+      {notice && (
+  <div class="sponsor">
+    <SponsorNotice notice={notice} />
+  </div>
+)}
       <div class="cols">
         <div class="toc-col"></div>
         <div class="text">
@@ -224,6 +233,10 @@ h1 {
   margin: 0 auto;
   padding: 24px 16px 40px;
 }
+.sponsor {
+  max-width: 900px;
+  margin-bottom: 24px;
+}
 .toc-col {
   display: none;
 }
@@ -305,6 +318,9 @@ h1 {
   }
   .body {
     padding: 56px 20px 96px;
+  }
+  .sponsor {
+    margin-bottom: 48px;
   }
 }
 
