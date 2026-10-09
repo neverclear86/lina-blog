@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { translate } from "./i18n/ui";
-import { openGraphTags, pageDescription } from "./page-meta";
+import { openGraphTags, pageDescription, twitterTags } from "./page-meta";
 
 describe("pageDescription", () => {
   it("説明文を渡すとそのまま返す", () => {
@@ -48,5 +48,37 @@ describe("openGraphTags", () => {
         url: "https://example.com/en/",
       }),
     ).toContainEqual({ property: "og:locale", content: "en_US" });
+  });
+
+  it("画像を渡すと、og:locale の後ろに og:image、幅 1200、高さ 630 をこの順に足す", () => {
+    const tags = openGraphTags({
+      lang: "ja",
+      title: "ikili.pro",
+      description: "説明",
+      url: "https://example.com/ja/",
+      image: "https://example.com/og/ja.png",
+    });
+    expect(tags).toHaveLength(9);
+    expect(tags.slice(5)).toEqual([
+      { property: "og:locale", content: "ja_JP" },
+      { property: "og:image", content: "https://example.com/og/ja.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+    ]);
+  });
+});
+
+describe("twitterTags", () => {
+  it("画像を渡すと、twitter:card を summary_large_image にして twitter:image を続ける", () => {
+    expect(twitterTags("https://example.com/og/ja.png")).toEqual([
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://example.com/og/ja.png" },
+    ]);
+  });
+
+  it("画像を渡さないと、twitter:card を summary にして twitter:image を出さない", () => {
+    expect(twitterTags(undefined)).toEqual([
+      { name: "twitter:card", content: "summary" },
+    ]);
   });
 });

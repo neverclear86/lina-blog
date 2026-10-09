@@ -1,6 +1,7 @@
 /**
  * Paths of the same page in each locale: for the language switch of the site header, and as the
- * absolute URLs of the canonical and hreflang links that the layout puts in `<head>`.
+ * absolute URLs of the canonical and hreflang links and of the OGP image that the layout puts in
+ * `<head>`.
  */
 import { DEFAULT_LOCALE, LOCALES, type Locale } from "./locales";
 
@@ -37,14 +38,15 @@ export interface AlternateLink {
 }
 
 /**
- * Returns `path` as an absolute URL under `site`.
+ * Returns `path` as an absolute URL under `site`, such as the canonical URL of a page or the URL
+ * of its OGP image.
  *
  * @throws When `site` is undefined, because `astro.config.mjs` does not set it.
  */
-function absoluteUrl(path: string, site: URL | undefined): string {
+export function absoluteUrl(path: string, site: URL | undefined): string {
   if (site === undefined) {
     throw new Error(
-      "canonical and hreflang links need `site` in astro.config.mjs for absolute URLs",
+      "canonical and hreflang links and OGP image URLs need `site` in astro.config.mjs for absolute URLs",
     );
   }
   return new URL(path, site).href;

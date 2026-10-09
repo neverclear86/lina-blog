@@ -50,6 +50,7 @@ import SponsorNotice from "../../components/SponsorNotice.astro";
 import { homeSectionPath } from "../../components/site-nav";
 import { translate } from "../../i18n/ui";
 import Layout from "../../layouts/Layout.astro";
+import { postOgImagePath } from "../../og-pages";
 import { sponsorNotice } from "../../sponsor-notice";
 
 export const getStaticPaths = (async () =>
@@ -81,6 +82,7 @@ const notice = sponsorNotice(sponsor);
   lang="ja"
   title={title}
   description={description}
+  image={postOgImagePath(slug)}
   footer="compact"
   readingProgress
 >

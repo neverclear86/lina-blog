@@ -12,6 +12,7 @@ import Works from "../../components/Works.astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
 import { LATEST_VIDEOS_SHOWN, latestVideos } from "../../latest-videos";
 import Layout from "../../layouts/Layout.astro";
+import { topOgImagePath } from "../../og-pages";
 import { fetchLatestVideos } from "../../youtube-feed";
 
 export const getStaticPaths = (() =>
@@ -34,7 +35,7 @@ if (!result.ok) {
 const { feature, list } = latestVideos(result);
 ---
 
-<Layout lang={lang}>
+<Layout lang={lang} image={topOgImagePath(lang)}>
   <main>
     <Hero lang={lang} />
     <About lang={lang} />
