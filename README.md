@@ -72,7 +72,7 @@ bun create astro@latest -- --template basics
 │   │   ├── footer-links.ts       # Link targets of the footer columns and the footer variants, unit-tested
 │   │   ├── hero-account.ts       # Links of the account window of the hero, with the icon each one shows, unit-tested
 │   │   ├── hero-poses.ts         # Rules of the pose switch of the hero, unit-tested
-│   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band, name logo with a blinking cursor, heading, intro, button to the latest video, the account window, the stripes below and HeroPoses in the right column
+│   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band whose text and hatch flow, name logo with a blinking cursor, heading, intro, button to the latest video, the account window, the stripes below (flowing right) and HeroPoses in the right column
 │   │   ├── HeroAccount.astro     # Account window of the hero: avatar, @LinaTsukusu and six link squares
 │   │   ├── HeroPoses.astro       # Right column of the hero: four poses switched by a button, ruler and table
 │   │   ├── IconButton.astro      # Square icon-only button of the earlier design (only the dev samples use it), named by an aria-label or a hidden label slot
@@ -148,7 +148,7 @@ bun create astro@latest -- --template basics
 │       ├── motion.css    # Animations that keep running (.bob, .blink-on, .caret, .a-typeLoop) and the section reveal on scroll (.reveal), stopped under reduced motion
 │       ├── shapes.css    # Notched corners, hard shadows and the lift
 │       ├── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
-│       └── window.css    # Windows (.win, shared with the accordions and the message boxes of articles), corner ticks (.ticks, .ticks-acc), grid and stripe backgrounds and the avatar shadow of plan A
+│       └── window.css    # Windows (.win, shared with the accordions and the message boxes of articles), corner ticks (.ticks, .ticks-acc), grid background, the stripe band (flowing right) and the avatar shadow of plan A
 ├── workers/
 │   └── publish/          # Publish Worker, separate from the site and deployed on its own
 │       ├── src/
@@ -198,7 +198,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | `global.css` | Styles of `body` (colors and their fade between the themes), the links, the keyboard focus outline and decorations used across pages, such as `.grid` and `.cgrid` |
 | `shapes.css` | Notched corners (`.shape`, `.shapeL`, `.shapeS`), hard shadows (`.shadow`, `.shadowF`, `.shadowInk`) and the hover lift (`.lift`) |
 | `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ink`, `.btn-ghost`), icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) and page switch links (`.ws`, `.ws.on`) of plan A |
-| `window.css` | Plan A windows (`.win`, `.article-body details` and an article's message boxes; a link window turns its border on hover, and an accordion while its `<summary>` is hovered or focused), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid and stripe backgrounds (`.gridbg`, `.stripes`) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions under `prefers-reduced-motion: reduce` |
+| `window.css` | Plan A windows (`.win`, `.article-body details` and an article's message boxes; a link window turns its border on hover, and an accordion while its `<summary>` is hovered or focused), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid background (`.gridbg`) and the stripe band (`.stripes`, flowing right) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions, and the flow of `.stripes` stops, under `prefers-reduced-motion: reduce` |
 | `labels.css` | Labels of plan A: the caption `.label` (whose declarations the labels of an article's message boxes share), the bordered tag `.tag` and the orange category chip `.chip-acc` |
 | `motion.css` | Animations that keep running: the pixel art bob (`.bob`), the blinking cursors (`.caret`, and `.blink-on` for the name logo) and the typed command (`.a-typeLoop`); and the section reveal on scroll (`.reveal`), enabled only inside `@supports (animation-timeline: view())`. All are stopped under `prefers-reduced-motion: reduce` |
 

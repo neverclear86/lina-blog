@@ -35,10 +35,14 @@
  * focus move the ticks. `.acct.is-hover` and `.acct.is-focus` show that state.
  *
  * `.gridbg` draws `--grid` lines every 48px on `--bg`. `.stripes` is an 18px band of diagonal
- * stripes in the keyword orange and `--ink` that repeat every 40px. `.av-shadow` gives an image
- * with a transparent background a hard shadow (`--av-hard`) to the bottom right and a soft one
- * (`--av-soft`) below. Up to 767px the lines of `.gridbg` are 32px apart, `.stripes` is 14px
- * high and repeats every 32px, and the shadow of `.av-shadow` is 12px 8px and 0 20px 28px.
+ * stripes in the keyword orange and `--ink` that repeat every 40px (`--stripes-period`). The
+ * stripes are drawn on its `::before`, one period wider than the band, and `translate` moves
+ * that by one period to the right every 1.6s, so they flow right and the end of a loop looks
+ * like its start; under `prefers-reduced-motion: reduce` they stand still. `.av-shadow` gives an
+ * image with a transparent background a hard shadow (`--av-hard`) to the bottom right and a
+ * soft one (`--av-soft`) below. Up to 767px the lines of `.gridbg` are 32px apart, `.stripes` is
+ * 14px high, repeats every 32px and flows every 1.4s, and the shadow of `.av-shadow` is 12px 8px
+ * and 0 20px 28px.
  */
 
 @property --wa {
@@ -187,7 +191,16 @@ a.win:focus-visible::before,
 }
 
 .stripes {
+  --stripes-period: 40px;
+  position: relative;
   height: 18px;
+  overflow: hidden;
+}
+
+.stripes::before {
+  content: "";
+  position: absolute;
+  inset: 0 calc(-1 * var(--stripes-period)) 0 0;
   background:
     linear-gradient(
       -45deg,
@@ -198,7 +211,18 @@ a.win:focus-visible::before,
       var(--keyword) 75%,
       var(--ink) 75%
     )
-    0 0 / 40px 40px;
+    0 0 / var(--stripes-period) var(--stripes-period);
+  animation: stripes-right 1.6s linear infinite;
+}
+
+@keyframes stripes-right {
+  from {
+    translate: calc(-1 * var(--stripes-period)) 0;
+  }
+
+  to {
+    translate: 0 0;
+  }
 }
 
 .av-shadow {
@@ -212,8 +236,12 @@ a.win:focus-visible::before,
   }
 
   .stripes {
+    --stripes-period: 32px;
     height: 14px;
-    background-size: 32px 32px;
+  }
+
+  .stripes::before {
+    animation-duration: 1.4s;
   }
 
   .av-shadow {
@@ -223,6 +251,10 @@ a.win:focus-visible::before,
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .stripes::before {
+    animation: none;
+  }
+
   .win::before,
   .article-body details::before,
   a.win:hover::before,

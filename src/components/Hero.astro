@@ -10,7 +10,15 @@
  * `/tsukusu/lina $_ # 創好リナ ── VIRTUAL IKIRI PROGRAMMER`, and the text of the orange band are
  * the same in every locale. The prompt, the decorations behind the text (the tilted orange band
  * with its vertical text, the hatch, the two lines and the five crosses) and the stripes are
- * hidden from assistive technology. The band and the stripes stand still.
+ * hidden from assistive technology.
+ *
+ * The vertical text of the band flows up, the hatch flows up and the stripes flow right, each in
+ * a loop whose end looks like its start. The text moves up by a quarter of its length, which is
+ * 2 of the 8 repeats in `BAND_TEXT`. The hatch and the stripes (`.stripes` in `window.css`) draw
+ * their pattern on a `::before` one period longer than the box, and `translate` moves it by one
+ * period (`--hatch-period`, `--stripes-period`) inside the box, which clips it. The text takes
+ * 56s a loop, the hatch 1.2s and the stripes 1.6s; up to 767px they take 44s, 1s and 1.4s.
+ * Under `prefers-reduced-motion: reduce` all three stand still.
  *
  * From 901px the content is a grid of two columns, 1.08fr and 0.92fr, 64px from the sides and at
  * least 820px high. The left column holds the prompt, the logo, the heading, the intro and the
@@ -48,8 +56,12 @@ interface Props {
 
 const { lang } = Astro.props;
 
-/** The text of the orange band, repeated to fill its length. `\xa0` joins the repeats. */
-const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(4);
+/**
+ * The text of the orange band, repeated 8 times. `band-flow` moves it up by a quarter of its
+ * length, which is 2 repeats, so the end of a loop looks like its start and the 6 repeats that
+ * remain still fill the band. `\xa0` joins the repeats.
+ */
+const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
 ---
 
 <section id="top" class="hero gridbg">
@@ -138,21 +150,46 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(4);
   white-space: nowrap;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
+  animation: band-flow 56s linear infinite;
+}
+
+@keyframes band-flow {
+  to {
+    translate: 0 -25%;
+  }
 }
 
 .hatch {
+  --hatch-on: 5px;
+  --hatch-period: 15px;
   position: absolute;
   top: -35%;
   left: calc(var(--band-left) - 110px);
   width: 36px;
   height: 175%;
-  background: repeating-linear-gradient(
-    to bottom,
-    var(--keyword) 0 5px,
-    transparent 5px 15px
-  );
+  overflow: hidden;
   opacity: 0.7;
   transform: rotate(22deg);
+}
+
+/* The pattern is one period longer than the hatch; `translate` moves it up by one period, and
+   `.hatch` clips it. */
+.hatch::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 calc(-1 * var(--hatch-period));
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--keyword) 0 var(--hatch-on),
+    transparent var(--hatch-on) var(--hatch-period)
+  );
+  animation: hatch-up 1.2s linear infinite;
+}
+
+@keyframes hatch-up {
+  to {
+    translate: 0 calc(-1 * var(--hatch-period));
+  }
 }
 
 .ln {
@@ -363,6 +400,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(4);
   .band-text {
     font-size: 12px;
     letter-spacing: 0.4em;
+    animation-duration: 44s;
   }
 
   .hatch {
@@ -370,11 +408,12 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(4);
     left: calc(var(--band-left) - 64px);
     width: 22px;
     height: 80%;
-    background: repeating-linear-gradient(
-      to bottom,
-      var(--keyword) 0 4px,
-      transparent 4px 12px
-    );
+    --hatch-on: 4px;
+    --hatch-period: 12px;
+  }
+
+  .hatch::before {
+    animation-duration: 1s;
   }
 
   .cross {
@@ -433,6 +472,13 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(4);
 
   .hero-account {
     margin-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .band-text,
+  .hatch::before {
+    animation: none;
   }
 }
 </style>
