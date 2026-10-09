@@ -22,6 +22,18 @@ const IMAGE_EXTENSIONS = new Set([
 /** Start of a line that opens a fenced code block: at most three spaces and a fence. */
 const FENCE_OPEN = /^ {0,3}(`{3,}(?=[^`\n]*(?:\n|$))|~{3,})/;
 
+/** A line that ends a paragraph: an ATX heading, a quote, a list item or a thematic break. */
+const BLOCK_START = new RegExp(
+  `^[ \\t]*(?:${[
+    "#{1,6}(?:[ \\t]|$)",
+    ">",
+    "[-+*](?:[ \\t]|$)",
+    "\\d{1,9}[.)](?:[ \\t]|$)",
+    "([-*_])(?:[ \\t]*\\1){2,}[ \\t]*$",
+    "(?:=+|-+)[ \\t]*$",
+  ].join("|")})`,
+);
+
 /**
  * What a link name refers to in the Vault: an article with `published: true` and its slug, an
  * article with `published: false`, or a note that is not an article.
@@ -83,14 +95,17 @@ function lineEnd(text: string, start: number): number {
   return newline === -1 ? text.length : newline;
 }
 
-/** Where inline code starting at `index` must close: the next blank or fence line. */
+/**
+ * Where inline code starting at `index` must close: the next blank line, fence line, or line
+ * that starts another block.
+ */
 function codeSpanLimit(text: string, index: number): number {
   let newline = text.indexOf("\n", index);
   while (newline !== -1) {
     const start = newline + 1;
     const end = lineEnd(text, start);
-    const line = text.slice(start, end);
-    if (line.trim() === "" || FENCE_OPEN.test(line)) {
+    const line = text.slice(start, end).replace(/\r$/, "");
+    if (line.trim() === "" || FENCE_OPEN.test(line) || BLOCK_START.test(line)) {
       return start;
     }
     newline = end === text.length ? -1 : end;
@@ -129,14 +144,16 @@ function findBacktickRun(
  * - `%%comment%%`, including one over several lines, is removed.
  * - `[[name]]`, `[[name|text]]` and `[[name#heading]]` to an article with `published: true`
  *   become `[text](https://ikili.pro/blog/<slug>)`. The heading is dropped, and the text is
- *   the part after `|`, or else the name, with `[` and `]` escaped. In a table, `\|` also
+ *   the part after `|`, or else the name, with `\`, `[` and `]` escaped. In a table, `\|` also
  *   separates the text.
  * - `![[name]]` whose name ends with an image extension of Obsidian is kept as written.
  * - Other links and embeds, a `[[#heading]]` link without a note name, and a `%%` without the
  *   closing `%%` are errors. Nothing after an unclosed `%%` is checked.
  * - Fenced code blocks (opened after at most three spaces) and inline code are kept as
- *   written, with no syntax converted in them. Inline code does not run past a blank line
- *   or a fence. A fence without its closing line runs to the end of the body.
+ *   written, with no syntax converted in them. Inline code does not run past a blank line,
+ *   a fence, or a line that starts a heading, a quote, a list item or a thematic break. A
+ *   fence without its closing line runs to the end of the body, and the closing line may end
+ *   with `\r`.
  *
  * Every error in the body is reported, and no converted body is returned when there is one.
  */
@@ -154,7 +171,7 @@ export function convertObsidianSyntax(
       const fence = FENCE_OPEN.exec(body.slice(index, openEnd));
       if (fence) {
         const close = new RegExp(
-          `^[ \\t]*${fence[1][0]}{${fence[1].length},}[ \\t]*$`,
+          `^[ \\t]*${fence[1][0]}{${fence[1].length},}[ \\t\\r]*$`,
         );
         let blockEnd = body.length;
         let lineStart = openEnd + 1;
@@ -232,7 +249,7 @@ export function convertObsidianSyntax(
           const target = resolve(name);
           if (target.kind === "published") {
             const text = (bar === -1 ? name : content.slice(bar + 1)).replace(
-              /[[\]]/g,
+              /[\\[\]]/g,
               "\\$&",
             );
             markdown += `[${text}](${ARTICLE_URL_BASE}${target.slug})`;

@@ -210,4 +210,53 @@ describe("convertObsidianSyntax", () => {
       markdown: `\` [公開中の記事](${url})`,
     });
   });
+
+  it("CRLF の本文でもコードブロックを閉じ、後ろのリンクを検査する", () => {
+    const error = {
+      code: "not_article_link",
+      source: "[[私的なメモ]]",
+      line: 4,
+    };
+    expect(convert("```\r\ncode\r\n```\r\n[[私的なメモ]]\r\n")).toEqual({
+      ok: false,
+      errors: [error],
+    });
+    expect(convert("~~~\r\ncode\r\n~~~\r\n[[私的なメモ]]\r\n")).toEqual({
+      ok: false,
+      errors: [error],
+    });
+  });
+
+  it("CRLF の本文のコードブロックの中の記法は変換しない", () => {
+    const body = "```\r\n[[私的なメモ]]\r\n```\r\n本文\r\n";
+    expect(convert(body)).toEqual({ ok: true, markdown: body });
+  });
+
+  it.each([
+    ["リスト項目", "- 記号 ` を使う\n- [[私的なメモ]] と `x`\n", 2],
+    ["番号付きのリスト項目", "記号 `\n1. [[私的なメモ]] `x`", 2],
+    ["字下げした入れ子のリスト項目", "- a `\n    - [[私的なメモ]] `x`", 2],
+    ["見出し", "文中の ` 記号\n# [[私的なメモ]] `x`\n", 2],
+    ["引用", "文中の ` 記号\n> [[私的なメモ]] `x`\n", 2],
+    ["水平線", "文中の ` 記号\n***\n[[私的なメモ]] `x`\n", 3],
+    ["Setext 見出しの下線", "文中の ` 記号\n===\n[[私的なメモ]] `x`\n", 3],
+    ["CRLF の見出し", "文中の ` 記号\r\n#\r\n[[私的なメモ]] `x`\r\n", 3],
+  ])("インラインコードは%sをまたいで閉じない", (_name, body, line) => {
+    expect(convert(body)).toEqual({
+      ok: false,
+      errors: [{ code: "not_article_link", source: "[[私的なメモ]]", line }],
+    });
+  });
+
+  it("同じ段落の中の複数行のインラインコードは閉じる", () => {
+    const body = "文中の `[[私的なメモ]]\n続き` です";
+    expect(convert(body)).toEqual({ ok: true, markdown: body });
+  });
+
+  it("表示の末尾の \\ をエスケープして、リンクを壊さない", () => {
+    expect(convert("[[公開中の記事|a\\]]")).toEqual({
+      ok: true,
+      markdown: `[a\\\\](${url})`,
+    });
+  });
 });
