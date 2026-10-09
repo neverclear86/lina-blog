@@ -76,6 +76,7 @@ const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
 .lead {
   margin: 0;
   max-width: 560px;
+  padding-right: 48px;
   font-size: 16px;
   font-weight: 500;
   line-height: 1.9;
@@ -101,6 +102,10 @@ const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
 }
 
 @media (min-width: 900px) {
+  .lead {
+    padding-right: 0;
+  }
+
   .content {
     padding: 56px 64px 96px;
   }
