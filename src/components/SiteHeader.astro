@@ -26,7 +26,7 @@
  * `--bg` under the header, with the items of the navigation as rows 48px high, the language
  * switch and the contact button. The button shows three bars, and a cross while the menu is
  * open. While the menu is open, the page behind it does not scroll. A script closes it when a
- * link in it is clicked and when the focus moves out of the header.
+ * link in it is clicked and when the focus moves to an element of the page outside the header.
  */
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
@@ -455,14 +455,14 @@ for (const link of menu?.querySelectorAll("a") ?? []) {
   });
 }
 
-// Tabbing out of the header leaves the open menu over the page, so close it then.
+// Focus that moves to the page leaves the open menu over it, so close the menu then. Focus that
+// leaves the document, such as to the address bar, keeps it open.
 const header = menu?.closest("header");
-menu?.addEventListener("focusout", (event) => {
-  const next = event.relatedTarget;
+document.addEventListener("focusin", (event) => {
   if (
-    next instanceof Node &&
-    !header?.contains(next) &&
-    menu.matches(":popover-open")
+    event.target instanceof Node &&
+    !header?.contains(event.target) &&
+    menu?.matches(":popover-open")
   ) {
     menu.hidePopover();
   }

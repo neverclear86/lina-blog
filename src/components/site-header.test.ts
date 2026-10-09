@@ -181,10 +181,11 @@ describe("SiteHeader の全幅", () => {
     expect(rulesOf(style).filter((r) => r.selector === "a")).toEqual([]);
   });
 
-  it("メニューを閉じる script は、リンクを押したときと、フォーカスがヘッダーの外へ出たときに閉じる", () => {
+  it("メニューを閉じる script は、リンクを押したときと、フォーカスがヘッダーの外の要素に入ったときに閉じる", () => {
     expect(script).toContain('link.addEventListener("click"');
-    expect(script).toContain('menu?.addEventListener("focusout"');
-    expect(script).toContain("event.relatedTarget");
+    expect(script).toContain('document.addEventListener("focusin"');
+    expect(script).toContain("!header?.contains(event.target)");
+    expect(script).not.toContain("focusout");
     expect(script.match(/hidePopover\(\)/g)).toHaveLength(2);
   });
 });
