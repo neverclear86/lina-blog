@@ -65,6 +65,14 @@ describe("SiteHeader の 1024px 以上", () => {
     expect(rule?.body).toContain("font-weight: 700");
   });
 
+  it("要素名だけの a に色を付けず、--fg はロゴとメニューのリンクにだけ付ける", () => {
+    const rules = rulesOf(style);
+    expect(rules.filter((r) => r.selector === "a")).toEqual([]);
+    expect(
+      rules.find((r) => r.selector === ".brand, .menu-panel a")?.body,
+    ).toBe("color: var(--fg);");
+  });
+
   it("backdrop-filter は接頭辞なしの 1 行だけで、CSS の出力で消されない", () => {
     expect(style).not.toContain("-webkit-backdrop-filter");
     expect(style.match(/backdrop-filter/g)).toHaveLength(1);
