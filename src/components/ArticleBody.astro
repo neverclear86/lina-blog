@@ -11,13 +11,19 @@
  * JetBrains Mono, whose mark is a plus while the accordion is closed and a minus while it is
  * open. The browser opens and closes it, without script. It styles the message boxes too,
  * `<aside class="note">` and `<aside class="warning">` written as raw HTML, which take the ground
- * and the ring of `.win` from `window.css` and the look of their label from `labels.css`. The
+ * and the ring of `.win` from `window.css` and the look of their label from `labels.css`. A box
+ * with the class `face` too shows the thinking face of `src/assets/hate.webp` at its left, as a
+ * CSS background, so it adds no `<img>` and screen readers skip it: 52 by 70px with a 12px gap
+ * below 768px, and 72 by 96px with a 16px gap from 768px. The
  * rules reach those elements through `:global()` under `.article-body`, so they apply only inside
  * this wrapper. The wrapper sets no width: the page around it decides the column. The windows of
  * code blocks are styled by the imported src/markdown/highlight.css, whose rules match
  * `figure.code-window` and `pre.shiki`.
  */
 import "../markdown/highlight.css";
+// The `face` background below is a `url()` in CSS, which Astro does not count as a use of the
+// image, so the build would delete the original file. This import keeps it.
+import "../assets/hate.webp?url";
 ---
 
 <div class="article-body"><slot /></div>
@@ -375,18 +381,41 @@ import "../markdown/highlight.css";
 /* A warning has diagonal stripes at the top, as `.stripes` in window.css does (a 40px period
    across), and 6px of padding more to keep the text under them. */
 .article-body :global(aside.warning) {
-  padding-top: 18px;
-  background:
+  --stripes:
     repeating-linear-gradient(
       -45deg,
       var(--keyword) 0 14.14px,
       var(--ink) 14.14px 28.28px
     )
-    top / 100% 6px no-repeat,
-    var(--panel);
+    top / 100% 6px no-repeat;
+
+  padding-top: 18px;
+  background: var(--stripes), var(--panel);
+}
+
+/* The face of `face`: a background layer above the ground, centered on the box. A warning keeps
+   its stripes above the face. The image is 453 by 600px, so the 3:4 box scales it by 0.7%. */
+.article-body :global(aside:is(.note, .warning).face) {
+  --face: url("../assets/hate.webp") 14px center / 52px 70px no-repeat;
+
+  justify-content: center;
+  min-height: 70px;
+  padding-left: 78px;
+  background: var(--face), var(--panel);
+}
+
+.article-body :global(aside.warning.face) {
+  background: var(--stripes), var(--face), var(--panel);
 }
 
 @media (min-width: 768px) {
+  .article-body :global(aside:is(.note, .warning).face) {
+    --face: url("../assets/hate.webp") 20px center / 72px 96px no-repeat;
+
+    min-height: 96px;
+    padding-left: 108px;
+  }
+
   .article-body :global(aside:is(.note, .warning)) {
     margin-bottom: 1.6em;
     padding: 16px 20px;
