@@ -62,12 +62,12 @@ const ja = {
   "code.copy.doneMessage": "コードをコピーしました",
   "code.copy.failMessage":
     "コピーできませんでした。コードを選んであるので、手でコピーしてください",
-  // Contact page and the contact section of the top page.
-  "contact.subtitle": "お問い合わせ",
+  // Contact page and the contact band of the top page.
   "contact.lead": "お仕事のご相談、コラボのお誘いなどはこちらから。",
   "contact.title": "お問い合わせ",
   "contact.description":
     "創好リナへのお問い合わせのフォームです。お仕事のご相談、コラボのお誘いなどはこちらから。",
+  "contact.open": "フォームをひらく",
   "contact.kind": "ご用件",
   "contact.kind.work": "お仕事のご相談",
   "contact.kind.collab": "コラボのお誘い",
@@ -225,12 +225,12 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "code.copy.doneMessage": "Copied the code.",
     "code.copy.failMessage":
       "Couldn't copy. The code is selected, so copy it by hand.",
-    "contact.subtitle": "Get in touch",
     "contact.lead":
       "For work inquiries, collaborations and more, get in touch here.",
     "contact.title": "Contact",
     "contact.description":
       "The contact form for Tsukusu Lina, for work inquiries, collaborations and more.",
+    "contact.open": "Open the form",
     "contact.kind": "Topic",
     "contact.kind.work": "Work inquiry",
     "contact.kind.collab": "Collaboration",

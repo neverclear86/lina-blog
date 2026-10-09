@@ -162,16 +162,6 @@ export default defineConfig({
     },
     {
       provider: fontProviders.google(),
-      name: "Saira Condensed",
-      cssVariable: "--font-display",
-      weights: [600, 800],
-      styles: ["normal"],
-      subsets: ["latin"],
-      display: "swap",
-      fallbacks: ["sans-serif"],
-    },
-    {
-      provider: fontProviders.google(),
       name: "JetBrains Mono",
       cssVariable: "--font-mono-latin",
       weights: ["400 800"],

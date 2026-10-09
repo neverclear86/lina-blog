@@ -7,6 +7,7 @@ import AvatarThreeView from "../components/AvatarThreeView.astro";
 import Bubble from "../components/Bubble.astro";
 import Button from "../components/Button.astro";
 import Chip from "../components/Chip.astro";
+import ContactBand from "../components/ContactBand.astro";
 import ContactForm from "../components/ContactForm.astro";
 import FaceIcon from "../components/FaceIcon.astro";
 import HeroAccount from "../components/HeroAccount.astro";
@@ -27,7 +28,6 @@ import NameLogo from "../components/NameLogo.astro";
 import PageHead from "../components/PageHead.astro";
 import PixelArt from "../components/PixelArt.astro";
 import PostRows from "../components/PostRows.astro";
-import SectionHeading from "../components/SectionHeading.astro";
 import SectionTitle from "../components/SectionTitle.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import Tape from "../components/Tape.astro";
@@ -371,6 +371,11 @@ const sampleVideos: YouTubeVideo[] = [
       <div class="pose-sample" lang="en"><HeroPoses lang="en" /></div>
     </section>
 
+    <section id="a-contact-band">
+      <h2>A案: お問い合わせの帯</h2>
+      <ContactBand lang="ja" />
+    </section>
+
     <section id="shapes">
       <h2>形と影</h2>
       <div class="row">
@@ -478,40 +483,6 @@ const sampleVideos: YouTubeVideo[] = [
             >長い本文は吹き出しの幅に収まるように折り返す。長い本文は吹き出しの幅に収まるように折り返す。長い本文は吹き出しの幅に収まるように折り返す。</span
           >
         </Bubble>
-      </div>
-    </section>
-
-    <section id="headings">
-      <h2>セクション見出し</h2>
-      <div class="stack">
-        <SectionHeading
-          label="~/about"
-          title="ABOUT"
-          subtitle="創好リナってこんな人"
-        >
-          <p class="heading-aside">
-            名前の由来はLinux。配信もするし、開発もする、バーチャルイキリプログラマです。
-          </p>
-        </SectionHeading>
-        <div class="cbg">
-          <SectionHeading
-            label="$ mail lina"
-            title="CONTACT"
-            subtitle="お問い合わせ"
-            as="h3"
-            variant="contact"
-          />
-        </div>
-        <div lang="en">
-          <SectionHeading
-            label="~/works"
-            title="WORKS"
-            subtitle="Things I made"
-            as="h3"
-          >
-            <a href="#headings">See all</a>
-          </SectionHeading>
-        </div>
       </div>
     </section>
 
@@ -879,6 +850,15 @@ const sampleVideos: YouTubeVideo[] = [
         <a class="btn btn-acc" href="#plan-a-controls">お問い合わせ</a>
         <a class="btn btn-acc is-hover" href="#plan-a-controls">お問い合わせ</a>
         <a class="btn btn-acc is-focus" href="#plan-a-controls">お問い合わせ</a>
+      </div>
+      <div class="row">
+        <a class="btn btn-ink" href="#plan-a-controls">フォームをひらく →</a>
+        <a class="btn btn-ink is-hover" href="#plan-a-controls"
+          >フォームをひらく →</a
+        >
+        <a class="btn btn-ink is-focus" href="#plan-a-controls"
+          >フォームをひらく →</a
+        >
       </div>
       <div class="row">
         <a class="btn btn-ghost" href="#plan-a-controls">YouTubeチャンネルへ</a>
@@ -1350,11 +1330,6 @@ section {
   display: flex;
   flex-direction: column;
   gap: 40px;
-}
-
-.heading-aside {
-  margin: 0;
-  max-width: 480px;
 }
 
 .pose-sample {

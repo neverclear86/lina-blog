@@ -153,6 +153,25 @@ describe("ボタンとアイコンのリンク", () => {
     }
   });
 
+  it(".btn-ink は --ink の地に --ivory の文字で、ホバーとフォーカスと見本の状態で文字が --keyword になる", () => {
+    const base = rules("controls.css").filter(
+      (rule) => rule.selector === ".btn-ink",
+    );
+    expect(base).toHaveLength(1);
+    expect(base[0].body).toContain("background: var(--ink)");
+    expect(base[0].body).toContain("color: var(--ivory)");
+    const hover = rules("controls.css").filter(
+      (rule) =>
+        hasClass(rule.selector, ".btn-ink") &&
+        rule.selector !== ".btn-ink" &&
+        rule.body.trim() === "color: var(--keyword);",
+    );
+    expect(hover).toHaveLength(1);
+    for (const state of STATES) {
+      expect(hover[0].selector).toContain(state);
+    }
+  });
+
   it(".sq と .iconbtn は 44px 角で、.btn は 46px 以上の高さを持つ", () => {
     const square = withDeclaration("controls.css", "width: 44px");
     expect(square).toHaveLength(1);

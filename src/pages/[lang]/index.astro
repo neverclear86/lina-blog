@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import type { GetStaticPaths } from "astro";
 import About from "../../components/About.astro";
-import ContactSection from "../../components/ContactSection.astro";
+import ContactBand from "../../components/ContactBand.astro";
 import Hero from "../../components/Hero.astro";
 import LatestPosts from "../../components/LatestPosts.astro";
 import LatestSection from "../../components/LatestSection.astro";
@@ -44,6 +44,6 @@ const { feature, list } = latestVideos(result);
       <LatestPosts slot="blog" lang={lang} posts={posts} />
     </LatestSection>
     <Works lang={lang} />
-    <ContactSection lang={lang} />
+    <ContactBand lang={lang} />
   </main>
 </Layout>

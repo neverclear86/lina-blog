@@ -62,8 +62,8 @@ bun create astro@latest -- --template basics
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
 │   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
+│   │   ├── ContactBand.astro     # Contact band of the top page: heading, lead, a button to the contact page and the thumbs-up
 │   │   ├── ContactForm.astro     # Contact form of the contact page in a window of plan A, sent with Turnstile
-│   │   ├── ContactSection.astro  # Contact section of the top page: heading, lead and the form in a paper terminal window, sent with Turnstile by its script
 │   │   ├── face-icon.ts          # Picks the brand kit files of a face mark or avatar from its size and tone, unit-tested
 │   │   ├── FaceIcon.astro        # Face mark or avatar from the brand kit SVGs, switched with the theme; tone="inverse" for the mark on --inv and --cbg faces
 │   │   ├── footer-links.ts       # Link targets of the footer columns and the footer variants, unit-tested
@@ -83,7 +83,6 @@ bun create astro@latest -- --template basics
 │   │   ├── NameLogo.astro        # Name logo of the brand kit as inline SVG: compact, full and full-sub, painted with the --lg-* tokens
 │   │   ├── PageHead.astro        # Head of the blog pages and the contact page: grid background, diagonal band and the slot with an h1
 │   │   ├── PostRows.astro        # Window of blog posts: ls -lt command line with a command slot, rows with JST date, tags, PR and title, or one empty line
-│   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level and the contact variant are props
 │   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line, path and link, and the Japanese heading; the size is a prop
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, the path of the contact page, and which section of the top page the reader is in, unit-tested
 │   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
@@ -138,7 +137,7 @@ bun create astro@latest -- --template basics
 │   │   └── text/
 │   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
 │   └── styles/
-│       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ghost), icon links (.sq, .iconbtn) and page switch links (.ws) of plan A
+│       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ink, .btn-ghost), icon links (.sq, .iconbtn) and page switch links (.ws) of plan A
 │       ├── global.css    # body colors and their fade, the links, the keyboard focus outline, and the grid backgrounds (.grid, .cgrid)
 │       ├── labels.css    # Labels of plan A: .label (shared with the labels of an article's message boxes), .tag and the category chip .chip-acc
 │       ├── motion.css    # Animations that keep running (.bob, .blink-on, .caret, .a-typeLoop) and the section reveal on scroll (.reveal), stopped under reduced motion
@@ -193,7 +192,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | `tokens.css` | Color tokens (CSS variables): the plan A tokens for the light and dark themes, the colors that stay the same in both themes, and the legacy tokens (including `--legacy-line`, `--legacy-grid` and `--legacy-ink`) kept until the components of the earlier design are removed |
 | `global.css` | Styles of `body` (colors and their fade between the themes), the links, the keyboard focus outline and decorations used across pages, such as `.grid` and `.cgrid` |
 | `shapes.css` | Notched corners (`.shape`, `.shapeL`, `.shapeS`), hard shadows (`.shadow`, `.shadowF`, `.shadowInk`) and the hover lift (`.lift`) |
-| `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ghost`), icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) and page switch links (`.ws`, `.ws.on`) of plan A |
+| `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ink`, `.btn-ghost`), icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) and page switch links (`.ws`, `.ws.on`) of plan A |
 | `window.css` | Plan A windows (`.win`, `.article-body details` and an article's message boxes; a link window turns its border on hover, and an accordion while its `<summary>` is hovered or focused), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid and stripe backgrounds (`.gridbg`, `.stripes`) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions under `prefers-reduced-motion: reduce` |
 | `labels.css` | Labels of plan A: the caption `.label` (whose declarations the labels of an article's message boxes share), the bordered tag `.tag` and the orange category chip `.chip-acc` |
 | `motion.css` | Animations that keep running: the pixel art bob (`.bob`), the blinking cursors (`.caret`, and `.blink-on` for the name logo) and the typed command (`.a-typeLoop`); and the section reveal on scroll (`.reveal`), enabled only inside `@supports (animation-timeline: view())`. All are stopped under `prefers-reduced-motion: reduce` |
@@ -228,7 +227,6 @@ CDN. `src/layouts/Layout.astro` emits the `@font-face` rules on every page, sets
 | :--------------- | :---------------------------------------------------- | :------------ | :-------------------------------------------------------------------------------------------------------------------- |
 | `--font-body`    | Zen Kaku Gothic New                                   | 400, 700, 900 | Everything by default: Japanese and body text, headings, navigation, buttons                                          |
 | `--font-mono`    | JetBrains Mono, then Zen Kaku Gothic New for Japanese | 400-800       | Labels, numbers, dates and code                                                                                       |
-| `--font-display` | Saira Condensed                                       | 600, 800      | Old design only: ABOUT (800) in `SectionHeading.astro`; removed with it                                               |
 
 Components use these variables and never name a font. Form controls (`button`, `input`,
 `select`, `textarea`) do not inherit `font-family` from `html`, so components set
@@ -387,7 +385,7 @@ disabled; it is rate-limited and meant for development.
 - In production, register it with `bunx wrangler secret put TURNSTILE_SECRET_KEY`.
 - Locally, put it in `.dev.vars` at the root of the repository (ignored by git). `wrangler dev`, which `bun run preview:wrangler` runs, reads it and prints `Using secrets defined in .dev.vars` on startup.
 
-The contact forms (`src/components/ContactForm.astro` on the contact page and `src/components/ContactSection.astro` on the top page) render the widget with the site key `TURNSTILE_SITE_KEY`, a public variable declared with `astro:env` in `astro.config.mjs`. Pages are prerendered, so `astro build` reads it from the environment or from `.env` at the root of the repository (ignored by git), not from `.dev.vars`. Without it the build uses Cloudflare's test site key `1x00000000000000000000AA`, whose widget always passes with the dummy token `XXXX.DUMMY.TOKEN.XXXX`. A production secret key rejects that token, so a production build must set the real site key.
+The contact form (`src/components/ContactForm.astro`) renders the widget with the site key `TURNSTILE_SITE_KEY`, a public variable declared with `astro:env` in `astro.config.mjs`. Pages are prerendered, so `astro build` reads it from the environment or from `.env` at the root of the repository (ignored by git), not from `.dev.vars`. Without it the build uses Cloudflare's test site key `1x00000000000000000000AA`, whose widget always passes with the dummy token `XXXX.DUMMY.TOKEN.XXXX`. A production secret key rejects that token, so a production build must set the real site key.
 
 Locally, use one of Cloudflare's test secret keys instead of the production key:
 
