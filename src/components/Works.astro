@@ -65,7 +65,7 @@ const works = worksInOrder(await getCollection("works"));
               <div class="thumb grid empty-thumb" aria-hidden="true" />
             )}
             <div class="body">
-              <span class="label">
+              <span class="work-label">
                 {data.label}
                 {data.cursor && (
                   <span class="cursor" aria-hidden="true">
@@ -152,7 +152,7 @@ const works = worksInOrder(await getCollection("works"));
   gap: 10px;
 }
 
-.label,
+.work-label,
 .tech {
   margin: 0;
   font-family: var(--font-mono);

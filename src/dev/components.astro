@@ -24,6 +24,7 @@ import PixelArt from "../components/PixelArt.astro";
 import PostCard from "../components/PostCard.astro";
 import PostList from "../components/PostList.astro";
 import SectionHeading from "../components/SectionHeading.astro";
+import SectionTitle from "../components/SectionTitle.astro";
 import Tape from "../components/Tape.astro";
 import TerminalCard from "../components/TerminalCard.astro";
 import { translate } from "../i18n/ui";
@@ -200,6 +201,78 @@ const sampleVideos: YouTubeVideo[] = [
         />
       </div>
       <div class="stripes"></div>
+    </section>
+
+    <section id="a-labels">
+      <h2>A案: ラベル・タグ・カテゴリのチップ</h2>
+      <div class="row">
+        <span class="label">label</span>
+        <span class="label">[YYYY.MM.DD] · youtube</span>
+        <span class="label">最新動画のサムネイル</span>
+      </div>
+      <div class="row">
+        <span class="tag">制作記</span>
+        <span class="tag">astro</span>
+        <span class="tag">cloudflare workers</span>
+        <span class="chip-acc">制作記</span>
+        <span class="chip-acc">NEW</span>
+      </div>
+      <div class="a-panel">
+        <span class="label">label</span>
+        <span class="tag">制作記</span>
+        <span class="chip-acc">制作記</span>
+      </div>
+      <div class="a-narrow">
+        <span class="tag">とても長いタグの名前がここに入る</span>
+        <span class="chip-acc">とても長いカテゴリの名前がここに入る</span>
+      </div>
+    </section>
+
+    <section id="a-headings">
+      <h2>A案: セクションの見出し</h2>
+      <div class="stack">
+        <SectionTitle
+          no="02"
+          label="latest"
+          path="~/latest"
+          title="さいきんの配信"
+        />
+        <SectionTitle
+          no="01"
+          label="about"
+          path="~/about"
+          title={"はじめまして、\n創好リナです。"}
+          size="md"
+        />
+        <SectionTitle no="03" label="blog" path="~/blog" title="さいきんの記事">
+          <a slot="link" href="#a-headings"
+            >記事一覧 <span aria-hidden="true">→</span></a
+          >
+        </SectionTitle>
+        <SectionTitle no="04" label="works" as="h2">
+          <a slot="link" href="#a-headings"
+            >ls ~/works <span aria-hidden="true">→</span></a
+          >
+        </SectionTitle>
+        <div lang="en">
+          <SectionTitle
+            no="05"
+            label="a-section-with-a-very-long-english-name"
+            path="~/long"
+            title="Supercalifragilisticexpialidocious-heading-without-any-space"
+            as="h3"
+          >
+            <a slot="link" href="#a-headings"
+              >ls ~/works <span aria-hidden="true">→</span></a
+            >
+          </SectionTitle>
+        </div>
+        <SectionTitle no="06" label="focus" title="フォーカスの表示">
+          <a slot="link" class="is-focus" href="#a-headings"
+            >ls ~/focus <span aria-hidden="true">→</span></a
+          >
+        </SectionTitle>
+      </div>
     </section>
 
     <section id="shapes">
@@ -1091,6 +1164,25 @@ section {
 .card-body {
   margin: 0;
   padding: 20px 22px;
+}
+
+.a-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.a-narrow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 120px;
+  margin-top: 16px;
 }
 
 .stack {
