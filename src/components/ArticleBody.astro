@@ -1,12 +1,15 @@
 ---
 /**
- * Wraps rendered Markdown (an article's `<Content />`) and styles the elements that Sätteri
- * and the plugins in src/markdown/ output: GFM tables, task lists, footnotes, the file names
- * of code blocks, YouTube embeds and links. A link is underlined, because `global.css` leaves a
- * link plain and the text color alone would not set it apart (WCAG 1.4.1). The rules reach those
- * elements through `:global()` under `.article-body`, so they apply only inside this wrapper.
- * Code blocks are styled by the imported src/markdown/highlight.css, whose rules match
- * `pre.shiki`.
+ * Wraps rendered Markdown (an article's `<Content />`) and sets its type: body text, headings
+ * (h2 to h4, with the marks `##` and `###` before h2 and h3), paragraphs, `strong`, inline code,
+ * lists, block quotes, images and horizontal rules. The type is 16px below 768px and 17px from
+ * 768px. It also styles the other elements that Sätteri and the plugins in src/markdown/ output:
+ * GFM tables, task lists, footnotes, the file names of code blocks, YouTube embeds and links. A
+ * link is underlined, because `global.css` leaves a link plain and the text color alone would
+ * not set it apart (WCAG 1.4.1). The rules reach those elements through `:global()` under
+ * `.article-body`, so they apply only inside this wrapper. The wrapper sets no width: the page
+ * around it decides the column. Code blocks are styled by the imported
+ * src/markdown/highlight.css, whose rules match `pre.shiki`.
  */
 import "../markdown/highlight.css";
 ---
@@ -16,26 +19,165 @@ import "../markdown/highlight.css";
 <style>
 .article-body :global(a) {
   text-decoration-line: underline;
+  text-underline-offset: 4px;
+}
+
+/* Body text and the elements that plain Markdown outputs. */
+.article-body {
+  --block-gap: 1.4em;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 2;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+.article-body > :global(:first-child) {
+  margin-top: 0;
+}
+
+.article-body :global(p) {
+  margin: 0 0 var(--block-gap);
+}
+
+.article-body :global(:is(h2, h3, h4)) {
+  font-weight: 900;
+}
+
+.article-body :global(:is(h2, h3)::before) {
+  display: inline-block;
+  color: var(--keyword);
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+.article-body :global(h2) {
+  margin: 2em 0 0.7em;
+  font-size: 22px;
+  line-height: 1.45;
+}
+
+.article-body :global(h2::before) {
+  content: "##" / "";
+  margin-inline-end: 10px;
+  font-size: 15px;
+}
+
+.article-body :global(h3) {
+  margin: 1.8em 0 0.6em;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.article-body :global(h3::before) {
+  content: "###" / "";
+  margin-inline-end: 8px;
+  font-size: 13px;
+}
+
+.article-body :global(h4) {
+  margin: 1.6em 0 0.5em;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.article-body :global(strong) {
+  font-weight: 700;
+  background: linear-gradient(
+    transparent 64%,
+    color-mix(in srgb, var(--keyword) 45%, transparent) 64%
+  );
+}
+
+.article-body :global(:not(pre) > code) {
+  padding: 2px 5px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+}
+
+.article-body :global(:is(ul, ol)) {
+  margin: 0 0 var(--block-gap);
+  padding-inline-start: 1.5em;
+}
+
+.article-body :global(ul) {
+  list-style-type: square;
+}
+
+.article-body :global(ol) {
+  padding-inline-start: 2em;
+}
+
+.article-body :global(li + li) {
+  margin-top: 0.25em;
+}
+
+.article-body :global(li > :is(ul, ol)) {
+  margin: 0.25em 0 0;
+}
+
+.article-body :global(li::marker) {
+  color: var(--muted);
+}
+
+.article-body :global(ol > li::marker) {
+  font-family: var(--font-mono);
+}
+
+.article-body :global(blockquote) {
+  margin: 0 0 var(--block-gap);
+  padding-inline-start: 1em;
+  border-inline-start: 3px solid var(--line2);
+  color: var(--muted);
+}
+
+.article-body :global(:is(blockquote, li) > :last-child) {
+  margin-bottom: 0;
+}
+
+.article-body :global(hr) {
+  height: 1px;
+  margin: 3em 0;
+  border: 0;
+  background: var(--line);
+}
+
+.article-body :global(img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 80svh;
+  object-fit: contain;
+  margin: 0 auto var(--block-gap);
+  border-radius: 6px;
 }
 
 .article-body :global(table) {
   display: block;
   max-width: 100%;
+  margin: 0 0 var(--block-gap);
   overflow-x: auto;
+  overflow-wrap: normal;
   border-collapse: collapse;
 }
 
 .article-body :global(th),
 .article-body :global(td) {
   padding: 0.5em 0.75em;
-  border-bottom: 1px solid var(--hair);
+  border-bottom: 1px solid var(--line);
   text-align: start;
   min-width: 4em;
 }
 
 .article-body :global(th) {
-  border-bottom-color: var(--legacy-line);
-  background: var(--surf);
+  border-bottom-color: var(--line2);
+  background: var(--panel);
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -61,13 +203,13 @@ import "../markdown/highlight.css";
 
 .article-body :global(.task-list-item > input) {
   margin: 0 0.5em 0 -1.5em;
-  accent-color: var(--fg);
+  accent-color: var(--acc-text);
 }
 
 .article-body :global(.footnotes) {
   margin-top: 3em;
   padding-top: 1em;
-  border-top: 1px solid var(--hair);
+  border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.875em;
 }
@@ -121,10 +263,49 @@ import "../markdown/highlight.css";
   width: 100%;
   height: auto;
   aspect-ratio: 16 / 9;
-  margin-block: 1.5em;
-  border: 0;
-  border-radius: 4px;
-  background: var(--ph);
-  box-shadow: 3px 3px 0 var(--shadow);
+  box-sizing: border-box;
+  margin-block: 0 var(--block-gap);
+  border: 1px solid var(--line2);
+  border-radius: 6px;
+  background: var(--panel);
+}
+
+/* From 768px the type is larger, as in the PC article of the design. */
+@media (min-width: 768px) {
+  .article-body {
+    --block-gap: 1.5em;
+    font-size: 17px;
+    line-height: 2.05;
+  }
+
+  .article-body :global(h2) {
+    margin: 2.2em 0 0.8em;
+    font-size: 28px;
+    line-height: 1.4;
+  }
+
+  .article-body :global(h2::before) {
+    margin-inline-end: 12px;
+    font-size: 18px;
+  }
+
+  .article-body :global(h3) {
+    margin: 2em 0 0.7em;
+    font-size: 21px;
+  }
+
+  .article-body :global(h3::before) {
+    margin-inline-end: 10px;
+    font-size: 14px;
+  }
+
+  .article-body :global(h4) {
+    margin: 1.8em 0 0.5em;
+    font-size: 17px;
+  }
+
+  .article-body :global(:not(pre) > code) {
+    padding: 2px 6px;
+  }
 }
 </style>
