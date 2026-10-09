@@ -19,8 +19,9 @@
  * ruler, its labels and the table are hidden from assistive technology. The table has a
  * `--shade` ground because the orange band of the hero can pass behind it, and lets clicks
  * through to the button. Up to 900px the poses are 540px high instead of 800px, and the ruler
- * and the table are left out. The `pose · click` row holds `tap` beside `click` and shows `tap`
- * in its place up to 767px, where the table is left out as well.
+ * and the table are left out. Up to 767px the poses are 1195px high and start 20px from the top,
+ * and the table comes back with two rows, `pose · tap` and `version`, at the top right. The
+ * `pose · click` row holds `tap` beside `click` and shows `tap` in its place up to 767px.
  */
 import { Picture } from "astro:assets";
 import { avatarAlt, HERO_POSES } from "../avatar-images";
@@ -253,6 +254,29 @@ const label = translate(lang, "hero.poseButton");
 
   .tap {
     display: inline;
+  }
+
+  .pose {
+    top: 20px;
+    bottom: auto;
+    height: 1195px;
+  }
+
+  .spec {
+    top: 16px;
+    right: 16px;
+    bottom: auto;
+    display: flex;
+    gap: 6px;
+    min-width: 132px;
+  }
+
+  .spec-row {
+    padding-bottom: 5px;
+  }
+
+  .spec-row:nth-child(-n + 3) {
+    display: none;
   }
 }
 </style>

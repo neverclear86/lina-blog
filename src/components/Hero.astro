@@ -19,9 +19,15 @@
  * parts. Up to 900px the grid is one column 20px from the sides, the heading is 40px, the band is
  * 150px wide and the two lines are left out. The band, the hatch and the lines keep clear of the
  * text: from 901px the band starts at 57% of the width, or further right where the intro would
- * reach it, and up to 900px at 46% or 390px, whichever is further right. Up to 767px the logo box
- * has neither the ticks nor the ground, the intro is in `--text`, and the button fills the
- * column, 48px high, without the triangle.
+ * reach it, and from 768px to 900px at 46% or 390px, whichever is further right.
+ *
+ * Up to 767px the hero is stacked, as in `design/AMobile.dc.html`. The right column has no box of
+ * its own, so `HeroPoses` covers the whole hero. The left column starts 330px from the top, 16px
+ * from the sides, and lies over it; a tap reaches the pose button below unless it is on the text
+ * or on the ground of the column, which fades into `--ov` over 110px. The prompt is at the top
+ * left, the band is 140px wide at 52%, the hatch is 22px wide, the crosses are left out, the
+ * heading is 36px and the intro is 15px in `--text`. The logo box has neither the ticks nor the
+ * ground, and the button fills the column, 48px high, without the triangle.
  *
  * The cursor of the logo blinks (`.blink-on` in `src/styles/motion.css`) while some part of the
  * logo is in the viewport, starting 1.6s after the page opens or the logo comes back into it. A
@@ -330,6 +336,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(4);
   }
 
   .intro {
+    font-size: 15px;
     color: var(--text);
   }
 
@@ -341,6 +348,91 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(4);
 
   .latest svg {
     display: none;
+  }
+
+  .decor {
+    --band-left: 52%;
+  }
+
+  .band {
+    top: -6%;
+    width: 140px;
+    height: 80%;
+  }
+
+  .band-text {
+    font-size: 12px;
+    letter-spacing: 0.4em;
+  }
+
+  .hatch {
+    top: -6%;
+    left: calc(var(--band-left) - 64px);
+    width: 22px;
+    height: 80%;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--keyword) 0 4px,
+      transparent 4px 12px
+    );
+  }
+
+  .cross {
+    display: none;
+  }
+
+  .hero-grid {
+    position: static;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .hero-right {
+    display: contents;
+  }
+
+  .hero-left {
+    gap: 18px;
+    padding: 440px 16px 32px;
+    pointer-events: none;
+  }
+
+  .hero-left::before {
+    content: "";
+    position: absolute;
+    inset: 330px 0 0;
+    z-index: -1;
+    pointer-events: auto;
+    background: linear-gradient(
+      to bottom,
+      transparent 0,
+      var(--ov) 110px,
+      var(--ov) 100%
+    );
+  }
+
+  .hero-left > * {
+    pointer-events: auto;
+  }
+
+  .whoami {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 2;
+    padding: 4px 8px;
+    font-size: 12px;
+    background: var(--shade);
+  }
+
+  .heading {
+    margin-top: 6px;
+    font-size: 36px;
+    line-height: 1.18;
+  }
+
+  .hero-account {
+    margin-top: 0;
   }
 }
 </style>
