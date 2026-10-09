@@ -31,6 +31,7 @@ bun create astro@latest -- --template basics
 │   ├── latest-videos.ts  # Splits the YouTube videos into the Latest card and list, JST dates, unit-tested
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
+│   ├── og-font.ts        # Downloads the OGP fonts (headings and labels) as TrueType from Google Fonts, unit-tested
 │   ├── page-meta.ts      # Description (default from ui.ts) and Open Graph tags of a page, unit-tested
 │   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoList.astro and Hero.astro
 │   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
@@ -205,6 +206,12 @@ Components use these variables and never name a font. Form controls (`button`, `
 `font: inherit` on them. Zen Kaku Gothic New 500 in the design is written as `font-weight: 400`,
 because 500 is not loaded. `font-synthesis-weight: none` on `html` keeps the browser from
 faking a weight that is not loaded.
+
+The files that the Fonts API downloads are WOFF2 split into unicode-range chunks, which image
+renderers such as Satori cannot read. `src/og-font.ts` downloads Zen Kaku Gothic New 900, the
+weight of the headings, and JetBrains Mono 400 and 700, the weights of the labels, as one
+TrueType file each from the same Google Fonts CSS API, in Node. Nothing is written to the
+repository or to `dist/`.
 
 ## 🖼️ Images and caching
 
