@@ -1,16 +1,11 @@
 // @ts-check
 import { existsSync, readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import cloudflare from "@astrojs/cloudflare";
 import { satteri } from "@astrojs/markdown-satteri";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig, envField, fontProviders } from "astro/config";
-import sharp from "sharp";
-import {
-  ANSI_ART_MAX_COLUMNS,
-  renderAnsiArt,
-  renderPlainArt,
-} from "./src/ansi-art.ts";
+import { renderAnsiArt, renderPlainArt } from "./src/ansi-art.ts";
+import { decodeAnsiArtSource } from "./src/ansi-art-source.ts";
 import { devPages } from "./src/dev/dev-pages.ts";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
 import { codeFilename } from "./src/markdown/code-filename.ts";
@@ -54,19 +49,13 @@ function prerenderByDefault() {
   };
 }
 
-/** Virtual module with the text art of the standing illustration, built by `linaAnsiArt()`. */
+/** Virtual module with the text art of the Hero's fourth pose, built by `linaAnsiArt()`. */
 const ANSI_ART_MODULE = "virtual:lina-ansi-art";
 
-/** Illustration that the text art is drawn from. */
-const ANSI_ART_SOURCE = new URL(
-  "./src/assets/lina-standing.webp",
-  import.meta.url,
-);
-
 /**
- * Builds the text art of the standing illustration for terminals as the virtual module
- * `virtual:lina-ansi-art`, which exports `ansiArt` (24-bit color) and `plainArt` (no escape
- * sequences).
+ * Builds the text art of the Hero's fourth pose (`ANSI_ART_SOURCE` in `src/ansi-art-source.ts`)
+ * for terminals as the virtual module `virtual:lina-ansi-art`, which exports `ansiArt` (24-bit
+ * color) and `plainArt` (no escape sequences).
  *
  * The endpoints in `src/pages/ansi/` are prerendered in workerd, which cannot load sharp, so
  * the illustration is decoded and resized here, in Node, and the endpoints only return the
@@ -83,12 +72,7 @@ function linaAnsiArt() {
     },
     async load(id) {
       if (id !== resolvedId) return;
-      const { data, info } = await sharp(fileURLToPath(ANSI_ART_SOURCE))
-        .resize({ width: ANSI_ART_MAX_COLUMNS })
-        .ensureAlpha()
-        .raw()
-        .toBuffer({ resolveWithObject: true });
-      const image = { width: info.width, height: info.height, data };
+      const image = await decodeAnsiArtSource();
       return [
         `export const ansiArt = ${JSON.stringify(renderAnsiArt(image))};`,
         `export const plainArt = ${JSON.stringify(renderPlainArt(image))};`,

@@ -19,6 +19,7 @@ bun create astro@latest -- --template basics
 │   └── sync/             # Article sync script for the publish Worker: Vault scan, images, Markdown, diff and API client, unit-tested
 ├── src/
 │   ├── ansi-art.ts       # Pixels to terminal text art (half blocks, 24-bit color), unit-tested
+│   ├── ansi-art-source.ts # The illustration of the text art, decoded and resized to 80 pixels wide, unit-tested
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
 │   ├── avatar-images.ts  # The nine v2.1 avatar images of src/assets/ with their alt keys, widths, sizes and priority, unit-tested
@@ -111,7 +112,7 @@ bun create astro@latest -- --template basics
 │   │   │   └── works/
 │   │   │       └── [slug].astro  # /ja/works/<slug>/ and /en/works/<slug>/ for the works with hasPage
 │   │   ├── ansi/
-│   │   │   ├── color.txt.ts  # /ansi/color.txt: the standing illustration as 24-bit color text art
+│   │   │   ├── color.txt.ts  # /ansi/color.txt: the avatar main-visual as 24-bit color text art
 │   │   │   └── plain.txt.ts  # /ansi/plain.txt: the same art without escape sequences
 │   │   ├── blog/
 │   │   │   ├── index.astro   # /blog/: every post, newest first
@@ -238,11 +239,12 @@ The face icons in `src/assets/icon/` are the SVG files of the brand kit, kept as
 `FaceIcon` uses their URLs in `<img>` elements, and `astro build` only gives the files hashed
 names.
 
-The standing illustration, `src/assets/lina-standing.webp`, is also turned into text art for
-terminals. The `linaAnsiArt()` Vite plugin in `astro.config.mjs` resizes it with sharp to 80
-pixels wide, and the endpoints in `src/pages/ansi/` are prerendered to `/ansi/color.txt` (24-bit
-color) and `/ansi/plain.txt` (no escape sequences) in `dist/client/`. Every line fits in 80
-columns.
+The avatar `src/assets/main-visual.webp` (the fourth pose of the Hero) is also turned into text art
+for terminals. The `linaAnsiArt()` Vite plugin in `astro.config.mjs` calls `decodeAnsiArtSource()`
+in `src/ansi-art-source.ts`, which resizes it with sharp to 80 pixels wide, and the endpoints in
+`src/pages/ansi/` are prerendered to `/ansi/color.txt` (24-bit color) and `/ansi/plain.txt` (no
+escape sequences) in `dist/client/`. The pose is centred in a transparent frame, so the figure is
+indented by blank cells. Every line fits in 80 columns.
 
 The avatars of the character are cut from v2.1, a set of transparent PNGs of 2160 × 3840,
 3840 × 2160 and 4320 × 7680 pixels that is kept outside the repository (`~/Pictures/v2.1.zip`).
