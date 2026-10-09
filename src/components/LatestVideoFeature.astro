@@ -1,81 +1,106 @@
 ---
 /**
- * The large card of the Latest section for the newest video: a `latest.mp4` terminal window with
- * the thumbnail and a `NEW` chip, then the title, all in one link to the watch page.
+ * The large window of the Latest section for the newest video: a 16:9 thumbnail with a `NEW`
+ * chip at its top left, then the date in Japan time and the title, all in one link to the watch
+ * page. From 768px the date line also says `· youtube`.
  *
- * Without a video, such as when the feed could not be read, the window shows a message in place
- * of the thumbnail and is not a link.
+ * Without a video, such as when the feed could not be read, the window keeps the same frame: a
+ * `[ no signal ]` mark in place of the thumbnail, then the source name, the message and the link
+ * text to the channel, all in one link to the YouTube channel.
+ *
+ * The ring of `.win` goes over the thumbnail. A hovered or focused link underlines the title
+ * only, in the light theme; in the dark theme the title turns `--keyword` through the link rule
+ * of `global.css`.
  */
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
+import { formatVideoDate } from "../latest-videos";
+import { YOUTUBE_URL } from "../profile-links";
 import type { YouTubeVideo } from "../youtube-feed";
-import Chip from "./Chip.astro";
-import TerminalCard from "./TerminalCard.astro";
 
 interface Props {
-  /** Locale of the page, which chooses the message shown without a video. */
+  /** Locale of the page, which chooses the texts shown without a video. */
   lang: Locale;
   /** The newest video, or `undefined` when there is none. */
   video: YouTubeVideo | undefined;
+  /** Classes for the window, such as `is-hover` to show the hovered state. */
+  class?: string;
 }
 
-const { lang, video } = Astro.props;
+const { lang, video, class: className } = Astro.props;
 
-// Width of the card in LatestSection: two thirds of the content from 1280px, all of it below.
+// Width of the window assumed for the images: from 1280px, two thirds of a box of up to 1440px
+// less 64px padding on both sides and 14px between two columns; the screen less 64px on each
+// side from 900px and less 20px on each side from 768px; the screen less 32px below.
 const SIZES =
   "(min-width: 1280px) calc((min(100vw, 1440px) - 142px) * 2 / 3), (min-width: 900px) calc(100vw - 128px), (min-width: 768px) calc(100vw - 40px), calc(100vw - 32px)";
 ---
 
-<div class="latest-video-feature">
-  {video ? (
-  <a class="link" href={video.url}>
-    <TerminalCard title="latest.mp4">
-      <div class="thumb">
-        <img
-          src={video.thumbnail.src}
-          srcset={video.thumbnail.srcset}
-          sizes={SIZES}
-          width="480"
-          height="270"
-          alt=""
-          loading="lazy"
-          decoding="async"
-        />
-        <div class="new">
-          <Chip tone="pink">NEW</Chip>
-        </div>
-      </div>
-    </TerminalCard>
-    <span class="title" lang="ja">
-      {video.title}
-    </span>
+{video ? (
+  <a class:list={["win", "feature", className]} href={video.url}>
+    <div class="gridbg thumb">
+      <img
+        src={video.thumbnail.src}
+        srcset={video.thumbnail.srcset}
+        sizes={SIZES}
+        width="480"
+        height="270"
+        alt=""
+        loading="lazy"
+        decoding="async"
+      />
+      <span class="chip-acc new">NEW</span>
+    </div>
+    <div class="body">
+      <span class="label">
+        <time datetime={video.publishedAt.toISOString()}>
+          {formatVideoDate(video.publishedAt)}
+        </time>{" "}
+        <span class="source">· youtube</span>
+      </span>
+      <strong class="title" lang="ja">
+        {video.title}
+      </strong>
+    </div>
   </a>
 ) : (
-  <TerminalCard title="latest.mp4" lift={false}>
-    <div class="thumb empty">
-      <p>{translate(lang, "latest.videos.empty")}</p>
+  <a class:list={["win", "feature", className]} href={YOUTUBE_URL}>
+    <div class="gridbg thumb">
+      <span class="label" aria-hidden="true">
+        [ no signal ]
+      </span>
     </div>
-  </TerminalCard>
+    <div class="body">
+      <span class="label">youtube</span>
+      <span class="message">{translate(lang, "latest.videos.empty")}</span>
+      <strong class="title">
+        {translate(lang, "latest.videos.channel")}{" "}
+        <span aria-hidden="true">→</span>
+      </strong>
+    </div>
+  </a>
 )}
-</div>
 
 <style>
-.link {
-  display: block;
-  color: var(--fg);
+.feature {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
   text-decoration: none;
 }
 
-/* shapes.css lifts the card only while the card itself is hovered; this also covers the title. */
-.link:hover > :global(.lift) {
-  transform: translate(-2px, -2px);
-  filter: drop-shadow(5px 5px 0 var(--shadow-color, var(--shadow)));
+/* The ring of .win is drawn under the positioned .thumb; this brings it over the thumbnail. */
+.feature::before {
+  z-index: 1;
 }
 
 .thumb {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   aspect-ratio: 16 / 9;
-  background: var(--ph);
 }
 
 .thumb img {
@@ -88,23 +113,27 @@ const SIZES =
 
 .new {
   position: absolute;
-  top: 18px;
-  left: 18px;
-  display: flex;
+  top: 10px;
+  left: 10px;
+  padding: 3px 7px;
+  font-size: 11px;
+  letter-spacing: 0;
 }
 
-.empty {
+.body {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px 16px;
 }
 
-.empty p {
-  margin: 0;
+.source {
+  display: none;
+}
+
+.message {
   font-size: 15px;
   color: var(--muted);
-  text-align: center;
 }
 
 .title {
@@ -113,9 +142,41 @@ const SIZES =
   -webkit-line-clamp: 2;
   line-clamp: 2;
   overflow: hidden;
-  margin-top: 18px;
-  font-size: 20px;
-  font-weight: 900;
+  font-size: 17px;
+  line-height: 1.5;
   overflow-wrap: anywhere;
+}
+
+/* The light theme underlines the title only; the date line and the mark would take a line too. */
+:root:not([data-theme="dark"])
+  .feature:is(:hover, :focus-visible, .is-hover, .is-focus)
+  .title {
+  text-decoration: underline;
+  text-decoration-color: var(--keyword);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+@media (min-width: 768px) {
+  .new {
+    top: 16px;
+    left: 16px;
+    padding: 4px 8px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+  }
+
+  .body {
+    gap: 8px;
+    padding: 18px 22px 22px;
+  }
+
+  .source {
+    display: inline;
+  }
+
+  .title {
+    font-size: 22px;
+  }
 }
 </style>

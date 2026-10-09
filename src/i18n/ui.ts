@@ -98,10 +98,12 @@ const ja = {
   "latest.blog.noPosts": "まだ記事はありません。",
   // Heading of the Latest section on the home page.
   "latest.title": "さいきんの配信",
-  // Link to the YouTube channel: the button after the small video windows.
+  // Link to the YouTube channel: the button after the small video windows and the link text of the
+  // large window shown without a video.
   "latest.videos.channel": "YouTubeチャンネルへ",
-  // Shown in place of the newest video when the feed gives none, such as when it cannot be read.
-  "latest.videos.empty": "動画の一覧を読み込めませんでした。",
+  // Shown in the large window in place of the newest video when the feed gives none, such as when
+  // it cannot be read.
+  "latest.videos.empty": "最新の動画を表示できませんでした。",
   // Name of the menu button of the site header; whether the menu is open is its expanded state.
   "menu.label": "メニュー",
   // Main navigation of the site header; "nav.label" names its <nav>.
@@ -228,7 +230,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "latest.blog.noPosts": "No posts yet.",
     "latest.title": "Recent streams",
     "latest.videos.channel": "Visit the YouTube channel",
-    "latest.videos.empty": "Couldn't load the latest videos.",
+    "latest.videos.empty": "Couldn't show the latest videos.",
     "menu.label": "Menu",
     "nav.about": "About",
     "nav.blog": "Blog",

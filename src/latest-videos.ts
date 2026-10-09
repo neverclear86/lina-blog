@@ -1,10 +1,10 @@
 /**
  * Prepares the videos from the channel's feed for the Latest section of the home page: which
- * video goes on the large card, which go in the list, and how their dates are written.
+ * video goes in the large window, which go in the list, and how their dates are written.
  */
 import type { YouTubeFeedResult, YouTubeVideo } from "./youtube-feed";
 
-/** How many videos the Latest section shows: one on the large card and the rest in the list. */
+/** How many videos the Latest section shows: one in the large window and the rest in the list. */
 export const LATEST_VIDEOS_SHOWN = 4;
 
 /** Formats a date as YYYY-MM-DD in Japan time, where the videos are published. */
@@ -17,15 +17,15 @@ const VIDEO_DATE_FORMAT = new Intl.DateTimeFormat("en-CA", {
 
 /** Videos of the Latest section, split by where they are shown. */
 export interface LatestVideos {
-  /** The newest video, for the large card, or `undefined` when there is none. */
+  /** The newest video, for the large window, or `undefined` when there is none. */
   feature: YouTubeVideo | undefined;
   /** The videos after it, newest first, for the list. */
   list: YouTubeVideo[];
 }
 
 /**
- * Splits a result of `fetchLatestVideos` into the video for the large card and the videos for
- * the list. The newest video goes on the card and the next ones, up to
+ * Splits a result of `fetchLatestVideos` into the video for the large window and the videos for
+ * the list. The newest video goes in the window and the next ones, up to
  * `LATEST_VIDEOS_SHOWN - 1`, go in the list. A failed result gives no videos, the same as a feed
  * without videos.
  */
