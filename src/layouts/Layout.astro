@@ -101,7 +101,7 @@ const [icon32, icon192, appleTouchIcon] = await Promise.all([
     <title>{pageTitle}</title>
     <Font cssVariable="--font-body" />
     <Font cssVariable="--font-display" />
-    <Font cssVariable="--font-mono" />
+    <Font cssVariable="--font-mono-latin" />
     {/* Elements that a page adds to <head> with slot="head". */}
     <slot name="head" />
   </head>
@@ -137,12 +137,14 @@ body {
   flex-grow: 1;
 }
 
-/* Every element except form controls (which need `font: inherit`) inherits Zen Maru Gothic;
-   components set var(--font-display) or var(--font-mono) where the design uses Saira Condensed
-   or JetBrains Mono. */
+/* Every element except form controls (which need `font: inherit`) inherits Zen Kaku Gothic New;
+   components set var(--font-mono) where the design uses JetBrains Mono, and var(--font-display)
+   where the old design uses Saira Condensed. --font-mono is the JetBrains Mono list followed by
+   --font-body, so Japanese in a monospace label is drawn in the loaded Zen Kaku Gothic New. */
 html {
+  --font-mono: var(--font-mono-latin), var(--font-body);
   font-family: var(--font-body);
-  /* Only the loaded weights are drawn: no faux bold above JetBrains Mono 500. */
+  /* Only the loaded faces are drawn: the browser never fakes a heavier weight. */
   font-synthesis-weight: none;
 }
 </style>

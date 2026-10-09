@@ -87,7 +87,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, and the canonical and hreflang URLs of a page, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, shapes.css and motion.css; sets --font-body on html; puts the site header (SiteHeader.astro) at the top of <body> and the site footer at the end of <body>, at the bottom of the viewport on a short page
+│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, shapes.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro) at the top of <body> and the site footer at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code block file names as <figure>, unit-tested
 │   │   ├── highlight.css     # Code block frame and role colors
@@ -189,19 +189,20 @@ A new component adds its samples to `/dev/components/`, and a new Markdown synta
 
 Fonts are self-hosted with the Astro Fonts API (`fonts` in `astro.config.mjs`). `astro build`
 downloads them from Google Fonts, and pages load them from `/_astro/fonts/`, never from a font
-CDN. `src/layouts/Layout.astro` emits the `@font-face` rules on every page and sets
-`--font-body` on `html`. No font file is preloaded.
+CDN. `src/layouts/Layout.astro` emits the `@font-face` rules on every page, sets `--font-body` on
+`html` and builds `--font-mono` there from `--font-mono-latin` (JetBrains Mono) and
+`--font-body`. No font file is preloaded.
 
-| CSS variable     | Font            | Weights  | Used for                                                        |
-| :--------------- | :-------------- | :------- | :-------------------------------------------------------------- |
-| `--font-body`    | Zen Maru Gothic | 500, 900 | Everything by default: Japanese and body text, navigation, buttons |
-| `--font-display` | Saira Condensed | 600, 800 | Large English headings such as LINA and ABOUT (800), TSUKUSU (600) |
-| `--font-mono`    | JetBrains Mono  | 400, 500 | Small labels such as `$ whoami`, dates and the terminal bar, and code blocks |
+| CSS variable     | Font                                                  | Weights       | Used for                                                                                                              |
+| :--------------- | :---------------------------------------------------- | :------------ | :-------------------------------------------------------------------------------------------------------------------- |
+| `--font-body`    | Zen Kaku Gothic New                                   | 400, 700, 900 | Everything by default: Japanese and body text, headings, navigation, buttons                                          |
+| `--font-mono`    | JetBrains Mono, then Zen Kaku Gothic New for Japanese | 400-800       | Labels, numbers, dates and code                                                                                       |
+| `--font-display` | Saira Condensed                                       | 600, 800      | Old design only: LINA and ABOUT (800) and TSUKUSU (600) in `Hero.astro` and `SectionHeading.astro`; removed with them |
 
 Components use these variables and never name a font. Form controls (`button`, `input`,
 `select`, `textarea`) do not inherit `font-family` from `html`, so components set
-`font: inherit` on them. Zen Maru Gothic 700 in the design is written as `font-weight: 900`,
-because 700 is not loaded. `font-synthesis-weight: none` on `html` keeps the browser from
+`font: inherit` on them. Zen Kaku Gothic New 500 in the design is written as `font-weight: 400`,
+because 500 is not loaded. `font-synthesis-weight: none` on `html` keeps the browser from
 faking a weight that is not loaded.
 
 ## 🖼️ Images and caching

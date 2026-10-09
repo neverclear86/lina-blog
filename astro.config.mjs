@@ -155,25 +155,24 @@ export default defineConfig({
     routing: { prefixDefaultLocale: true },
   },
   // Fonts are downloaded from Google Fonts during `astro build` and served from /_astro/fonts/,
-  // so pages never request a font CDN. Google splits Zen Maru Gothic's Japanese glyphs into
+  // so pages never request a font CDN. Google splits Zen Kaku Gothic New's Japanese glyphs into
   // numbered unicode-range chunks without a subset name, which are always kept; `subsets` only
   // drops the named Latin Extended, Greek and Cyrillic chunks. Browsers download only the chunks
-  // whose characters a page uses. The design's Zen Maru Gothic 700 is loaded as 900.
+  // whose characters a page uses. The design's Zen Kaku Gothic New 500 is not loaded and is
+  // written as 400. Google serves JetBrains Mono as one variable file for every weight, so it is
+  // loaded as the range 400-800. Its variable is `--font-mono-latin`: `src/layouts/Layout.astro`
+  // builds `--font-mono` from it and `--font-body`, because Astro renames each loaded family
+  // with a hash and a fallback here cannot name the loaded Zen Kaku Gothic New.
   fonts: [
     {
       provider: fontProviders.google(),
-      name: "Zen Maru Gothic",
+      name: "Zen Kaku Gothic New",
       cssVariable: "--font-body",
-      weights: [500, 900],
+      weights: [400, 700, 900],
       styles: ["normal"],
       subsets: ["latin"],
       display: "swap",
-      fallbacks: [
-        "Hiragino Maru Gothic ProN",
-        "Hiragino Sans",
-        "Yu Gothic",
-        "sans-serif",
-      ],
+      fallbacks: ["Hiragino Sans", "Noto Sans CJK JP", "sans-serif"],
       // The generated size-adjust is measured on Latin glyphs and does not fit full-width ones.
       optimizedFallbacks: false,
     },
@@ -190,12 +189,12 @@ export default defineConfig({
     {
       provider: fontProviders.google(),
       name: "JetBrains Mono",
-      cssVariable: "--font-mono",
-      weights: [400, 500],
+      cssVariable: "--font-mono-latin",
+      weights: ["400 800"],
       styles: ["normal"],
       subsets: ["latin"],
       display: "swap",
-      fallbacks: ["monospace"],
+      fallbacks: ["ui-monospace"],
     },
   ],
 });
