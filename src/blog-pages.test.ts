@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { blogListText, blogTagPagePaths, tagFilterLinks } from "./blog-pages";
+import {
+  blogCrumbs,
+  blogListText,
+  blogTagPagePaths,
+  tagFilterLinks,
+} from "./blog-pages";
 import { translate } from "./i18n/ui";
+import type { BlogTag } from "./latest-posts";
 
 describe("blogTagPagePaths", () => {
   it("記事が無くても、制作記・技術・日記の 3 つのタグのページをこの順に出す", () => {
@@ -72,5 +78,34 @@ describe("tagFilterLinks", () => {
         .filter((link) => link.current)
         .map((link) => link.href),
     ).toEqual(["/blog/tags/diary/"]);
+  });
+});
+
+describe("blogCrumbs", () => {
+  it("/blog/ は ~ から日本語のトップへ進め、現在地の blog はリンクにしない", () => {
+    expect(blogCrumbs(undefined)).toEqual([
+      { text: "~", href: "/ja/#top" },
+      { text: "blog" },
+    ]);
+  });
+
+  it("タグのページは ~ と blog にリンクし、tags はリンクにせず、最後にタグのスラッグを出す", () => {
+    expect(blogCrumbs("技術")).toEqual([
+      { text: "~", href: "/ja/#top" },
+      { text: "blog", href: "/blog/" },
+      { text: "tags" },
+      { text: "tech" },
+    ]);
+  });
+
+  it("どのページも最後の要素が現在地で、href を持たない", () => {
+    const tags: (BlogTag | undefined)[] = [undefined, "制作記", "技術", "日記"];
+    const lasts = tags.map((tag) => blogCrumbs(tag).at(-1));
+    expect(lasts).toEqual([
+      { text: "blog" },
+      { text: "devlog" },
+      { text: "tech" },
+      { text: "diary" },
+    ]);
   });
 });

@@ -23,7 +23,7 @@ bun create astro@latest -- --template basics
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
 │   ├── avatar-images.ts  # The nine v2.1 avatar images of src/assets/ with their alt keys, widths, sizes and priority, unit-tested
-│   ├── blog-pages.ts     # Tag pages of /blog/tags/<slug>/, the heading texts and the tag filter links of the blog pages, unit-tested
+│   ├── blog-pages.ts     # Tag pages of /blog/tags/<slug>/, the heading texts, the breadcrumbs and the tag filter links of the blog pages, unit-tested
 │   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
@@ -55,7 +55,7 @@ bun create astro@latest -- --template basics
 │   ├── components/
 │   │   ├── About.astro           # About section: heading, lead and three terminal cards
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, code file names, YouTube embeds)
-│   │   ├── BlogIndex.astro       # Blog pages: heading, tag filter links with the current one underlined, and the post cards
+│   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post cards
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
 │   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
@@ -72,6 +72,7 @@ bun create astro@latest -- --template basics
 │   │   ├── LatestVideoList.astro # Latest section: the next videos as small windows with JST dates, and the YouTube channel button; hidden below 768px
 │   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for --inv faces
 │   │   ├── NameLogo.astro        # Name logo of the brand kit as inline SVG: compact, full and full-sub, painted with the --lg-* tokens
+│   │   ├── PageHead.astro        # Head of the blog pages: grid background, diagonal band and the slot with an h1
 │   │   ├── PostCard.astro        # Blog post card: emoji tile, title, JST date, tag chips and a PR chip; the whole card is a link
 │   │   ├── PostList.astro        # Post cards in one column, two from 1024px, or one line when there are none
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level and the contact variant are props
@@ -125,7 +126,7 @@ bun create astro@latest -- --template basics
 │   │   └── text/
 │   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
 │   └── styles/
-│       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ghost) and icon links (.sq, .iconbtn) of plan A
+│       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ghost), icon links (.sq, .iconbtn) and page switch links (.ws) of plan A
 │       ├── global.css    # body colors and their fade, the links, the keyboard focus outline, and the grid backgrounds (.grid, .cgrid)
 │       ├── labels.css    # Labels of plan A: .label, .tag and the category chip .chip-acc
 │       ├── motion.css    # Animations that keep running (.bob, .blink-on, .caret, .a-typeLoop) and the section reveal on scroll (.reveal), stopped under reduced motion
@@ -180,7 +181,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | `tokens.css` | Color tokens (CSS variables): the plan A tokens for the light and dark themes, the colors that stay the same in both themes, and the legacy tokens (including `--legacy-line`, `--legacy-grid` and `--legacy-ink`) kept until the components of the earlier design are removed |
 | `global.css` | Styles of `body` (colors and their fade between the themes), the links, the keyboard focus outline and decorations used across pages, such as `.grid` and `.cgrid` |
 | `shapes.css` | Notched corners (`.shape`, `.shapeL`, `.shapeS`), hard shadows (`.shadow`, `.shadowF`, `.shadowInk`) and the hover lift (`.lift`) |
-| `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ghost`) and icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) of plan A |
+| `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ghost`), icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) and page switch links (`.ws`, `.ws.on`) of plan A |
 | `window.css` | Plan A windows (`.win`; a link window turns its border on hover), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid and stripe backgrounds (`.gridbg`, `.stripes`) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions under `prefers-reduced-motion: reduce` |
 | `labels.css` | Labels of plan A: the caption `.label`, the bordered tag `.tag` and the orange category chip `.chip-acc` |
 | `motion.css` | Animations that keep running: the pixel art bob (`.bob`), the blinking cursors (`.caret`, and `.blink-on` for the name logo) and the typed command (`.a-typeLoop`); and the section reveal on scroll (`.reveal`), enabled only inside `@supports (animation-timeline: view())`. All are stopped under `prefers-reduced-motion: reduce` |

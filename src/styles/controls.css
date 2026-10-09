@@ -1,13 +1,18 @@
 /*
- * Buttons and icon links of plan A, imported by `src/layouts/Layout.astro` after `shapes.css`.
- * The values are copied from `.btn`, `.btn-acc`, `.btn-ghost` and `.sq` of `design/Main.dc.html`
- * and from `.iconbtn` of `design/AArticleMobile.dc.html`. Colors come only from the tokens in
- * `tokens.css`.
+ * Buttons, icon links and page switch links of plan A, imported by `src/layouts/Layout.astro`
+ * after `shapes.css`. The values are copied from `.btn`, `.btn-acc`, `.btn-ghost`, `.sq` and `.ws`
+ * of `design/Main.dc.html` and from `.iconbtn` of `design/AArticleMobile.dc.html`. Colors come
+ * only from the tokens in `tokens.css`.
  *
  * `.btn` is a 46px high link for text, `.btn-acc` fills it with `--keyword`, and `.btn-ghost`
  * draws a `--line2` border instead. `.sq` is a 44px square link for an icon, and `.iconbtn` is a
  * 44px square `<button>` for an icon; `.iconbtn-acc` fills it with `--keyword`, for the menu.
  * The sizes do not change with the width, and a page that needs another size overrides them.
+ *
+ * `.ws` is a 30px high link in JetBrains Mono 12px for switching between pages, such as the tag
+ * filter. The link of the current page is `.ws.on`: `--ink` on `--keyword`, bold, and unchanged
+ * by hover. The other links fill with `--panel` on hover and on keyboard focus (and `.is-hover`
+ * and `.is-focus`), keep the color of their text and draw no underline in either theme.
  *
  * Hover and keyboard focus look the same: `.btn-acc` fills with `--keyword-hover`, and the border
  * of `.btn-ghost`, `.sq` and `.iconbtn` becomes `--keyword`. `.is-hover` and `.is-focus` show the
@@ -84,4 +89,29 @@
   .is-focus
 ) {
   border-color: var(--keyword);
+}
+
+.ws {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 44px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.ws:is(:hover, :focus-visible, .is-hover, .is-focus) {
+  background: var(--panel);
+}
+
+.ws.on {
+  background: var(--keyword);
+  color: var(--ink);
+  font-weight: 700;
 }

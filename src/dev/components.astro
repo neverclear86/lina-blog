@@ -20,6 +20,7 @@ import LatestPosts from "../components/LatestPosts.astro";
 import LatestVideoFeature from "../components/LatestVideoFeature.astro";
 import LatestVideoList from "../components/LatestVideoList.astro";
 import NameLogo from "../components/NameLogo.astro";
+import PageHead from "../components/PageHead.astro";
 import PixelArt from "../components/PixelArt.astro";
 import PostCard from "../components/PostCard.astro";
 import PostList from "../components/PostList.astro";
@@ -274,6 +275,29 @@ const sampleVideos: YouTubeVideo[] = [
           >
         </SectionTitle>
       </div>
+    </section>
+
+    <section id="a-page-head">
+      <h2>A案: ページの頭とナビの切り替え</h2>
+      <div class="row">
+        <a class="ws on" href="#a-page-head" aria-current="page">.ws.on</a>
+        <a class="ws" href="#a-page-head">.ws</a>
+        <a class="ws is-hover" href="#a-page-head">.ws.is-hover</a>
+        <a class="ws is-focus" href="#a-page-head">.ws.is-focus</a>
+      </div>
+      <PageHead>
+        <nav
+          aria-label="パンくず"
+          style="font-family: var(--font-mono); font-size: 13px; color: var(--muted)"
+        >
+          ~ / blog / <span style="color: var(--text)">tags</span>
+        </nav>
+        <h1>技術の記事</h1>
+        <div class="row">
+          <a class="ws" href="#a-page-head">すべて</a>
+          <a class="ws on" href="#a-page-head" aria-current="page">技術</a>
+        </div>
+      </PageHead>
     </section>
 
     <section id="a-works">

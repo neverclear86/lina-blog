@@ -181,6 +181,33 @@ describe("ボタンとアイコンのリンク", () => {
     expect(found[0].body).toContain("color: var(--ink)");
   });
 
+  it(".ws は高さ 30px、最小幅 44px で下線を持たず、ホバー・フォーカス・見本の状態で地が --panel になる", () => {
+    const base = rules("controls.css").filter(
+      (rule) => rule.selector === ".ws",
+    );
+    expect(base).toHaveLength(1);
+    expect(base[0].body).toContain("height: 30px");
+    expect(base[0].body).toContain("min-width: 44px");
+    expect(base[0].body).toContain("text-decoration: none");
+    const fill = withDeclaration("controls.css", "background: var(--panel)");
+    expect(fill).toHaveLength(1);
+    expect(hasClass(fill[0].selector, ".ws")).toBe(true);
+    for (const state of STATES) {
+      expect(fill[0].selector).toContain(state);
+    }
+  });
+
+  it(".ws.on は --keyword の地に --ink の太い文字で、ホバーの規則より後にあり、ホバーでも変わらない", () => {
+    const all = rules("controls.css");
+    const current = all.findIndex((rule) => rule.selector === ".ws.on");
+    const hover = all.findIndex((rule) => rule.selector.startsWith(".ws:is("));
+    expect(current).toBeGreaterThanOrEqual(0);
+    expect(current).toBeGreaterThan(hover);
+    expect(all[current].body).toContain("background: var(--keyword)");
+    expect(all[current].body).toContain("color: var(--ink)");
+    expect(all[current].body).toContain("font-weight: 700");
+  });
+
   it("controls.css と global.css は !important を使わない", () => {
     expect(source("styles/controls.css")).not.toContain("!important");
     expect(source("styles/global.css")).not.toContain("!important");
@@ -194,6 +221,19 @@ describe("配線", () => {
     const controls = layout.indexOf('import "../styles/controls.css"');
     expect(shapes).toBeGreaterThanOrEqual(0);
     expect(controls).toBeGreaterThan(shapes);
+  });
+
+  it("記事一覧の頭は PageHead の中にパンくずと h1 と絞り込みを置き、絞り込みのリンクに .ws と現在地の .on を付ける", () => {
+    const index = source("components/BlogIndex.astro");
+    const head = index.slice(
+      index.indexOf("<PageHead>"),
+      index.indexOf("</PageHead>"),
+    );
+    expect(head).toContain('class="crumbs"');
+    expect(head).toContain("<h1>");
+    expect(head).toContain('class="filter"');
+    expect(head).toContain('class:list={["ws", { on: link.current }]}');
+    expect(head).toContain('aria-current={link.current ? "page" : undefined}');
   });
 
   it("ブラウザーの既定の下線に頼っていた .all と 404 ページのリンクは自分で下線を持つ", () => {

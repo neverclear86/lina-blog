@@ -1,8 +1,9 @@
 /**
- * Paths, texts and tag filter links of the pages of blog posts: `/blog/`, which lists every post,
- * and `/blog/tags/<slug>/`, which lists the posts of one tag.
+ * Paths, texts, breadcrumbs and tag filter links of the pages of blog posts: `/blog/`, which
+ * lists every post, and `/blog/tags/<slug>/`, which lists the posts of one tag.
  */
 import { blogSchema } from "./blog-schema";
+import { homeSectionPath } from "./components/site-nav";
 import type { UiKey } from "./i18n/ui";
 import { type BlogTag, tagPath, tagSlug } from "./latest-posts";
 
@@ -47,11 +48,11 @@ export function blogTagPagePaths() {
 
 /** Texts of a page of blog posts. */
 export interface BlogListText {
-  /** Label above the heading, the path of the page after `~`, such as `~/blog/tags/tech`. */
+  /** Path of the page after `~`, such as `~/blog` or `~/blog/tags/tech`. */
   label: string;
   /** Key of the name of the page in `<title>`. */
   title: UiKey;
-  /** Key of the subtitle of the heading. */
+  /** Key of the heading (`h1`) of the page. */
   subtitle: UiKey;
   /** Key of the text shown when the page has no posts. */
   noPosts: UiKey;
@@ -104,5 +105,32 @@ export function tagFilterLinks(current: BlogTag | undefined): TagFilterLink[] {
       href: tagPath(tag),
       current: tag === current,
     })),
+  ];
+}
+
+/** One element of the breadcrumb of a page of blog posts. */
+export interface BlogCrumb {
+  /** Text of the element, such as `~` or `blog`. */
+  text: string;
+  /** Link target; undefined for the current page and for `tags`, which has no page. */
+  href?: string;
+}
+
+/**
+ * Returns the elements of the breadcrumb of the page of `tag`'s posts, or of `/blog/` when `tag`
+ * is undefined: `~` (the top page of `ja`) and `blog` (a link to `/blog/` on a tag's page, the
+ * current page on `/blog/`), and on a tag's page `tags` (no link) and the tag's slug as the
+ * current page. The last element is always the current page and has no `href`.
+ */
+export function blogCrumbs(tag: BlogTag | undefined): BlogCrumb[] {
+  const home = { text: "~", href: homeSectionPath("ja", "top") };
+  if (tag === undefined) {
+    return [home, { text: "blog" }];
+  }
+  return [
+    home,
+    { text: "blog", href: BLOG_INDEX_PATH },
+    { text: "tags" },
+    { text: tagSlug(tag) },
   ];
 }
