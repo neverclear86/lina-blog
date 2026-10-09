@@ -85,3 +85,16 @@ body {
   outline: 2px solid var(--focus-ring, var(--fg));
   outline-offset: 2px;
 }
+
+/*
+ * From 1024px the site header sticks to the top of the viewport and is 61px high (see
+ * `SiteHeader.astro`), so a section that a link scrolls to stops 72px below the top, as
+ * `section[id],#blog` does in `design/Main.dc.html`, and its heading stays below the header.
+ * Below 1024px the header is in the page flow and takes no room at the top.
+ */
+@media (min-width: 1024px) {
+  section[id],
+  #blog {
+    scroll-margin-top: 72px;
+  }
+}

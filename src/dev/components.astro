@@ -29,6 +29,7 @@ import SectionTitle from "../components/SectionTitle.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import Tape from "../components/Tape.astro";
 import TerminalCard from "../components/TerminalCard.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
 import WorkTile from "../components/WorkTile.astro";
 import { translate } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
@@ -520,6 +521,14 @@ const sampleVideos: YouTubeVideo[] = [
             >
           </div>
         </div>
+      </div>
+    </section>
+
+    <section id="theme-toggle">
+      <h2>テーマの切り替え</h2>
+      <div class="row">
+        <ThemeToggle lang="ja" />
+        <ThemeToggle lang="ja" variant="labeled" />
       </div>
     </section>
 

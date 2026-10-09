@@ -5,78 +5,81 @@ describe("homeSectionPath", () => {
   it("言語のトップのページの節を指すパスを返す", () => {
     expect(homeSectionPath("ja", "about")).toBe("/ja/#about");
     expect(homeSectionPath("en", "contact")).toBe("/en/#contact");
+    expect(homeSectionPath("ja", "blog")).toBe("/ja/#blog");
   });
 });
 
+/** The items that are current at `pathname`, as `label=aria-current`. */
+function currents(lang: "ja" | "en", pathname: string): string[] {
+  return navLinks(lang, pathname)
+    .filter((l) => l.current !== undefined)
+    .map((l) => `${l.label}=${l.current}`);
+}
+
 describe("navLinks", () => {
-  it("トップ・プロフィール・つくったもの・さいきんは言語のトップの節を、ブログは /blog/ を指す", () => {
+  it("00 top から 04 works の順に並べ、トップ以外のページでは 03 blog が /blog/、他が言語のトップの節を指す", () => {
     expect(
-      navLinks("en", "/en/about/").map(({ key, href }) => [key, href]),
+      navLinks("en", "/en/about/").map(({ label, href }) => [label, href]),
     ).toEqual([
-      ["nav.top", "/en/#top"],
-      ["nav.about", "/en/#about"],
-      ["nav.works", "/en/#works"],
-      ["nav.latest", "/en/#latest"],
-      ["nav.blog", "/blog/"],
+      ["00 top", "/en/#top"],
+      ["01 about", "/en/#about"],
+      ["02 latest", "/en/#latest"],
+      ["03 blog", "/blog/"],
+      ["04 works", "/en/#works"],
     ]);
   });
 
-  it("言語のトップのページではトップだけを現在地にする", () => {
-    expect(
-      navLinks("ja", "/ja/")
-        .filter((l) => l.current)
-        .map((l) => l.key),
-    ).toEqual(["nav.top"]);
+  it("言語のトップ（/ja/ と /ja）では 03 blog が同じページの #blog を指す", () => {
+    const blog = (path: string) =>
+      navLinks("ja", path).find((l) => l.label === "03 blog")?.href;
+    expect(blog("/ja/")).toBe("/ja/#blog");
+    expect(blog("/ja")).toBe("/ja/#blog");
+    expect(blog("/en/")).toBe("/blog/");
   });
 
-  it("末尾のスラッシュの無いトップのパスでもトップを現在地にする", () => {
-    expect(
-      navLinks("ja", "/ja")
-        .filter((l) => l.current)
-        .map((l) => l.key),
-    ).toEqual(["nav.top"]);
-  });
-
-  it("別の言語のトップのパスではトップを現在地にしない", () => {
-    expect(navLinks("ja", "/en/").some((l) => l.current)).toBe(false);
-  });
-
-  it("作品のページではつくったものだけを現在地にする", () => {
-    expect(
-      navLinks("ja", "/ja/works/ikili-pro/")
-        .filter((l) => l.current)
-        .map((l) => l.key),
-    ).toEqual(["nav.works"]);
-  });
-
-  it("英語の作品のページでもつくったものだけを現在地にする", () => {
-    expect(
-      navLinks("en", "/en/works/ikili-pro/")
-        .filter((l) => l.current)
-        .map((l) => l.key),
-    ).toEqual(["nav.works"]);
-  });
-
-  it("別の言語の作品のパスではつくったものを現在地にしない", () => {
-    expect(navLinks("ja", "/en/works/ikili-pro/").some((l) => l.current)).toBe(
-      false,
+  it("表示の文字は言語によらず同じにする", () => {
+    expect(navLinks("ja", "/ja/").map((l) => l.label)).toEqual(
+      navLinks("en", "/en/").map((l) => l.label),
     );
   });
 
-  it("/blog/ 以下の works を含むパスではつくったものを現在地にしない", () => {
-    expect(
-      navLinks("ja", "/blog/works/")
-        .filter((l) => l.current)
-        .map((l) => l.key),
-    ).toEqual(["nav.blog"]);
+  it("トップのページでは現在地を付けない", () => {
+    expect(currents("ja", "/ja/")).toEqual([]);
+    expect(currents("ja", "/ja")).toEqual([]);
+    expect(currents("en", "/en/")).toEqual([]);
   });
 
-  it("/blog/ 以下のページではブログだけを現在地にする", () => {
+  it("/blog/ 自身では 03 blog を page、/blog でも page にする", () => {
+    expect(currents("ja", "/blog/")).toEqual(["03 blog=page"]);
+    expect(currents("ja", "/blog")).toEqual(["03 blog=page"]);
+  });
+
+  it("/blog/ 以下のページでは 03 blog を true にする", () => {
+    expect(currents("ja", "/blog/hello/")).toEqual(["03 blog=true"]);
+    expect(currents("ja", "/blog/tags/tech/")).toEqual(["03 blog=true"]);
+  });
+
+  it("/blog/ 以下の works を含むパスでは 04 works を現在地にしない", () => {
+    expect(currents("ja", "/blog/works/")).toEqual(["03 blog=true"]);
+  });
+
+  it("/blogroll は /blog/ 以下とみなさない", () => {
+    expect(currents("ja", "/blogroll/")).toEqual([]);
+  });
+
+  it("作品のページでは 04 works だけを true にする（英語でも同じ）", () => {
+    expect(currents("ja", "/ja/works/ikili-pro/")).toEqual(["04 works=true"]);
+    expect(currents("en", "/en/works/ikili-pro/")).toEqual(["04 works=true"]);
+  });
+
+  it("別の言語の作品のパスでは 04 works を現在地にしない", () => {
+    expect(currents("ja", "/en/works/ikili-pro/")).toEqual([]);
+  });
+
+  it("別の言語のトップのパスでは 03 blog が /blog/ を指す", () => {
     expect(
-      navLinks("ja", "/blog/hello/")
-        .filter((l) => l.current)
-        .map((l) => l.key),
-    ).toEqual(["nav.blog"]);
+      navLinks("ja", "/en/").find((l) => l.label === "03 blog")?.href,
+    ).toBe("/blog/");
   });
 });
 
@@ -88,9 +91,17 @@ describe("languageLinks", () => {
     ]);
   });
 
-  it("言語の接頭辞の無いページでは、他の言語はその言語のトップを指す", () => {
+  it("ブログのページでは今の言語のリンクだけを返す", () => {
     expect(languageLinks("ja", "/blog/hello/")).toEqual([
       { locale: "ja", href: "/blog/hello/", current: true },
+    ]);
+    expect(languageLinks("ja", "/blog/")).toHaveLength(1);
+    expect(languageLinks("ja", "/blog")).toHaveLength(1);
+  });
+
+  it("ブログ以外の接頭辞の無いページでは、他の言語はその言語のトップを指す", () => {
+    expect(languageLinks("ja", "/404")).toEqual([
+      { locale: "ja", href: "/404", current: true },
       { locale: "en", href: "/en/", current: false },
     ]);
   });

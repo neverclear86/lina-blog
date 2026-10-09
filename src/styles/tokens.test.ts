@@ -137,10 +137,14 @@ describe("tokens.css", () => {
     expect(dark).toMatchObject({ ...expected, "--num": "#a04a0e" });
   });
 
-  it("ライトのトークンはデザインの A案 の .lx.light の変数をすべて同じ値で持つ", () => {
+  it("ライトのトークンはデザインの A案 の .lx.light の変数を --hdr のほかは同じ値で持ち、--hdr は .88 でなく .9 にする", () => {
     const expected = customProperties(declarations(designA, ".lx.light"));
     expect(Object.keys(expected)).toHaveLength(18);
-    expect(light).toMatchObject(expected);
+    expect(expected["--hdr"]).toBe("rgba(236,234,229,.88)");
+    expect(light).toMatchObject({
+      ...expected,
+      "--hdr": "rgba(236,234,229,.9)",
+    });
   });
 
   it("ダークのトークンはデザインの A案 の .lx の変数をすべて同じ値で持つ", () => {
@@ -301,6 +305,9 @@ const A_TEXT_PAIRS: readonly (readonly [
       A_UNDER.map((under) => [foreground, [translucent, under]] as const),
     ),
   ]),
+  ...["--text", "--muted", "--acc-text"].map(
+    (foreground) => [foreground, ["--hdr", "--code"]] as const,
+  ),
   ["--ivory", "--code"],
   ["--comment", "--code"],
   ["--keyword", "--code"],

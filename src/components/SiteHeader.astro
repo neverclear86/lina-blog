@@ -1,23 +1,23 @@
 ---
 /**
- * The site header of every page, copied from the `<header>` of `design/CBMain.dc.html` and
- * `design/CBMobile.dc.html` except for its logo: the name logo (`NameLogo`, `compact`) linking to
- * the top of the top page, the main navigation, the language switch, the theme toggle and the
- * contact button. The navigation and the contact button point to the sections of the top page of
- * `lang` (`navLinks` and `homeSectionPath` in `./site-nav`), and the item of the current page has
- * `aria-current="page"` and a pink underline.
+ * The site header of every page. From 1024px it is the header of `design/Main.dc.html`: the name
+ * logo (`NameLogo`, `compact`), the main navigation `00 top` to `04 works`, the language switch,
+ * the theme toggle with the name of the current theme, and the contact button (`.btn-acc`). It
+ * sticks to the top of the viewport, 61px high, on `--hdr` blurred with a `--line` line under it,
+ * and its content is at most 1440px wide. The items come from `navLinks` in `./site-nav`, and the
+ * item of the current page has `aria-current` and a `--keyword` face. The language switch shows
+ * the language of the page as text and links to the others; a page that exists only in Japanese
+ * shows `JA` alone.
  *
  * The cursor of the logo blinks (`.blink-on` in `src/styles/motion.css`), except while the logo of
  * the hero of the top page (`.hero-logo` in `Hero`) is in the viewport, that is, has no
  * `data-offscreen`: that logo blinks in its place, so that one cursor blinks on a screen.
  *
- * The header stays in the page flow, 60px high below 768px and 72px from 768px. The side padding is
- * 18px on the left and 14px on the right below 768px, 32px from 768px and 64px from 1280px. From
- * 1024px the navigation, the language switch and the contact button sit in the header. Below 1024px
- * they move into the menu, a popover under the header that the menu button next to the theme toggle
- * shows and hides without script. The button shows three bars, and a cross while the menu is open.
- * While it is open, the page behind it does not scroll, and a script closes it when a link in it is
- * clicked. From 1024px the menu button and the menu are hidden.
+ * Below 1024px the header is the earlier design, in the page flow, 60px high below 768px and 72px
+ * from 768px. The navigation, the language switch and the contact button move into the menu, a
+ * popover under the header that the menu button next to the theme toggle shows and hides without
+ * script. The button shows three bars, and a cross while the menu is open. While it is open, the
+ * page behind it does not scroll, and a script closes it when a link in it is clicked.
  */
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
@@ -39,84 +39,93 @@ const languages = languageLinks(lang, pathname);
 ---
 
 <header class="site-header">
-  <a
-    class="brand blink-on"
-    href={homeSectionPath(lang, "top")}
-    aria-label={translate(lang, "header.homeLabel")}
-  >
-    <NameLogo variant="compact" />
-  </a>
-  <nav class="site-nav" aria-label={translate(lang, "nav.label")}>
-    {nav.map((item) => (
-  <a href={item.href} aria-current={item.current ? "page" : undefined}>
-    {translate(lang, item.key)}
+  <div class="bar">
+    <a
+      class="brand blink-on"
+      href={homeSectionPath(lang, "top")}
+      aria-label={translate(lang, "header.homeLabel")}
+    >
+      <NameLogo variant="compact" />
+    </a>
+    <nav class="site-nav" aria-label={translate(lang, "nav.label")}>
+      {nav.map((item) => (
+  <a class="ws" href={item.href} aria-current={item.current}>
+    {item.label}
   </a>
 ))}
-  </nav>
-  <div class="actions">
-    <div class="languages">
-      {languages.map((link, index) => (
+    </nav>
+    <div class="actions">
+      <div class="languages">
+        {languages.map((link, index) => (
   <>
     {index > 0 && (
       <span class="separator" aria-hidden="true">
         /
       </span>
     )}
-    <a
-      href={link.href}
-      hreflang={link.locale}
-      lang={link.locale}
-      aria-current={link.current ? "page" : undefined}
-    >
-      {link.locale.toUpperCase()}
-    </a>
+    {link.current ? (
+      <span class="lang-now" lang={link.locale} aria-current="page">
+        {link.locale.toUpperCase()}
+        {languages.length === 1 && (
+          <span class="sr-only">{translate(lang, "lang.jaOnly")}</span>
+        )}
+      </span>
+    ) : (
+      <a class="ws" href={link.href} hreflang={link.locale} lang={link.locale}>
+        {link.locale.toUpperCase()}
+      </a>
+    )}
   </>
 ))}
-    </div>
-    <ThemeToggle lang={lang} />
-    <div class="contact">
-      <Button href={homeSectionPath(lang, "contact")} size="md">
+      </div>
+      <div class="theme-wide">
+        <ThemeToggle lang={lang} variant="labeled" />
+      </div>
+      <div class="theme-narrow">
+        <ThemeToggle lang={lang} />
+      </div>
+      <a class="btn btn-acc contact" href={homeSectionPath(lang, "contact")}>
         {translate(lang, "nav.contact")}
-      </Button>
-    </div>
-    <div class="menu-toggle">
-      <IconButton
-        label={translate(lang, "menu.label")}
-        tone="inverse"
-        popovertarget="site-menu"
-      >
-        <svg
-          class="menu-open-icon"
-          width="18"
-          height="12"
-          viewBox="0 0 18 12"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
+      </a>
+      <div class="menu-toggle">
+        <IconButton
+          label={translate(lang, "menu.label")}
+          tone="inverse"
+          popovertarget="site-menu"
         >
-          <path d="M0 1h18M0 6h18M0 11h10"></path>
-        </svg>
-        <svg
-          class="menu-close-icon"
-          width="18"
-          height="18"
-          viewBox="0 0 18 18"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <path d="M2 2l14 14M16 2L2 16"></path>
-        </svg>
-      </IconButton>
+          <svg
+            class="menu-open-icon"
+            width="18"
+            height="12"
+            viewBox="0 0 18 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M0 1h18M0 6h18M0 11h10"></path>
+          </svg>
+          <svg
+            class="menu-close-icon"
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M2 2l14 14M16 2L2 16"></path>
+          </svg>
+        </IconButton>
+      </div>
     </div>
   </div>
   <div id="site-menu" class="menu-panel" popover>
     <nav class="menu-nav" aria-label={translate(lang, "nav.label")}>
       {nav.map((item) => (
-  <a href={item.href} aria-current={item.current ? "page" : undefined}>
-    {translate(lang, item.key)}
+  <a href={item.href} aria-current={item.current}>
+    {item.label}
   </a>
 ))}
     </nav>
@@ -128,14 +137,15 @@ const languages = languageLinks(lang, pathname);
         /
       </span>
     )}
-    <a
-      href={link.href}
-      hreflang={link.locale}
-      lang={link.locale}
-      aria-current={link.current ? "page" : undefined}
-    >
-      {link.locale.toUpperCase()}
-    </a>
+    {link.current ? (
+      <span lang={link.locale} aria-current="page">
+        {link.locale.toUpperCase()}
+      </span>
+    ) : (
+      <a href={link.href} hreflang={link.locale} lang={link.locale}>
+        {link.locale.toUpperCase()}
+      </a>
+    )}
   </>
 ))}
     </div>
@@ -152,12 +162,16 @@ const languages = languageLinks(lang, pathname);
   box-sizing: border-box;
   height: 60px;
   padding: 0 14px 0 18px;
+  border-bottom: 1px solid var(--legacy-line);
+}
+.bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--legacy-line);
+  height: 100%;
 }
-a {
+.brand,
+.menu-panel a {
   color: var(--fg);
 }
 .brand {
@@ -182,22 +196,9 @@ a {
 }
 .site-nav,
 .languages,
-.contact {
+.theme-wide,
+.bar .contact {
   display: none;
-}
-.site-nav {
-  align-items: center;
-  gap: 24px;
-  font-size: 15px;
-  font-weight: 900;
-}
-.site-nav a {
-  text-decoration: none;
-  padding: 6px 0;
-  border-bottom: 3px solid transparent;
-}
-.site-nav a[aria-current="page"] {
-  border-bottom-color: var(--pink);
 }
 .actions {
   display: flex;
@@ -207,10 +208,13 @@ a {
 .menu-toggle {
   display: flex;
 }
-.languages {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  gap: 6px;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .menu-close-icon {
   display: none;
@@ -249,11 +253,12 @@ a {
   display: flex;
   align-items: center;
   min-height: 48px;
+  font-family: var(--font-mono);
   font-size: 16px;
   font-weight: 900;
   text-decoration: none;
 }
-.menu-nav a[aria-current="page"] {
+.menu-nav a[aria-current] {
   text-decoration-line: underline;
   text-decoration-thickness: 3px;
   text-decoration-color: var(--pink);
@@ -266,7 +271,8 @@ a {
   font-family: var(--font-mono);
   font-size: 15px;
 }
-.menu-languages a {
+.menu-languages a,
+.menu-languages span[aria-current] {
   display: flex;
   align-items: center;
   min-height: 44px;
@@ -274,13 +280,11 @@ a {
 .menu-contact {
   margin-top: 20px;
 }
-.languages a,
 .menu-languages a {
   color: var(--muted);
   text-decoration: none;
 }
-.languages a[aria-current="page"],
-.menu-languages a[aria-current="page"] {
+.menu-languages span[aria-current] {
   color: var(--fg);
   font-weight: 500;
   text-decoration: underline;
@@ -303,32 +307,91 @@ a {
 .menu-nav a + a {
   border-top: 1px solid var(--hair);
 }
-.site-header a:hover {
+.brand:hover,
+.menu-panel a:hover {
   color: var(--fg);
   opacity: 0.8;
 }
+/*
+ * From 1024px: sticky, translucent and blurred. `backdrop-filter` is written without the prefix
+ * only, because the CSS build drops the unprefixed line when the prefixed one is also written.
+ */
 @media (min-width: 1024px) {
-  .site-nav,
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: auto;
+    padding: 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--hdr);
+    backdrop-filter: blur(10px);
+  }
+  .bar {
+    box-sizing: border-box;
+    max-width: 1440px;
+    height: auto;
+    margin: 0 auto;
+    padding: 8px 32px;
+  }
+  .site-nav {
+    display: flex;
+    gap: 4px;
+    margin-left: 20px;
+  }
+  .actions {
+    gap: 8px;
+    margin-left: auto;
+  }
   .languages {
     display: flex;
+    align-items: center;
   }
-  .contact {
+  .theme-wide {
     display: block;
   }
+  .bar .contact {
+    display: inline-flex;
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .theme-narrow,
   .menu-toggle,
   .menu-panel {
     display: none;
   }
-  .actions {
-    gap: 20px;
+  .site-nav .ws {
+    width: 92px;
   }
-}
-@media (min-width: 1280px) {
-  .site-header {
-    padding: 0 64px;
+  .languages .ws,
+  .lang-now {
+    min-width: 28px;
+    padding: 0 6px;
   }
-  .site-nav {
-    gap: 36px;
+  .lang-now {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 30px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .separator {
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .bar .ws:is(:hover, :focus-visible) {
+    color: var(--text);
+  }
+  .site-nav .ws[aria-current],
+  .site-nav .ws[aria-current]:is(:hover, :focus-visible) {
+    background: var(--keyword);
+    color: var(--ink);
+    font-weight: 700;
   }
 }
 </style>
