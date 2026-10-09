@@ -28,6 +28,7 @@ bun create astro@latest -- --template basics
 │   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
+│   ├── code-copy.ts      # Copy button of code blocks: texts, whether a block gets one, the clipboard write, unit-tested
 │   ├── contact-form.ts   # Contact form states before and after sending, their UI strings and the widget size, unit-tested
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
 │   ├── content.config.ts # blog and works collections: src/content/blog/ (and blog-dev/ in astro dev or with LINA_DEV_PAGES=1) checked by blog-schema.ts, src/content/works/ checked by work-schema.ts
@@ -55,7 +56,7 @@ bun create astro@latest -- --template basics
 │   │   └── logo-white.png  # White logo (dark theme, or inverse faces on the light theme)
 │   ├── components/
 │   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
-│   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, YouTube embeds, accordions, message boxes)
+│   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, YouTube embeds, accordions, message boxes) and puts the copy button on code blocks
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: in a row from 1200px, below it stacked or one at a time with tabs
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
@@ -106,7 +107,7 @@ bun create astro@latest -- --template basics
 │   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, shapes.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code blocks as a window <figure> with a title (file name, language or text), unit-tested
-│   │   ├── highlight.css     # Code block window (frame and title) and role colors
+│   │   ├── highlight.css     # Code block window (frame, title and copy button) and role colors
 │   │   ├── highlight.ts      # Shiki highlighting of code blocks with role classes, unit-tested
 │   │   ├── sample.md         # Sample article shown at /dev/markdown/
 │   │   ├── table-align.ts    # Sätteri hast plugin: table alignment as classes, unit-tested

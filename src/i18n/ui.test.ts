@@ -40,6 +40,15 @@ describe("translate", () => {
   });
 });
 
+describe("コードのコピーのボタン", () => {
+  it("コードのコピーのボタンの名前は日本語が「コードをコピー」で、英語は見える文字 copy を含む", () => {
+    expect(translate("ja", "code.copy.name")).toBe("コードをコピー");
+    expect(translate("en", "code.copy.name").toLowerCase()).toContain(
+      translate("en", "code.copy.idle"),
+    );
+  });
+});
+
 describe("ui", () => {
   it("言語の一覧のすべての言語に既定の言語と同じキーの辞書がある", () => {
     const expected = Object.keys(ui[DEFAULT_LOCALE]).sort();
