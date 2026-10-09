@@ -86,7 +86,7 @@ async function loadFace(
  * @param fetchImpl The `fetch` to use; tests pass a stub.
  * @returns The fonts in the order of {@link OG_FONT_FACES}, named and weighted as in the site.
  * @throws Error when a stylesheet or a font answers with a non-2xx status, or when a stylesheet
- *   lists no TrueType file, so that the build stops instead of drawing images without text.
+ *   lists no TrueType file.
  */
 export function loadOgFonts(
   fetchImpl: typeof fetch = fetch,
