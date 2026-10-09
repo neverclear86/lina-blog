@@ -1,0 +1,298 @@
+---
+/**
+ * The right column of the hero of the top page, copied from `.hero-right` of
+ * `design/Main.dc.html`: the four poses of the avatar (`HERO_POSES`) in one place, a transparent
+ * button over them that switches to the next pose, the ruler with the labels `h: [000] cm` and
+ * `0`, and a table of five rows at the bottom right. The root fills the box that holds it
+ * (`position: absolute; inset: 0`), which the parent places.
+ *
+ * Only the first pose is shown. A click on the button, which Enter and Space also make, wipes the
+ * next pose in and the shown one out, diagonally from the bottom (`pz-in`, `pz-out`); the others
+ * are `visibility: hidden`, so that their lazy images load.
+ * `poseClass` in `hero-poses.ts` gives the class of each image, for the first view here and for
+ * each click in the script. Under `prefers-reduced-motion: reduce` the poses change without the
+ * wipe. The button and the `pose · click` row of the table are `hidden` until the script runs,
+ * so without JavaScript the first pose stays and no button that does nothing is left.
+ *
+ * The button is named by `hero.poseButton`, which the script rebuilds with the number of the pose
+ * on show on every click without announcing it. The poses are decorative (`alt` is empty); the
+ * ruler, its labels and the table are hidden from assistive technology. The table has a
+ * `--shade` ground because the orange band of the hero can pass behind it, and lets clicks
+ * through to the button. Up to 900px the poses are 540px high instead of 800px, and the ruler
+ * and the table are left out. The `pose · click` row holds `tap` beside `click` and shows `tap`
+ * in its place up to 767px, where the table is left out as well.
+ */
+import { Picture } from "astro:assets";
+import { avatarAlt, HERO_POSES } from "../avatar-images";
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import { poseClass, poseLabel } from "./hero-poses";
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const total = HERO_POSES.length;
+const label = translate(lang, "hero.poseButton");
+---
+
+<div class="hero-poses" data-hero-poses>
+  <div class="ruler" aria-hidden="true"></div>
+  <div class="label ruler-top" aria-hidden="true">h: [000] cm</div>
+  <div class="label ruler-zero" aria-hidden="true">0</div>
+  <div class="stage">
+    {HERO_POSES.map((pose, i) => (
+  <Picture
+    src={pose.src}
+    alt={avatarAlt(pose, lang)}
+    formats={["avif", "webp"]}
+    fallbackFormat="webp"
+    widths={pose.widths}
+    sizes={pose.sizes}
+    priority={pose.priority}
+    class:list={["pose", "av-shadow", poseClass(i, 0, null)]}
+  />
+))}
+  </div>
+  <button
+    class="pose-btn"
+    type="button"
+    hidden
+    data-label={label}
+    aria-label={poseLabel(label, 1, total)}
+  ></button>
+  <div class="spec" aria-hidden="true">
+    <div class="label spec-row">
+      <span>ahoge</span><span class="val">×1</span>
+    </div>
+    <div class="label spec-row">
+      <span>tie</span>
+      <span class="val"><span class="swatch"></span>#E8731A</span>
+    </div>
+    <div class="label spec-row">
+      <span>tails</span><span class="val">×2</span>
+    </div>
+    <div class="label spec-row" data-pose-row hidden>
+      <span
+        >pose · <span class="click">click</span
+        ><span class="tap">tap</span></span
+      >
+      <span class="val" data-pose-counter>1/{total}</span>
+    </div>
+    <div class="label spec-row">
+      <span>version</span><span class="val">v2.1</span>
+    </div>
+  </div>
+</div>
+
+<style>
+.hero-poses {
+  position: absolute;
+  inset: 0;
+}
+
+.ruler {
+  position: absolute;
+  top: 70px;
+  bottom: 50px;
+  left: 0;
+  width: 8px;
+  border-left: 1px solid var(--line2);
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--muted) 0 1px,
+    transparent 1px 16px
+  );
+}
+
+.ruler-top {
+  position: absolute;
+  top: 62px;
+  left: 18px;
+}
+
+.ruler-zero {
+  position: absolute;
+  bottom: 44px;
+  left: 18px;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+}
+
+.pose {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: auto;
+  max-width: none;
+  height: 800px;
+  transform: translateX(-50%);
+}
+
+.pose-btn {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.spec {
+  position: absolute;
+  right: 0;
+  bottom: 120px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 190px;
+  padding: 8px 10px;
+  background: var(--shade);
+  pointer-events: none;
+}
+
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line2);
+}
+
+.spec-row[hidden] {
+  display: none;
+}
+
+.val {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--text);
+}
+
+.swatch {
+  display: block;
+  width: 10px;
+  height: 10px;
+  background: var(--keyword);
+}
+
+.tap {
+  display: none;
+}
+
+.pose.pz-off {
+  visibility: hidden;
+}
+
+.pose.pz-in {
+  animation: pz-in 0.6s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+.pose.pz-out {
+  animation: pz-out 0.6s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+@keyframes pz-in {
+  from {
+    clip-path: polygon(0 115%, 100% 100%, 100% 115%, 0 130%);
+  }
+  to {
+    clip-path: polygon(0 -15%, 100% -30%, 100% 115%, 0 130%);
+  }
+}
+
+@keyframes pz-out {
+  from {
+    clip-path: polygon(0 -15%, 100% -30%, 100% 100%, 0 115%);
+  }
+  to {
+    clip-path: polygon(0 -15%, 100% -30%, 100% -30%, 0 -15%);
+  }
+}
+
+.pose-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pose.pz-in,
+  .pose.pz-out {
+    animation: none;
+  }
+
+  .pose.pz-out {
+    visibility: hidden;
+  }
+}
+
+@media (max-width: 900px) {
+  .ruler,
+  .ruler-top,
+  .ruler-zero,
+  .spec {
+    display: none;
+  }
+
+  .pose {
+    height: 540px;
+  }
+}
+
+@media (max-width: 767px) {
+  .click {
+    display: none;
+  }
+
+  .tap {
+    display: inline;
+  }
+}
+</style>
+
+<script>
+import { nextPose, poseClass, poseLabel } from "./hero-poses";
+
+for (const root of document.querySelectorAll<HTMLElement>(
+  "[data-hero-poses]",
+)) {
+  const button = root.querySelector<HTMLButtonElement>(".pose-btn");
+  const images = [...root.querySelectorAll<HTMLElement>(".pose")];
+  const counter = root.querySelector<HTMLElement>("[data-pose-counter]");
+  const row = root.querySelector<HTMLElement>("[data-pose-row]");
+  const template = button?.dataset.label;
+  if (!button || !template || images.length === 0) {
+    continue;
+  }
+  let current = 0;
+  button.addEventListener("click", () => {
+    const previous = current;
+    current = nextPose(current, images.length);
+    images.forEach((image, i) => {
+      image.classList.remove("pz-in", "pz-out", "pz-off");
+      const state = poseClass(i, current, previous);
+      if (state) {
+        image.classList.add(state);
+      }
+    });
+    button.setAttribute(
+      "aria-label",
+      poseLabel(template, current + 1, images.length),
+    );
+    if (counter) {
+      counter.textContent = `${current + 1}/${images.length}`;
+    }
+  });
+  button.hidden = false;
+  if (row) {
+    row.hidden = false;
+  }
+}
+</script>

@@ -53,7 +53,7 @@ function pose(
 
 /**
  * The four poses of Hero in the order of the design. They are decorative, so `altKey` is `null`
- * and the element that holds them carries the name. Only the first belongs in the first view of
+ * and the button that switches them carries the name. Only the first belongs in the first view of
  * the page, so only the first has `priority`; the others stay lazy.
  */
 export const HERO_POSES: readonly AvatarImage[] = [
