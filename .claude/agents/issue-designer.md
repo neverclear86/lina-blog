@@ -17,7 +17,7 @@ disallowedTools: Agent, Skill
 - issue は `gh issue view <N> -R neverclear86/lina-blog --json title,body,comments` で読む（`--comments` は本文を落とすことがあるので使わない）
 <!-- ADAPT:ui -->
 - ページは `src/pages/`、部品は `src/components/`、レイアウトは `src/layouts/` にある（Astro 7 のコンポーネントと素の CSS）。トークンは #20、テーマの切り替えは #22、i18n のルーティングは #18 で入る。既存の画面の構成と部品を読んでから決める
-- 見た目の正は `design/` の CB*（デスクトップは CBMain / CBMainDark、スマホのファーストビューは CBMobile / CBMobileDark。画像の対応は `design/README.md`）。デザインにあることはそのまま写し、デザインに無いことだけを決める
+- 見た目の正は `design/` の A案の 4 枚（PC のトップは `Main.dc.html`、スマホのトップは `AMobile.dc.html`、記事は `AArticle.dc.html` と `AArticleMobile.dc.html`。`.lx` がダークで既定、`.lx.light` がライト。画像とロゴの対応は `design/README.md`）。`design/` は git の管理外で、ユーザーの作業ツリーにだけある。デザインにあることはそのまま写し、デザインに無いことだけを決める
 - 画面を見るときは headless で行う（`.claude/scripts/screenshot.mjs`。Playwright の Chromium でページ全体を撮り、横のはみ出しも数える）。user スコープの Playwright MCP は headed でユーザーの画面にブラウザーの窓を開くので使わない
 <!-- /ADAPT:ui -->
 

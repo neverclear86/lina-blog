@@ -1,10 +1,25 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const design = readFileSync(
-  new URL("../../design/CBMain.dc.html", import.meta.url),
-  "utf8",
-);
+/**
+ * The `.root` and `.root.dark` rules of `CBMain.dc.html`, the design copy the tokens were taken
+ * from, without their `transition`. The design copy is kept outside the repository, so the rules
+ * are written here.
+ */
+const design = `
+.root {
+  --bg: #ECEAE5; --fg: #232427; --muted: #5A5B5F; --line: #232427; --hair: #CFCBC3;
+  --grid: #D9D6CF; --surf: #F8F7F3; --inv: #232427; --invfg: #F8F7F3; --invmuted: #A9A8A3;
+  --shadow: #232427; --ph: #E2DFD8; --chip: #E2DFD8; --cbg: #232427; --cfg: #F8F7F3;
+  --cmuted: #A9A8A3; --cline: #55565B; --cgrid: #2F3034; --fshadow: #E8731A; --num: #E8731A;
+}
+.root.dark {
+  --bg: #17181B; --fg: #ECEAE5; --muted: #A3A3A0; --line: #5E6167; --hair: #34363B;
+  --grid: #26282C; --surf: #222428; --inv: #ECEAE5; --invfg: #17181B; --invmuted: #55565B;
+  --shadow: #ECEAE5; --ph: #2A2C31; --chip: #2E3035; --cbg: #E4E1DA; --cfg: #232427;
+  --cmuted: #5A5B5F; --cline: #9E9B94; --cgrid: #D6D3CC; --fshadow: #232427; --num: #B85510;
+}
+`;
 const tokens = readFileSync(new URL("./tokens.css", import.meta.url), "utf8");
 
 /**
