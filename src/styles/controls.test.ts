@@ -1,0 +1,224 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+
+const SRC = new URL("../", import.meta.url);
+
+/** Reads a file under `src/` without its CSS comments. */
+function source(path: string): string {
+  return readFileSync(new URL(path, SRC), "utf8").replace(
+    /\/\*[\s\S]*?\*\//g,
+    "",
+  );
+}
+
+interface Rule {
+  selector: string;
+  body: string;
+}
+
+/** Returns the contents of the `<style>` elements of an `.astro` source. */
+function styleOf(text: string): string {
+  return [...text.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g)]
+    .map((match) => match[1])
+    .join("\n");
+}
+
+/** Returns the rules of a CSS text, with the whitespace of each selector collapsed. */
+function rulesOf(text: string): Rule[] {
+  return [...text.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => ({
+    selector: match[1].replace(/\s+/g, " ").trim(),
+    body: match[2],
+  }));
+}
+
+/** Returns the rules of `src/styles/<name>`. */
+function rules(name: string): Rule[] {
+  return rulesOf(source(`styles/${name}`));
+}
+
+/** Returns the rules of `src/styles/<name>` that have `declaration` among their declarations. */
+function withDeclaration(name: string, declaration: string): Rule[] {
+  return rules(name).filter((rule) =>
+    rule.body.split(";").some((part) => part.trim() === declaration),
+  );
+}
+
+/** Returns true when `selector` names `cls` as a whole class, not as the start of a longer one. */
+function hasClass(selector: string, cls: string): boolean {
+  return new RegExp(`${cls.replace(".", "\\.")}(?![\\w-])`).test(selector);
+}
+
+const STATES = [":hover", ":focus-visible", ".is-hover", ".is-focus"];
+
+describe("リンクのホバー", () => {
+  it("リンクの規則はすべて :where の中にあり、部品のクラスの規則が常に勝つ", () => {
+    const outside = rules("global.css").map((rule) =>
+      rule.selector.replace(/:where\([^)]*\)/g, ""),
+    );
+    expect(
+      outside.filter((selector) => /(^|[\s,>+~])a(?![\w-])/.test(selector)),
+    ).toEqual([]);
+    expect(rules("global.css").map((rule) => rule.selector)).toContain(
+      ":where(a)",
+    );
+  });
+
+  it("ライトのホバーとフォーカスは 2px の --keyword の下線になり、見本の状態も同じ規則に載る", () => {
+    const found = withDeclaration(
+      "global.css",
+      "text-decoration-line: underline",
+    );
+    expect(found).toHaveLength(1);
+    const [rule] = found;
+    for (const state of [
+      "a:hover",
+      "a:focus-visible",
+      "a.is-hover",
+      "a.is-focus",
+    ]) {
+      expect(rule.selector).toContain(state);
+    }
+    expect(rule.body).toContain("text-decoration-color: var(--keyword)");
+    expect(rule.body).toContain("text-decoration-thickness: 2px");
+  });
+
+  it("ダークのホバーとフォーカスは文字が --keyword になり、下線は付かない", () => {
+    const found = withDeclaration("global.css", "color: var(--keyword)");
+    expect(found).toHaveLength(1);
+    const [rule] = found;
+    for (const state of STATES) {
+      expect(rule.selector).toContain(`:root[data-theme="dark"] a${state}`);
+    }
+    expect(rule.body).toContain("text-decoration-line: none");
+  });
+
+  it("ダークの規則はライトの規則より後にあり、ダークのホバーに下線が残らない", () => {
+    const all = rules("global.css");
+    const indexOf = (declaration: string) =>
+      all.findIndex((rule) =>
+        rule.body.split(";").some((part) => part.trim() === declaration),
+      );
+    const dark = indexOf("color: var(--keyword)");
+    const light = indexOf("text-decoration-line: underline");
+    expect(light).toBeGreaterThanOrEqual(0);
+    expect(dark).toBeGreaterThan(light);
+  });
+});
+
+describe("フォーカスの輪", () => {
+  it("global.css が 2px の --focus-ring の輪を :focus-visible と .is-focus に描く", () => {
+    const found = withDeclaration(
+      "global.css",
+      "outline: 2px solid var(--focus-ring, var(--fg))",
+    );
+    expect(found).toHaveLength(1);
+    expect(found[0].selector).toContain(":focus-visible");
+    expect(found[0].selector).toContain(".is-focus");
+    expect(found[0].body).toContain("outline-offset: 2px");
+  });
+
+  it("shapes.css は輪の太さと色を持たず、:has(> .lift) の輪の距離だけを持つ", () => {
+    const declarations = rules("shapes.css").flatMap((rule) =>
+      rule.body.split(";").map((part) => part.trim()),
+    );
+    expect(declarations.filter((part) => part.startsWith("outline:"))).toEqual(
+      [],
+    );
+    expect(
+      declarations.filter((part) => part === "outline-offset: 5px"),
+    ).toHaveLength(1);
+  });
+});
+
+describe("ボタンとアイコンのリンク", () => {
+  it(".btn-acc は地が --keyword-hover に、.btn-ghost・.sq・.iconbtn は枠が --keyword になり、ホバーとフォーカスと見本の状態で同じになる", () => {
+    const fill = withDeclaration(
+      "controls.css",
+      "background: var(--keyword-hover)",
+    );
+    const border = rules("controls.css").filter(
+      (rule) =>
+        rule.body.trim() === "border-color: var(--keyword);" &&
+        hasClass(rule.selector, ".btn-ghost"),
+    );
+    expect(fill).toHaveLength(1);
+    expect(border).toHaveLength(1);
+    for (const state of STATES) {
+      expect(fill[0].selector).toContain(state);
+      expect(border[0].selector).toContain(state);
+    }
+    expect(hasClass(fill[0].selector, ".btn-acc")).toBe(true);
+    for (const cls of [".btn-ghost", ".sq", ".iconbtn"]) {
+      expect(hasClass(border[0].selector, cls)).toBe(true);
+    }
+  });
+
+  it(".sq と .iconbtn は 44px 角で、.btn は 46px 以上の高さを持つ", () => {
+    const square = withDeclaration("controls.css", "width: 44px");
+    expect(square).toHaveLength(1);
+    expect(hasClass(square[0].selector, ".sq")).toBe(true);
+    expect(hasClass(square[0].selector, ".iconbtn")).toBe(true);
+    expect(square[0].body).toContain("height: 44px");
+    const button = withDeclaration("controls.css", "min-height: 46px");
+    expect(button).toHaveLength(1);
+    expect(button[0].selector).toBe(".btn");
+    expect(button[0].body).toContain("text-decoration: none");
+  });
+
+  it(".sq と .iconbtn は box-sizing: border-box と padding: 0 を持ち、<button> の既定の余白で中が縮まない", () => {
+    const [rule] = withDeclaration("controls.css", "width: 44px");
+    expect(rule.body).toContain("box-sizing: border-box");
+    expect(rule.body).toContain("padding: 0");
+  });
+
+  it(".iconbtn-acc は地と枠が --keyword、文字が --ink になる", () => {
+    const found = rules("controls.css").filter(
+      (rule) => rule.selector === ".iconbtn-acc",
+    );
+    expect(found).toHaveLength(1);
+    expect(found[0].body).toContain("border-color: var(--keyword)");
+    expect(found[0].body).toContain("background: var(--keyword)");
+    expect(found[0].body).toContain("color: var(--ink)");
+  });
+
+  it("controls.css と global.css は !important を使わない", () => {
+    expect(source("styles/controls.css")).not.toContain("!important");
+    expect(source("styles/global.css")).not.toContain("!important");
+  });
+});
+
+describe("配線", () => {
+  it("Layout は controls.css を shapes.css の後に読み込む", () => {
+    const layout = source("layouts/Layout.astro");
+    const shapes = layout.indexOf('import "../styles/shapes.css"');
+    const controls = layout.indexOf('import "../styles/controls.css"');
+    expect(shapes).toBeGreaterThanOrEqual(0);
+    expect(controls).toBeGreaterThan(shapes);
+  });
+
+  it("ブラウザーの既定の下線に頼っていた .watch、.back、.all と 404 ページのリンクは自分で下線を持つ", () => {
+    const targets: [string, string][] = [
+      ["components/LatestVideoList.astro", ".watch"],
+      ["pages/[lang]/works/[slug].astro", ".back"],
+      ["components/LatestPosts.astro", ".all"],
+      ["pages/404.astro", "a"],
+    ];
+    for (const [path, selector] of targets) {
+      const found = rulesOf(styleOf(source(path))).find(
+        (rule) => rule.selector === selector,
+      );
+      expect(found?.body, `${path} ${selector}`).toContain(
+        "text-decoration: underline;",
+      );
+    }
+  });
+});
+
+describe("記事の本文のリンク", () => {
+  it("記事の本文のリンクには下線が付く", () => {
+    const found = rulesOf(styleOf(source("components/ArticleBody.astro"))).find(
+      (rule) => rule.selector === ".article-body :global(a)",
+    );
+    expect(found?.body).toContain("text-decoration-line: underline;");
+  });
+});

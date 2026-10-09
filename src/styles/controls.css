@@ -1,0 +1,87 @@
+/*
+ * Buttons and icon links of plan A, imported by `src/layouts/Layout.astro` after `shapes.css`.
+ * The values are copied from `.btn`, `.btn-acc`, `.btn-ghost` and `.sq` of `design/Main.dc.html`
+ * and from `.iconbtn` of `design/AArticleMobile.dc.html`. Colors come only from the tokens in
+ * `tokens.css`.
+ *
+ * `.btn` is a 46px high link for text, `.btn-acc` fills it with `--keyword`, and `.btn-ghost`
+ * draws a `--line2` border instead. `.sq` is a 44px square link for an icon, and `.iconbtn` is a
+ * 44px square `<button>` for an icon; `.iconbtn-acc` fills it with `--keyword`, for the menu.
+ * The sizes do not change with the width, and a page that needs another size overrides them.
+ *
+ * Hover and keyboard focus look the same: `.btn-acc` fills with `--keyword-hover`, and the border
+ * of `.btn-ghost`, `.sq` and `.iconbtn` becomes `--keyword`. `.is-hover` and `.is-focus` show the
+ * two states without the pointer or the keyboard, for the samples in `src/dev/components.astro`.
+ * The outline of the focus comes from `global.css`.
+ *
+ * `.btn` is written for `<a>`. It sets no `color`, so `.btn-ghost` takes the color of the link
+ * from `global.css`, which is `--keyword` while hovered in the dark theme, and it sets
+ * `text-decoration: none`, so no `.btn` is underlined in the light theme.
+ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.btn-acc {
+  background: var(--keyword);
+  color: var(--ink);
+}
+
+.btn-ghost {
+  border: 1px solid var(--line2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.sq,
+.iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line2);
+  border-radius: 4px;
+}
+
+.sq {
+  background: var(--bg2);
+}
+
+.iconbtn {
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.iconbtn-acc {
+  border-color: var(--keyword);
+  background: var(--keyword);
+  color: var(--ink);
+}
+
+.btn-acc:is(:hover, :focus-visible, .is-hover, .is-focus) {
+  background: var(--keyword-hover);
+}
+
+:is(.btn-ghost, .sq, .iconbtn):is(
+  :hover,
+  :focus-visible,
+  .is-hover,
+  .is-focus
+) {
+  border-color: var(--keyword);
+}

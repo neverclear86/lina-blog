@@ -16,10 +16,9 @@
  * inline-block or a flex item), because `transform` does not apply to inline elements. Under
  * `prefers-reduced-motion: reduce` it changes without a transition.
  *
- * Keyboard focus draws a 2px outline in `--focus-ring`, which `tokens.css` sets for the page
- * backgrounds; a section on another background, such as `--cbg`, sets its own. A focusable part
- * has three layers, `<a>` or `<button>` > shadow and `.lift` > notched shape, so that the outline
- * goes on the outer element, which has neither the clip nor the shadow, 5px away from it.
+ * `global.css` draws the keyboard focus outline. A focusable part has three layers, `<a>` or
+ * `<button>` > shadow and `.lift` > notched shape, so that the outline goes on the outer element,
+ * which has neither the clip nor the shadow, 5px away from it.
  *
  * `.is-lift` and `.is-focus` show the lifted and focused states without hover or focus, for the
  * samples in `src/dev/components.astro`. `.is-lift` goes on the shadow element itself, while
@@ -98,12 +97,6 @@
   .lift {
     transition: none;
   }
-}
-
-:focus-visible,
-.is-focus {
-  outline: 2px solid var(--focus-ring, var(--fg));
-  outline-offset: 2px;
 }
 
 :focus-visible:has(> .lift),
