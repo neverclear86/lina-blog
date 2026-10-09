@@ -156,7 +156,7 @@ bun create astro@latest -- --template basics
 │       │   ├── errors.ts            # Error body shared by every error response
 │       │   ├── images.ts            # Image names, R2 lookups and uploads for /images/{name}
 │       │   ├── nostr-relays.ts      # Reads write relays (kind 10002) and sends events to relays
-│       │   └── published-record.ts  # Reads src/content/published.json on GitHub for GET /articles
+│       │   └── published-record.ts  # Reads, updates and writes src/content/published.json (GET /articles)
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
 ├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin, sitemap, OGP image writer; pages are prerendered by default

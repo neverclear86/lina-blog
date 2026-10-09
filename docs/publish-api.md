@@ -165,14 +165,14 @@ Vault で `published: true` の記事なら再送し、`published: false` の記
   "articles": {
     "<slug>": {
       "hash": "<hex>",
-      "date": "<ISO 8601 UTC>",
+      "date": "<YYYY-MM-DDTHH:MM:SSZ>",
       "images": ["<sha256>.<ext>"]
     }
   }
 }
 ```
 
-`hash` は内容のハッシュか `null`、`date` は公開日、`images` は記事が参照する画像の名前の一覧である。
+`hash` は内容のハッシュか `null`、`date` は公開日で UTC の秒までの `YYYY-MM-DDTHH:MM:SSZ` の形、`images` は記事が参照する画像の名前（`<sha256>.<ext>`）の一覧である。
 キーは slug の昇順に並べ、書式は `JSON.stringify(値, null, 2)` の後に改行 1 つとする。
 ファイルが無いときは、空の一覧とする。
 記事のファイルと公開の記録は、1 つのコミットで書き換える（コミットの API は #50 で選ぶ）。
