@@ -38,7 +38,7 @@ bun create astro@latest -- --template basics
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
 │   ├── og-font.ts        # Downloads the OGP fonts (headings and labels) as TrueType from Google Fonts, unit-tested
-│   ├── og-image.ts       # Draws an element tree into a 1200x630 PNG with Satori and sharp (Node only), unit-tested
+│   ├── og-image.ts       # Draws OGP images with Satori and sharp (Node only): the plan A element tree of a title, language and category, and the PNG of any tree, unit-tested
 │   ├── page-meta.ts      # Description (default from ui.ts) and Open Graph tags of a page, unit-tested
 │   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro, hero-account.ts and footer-links.ts
 │   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
@@ -53,7 +53,8 @@ bun create astro@latest -- --template basics
 │   ├── youtube-feed.ts   # Channel RSS feed to the newest videos at build time (WebP or JPEG thumbnails), unit-tested
 │   ├── assets/           # Images processed by astro:assets
 │   │   ├── <avatar>.webp   # Nine avatars of v2.1 (rohan, lgtm-fullbody, happy-fullbody, main-visual, threeview-front/side/back, lgtm-bastup, hate), made by scripts/avatars/ (see "Images and caching")
-│   │   └── icon/           # Face mark and avatar SVGs of the brand kit (regular and small versions), used as they are by FaceIcon
+│   │   ├── icon/           # Face mark and avatar SVGs of the brand kit (regular and small versions), used as they are by FaceIcon
+│   │   └── name-logo/      # Name logo of the brand kit (t3_full_for-dark.svg), kept as it is and drawn by og-image.ts
 │   ├── components/
 │   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, YouTube embeds, accordions, message boxes) and puts the copy button on code blocks
@@ -245,6 +246,11 @@ URLs do not change between builds.
 The face icons in `src/assets/icon/` are the SVG files of the brand kit, kept as they are:
 `FaceIcon` uses their URLs in `<img>` elements, and `astro build` only gives the files hashed
 names.
+
+`src/og-image.ts` draws an OGP image from a title, a language and a category with Satori and
+sharp, in Node: the ink ground and grid of plan A in the dark colors of `src/styles/tokens.css`,
+the orange band, the category chip and the name logo `src/assets/name-logo/t3_full_for-dark.svg`
+of the brand kit, kept as it is. A title is cut after three lines with an ellipsis.
 
 The avatar `src/assets/main-visual.webp` (the fourth pose of the Hero) is also turned into text art
 for terminals. The `linaAnsiArt()` Vite plugin in `astro.config.mjs` calls `decodeAnsiArtSource()`
