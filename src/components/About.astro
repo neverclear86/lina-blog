@@ -14,9 +14,13 @@
  * `read` and `en` rows. Below 768px they are left out and the value of `name` is followed by
  * its reading. The section is 1440px wide at most. The intro with the tiles and `lina.spec`
  * sit in two columns from 1144px of the viewport and in one column below it.
+ *
+ * `AvatarThreeView` closes the section with the three views of the avatar. It has its own margin
+ * above.
  */
 import type { Locale } from "../i18n/locales";
 import { translate, type UiKey } from "../i18n/ui";
+import AvatarThreeView from "./AvatarThreeView.astro";
 import SectionTitle from "./SectionTitle.astro";
 
 interface Props {
@@ -118,6 +122,7 @@ const tiles: { option: string; title: UiKey; body: UiKey }[] = [
       </dl>
     </div>
   </div>
+  <AvatarThreeView lang={lang} />
 </section>
 
 <style>

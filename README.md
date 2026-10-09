@@ -55,6 +55,7 @@ bun create astro@latest -- --template basics
 │   ├── components/
 │   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, code file names, YouTube embeds)
+│   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: stacked below 1200px, in a row from 1200px
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
