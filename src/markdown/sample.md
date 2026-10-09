@@ -63,8 +63,8 @@ https://youtu.be/jNQXAC9IVR
 
 ```ts
 // 型の付いた関数
-export function greet(name: string): string {
-  return `Hello, ${name}!`;
+export function greet(name: string, times = 3): string {
+  return `Hello, ${name}!`.repeat(times);
 }
 ```
 
