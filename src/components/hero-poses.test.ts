@@ -26,9 +26,9 @@ describe("nextPose", () => {
 });
 
 describe("poseClass", () => {
-  it("切り替える前は、見せているポーズにクラスを付けず、他を隠す", () => {
+  it("切り替える前は、見せているポーズに pz-init を付け、他を隠す", () => {
     expect([0, 1, 2, 3].map((i) => poseClass(i, 0, null))).toEqual([
-      "",
+      "pz-init",
       "pz-off",
       "pz-off",
       "pz-off",
@@ -110,14 +110,34 @@ describe("HeroPoses.astro", () => {
     expect(POSES).not.toMatch(/\.pz-off\s*\{[^}]*display/);
   });
 
-  it("動きを減らす設定では pz-in と pz-out の動きを止め、pz-out を隠す", () => {
+  it("動きを減らす設定では pz-init と pz-in と pz-out の動きを止め、pz-out を隠す", () => {
     const reduce = POSES.slice(
       POSES.indexOf("@media (prefers-reduced-motion: reduce)"),
     );
     expect(reduce).toMatch(
-      /\.pose\.pz-in,\s*\.pose\.pz-out\s*\{\s*animation:\s*none;\s*\}/,
+      /\.pose\.pz-init,\s*\.pose\.pz-in,\s*\.pose\.pz-out\s*\{\s*animation:\s*none;\s*\}/,
     );
     expect(reduce).toMatch(/\.pose\.pz-out\s*\{\s*visibility:\s*hidden;\s*\}/);
+  });
+
+  it("最初のポーズは 0.3s 後に 1s かけて右から滑り込み、終わった後に何も残さない", () => {
+    expect(POSES).toMatch(
+      /\.pose\.pz-init\s*\{\s*animation:\s*av-in 1s cubic-bezier\(0\.2, 0\.8, 0\.2, 1\) 0\.3s backwards;\s*\}/,
+    );
+    expect(POSES).toMatch(
+      /@keyframes av-in\s*\{\s*from\s*\{\s*opacity:\s*0;\s*translate:\s*var\(--av-in-dx, 90px\) 0;\s*\}\s*to\s*\{\s*opacity:\s*1;\s*translate:\s*none;\s*\}\s*\}/,
+    );
+  });
+
+  it("767px 以下では滑り込む距離を 60px にする", () => {
+    const mobile = POSES.slice(POSES.indexOf("@media (max-width: 767px)"));
+    expect(mobile).toMatch(/\.pose\s*\{\s*--av-in-dx:\s*60px;/);
+  });
+
+  it("script は押したときに pz-init も外す", () => {
+    expect(POSES).toMatch(
+      /classList\.remove\("pz-init", "pz-in", "pz-out", "pz-off"\)/,
+    );
   });
 
   it("インラインの style 属性を持たない", () => {

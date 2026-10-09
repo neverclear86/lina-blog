@@ -75,7 +75,7 @@ bun create astro@latest -- --template basics
 │   │   ├── hero-poses.ts         # Rules of the pose switch of the hero, unit-tested
 │   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band whose text and hatch flow, name logo with a blinking cursor, heading, intro, button to the latest video, the account window, the stripes below (flowing right) and HeroPoses in the right column; when the page opens, the left column rises in turn and the band and the hatch open upwards
 │   │   ├── HeroAccount.astro     # Account window of the hero: avatar, @LinaTsukusu and six link squares
-│   │   ├── HeroPoses.astro       # Right column of the hero: four poses switched by a button, ruler and table
+│   │   ├── HeroPoses.astro       # Right column of the hero: four poses switched by a button, ruler and table; when the page opens, the first pose slides in from the right
 │   │   ├── IconButton.astro      # Square icon-only button of the earlier design (only the dev samples use it), named by an aria-label or a hidden label slot
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
