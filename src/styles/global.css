@@ -41,3 +41,47 @@ body {
     linear-gradient(90deg, var(--cgrid) 1px, transparent 1px);
   background-size: 48px 48px;
 }
+
+/*
+ * Links, copied from `.lx a`, `.lx a:hover` and `.lx.light a:hover` of `design/Main.dc.html`. A
+ * link takes the color of its text and has no underline. While hovered or focused with the
+ * keyboard it turns `--keyword` in the dark theme, and in the light theme it keeps its color and
+ * gets a 2px `--keyword` underline, because `--keyword` is below 3:1 on the light `--bg`.
+ * `.is-hover` and `.is-focus` show the two states without the pointer or the keyboard, for the
+ * samples in `src/dev/components.astro`.
+ *
+ * Every selector is inside `:where()`, so that a rule of a part, whose specificity is higher,
+ * always wins and the parts of the earlier design keep their look.
+ */
+:where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+
+:where(a:hover, a:focus-visible, a.is-hover, a.is-focus) {
+  text-decoration-line: underline;
+  text-decoration-color: var(--keyword);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+:where(
+  :root[data-theme="dark"] a:hover,
+  :root[data-theme="dark"] a:focus-visible,
+  :root[data-theme="dark"] a.is-hover,
+  :root[data-theme="dark"] a.is-focus
+) {
+  color: var(--keyword);
+  text-decoration-line: none;
+}
+
+/*
+ * Keyboard focus draws a 2px outline in `--focus-ring`, 2px away from the element; `.is-focus`
+ * draws it without the keyboard. A section on another background, such as `--cbg`, sets its own
+ * `--focus-ring`.
+ */
+:focus-visible,
+.is-focus {
+  outline: 2px solid var(--focus-ring, var(--fg));
+  outline-offset: 2px;
+}
