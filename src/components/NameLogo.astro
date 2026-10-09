@@ -10,8 +10,8 @@
  * (`--lg-r`) for the rule, and `.k` (`--keyword`) for the slashes, the dot of the `i` and the
  * cursor.
  *
- * The cursor `_` has the class `cur` in every form, so that a parent can make it blink with
- * `:global(.cur)`. The component does not animate it.
+ * The cursor `_` has the class `cur` in every form. The component does not animate it: a parent
+ * with the class `blink-on` (`src/styles/motion.css`) makes the `.cur` inside it blink.
  *
  * The SVG fills the width of its parent, so the parent sets the size. The kit's smallest size is
  * a slash 32px high for `full` and `full-sub` (a width of 296px) and 16px for `compact` (71px).

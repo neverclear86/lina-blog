@@ -618,13 +618,13 @@ const sampleVideos: YouTubeVideo[] = [
         </figure>
       </div>
       <div class="row">
-        <figure class="logo-sample logo-576 logo-blink">
+        <figure class="logo-sample logo-576 blink-on">
           <NameLogo
             variant="full-sub"
             label="/tsukusu/lina $_ # 創好リナ ── VIRTUAL IKIRI PROGRAMMER"
           />
           <figcaption>
-            full-sub 576px、カーソルは親の :global(.cur) で点滅
+            full-sub 576px、カーソルは親の .blink-on で点滅
           </figcaption>
         </figure>
       </div>
@@ -1047,17 +1047,6 @@ const sampleVideos: YouTubeVideo[] = [
 
 .logo-576 {
   width: min(100%, 576px);
-}
-
-/* The cursor of this sample blinks as a parent of the name logo can make it blink. */
-.logo-blink :global(.cur) {
-  animation: blink 1.1s steps(1, end) infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .logo-blink :global(.cur) {
-    animation: none;
-  }
 }
 
 .row {

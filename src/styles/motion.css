@@ -1,8 +1,8 @@
 /*
  * Animations that keep running or play on scroll, shared by every page and imported by
- * `src/layouts/Layout.astro` after `shapes.css`. The keyframes and timings of `.bob`, `.caret` and
+ * `src/layouts/Layout.astro` after `labels.css`. The keyframes and timings of `.bob`, `.caret` and
  * `.a-typeLoop` are copied from `.bob`, `.cursor` and `.a-typeLoop` in `design/CBMain.dc.html`;
- * `.reveal` is not in the design.
+ * `.blink-on` is `.blink-on .cur` in `design/Main.dc.html`; `.reveal` is not in the design.
  *
  * `.bob` moves an element up by 4px and back in two steps, for the pixel art
  * (`<PixelArt class="bob" />`). It sets `transform`, so it goes on the image itself, and another
@@ -10,6 +10,11 @@
  *
  * `.caret` blinks the text cursor in `--orange`. The caller writes the glyph and hides it from
  * screen readers: `<span class="caret" aria-hidden="true">▍</span>`.
+ *
+ * `.blink-on` blinks the cursor of the name logo (`NameLogo`), the element with the class `cur`
+ * inside it, as `.caret` blinks. It goes on an element around the logo. Only one cursor should
+ * blink on a screen, so a page puts it on the logos that may blink and stops the cursor that must
+ * stay still with `animation: none` (see `SiteHeader.astro` and `Hero.astro`).
  *
  * `.a-typeLoop` reveals a one-line command from left to right in `--type-steps` steps, shows it
  * whole, and starts again every 5s. The caller sets `--type-steps` to the number of characters,
@@ -27,8 +32,8 @@
  * neither `opacity` nor `translate`, so a browser without scroll-driven animations shows the
  * section from the start and a printed page shows every section.
  *
- * Under `prefers-reduced-motion: reduce` the four do not move: the pixel art stays in place, the
- * cursor stays shown, the whole command is shown and the sections are shown from the start.
+ * Under `prefers-reduced-motion: reduce` the five do not move: the pixel art stays in place, the
+ * cursors stay shown, the whole command is shown and the sections are shown from the start.
  */
 @keyframes bob {
   0%,
@@ -76,6 +81,10 @@
   animation: bob 1.2s steps(2, jump-none) infinite;
 }
 
+.blink-on .cur {
+  animation: blink 1.1s steps(1, end) infinite;
+}
+
 .caret {
   color: var(--orange);
   animation: blink 1.1s steps(1, end) infinite;
@@ -100,6 +109,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bob,
+  .blink-on .cur,
   .caret,
   .a-typeLoop,
   .reveal {
