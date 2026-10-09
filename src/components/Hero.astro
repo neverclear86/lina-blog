@@ -1,10 +1,10 @@
 ---
 /**
- * The hero of the top page, copied from `#top` of `design/Main.dc.html` except for the right
- * column: on the grid background (`.gridbg`), the prompt, the full name logo with the sub line
- * (`NameLogo`, `full-sub`) in a box with corner ticks (`.ticks`), the heading (`<h1>`), the
- * intro, the button to the latest video (`#latest`) and the account window (`HeroAccount`). A
- * band of stripes (`.stripes`) closes the hero.
+ * The hero of the top page, copied from `#top` of `design/Main.dc.html`: on the grid background
+ * (`.gridbg`), the prompt, the full name logo with the sub line (`NameLogo`, `full-sub`) in a box
+ * with corner ticks (`.ticks`), the heading (`<h1>`), the intro, the button to the latest video
+ * (`#latest`), the account window (`HeroAccount`) and, in the right column, the poses of the
+ * avatar (`HeroPoses`). A band of stripes (`.stripes`) closes the hero.
  *
  * The strings come from the `hero.*` keys of `src/i18n/ui.ts`. The prompt, the name of the logo,
  * `/tsukusu/lina $_ # 創好リナ ── VIRTUAL IKIRI PROGRAMMER`, and the text of the orange band are
@@ -15,12 +15,13 @@
  * From 901px the content is a grid of two columns, 1.08fr and 0.92fr, 64px from the sides and at
  * least 820px high. The left column holds the prompt, the logo, the heading, the intro and the
  * button, and ends with `.hero-account`, which holds the account window (`HeroAccount`).
- * `.hero-right` is empty. Up to 900px the grid is one column 20px from the sides, the heading is
- * 40px, the band is 150px wide and the two lines are left out. The band, the hatch and the lines
- * keep clear of the text: from 901px the band starts at 57% of the width, or further right where
- * the intro would reach it, and up to 900px at 46% or 390px, whichever is further right. Up to
- * 767px the logo box has neither the ticks nor the ground, the intro is in `--text`, and the
- * button fills the column, 48px high, without the triangle.
+ * `.hero-right` holds `HeroPoses`, the poses of the avatar with the ruler and the table of its
+ * parts. Up to 900px the grid is one column 20px from the sides, the heading is 40px, the band is
+ * 150px wide and the two lines are left out. The band, the hatch and the lines keep clear of the
+ * text: from 901px the band starts at 57% of the width, or further right where the intro would
+ * reach it, and up to 900px at 46% or 390px, whichever is further right. Up to 767px the logo box
+ * has neither the ticks nor the ground, the intro is in `--text`, and the button fills the
+ * column, 48px high, without the triangle.
  *
  * The cursor of the logo blinks (`.blink-on` in `src/styles/motion.css`) while some part of the
  * logo is in the viewport, starting 1.6s after the page opens or the logo comes back into it. A
@@ -31,6 +32,7 @@
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import HeroAccount from "./HeroAccount.astro";
+import HeroPoses from "./HeroPoses.astro";
 import NameLogo from "./NameLogo.astro";
 
 interface Props {
@@ -89,7 +91,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(4);
       </a>
       <div class="hero-account"><HeroAccount lang={lang} /></div>
     </div>
-    <div class="hero-right"></div>
+    <div class="hero-right"><HeroPoses lang={lang} /></div>
   </div>
 </section>
 <div class="stripes" aria-hidden="true"></div>

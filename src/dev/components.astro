@@ -10,6 +10,7 @@ import Chip from "../components/Chip.astro";
 import ContactForm from "../components/ContactForm.astro";
 import FaceIcon from "../components/FaceIcon.astro";
 import HeroAccount from "../components/HeroAccount.astro";
+import HeroPoses from "../components/HeroPoses.astro";
 import IconButton from "../components/IconButton.astro";
 import IconLink from "../components/IconLink.astro";
 import GitHubIcon from "../components/icons/GitHubIcon.astro";
@@ -362,6 +363,12 @@ const sampleVideos: YouTubeVideo[] = [
       <h2>A案: アバターの三面図</h2>
       <AvatarThreeView lang="ja" />
       <div lang="en"><AvatarThreeView lang="en" /></div>
+    </section>
+
+    <section id="a-hero-poses">
+      <h2>A案: Hero のポーズの切り替え</h2>
+      <div class="pose-sample"><HeroPoses lang="ja" /></div>
+      <div class="pose-sample" lang="en"><HeroPoses lang="en" /></div>
     </section>
 
     <section id="shapes">
@@ -1348,6 +1355,15 @@ section {
 .heading-aside {
   margin: 0;
   max-width: 480px;
+}
+
+.pose-sample {
+  position: relative;
+  max-width: 640px;
+  height: 840px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border: 1px dashed var(--line2);
 }
 
 .avatar-sample {

@@ -114,6 +114,9 @@ const ja = {
     "配信もするし、開発もする。プログラミングやシステム構築を「遊び」として見せる、バーチャルイキリプログラマの創好リナです。",
   "hero.latestVideo": "最新の動画を見る",
   "hero.links": "リンク",
+  // Name of the button that switches the pose of the avatar in the hero. "{n}" is the number of
+  // the pose on show and "{total}" the number of poses (poseLabel in src/components/hero-poses.ts).
+  "hero.poseButton": "アバターのポーズを切り替える（いま {n}/{total}）",
   "home.comingSoon": "準備中です。",
   // Hidden text after "JA" of the language switch on a page only in Japanese.
   "lang.jaOnly": "このページは日本語のみ",
@@ -267,6 +270,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
       'I stream, and I build. I\'m Tsukusu Lina, a virtual "ikiri" programmer who turns programming and building systems into play.',
     "hero.latestVideo": "Watch the latest video",
     "hero.links": "Links",
+    "hero.poseButton": "Switch the avatar's pose (now {n}/{total})",
     "home.comingSoon": "Coming soon.",
     "lang.jaOnly": "This page is only in Japanese",
     "latest.blog.all": "All posts",

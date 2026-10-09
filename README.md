@@ -68,8 +68,10 @@ bun create astro@latest -- --template basics
 │   │   ├── FaceIcon.astro        # Face mark or avatar from the brand kit SVGs, switched with the theme; tone="inverse" for the mark on --inv and --cbg faces
 │   │   ├── footer-links.ts       # Link targets of the footer columns and the footer variants, unit-tested
 │   │   ├── hero-account.ts       # Links of the account window of the hero, with the icon each one shows, unit-tested
-│   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band, name logo with a blinking cursor, heading, intro, button to the latest video, the account window and the stripes below
+│   │   ├── hero-poses.ts         # Rules of the pose switch of the hero, unit-tested
+│   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band, name logo with a blinking cursor, heading, intro, button to the latest video, the account window, the stripes below and HeroPoses in the right column
 │   │   ├── HeroAccount.astro     # Account window of the hero: avatar, @LinaTsukusu and six link squares
+│   │   ├── HeroPoses.astro       # Right column of the hero: four poses switched by a button, ruler and table
 │   │   ├── IconButton.astro      # Square icon-only button, named by an aria-label or a hidden label slot
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion

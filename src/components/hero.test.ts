@@ -43,11 +43,15 @@ describe("Hero の飾りと窓の差し込み口", () => {
     expect(HERO).not.toMatch(/\sstyle=["{]/);
   });
 
-  it("アカウントの窓の箱は左の列の最後で HeroAccount を入れ、右の列の箱は格子の 2 つ目の子で空である", () => {
+  it("アカウントの窓の箱は左の列の最後で HeroAccount を入れ、右の列の箱は格子の 2 つ目の子で HeroPoses だけを持つ", () => {
     const left = between('<div class="hero-left">', '<div class="hero-right">');
     expect(left).toMatch(
       /<div class="hero-account"><HeroAccount lang=\{lang\} \/><\/div>\s*<\/div>\s*$/,
     );
-    expect(HERO.match(/<div class="hero-right"><\/div>/g)).toHaveLength(1);
+    expect(
+      HERO.match(
+        /<div class="hero-right">\s*<HeroPoses lang=\{lang\} \/>\s*<\/div>/g,
+      ),
+    ).toHaveLength(1);
   });
 });
