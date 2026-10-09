@@ -3,6 +3,7 @@ import { Image, Picture } from "astro:assets";
 import type { ComponentProps } from "astro/types";
 import { AVATAR_IMAGES, avatarAlt, THUMBS_UP_BAND } from "../avatar-images";
 import ArticleBody from "../components/ArticleBody.astro";
+import ArticleEnd from "../components/ArticleEnd.astro";
 import AvatarThreeView from "../components/AvatarThreeView.astro";
 import Bubble from "../components/Bubble.astro";
 import Button from "../components/Button.astro";
@@ -398,6 +399,14 @@ const sampleVideos: YouTubeVideo[] = [
     <section id="a-contact-band">
       <h2>A案: お問い合わせの帯</h2>
       <ContactBand lang="ja" />
+    </section>
+
+    <section id="a-article-end">
+      <h2>A案: 記事の終わりの窓</h2>
+      <ArticleEnd
+        title="サンプルの記事の題"
+        url="https://ikili.pro/blog/sample/"
+      />
     </section>
 
     <section id="shapes">

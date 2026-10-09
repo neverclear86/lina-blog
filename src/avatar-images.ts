@@ -101,10 +101,14 @@ export const THUMBS_UP_BAND: AvatarImage = {
   priority: false,
 };
 
-/** The same image at the end of an article, which is never wider than 340px. */
+/**
+ * The same image at the end of an article: 340px wide from 768px, and below 768px as wide as the
+ * column of the article but not wider than 400px.
+ */
 export const THUMBS_UP_ARTICLE: AvatarImage = {
   ...THUMBS_UP_BAND,
-  sizes: "340px",
+  widths: [128, 256, 340, 374, 400, 680, 748],
+  sizes: "(max-width: 767px) min(400px, calc(100vw - 32px)), 340px",
 };
 
 /** The thinking Lina in the note of an article, shown 72px wide on desktop and 52px on mobile. */

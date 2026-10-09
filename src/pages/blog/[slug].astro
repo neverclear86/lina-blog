@@ -7,17 +7,22 @@
  * most 760px. From 1024px an empty column of 240px stands at its left, so that the body keeps its
  * place when something is put in that column. A post with `sponsor` has its PR notice
  * (`SponsorNotice`) between the head and the columns. `emoji` is not shown. At the end of that
- * column, `PostNav` holds the links to the posts one step older (`prev`) and one step newer
- * (`next`), which `getStaticPaths` gives as props.
+ * column, after `ArticleEnd`, `PostNav` holds the links to the posts one step older (`prev`) and
+ * one step newer (`next`), which `getStaticPaths` gives as props.
  *
  * A diagonal band at the right of the head is drawn with `::before`. It is 64px wide below 768px,
  * where the rows of the head keep clear of it with a right padding, and 120px wide from 1280px,
  * where a hatched line beside it is drawn with `::after`; from 768px to 1279px there is no band.
  * The date, the reading time and the author are a row of text below 768px, without the author,
  * and a table on the `--shade` background from 768px. The page has the compact footer.
+ *
+ * After the body, in the same column and before `PostNav`, `ArticleEnd` is the window of the end of
+ * the post, with the buttons that share the post's address on Twitter (self-proclaimed X) and
+ * Nostr and copy it.
  */
 import { type CollectionEntry, getCollection, render } from "astro:content";
 import type { GetStaticPaths } from "astro";
+import { blogPostUrl } from "../../article-share";
 import {
   blogPostBreadcrumb,
   blogPostDate,
@@ -25,6 +30,7 @@ import {
   readingMinutes,
 } from "../../blog-pages";
 import ArticleBody from "../../components/ArticleBody.astro";
+import ArticleEnd from "../../components/ArticleEnd.astro";
 import PostNav from "../../components/PostNav.astro";
 import SponsorNotice from "../../components/SponsorNotice.astro";
 import { homeSectionPath } from "../../components/site-nav";
@@ -44,6 +50,12 @@ interface Props {
 const { post, prev, next } = Astro.props;
 const { title, slug, date, tags, topics, sponsor, description } = post.data;
 const { Content } = await render(post);
+if (!Astro.site) {
+  throw new Error(
+    "`site` in astro.config.mjs is required to build the pages of posts.",
+  );
+}
+const url = blogPostUrl(slug, Astro.site);
 const crumb = blogPostBreadcrumb(slug, date);
 const published = blogPostDate(date);
 const minutes = readingMinutes(post.body);
@@ -112,6 +124,7 @@ const notice = sponsorNotice(sponsor);
         <div class="toc-col"></div>
         <div class="text">
           <ArticleBody lang="ja"><Content /></ArticleBody>
+          <ArticleEnd title={title} url={url} />
           <PostNav prev={prev} next={next} />
         </div>
       </div>

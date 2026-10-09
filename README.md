@@ -23,12 +23,13 @@ bun create astro@latest -- --template basics
 │   ├── ansi-art-source.ts # The illustration of the text art, decoded and resized to 80 pixels wide, unit-tested
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
+│   ├── article-share.ts  # Post address and share addresses for Twitter (self-proclaimed X) and Nostr, unit-tested
 │   ├── avatar-images.ts  # The nine v2.1 avatar images of src/assets/ with their alt keys, widths, sizes and priority, unit-tested
 │   ├── blog-pages.ts     # Paths of /blog/<slug>/ and /blog/tags/<slug>/, the heading texts, the breadcrumbs, the tag filter links, the breadcrumb, date and reading time of a post, and the posts next to it, unit-tested
 │   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
-│   ├── code-copy.ts      # Copy button of code blocks: texts, whether a block gets one, the clipboard write, unit-tested
+│   ├── code-copy.ts      # Copy buttons of a post's page: texts and logic of the code-block button, and the clipboard check and write that the end window shares, unit-tested
 │   ├── contact-form.ts   # Contact form states before and after sending, their UI strings and the widget size, unit-tested
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
 │   ├── content.config.ts # blog and works collections: src/content/blog/ (and blog-dev/ in astro dev or with LINA_DEV_PAGES=1) checked by blog-schema.ts, src/content/works/ checked by work-schema.ts
@@ -58,6 +59,7 @@ bun create astro@latest -- --template basics
 │   ├── components/
 │   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, YouTube embeds, accordions, message boxes) and puts the copy button on code blocks
+│   │   ├── ArticleEnd.astro      # End window of a post: share links, copy-link button, thumbs-up
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: in a row from 1200px, below it stacked or one at a time with tabs
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
@@ -271,7 +273,9 @@ three views `threeview-front`, `threeview-side` and `threeview-back` (459 × 110
 597 × 1100, the sizes of the annotation lines of the design), `lgtm-bastup` (748 × 600) and
 `hate` (145 × 192). `scripts/avatars/avatars.ts` crops each original to the bounds of its
 non-transparent pixels and shrinks it to at least twice the largest size it is shown at, which is
-why the originals are not committed. The output is the same on every run.
+why the originals are not committed. `lgtm-bastup` is twice the 374px of the contact band; the
+end of a post shows it up to 400px wide below 768px, a little more than half its width. The
+output is the same on every run.
 
 `src/avatar-images.ts` holds what a component needs to show the nine avatars with `Picture`: the
 imported image, the key of its alt text in `src/i18n/ui.ts`, the candidate `widths`, the `sizes`
