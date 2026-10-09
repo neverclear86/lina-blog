@@ -17,7 +17,7 @@ disallowedTools: Agent, Skill
 - `gh pr view <PR> -R neverclear86/lina-blog --json title,body,comments`（PR 本文、レビュー、指摘への対応。`--comments` は本文を落とすことがあるので使わない）
 - 承認済みのプラン（指示された issue コメントの URL。本文の後半は `<details>` に畳まれているので、そこまで読む）。プランが無い PR（tier none）では、代わりに PR 本文の「## 設計メモ」を読む
 - issue の本文（受け入れ条件）
-- 変更が CLAUDE.md の述べる事実に触れるときは CLAUDE.md（この定義は CLAUDE.md を読み込まずに起動する）
+- 変更が AGENTS.md の述べる事実に触れるときは AGENTS.md（この定義は AGENTS.md を読み込まずに起動する）
 - 差分の意味を確かめるために必要な範囲のソース。Bash の cwd（ユーザーの作業ツリー）は読むだけにし、build も編集もしない。Bash の cwd は呼び出しごとにここに戻るので、相対パスで書き込みをしない
   - cwd が PR の head より古いとき（並列にマージが進む実行では常態）は、`gh api -H 'Accept: application/vnd.github.raw' 'repos/neverclear86/lina-blog/contents/<path>?ref=<head>'` で PR の head から読む
   - 語の掃き出しや `grep` も cwd ではなく PR の head から取る。cwd に無いディレクトリーは `gh api 'repos/neverclear86/lina-blog/git/trees/<head>?recursive=1' --jq '.tree[].path'` で一覧してから同じ `gh api` で読み、cwd の 0 件を「無し」の根拠にしない

@@ -24,7 +24,7 @@ description: lina-blog の GitHub issue を、判定 → デザイン → プラ
 tier は判定が決める。`none`（追加 100 行未満・3 ファイル以下・決めたこと 0〜1 件）はデザインとプランを飛ばし、`light`（300 行以下）と `full`（300 行超か決めたこと 2 件以上。まず分割する）は同じ流れでプランを書く。
 
 役割ごとの基準、出力の書式、安全策は `.claude/agents/issue-*.md` のエージェント定義に書いてあり、モデルと effort もそこで固定している（Sonnet に振る段階だけは、スクリプトが `agent()` の `model` で上書きする）。
-エージェントは CLAUDE.md とスキルの一覧を読み込まずに起動する（定義の `omitClaudeMd: true` と `disallowedTools` の `Skill`。1 体あたり 1 万トークン前後の前提を省く）。エージェントが守るこのリポジトリの方針は定義の ADAPT に写してあるので、CLAUDE.md の方針を変えたら定義の ADAPT も合わせる（`omitClaudeMd` は Claude Code 2.1.271 以降で効く。`.claude/rules/` の `paths` のある規則は、合うファイルを読んだときに届く）。各段階の依頼文はスクリプトの `P` にある。返答は構造化出力（`schema`）で判定や URL だけを返し、プランやレビューの全文はファイルと GitHub のコメントで受け渡す。
+エージェントは AGENTS.md とスキルの一覧を読み込まずに起動する（定義の `omitClaudeMd: true` と `disallowedTools` の `Skill`。1 体あたり 1 万トークン前後の前提を省く）。エージェントが守るこのリポジトリの方針は定義の ADAPT に写してあるので、AGENTS.md の方針を変えたら定義の ADAPT も合わせる（`omitClaudeMd` は Claude Code 2.1.271 以降で効く。`.claude/rules/` の `paths` のある規則は、合うファイルを読んだときに届く）。各段階の依頼文はスクリプトの `P` にある。返答は構造化出力（`schema`）で判定や URL だけを返し、プランやレビューの全文はファイルと GitHub のコメントで受け渡す。
 `issue-planner`、`issue-plan-reviewer`、`issue-pr-reviewer` は `memory: local` で run をまたぐ記憶を持ち、`.claude/agent-memory-local/<agentType>/MEMORY.md`（git に載らない）に繰り返し見落とす箇所と環境の癖だけを書く。記憶と定義が食い違うときは定義が正であり、定義に書いてあることは記憶に書かない。
 書式は [references/formats.md](references/formats.md)。
 
@@ -94,6 +94,7 @@ tier は判定が決める。`none`（追加 100 行未満・3 ファイル以�
 
 - L055: 依存先を待つ issue は `window` の枠を使わないので、`after` の連鎖があっても `window` を下げない。分割の子が多い実行は 8 まで上げてよい
 - L035: 他の文書が参照する文書の置き場所を変える issue は、並行させずに 1 件だけの実行でマージしてから次を始める
+- L067: 比較・試作用の作業ツリーも、掃除の対象になる名前で作って段階の終わりに消す。名前が掃除の対象外だと残り、inode の枯渇で実行が止まる
 
 ## 手順
 

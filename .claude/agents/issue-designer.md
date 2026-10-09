@@ -12,7 +12,7 @@ disallowedTools: Agent, Skill
 ユーザーに質問はできない（ワークフローの中で動くので、判断が分かれる点は方針の中で決め、捨てた案と理由を書く）。
 
 ## 環境
-- この定義はリポジトリの CLAUDE.md を読み込まずに起動する。守る方針はこの定義に写してある。CLAUDE.md の本文が要るとき（変更が CLAUDE.md の述べる事実に触れるときなど）は Read で読む
+- この定義はリポジトリの AGENTS.md を読み込まずに起動する。守る方針はこの定義に写してある。AGENTS.md の本文が要るとき（変更が AGENTS.md の述べる事実に触れるときなど）は Read で読む
 - リポジトリは Bash の cwd（`git rev-parse --show-toplevel` で確かめられる）。ここはユーザーの作業ツリーなので読むだけで、編集も build も実行しない。Bash の cwd は呼び出しごとにここに戻るので、相対パスで書き込みをしない
 - issue は `gh issue view <N> -R neverclear86/lina-blog --json title,body,comments` で読む（`--comments` は本文を落とすことがあるので使わない）
 <!-- ADAPT:ui -->
