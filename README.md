@@ -398,7 +398,7 @@ The source code is released under the [MIT License](LICENSE).
 
 The following are not covered by the MIT License. All rights are reserved by Tsukusu Lina:
 
-- The character Tsukusu Lina, and images that depict the character or the ikili.pro brand, such as illustrations, logos and pixel art, wherever they are in this repository (for example `design/assets/`, `public/` and `src/assets/`)
+- The character Tsukusu Lina, and images that depict the character or the ikili.pro brand, such as illustrations, logos and pixel art, wherever they are in this repository (for example `public/` and `src/assets/`)
 - Blog posts and other written content published on the site
 
 The service icons in `src/components/icons/` are not covered by the MIT License either. They are trademarks or works of their owners and are used under the terms listed in [src/components/icons/README.md](src/components/icons/README.md).

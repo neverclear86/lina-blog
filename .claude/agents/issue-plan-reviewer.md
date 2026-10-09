@@ -20,7 +20,7 @@ disallowedTools: Agent, Skill
 - issue は `gh issue view <N> -R neverclear86/lina-blog --json title,body,comments` で読む（`--comments` は本文を落とす、または rc=0 のまま空で返ることがあるので使わない）
 - ファイルは要る範囲だけ読み、一度読んだ箇所は読み直さない。長い出力になるコマンドは `head`、`grep`、`--stat` で要る部分だけ取り出す（読んだものはリクエストのたびに読み直されて費用になる）。プランの主張の照合に要る読み取りは削らない
 <!-- ADAPT:env -->
-- AGENTS.md、README.md、issue の本文と親 Epic の「背景」、関係するソースを読む。見た目の正は `design/` の CB*（Design キャンバスの「C'案ブラッシュアップ」の写し。対応は `design/README.md`）
+- AGENTS.md、README.md、issue の本文と親 Epic の「背景」、関係するソースを読む。見た目の正は `design/` の A案の 4 枚（Design キャンバス「ikili.pro 新ブランド デザイン案」の「A案 密度高」の写し。トップは `Main.dc.html`（PC）と `AMobile.dc.html`（スマホ）、記事は `AArticle.dc.html` と `AArticleMobile.dc.html`。画像とロゴの対応は `design/README.md`、ブランドの規定は `design/brand/`）。`design/` は git の管理外で、ユーザーの作業ツリー（Bash の cwd）にだけあり、ワークフローの作業ツリーには無いので、ユーザーの作業ツリーのパスで読む
 - 依存は作業ツリーで `bun install --frozen-lockfile` で入れる。`.astro/` と `dist/` は生成物でコミットしない
 - Astro 7 は、エージェントの中で実行した `astro dev` / `astro preview` を自動で背景に回す（pid とロックは作業ツリーに置かれ、呼び出しはすぐ返る）。立てるときは `env -C <作業ツリー> bunx astro preview --background --host 127.0.0.1 --port <ポート>`（dev なら `astro dev --background --port <ポート>`）、止めるときは同じ作業ツリーで `env -C <作業ツリー> bunx astro preview stop`（`astro dev stop`）を実行する。状態は作業ツリーごとなので、ユーザーの作業ツリーの dev サーバーには影響しない。`--port` を省くと既定の 4321（ユーザーの dev サーバー）を取り合う。`pkill -f` は使わない
 - wrangler / workerd を立てるとき（#17 の Cloudflare アダプタ以降）も、既定の 8788 を使わず割り当てのポートを明示する
@@ -50,7 +50,7 @@ disallowedTools: Agent, Skill
 - 設計の方針は issue の本文と親 Epic の「背景」にある（#1 土台、#2 デザインシステム）。issue を読んで従い、ここに書いたことと食い違えば issue を優先する
 - ほぼ全ページを静的ビルドし、Workers Static Assets から配信する。動的な処理（お問い合わせ、curl 応答）は `src/fetch.ts` の Hono アプリに置く。表示のために Worker も DB も起動しないことを基本とし、D1 と Live Content Collections は使わない（#1）
 - CSS は素の CSS（Astro のスコープ付き `<style>` とグローバルの少数ファイル）で書く。色はトークン（CSS 変数）で持ち、コンポーネントに色を直書きしない（#2、#20）
-- 見た目は `design/` の CB* を正とする。テキストの色は WCAG AA を満たし、アニメーションは `prefers-reduced-motion: reduce` で止める
+- 見た目は `design/` の A案の 4 枚を正とし、ロゴと顔アイコンはブランドキットの SVG（`design/brand/assets/`）をそのまま使う（描き直さない）。テキストの色は WCAG AA を満たし、アニメーションは `prefers-reduced-motion: reduce` で止める
 - 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
 - 開いている `要決定` ラベルの issue で決まっていない値（文言、作品の掲載内容）は、issue の指示どおり仮のままにし、先取りして決めない。決まった値は、要決定の issue のコメント「## 決定」と、各 issue のコメント「## 事前の決定」にある
 - X（旧 Twitter）の表記は、アイコン以外（本文、`aria-label`、テキスト版、`llms.txt` を含む）ではすべて日本語で「Twitter(自称X)」、英語で「Twitter (self-proclaimed X)」にする。X と書くのはアイコンの図柄だけ
@@ -77,7 +77,7 @@ disallowedTools: Agent, Skill
 7. 設計と命名を読んで判断する（ここだけが判断の仕事）
 <!-- ADAPT:review-focus -->
    - 静的と動的の境界: `/` 以外の静的ページで Worker が起動しない前提（`run_worker_first` を `/` に限る）を崩していないか。prerender の指定と、Worker が返す応答のヘッダー（`_headers` は Worker の応答に効かない）を追う
-   - デザインとの対応: 再現する要素を `design/` の CB* のセレクター（`.shape`、`#top` など）で指しているか。デザインに無いことを決めていれば、デザイン段階のコメントに沿っているか
+   - デザインとの対応: 再現する要素を `design/` の A案のセレクター（`.win`、`#top` など）で指しているか。デザインに無いことを決めていれば、デザイン段階のコメントに沿っているか
    - テーマ（ライト・ダーク）、`prefers-reduced-motion: reduce`、フォーカス表示、コントラストが検証の手順に入っているか
    - CSP（#55 以降）: インラインの `style` 属性や `<script>` を足すプランは、CSP のハッシュとの関係を扱っているか
 <!-- /ADAPT:review-focus -->

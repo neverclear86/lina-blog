@@ -31,7 +31,7 @@ disallowedTools: Agent, Skill
 - 設計の方針は issue の本文と親 Epic の「背景」にある（#1 土台、#2 デザインシステム）。issue を読んで従い、ここに書いたことと食い違えば issue を優先する
 - ほぼ全ページを静的ビルドし、Workers Static Assets から配信する。動的な処理（お問い合わせ、curl 応答）は `src/fetch.ts` の Hono アプリに置く。表示のために Worker も DB も起動しないことを基本とし、D1 と Live Content Collections は使わない（#1）
 - CSS は素の CSS（Astro のスコープ付き `<style>` とグローバルの少数ファイル）で書く。色はトークン（CSS 変数）で持ち、コンポーネントに色を直書きしない（#2、#20）
-- 見た目は `design/` の CB* を正とする。テキストの色は WCAG AA を満たし、アニメーションは `prefers-reduced-motion: reduce` で止める
+- 見た目は `design/` の A案の 4 枚を正とし、ロゴと顔アイコンはブランドキットの SVG（`design/brand/assets/`）をそのまま使う（描き直さない）。テキストの色は WCAG AA を満たし、アニメーションは `prefers-reduced-motion: reduce` で止める
 - 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
 - 開いている `要決定` ラベルの issue で決まっていない値（文言、作品の掲載内容）は、issue の指示どおり仮のままにし、先取りして決めない。決まった値は、要決定の issue のコメント「## 決定」と、各 issue のコメント「## 事前の決定」にある
 - X（旧 Twitter）の表記は、アイコン以外（本文、`aria-label`、テキスト版、`llms.txt` を含む）ではすべて日本語で「Twitter(自称X)」、英語で「Twitter (self-proclaimed X)」にする。X と書くのはアイコンの図柄だけ

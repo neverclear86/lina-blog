@@ -1,6 +1,6 @@
 # lina-blog
 
-創好リナ（バーチャルイキリプログラマ）の個人サイト兼ブログ ikili.pro のリポジトリ。Astro 7 でほぼ全ページを静的に生成し、Cloudflare Workers（Static Assets と、`src/fetch.ts` の Hono）で配信する。記事の公開は、サイトとは別の Worker（`workers/publish/`、Hono）が受け持つ。計画は GitHub の issue（Epic #1〜#10）にある。
+創好リナ（バーチャルイキリプログラマ）の個人サイト兼ブログ ikili.pro のリポジトリ。Astro 7 でほぼ全ページを静的に生成し、Cloudflare Workers（Static Assets と、`src/fetch.ts` の Hono）で配信する。記事の公開は、サイトとは別の Worker（`workers/publish/`、Hono）が受け持つ。計画は GitHub の issue（Epic #1〜#10 と、新デザイン（A案）への移行の #242）にある。
 
 ## 開発
 

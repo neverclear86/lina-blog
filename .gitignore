@@ -34,3 +34,6 @@ pnpm-debug.log*
 .claude/agent-memory-local/
 # issue-workflow の手元の環境（compose のプロジェクト名とポート）
 .claude/issue-workflow.local.env
+
+# デザインの写し（Design キャンバスの写しとブランドキット。手元でだけ管理する）
+/design/
