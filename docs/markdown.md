@@ -1,6 +1,6 @@
 # 記事の本文の書き方
 
-記事の本文は Markdown（GFM）で書き、アコーディオンは生の HTML で書く。
+記事の本文は Markdown（GFM）で書き、メッセージボックスとアコーディオンは生の HTML で書く。
 Markdown は Sätteri が HTML にし、`src/components/ArticleBody.astro` が見た目を付ける。
 書いた記法の見た目は、`astro dev` を立てて `/dev/markdown/`（`src/markdown/sample.md` の例）で確かめられる。
 
@@ -11,6 +11,26 @@ Markdown は Sätteri が HTML にし、`src/components/ArticleBody.astro` が�
 - `style` 属性、`<script>`、`onclick` などの `on` で始まる属性は書かない
 
 ## メッセージボックス
+
+本文から少し離れた一言を、窓に入れて出す。
+`<aside>` に種類のクラスを 1 つ付けて書く。
+
+| クラス | 使いどころ | 窓の上のラベル |
+| --- | --- | --- |
+| `note` | 注記。補足や一言 | `# note` |
+| `warning` | 警告。読み手が先に知っておくべきこと。窓の上端に斜めの縞が付く | `# warning` |
+
+```html
+<aside class="note">
+
+ここ、だれも読まないと思うけど一応書いておく。
+
+</aside>
+```
+
+- ラベルの語はサイトが出す。記事には書かない
+- 窓の中には段落、箇条書き、リンク、`inline code` などの Markdown を書ける。2 つ目の要素からは上に少し間が空く
+- 窓の中の文は全部が太字で出る。長い内容は窓に入れず、本文かアコーディオンに書く
 
 ## アコーディオン
 

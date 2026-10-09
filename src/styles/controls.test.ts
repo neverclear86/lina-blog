@@ -319,3 +319,78 @@ describe("記事のアコーディオン", () => {
     expect(source("components/ArticleBody.astro")).not.toContain("<script");
   });
 });
+
+describe("記事のメッセージボックス", () => {
+  /** The selector that `window.css` and `labels.css` share with `.win` and `.label`. */
+  const SHARED = ":where(.article-body aside:is(.note, .warning))";
+
+  /** Returns true when a rule of `list` has both `selector` and `among` in its selector list. */
+  function listsBoth(list: Rule[], selector: string, among: string): boolean {
+    return list.some((rule) => {
+      const items = rule.selector
+        .split(/,(?![^(]*\))/)
+        .map((item) => item.trim());
+      return items.includes(selector) && items.includes(among);
+    });
+  }
+
+  /** Returns the body of the first rule of `text` whose selector is `:global(<inner>)`. */
+  function bodyOf(text: string, inner: string): string | undefined {
+    return rulesOf(text).find(
+      (rule) => rule.selector === `.article-body :global(${inner})`,
+    )?.body;
+  }
+
+  const article = () => styleOf(source("components/ArticleBody.astro"));
+  /** The part of the article's style from the last `@media (min-width: 768px)`. */
+  const wide = () =>
+    article().slice(article().lastIndexOf("@media (min-width: 768px)"));
+
+  it("window.css は .win の地の規則と輪の規則に記事のメッセージボックスを足している", () => {
+    const list = rules("window.css");
+    expect(listsBoth(list, SHARED, ".win")).toBe(true);
+    expect(listsBoth(list, `${SHARED}::before`, ".win::before")).toBe(true);
+  });
+
+  it("labels.css は .label の規則にメッセージボックスの ::after を足している", () => {
+    expect(listsBoth(rules("labels.css"), `${SHARED}::after`, ".label")).toBe(
+      true,
+    );
+  });
+
+  it("ラベルの語は ::after の content で、読み上げには # を除いた語を渡す", () => {
+    expect(bodyOf(article(), "aside.note::after")).toContain(
+      'content: "# note" / "note";',
+    );
+    expect(bodyOf(article(), "aside.warning::after")).toContain(
+      'content: "# warning" / "warning";',
+    );
+  });
+
+  it("ラベルは文の上に出て、色は --acc-text になる", () => {
+    const body = bodyOf(article(), "aside:is(.note, .warning)::after");
+    expect(body).toContain("order: -1;");
+    expect(body).toContain("color: var(--acc-text);");
+  });
+
+  it("警告だけが上端の縞を背景の 1 層目に持ち、地の --panel を最後の層に残す", () => {
+    const warning = bodyOf(article(), "aside.warning") ?? "";
+    expect(warning).toMatch(/background:\s*repeating-linear-gradient\(/);
+    expect(warning).toMatch(/var\(--panel\);\s*$/);
+    expect(bodyOf(article(), "aside:is(.note, .warning)")).not.toContain(
+      "gradient",
+    );
+  });
+
+  it("768px 以上で余白と文の大きさが PC の値になり、警告の上の余白も 6px 増えたまま", () => {
+    const text = wide();
+    expect(bodyOf(text, "aside:is(.note, .warning)")).toContain(
+      "padding: 16px 20px;",
+    );
+    expect(bodyOf(text, "aside:is(.note, .warning) > *")).toContain(
+      "font-size: 15px;",
+    );
+    expect(bodyOf(text, "aside.warning")).toContain("padding-top: 22px;");
+    expect(bodyOf(article(), "aside.warning")).toContain("padding-top: 18px;");
+  });
+});

@@ -9,10 +9,13 @@
  * It styles the accordion too, a `<details>` with its `<summary>` that an article writes as raw
  * HTML: the window of `.win` (shared in `window.css`) with a `<summary>` of at least 48px in
  * JetBrains Mono, whose mark is a plus while the accordion is closed and a minus while it is
- * open. The browser opens and closes it, without script. The rules reach those elements through
- * `:global()` under `.article-body`, so they apply only inside this wrapper. The wrapper sets no
- * width: the page around it decides the column. The windows of code blocks are styled by the
- * imported src/markdown/highlight.css, whose rules match `figure.code-window` and `pre.shiki`.
+ * open. The browser opens and closes it, without script. It styles the message boxes too,
+ * `<aside class="note">` and `<aside class="warning">` written as raw HTML, which take the ground
+ * and the ring of `.win` from `window.css` and the look of their label from `labels.css`. The
+ * rules reach those elements through `:global()` under `.article-body`, so they apply only inside
+ * this wrapper. The wrapper sets no width: the page around it decides the column. The windows of
+ * code blocks are styled by the imported src/markdown/highlight.css, whose rules match
+ * `figure.code-window` and `pre.shiki`.
  */
 import "../markdown/highlight.css";
 ---
@@ -329,6 +332,73 @@ import "../markdown/highlight.css";
 
   .article-body :global(details) {
     margin-bottom: 1.6em;
+  }
+}
+
+/* Message boxes: `<aside class="note">` and `<aside class="warning">`. The ground and ring come
+   from window.css and the look of the label from labels.css. */
+.article-body :global(aside:is(.note, .warning)) {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin: 0 0 1.4em;
+  padding: 12px 14px;
+  font-weight: 700;
+}
+
+.article-body :global(aside:is(.note, .warning) > *) {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.article-body :global(aside:is(.note, .warning) > * + *) {
+  margin-top: 0.6em;
+}
+
+/* The label is a generated `::after`, because `.win::before` draws the ring. */
+.article-body :global(aside.note::after) {
+  content: "# note" / "note";
+}
+
+.article-body :global(aside.warning::after) {
+  content: "# warning" / "warning";
+}
+
+.article-body :global(aside:is(.note, .warning)::after) {
+  order: -1;
+  color: var(--acc-text);
+  font-weight: 400;
+}
+
+/* A warning has diagonal stripes at the top, as `.stripes` in window.css does (a 40px period
+   across), and 6px of padding more to keep the text under them. */
+.article-body :global(aside.warning) {
+  padding-top: 18px;
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      var(--keyword) 0 14.14px,
+      var(--ink) 14.14px 28.28px
+    )
+    top / 100% 6px no-repeat,
+    var(--panel);
+}
+
+@media (min-width: 768px) {
+  .article-body :global(aside:is(.note, .warning)) {
+    margin-bottom: 1.6em;
+    padding: 16px 20px;
+  }
+
+  .article-body :global(aside:is(.note, .warning) > *) {
+    font-size: 15px;
+    line-height: 1.8;
+  }
+
+  .article-body :global(aside.warning) {
+    padding-top: 22px;
   }
 }
 </style>

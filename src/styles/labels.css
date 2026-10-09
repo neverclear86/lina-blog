@@ -10,9 +10,15 @@
  * `.tag` and `.chip-acc` stay on one line, at most as wide as their container, and end a longer
  * text with an ellipsis. They are inline blocks so that `text-overflow` applies to the text.
  * They are not interactive: a caller that links one wraps it in an `<a>`.
+ *
+ * The labels of an article's message boxes, `# note` and `# warning`, are the `::after` of
+ * `aside.note` and `aside.warning` under `.article-body`. They take the declarations of `.label`
+ * through `:where(.article-body aside:is(.note, .warning))::after`, whose `:where()` adds no
+ * specificity, and `src/components/ArticleBody.astro` sets their color.
  */
 
-.label {
+.label,
+:where(.article-body aside:is(.note, .warning))::after {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.16em;

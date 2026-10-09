@@ -87,6 +87,28 @@ bun run build
 
 </details>
 
+## メッセージボックス
+
+生の HTML の `<aside>` に種類のクラスを付けて書く。タグの行の前後には空行を置く。
+
+<aside class="note">
+
+注記は、本文から少し離れた一言に使う。
+
+長い URL も窓の幅で折り返す: https://example.com/?token=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+</aside>
+
+<aside class="warning">
+
+警告は、読み手が先に知っておくべきことに使う。**強調**、`inline code`、[リンク](https://ikili.pro/)も書ける。
+
+2 つ目の段落は、上に少し間が空く。
+
+- 箇条書きも書ける
+
+</aside>
+
 ## 脚注
 
 脚注は本文の末尾にまとめて出る[^first]。同じ脚注を 2 か所から参照できる[^first]。名前の長い脚注も書ける[^long-name]。
