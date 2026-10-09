@@ -6,6 +6,7 @@
  */
 import { FEED_PATH, rssItemTitle } from "./blog-rss";
 import type { BlogFrontmatter } from "./blog-schema";
+import { contactPagePath } from "./components/site-nav";
 import type { Locale } from "./i18n/locales";
 import { PROFILE_LINKS } from "./profile-links";
 
@@ -35,12 +36,13 @@ interface TextSiteStrings {
   about: readonly string[];
   works: readonly { name: string; lines: readonly string[] }[];
   noPosts: string;
-  contact: readonly string[];
+  /** The contact section: the line that invites contact and the label before the form's URL. */
+  contact: { lead: string; formLabel: string };
 }
 
 // Provisional: the wording of the about text and the works to list are not decided yet. The
 // about text uses the design's sentences, and the works are the design's first two cards. The
-// contact lines point to the contact form of the top page.
+// contact lines point to the contact page.
 /** Text of the text version in each locale. The type requires every locale. */
 const STRINGS: Record<Locale, TextSiteStrings> = {
   ja: {
@@ -71,10 +73,10 @@ const STRINGS: Record<Locale, TextSiteStrings> = {
       },
     ],
     noPosts: "まだ記事はありません。",
-    contact: [
-      "お仕事のご相談やコラボのお誘いなど、お気軽にどうぞ。",
-      "サイトのお問い合わせフォームから送れます。",
-    ],
+    contact: {
+      lead: "お仕事のご相談やコラボのお誘いなどはこちらから。",
+      formLabel: "フォーム:",
+    },
   },
   en: {
     headings: {
@@ -107,10 +109,10 @@ const STRINGS: Record<Locale, TextSiteStrings> = {
       },
     ],
     noPosts: "No posts yet.",
-    contact: [
-      "For work inquiries or collaborations, feel free to reach out",
-      "through the contact form on the site.",
-    ],
+    contact: {
+      lead: "For work inquiries, collaborations and more,",
+      formLabel: "use the form:",
+    },
   },
 };
 
@@ -168,7 +170,8 @@ function fitWidth(text: string, maxWidth: number): string {
  * The latest posts are the newest `LATEST_POSTS_LIMIT` of `posts` by date, each with its date in
  * Japan time, its title (with `【PR】` for a sponsored post, cut with `...` to fit the line) and
  * the absolute URL of its page; without posts, a line says there are none. The profile links
- * print `shortForm` instead of `url` when a link has one.
+ * print `shortForm` instead of `url` when a link has one. The contact section ends with a line
+ * that invites contact and a line with the absolute URL of the contact page of `locale`.
  *
  * @param locale Language of the text; the post titles stay in Japanese.
  * @param posts Posts of the `blog` collection, in any order.
@@ -226,8 +229,8 @@ export function buildTextSite(
     ]),
     "",
     strings.headings.contact,
-    ...strings.contact,
-    `  ${new URL(`/${locale}/`, site).toString()}`,
+    strings.contact.lead,
+    `${strings.contact.formLabel} ${new URL(contactPagePath(locale), site).toString()}`,
     "",
   ].join("\n");
 }

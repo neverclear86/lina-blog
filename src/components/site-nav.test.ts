@@ -3,6 +3,7 @@ import {
   contactPagePath,
   currentSectionIndex,
   homeSectionPath,
+  isContactPage,
   isTopPath,
   languageLinks,
   navLinks,
@@ -12,7 +13,7 @@ import {
 describe("homeSectionPath", () => {
   it("言語のトップのページの節を指すパスを返す", () => {
     expect(homeSectionPath("ja", "about")).toBe("/ja/#about");
-    expect(homeSectionPath("en", "contact")).toBe("/en/#contact");
+    expect(homeSectionPath("en", "works")).toBe("/en/#works");
     expect(homeSectionPath("ja", "blog")).toBe("/ja/#blog");
   });
 });
@@ -21,6 +22,33 @@ describe("contactPagePath", () => {
   it("言語ごとのお問い合わせのページを指す、末尾がスラッシュのパスを返す", () => {
     expect(contactPagePath("ja")).toBe("/ja/contact/");
     expect(contactPagePath("en")).toBe("/en/contact/");
+  });
+});
+
+describe("isContactPage", () => {
+  it.each(["/ja/contact/", "/ja/contact"])(
+    "日本語のお問い合わせのページのパス %s では真を返す",
+    (pathname) => {
+      expect(isContactPage("ja", pathname)).toBe(true);
+    },
+  );
+
+  it("英語のお問い合わせのページのパスでは英語だけが真を返す", () => {
+    expect(isContactPage("en", "/en/contact/")).toBe(true);
+    expect(isContactPage("ja", "/en/contact/")).toBe(false);
+  });
+
+  it("別の言語のお問い合わせのページと、他のページでは偽を返す", () => {
+    for (const pathname of [
+      "/en/contact/",
+      "/ja/",
+      "/ja/contact/thanks/",
+      "/ja/contacts/",
+      "/ja/works/contact/",
+      "/blog/",
+    ]) {
+      expect(isContactPage("ja", pathname)).toBe(false);
+    }
   });
 });
 

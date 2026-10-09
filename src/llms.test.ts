@@ -16,6 +16,12 @@ describe("buildLlmsTxt", () => {
     expect(text).toContain("- [トップ（英語）](https://example.com/en/)\n");
   });
 
+  it("言語ごとのお問い合わせのページへのリンクを、トップページの次の行に書く", () => {
+    expect(text).toContain(
+      "- [トップ（英語）](https://example.com/en/)\n- [お問い合わせ（日本語）](https://example.com/ja/contact/)\n- [お問い合わせ（英語）](https://example.com/en/contact/)\n",
+    );
+  });
+
   it.each([
     ["YouTube", "https://www.youtube.com/@LinaTsukusu"],
     ["Twitter(自称X)", "https://x.com/TsukusuLina"],
