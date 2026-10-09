@@ -34,6 +34,8 @@ interface Props {
   description?: string;
   /** Footer of the page: "full" or "compact". Defaults to "full". */
   footer?: FooterVariant;
+  /** Whether the site header shows how far the reader is in a post. */
+  readingProgress?: boolean;
 }
 
 const {
@@ -41,6 +43,7 @@ const {
   title,
   description,
   footer = "full",
+  readingProgress = false,
 } = Astro.props;
 
 const pageTitle =
@@ -104,7 +107,7 @@ const openGraph = openGraphTags({
     <slot name="head" />
   </head>
   <body>
-    <SiteHeader lang={lang} />
+    <SiteHeader lang={lang} readingProgress={readingProgress} />
     {/* The page content; it grows so that the footer sits at the bottom of a short page. */}
     <div class="site-content"><slot /></div>
     {/* The site footer, after the page content. */}

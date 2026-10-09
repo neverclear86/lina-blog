@@ -31,6 +31,7 @@ import PageHead from "../components/PageHead.astro";
 import PixelArt from "../components/PixelArt.astro";
 import PostNav from "../components/PostNav.astro";
 import PostRows from "../components/PostRows.astro";
+import ReadingProgress from "../components/ReadingProgress.astro";
 import SectionTitle from "../components/SectionTitle.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import SponsorNotice from "../components/SponsorNotice.astro";
@@ -350,8 +351,35 @@ const sampleVideos: YouTubeVideo[] = [
       <div class="a-toc a-toc-window">
         <ArticleToc items={sampleToc} lang="ja" variant="window" />
       </div>
+      <div class="a-toc a-toc-window">
+        <ArticleToc items={sampleToc} lang="ja" variant="window" current={1} />
+      </div>
       <div class="a-toc a-toc-sheet">
         <ArticleToc items={sampleToc} lang="ja" variant="sheet" />
+      </div>
+    </section>
+
+    <section id="a-reading-progress">
+      <h2>A案: 読み進み</h2>
+      <div class="stack">
+        <div class="a-progress a-progress-0">
+          <ReadingProgress variant="bar" />
+        </div>
+        <div class="a-progress a-progress-half">
+          <ReadingProgress variant="bar" />
+        </div>
+        <div class="a-progress a-progress-full">
+          <ReadingProgress variant="bar" />
+        </div>
+        <div class="a-progress a-progress-0">
+          <ReadingProgress variant="line" />
+        </div>
+        <div class="a-progress a-progress-half">
+          <ReadingProgress variant="line" />
+        </div>
+        <div class="a-progress a-progress-full">
+          <ReadingProgress variant="line" />
+        </div>
       </div>
     </section>
 
@@ -1204,6 +1232,22 @@ const sampleVideos: YouTubeVideo[] = [
 
 .a-toc-sheet {
   max-width: 358px;
+}
+
+.a-progress {
+  max-width: 240px;
+}
+
+.a-progress-0 {
+  --reading-progress: 0;
+}
+
+.a-progress-half {
+  --reading-progress: 0.5;
+}
+
+.a-progress-full {
+  --reading-progress: 1;
 }
 
 .a-acct {

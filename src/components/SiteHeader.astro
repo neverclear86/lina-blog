@@ -14,6 +14,11 @@
  * (`contactPagePath`) and has `aria-current="page"` on that page (`isContactPage`); its look
  * does not change.
  *
+ * With `readingProgress`, the lower edge of the header shows at every width a 3px line in
+ * `--keyword` with a glow, over the border under the header (`ReadingProgress`, `line`): its
+ * length is how far the reader is in the post (`--reading-progress`, set by the page). The line
+ * is hidden until the script of the page shows it, so a page without script has none.
+ *
  * On the top page (`isTopPath` in `./site-nav`) the navigation follows the scroll: the item of
  * the section that the reader is in (`currentSectionIndex` in `./site-nav`) has
  * `aria-current="location"`, and its `--keyword` face is the block `.nav-ind`, which slides
@@ -35,6 +40,7 @@
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import NameLogo from "./NameLogo.astro";
+import ReadingProgress from "./ReadingProgress.astro";
 import {
   contactPagePath,
   homeSectionPath,
@@ -48,9 +54,11 @@ import ThemeToggle from "./ThemeToggle.astro";
 interface Props {
   /** Language of the text and of the links to the top page. */
   lang: Locale;
+  /** Whether the lower edge of the header shows how far the reader is in a post. */
+  readingProgress?: boolean;
 }
 
-const { lang } = Astro.props;
+const { lang, readingProgress = false } = Astro.props;
 const pathname = Astro.url.pathname;
 const nav = navLinks(lang, pathname);
 const languages = languageLinks(lang, pathname);
@@ -196,6 +204,11 @@ const follow = isTopPath(lang, pathname);
       </a>
     </div>
   </div>
+  {readingProgress && (
+  <div class="reading-line">
+    <ReadingProgress variant="line" hidden />
+  </div>
+)}
 </header>
 
 <style>
@@ -216,6 +229,13 @@ const follow = isTopPath(lang, pathname);
   max-width: 1440px;
   margin: 0 auto;
   padding: 8px var(--gutter);
+}
+.reading-line {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  pointer-events: none;
 }
 .brand {
   display: flex;
