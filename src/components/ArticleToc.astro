@@ -8,8 +8,13 @@
  * `<details>` whose `<summary>` has a plus, or a minus while it is open, like the accordion of an
  * article, and a `<nav>` of links with `##` before their text, which screen readers skip. The
  * text of an item wraps. A link takes `--text` on hover and focus, and `--keyword` in the dark
- * theme, because its own `color` wins over the rule for links in `global.css`. The page decides
- * where the component stands and which variant is shown: it sets no position and no width.
+ * theme, because its own `color` wins over the rule for links in `global.css`.
+ * In the window, the item at `current` is the one that the reader is in: it has
+ * `aria-current="location"` and takes `--text` in bold, which hover and focus do not change, and
+ * its square is `--keyword` and 1.4 times larger. The page moves `aria-current` as the reader
+ * scrolls, so without script no item is marked. The change takes 0.2s; reduced motion removes it.
+ * The page decides where the component stands and which variant is shown: it sets no position
+ * and no width.
  */
 import type { BlogPostTocItem } from "../blog-pages";
 import type { Locale } from "../i18n/locales";
@@ -22,9 +27,11 @@ interface Props {
   lang: Locale;
   /** `window` for the left column from 1024px, `sheet` for the `<details>` before the body. */
   variant: "window" | "sheet";
+  /** Index in `items` of the item of the `h2` that the reader is in, marked in the window. */
+  current?: number;
 }
 
-const { items, lang, variant } = Astro.props;
+const { items, lang, variant, current } = Astro.props;
 const label = translate(lang, "blog.toc.label");
 ---
 
@@ -34,8 +41,13 @@ const label = translate(lang, "blog.toc.label");
       neo-tree · <span>toc</span>
     </div>
     <nav class="toc" aria-label={label}>
-      {items.map((item) => (
-        <a href={`#${item.slug}`}>{item.text}</a>
+      {items.map((item, index) => (
+        <a
+          href={`#${item.slug}`}
+          aria-current={index === current ? "location" : undefined}
+        >
+          {item.text}
+        </a>
       ))}
     </nav>
   </div>
@@ -86,6 +98,7 @@ const label = translate(lang, "blog.toc.label");
   padding: 6px 0 6px 16px;
   font-size: 14px;
   line-height: 1.5;
+  transition: color 0.2s;
 }
 .panel .toc a::before {
   content: "";
@@ -95,6 +108,9 @@ const label = translate(lang, "blog.toc.label");
   width: 6px;
   height: 6px;
   background: var(--line2);
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
 }
 .sheet summary {
   position: relative;
@@ -148,5 +164,20 @@ const label = translate(lang, "blog.toc.label");
 }
 :root[data-theme="dark"] .toc a:is(:hover, :focus-visible) {
   color: var(--keyword);
+}
+.panel .toc a[aria-current],
+.panel .toc a[aria-current]:is(:hover, :focus-visible) {
+  color: var(--text);
+  font-weight: 700;
+}
+.panel .toc a[aria-current]::before {
+  background: var(--keyword);
+  transform: scale(1.4);
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel .toc a,
+  .panel .toc a::before {
+    transition: none;
+  }
 }
 </style>

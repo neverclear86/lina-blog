@@ -15,6 +15,12 @@
  * without an `h2` of its own has no table of contents, and `.toc-col` stays empty so that the
  * body keeps its place.
  *
+ * A script of the page sets `--reading-progress` on `<html>` while the reader scrolls (0 at the
+ * top of the page, 1 when the bottom of `.article-body` reaches the bottom of the viewport), which
+ * the line under the site header (`readingProgress` of `Layout`) and the bar under the window of
+ * the table of contents (`ReadingProgress`) draw, and marks the item of the `h2` that the reader
+ * is in with `aria-current="location"`. The line and the bar are hidden until it runs.
+ *
  * A diagonal band at the right of the head is drawn with `::before`. It is 64px wide below 768px,
  * where the rows of the head keep clear of it with a right padding, and 120px wide from 1280px,
  * where a hatched line beside it is drawn with `::after`; from 768px to 1279px there is no band.
@@ -39,6 +45,7 @@ import ArticleBody from "../../components/ArticleBody.astro";
 import ArticleEnd from "../../components/ArticleEnd.astro";
 import ArticleToc from "../../components/ArticleToc.astro";
 import PostNav from "../../components/PostNav.astro";
+import ReadingProgress from "../../components/ReadingProgress.astro";
 import SponsorNotice from "../../components/SponsorNotice.astro";
 import { homeSectionPath } from "../../components/site-nav";
 import { translate } from "../../i18n/ui";
@@ -70,7 +77,13 @@ const minutes = readingMinutes(post.body);
 const notice = sponsorNotice(sponsor);
 ---
 
-<Layout lang="ja" title={title} description={description} footer="compact">
+<Layout
+  lang="ja"
+  title={title}
+  description={description}
+  footer="compact"
+  readingProgress
+>
   <main>
     <section class="head gridbg">
       <div class="head-inner">
@@ -133,6 +146,7 @@ const notice = sponsorNotice(sponsor);
           {toc.length > 0 && (
   <aside class="toc-side">
     <ArticleToc items={toc} lang="ja" variant="window" />
+    <ReadingProgress variant="bar" hidden />
   </aside>
 )}
         </div>
@@ -386,6 +400,9 @@ h1 {
   .toc-side {
     position: sticky;
     top: 88px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
   .toc-sheet {
     display: none;
@@ -423,3 +440,57 @@ h1 {
   }
 }
 </style>
+
+<script>
+// Sets `--reading-progress` on `<html>`, moves `aria-current="location"` to the link of the `h2`
+// that the reader is in, and reveals the line and the bar, which are hidden until this runs.
+import {
+  currentHeadingIndex,
+  readingProgress,
+} from "../../components/reading-progress";
+
+const body = document.querySelector<HTMLElement>(".article-body");
+if (body) {
+  const links = [
+    ...document.querySelectorAll<HTMLAnchorElement>(".toc-side .toc a"),
+  ];
+  // `a.hash` percent-encodes a Japanese id, which `getElementById` does not find.
+  const ids = links.map((link) => link.getAttribute("href")?.slice(1) ?? "");
+  const update = () => {
+    const scrollY = window.scrollY;
+    const progress = readingProgress(
+      scrollY,
+      body.getBoundingClientRect().bottom + scrollY,
+      window.innerHeight,
+    );
+    document.documentElement.style.setProperty(
+      "--reading-progress",
+      progress.toFixed(3),
+    );
+    const tops = ids.map(
+      (id) => document.getElementById(id)?.getBoundingClientRect().top ?? null,
+    );
+    const index = currentHeadingIndex(tops, scrollY, progress);
+    links.forEach((link, i) => {
+      if (i === index) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    });
+  };
+  let queued = false;
+  const schedule = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      update();
+    });
+  };
+  addEventListener("scroll", schedule, { passive: true });
+  addEventListener("resize", schedule);
+  addEventListener("load", schedule);
+  update();
+  for (const meter of document.querySelectorAll("[data-reading-progress]")) {
+    meter.removeAttribute("hidden");
+  }
+}
+</script>

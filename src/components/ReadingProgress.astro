@@ -1,0 +1,64 @@
+---
+/**
+ * How far the reader is in a post, drawn from `--reading-progress`, a number from 0 to 1 that
+ * the element inherits (0 when none is set). It has two variants, both hidden from screen readers
+ * because the value changes with every scroll. `bar` is the `progress` label in JetBrains Mono
+ * above a 4px bar on `--line`, for the column under the table of contents. `line` is a 3px line
+ * in `--keyword` with a glow, for the lower edge of the site header. Neither animates. The page
+ * sets the position. A page whose script reveals the element passes `hidden`; the element carries
+ * `data-reading-progress`, and the script removes `hidden` once it sets `--reading-progress`.
+ */
+interface Props {
+  /** `bar` for the table of contents column, `line` for the site header. */
+  variant: "bar" | "line";
+  /** Whether the element is hidden until a script shows it. */
+  hidden?: boolean;
+}
+
+const { variant, hidden = false } = Astro.props;
+---
+
+<div
+  class:list={["meter", `meter-${variant}`]}
+  data-reading-progress
+  hidden={hidden}
+  aria-hidden="true"
+>
+  {variant === "bar" && (
+  <div class="label" lang="en">
+    progress
+  </div>
+)}
+  <div class="track"><div class="fill"></div></div>
+</div>
+
+<style>
+.meter[hidden] {
+  display: none;
+}
+.meter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.meter-bar .label {
+  padding: 0 4px;
+}
+.meter-bar .track {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--line);
+}
+.meter-line .track {
+  height: 3px;
+}
+.fill {
+  width: calc(var(--reading-progress, 0) * 100%);
+  height: 100%;
+  background: var(--keyword);
+}
+.meter-line .fill {
+  box-shadow: 0 0 10px color-mix(in srgb, var(--keyword) 60%, transparent);
+}
+</style>

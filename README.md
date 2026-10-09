@@ -60,7 +60,7 @@ bun create astro@latest -- --template basics
 │   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, YouTube embeds, accordions, message boxes) and puts the copy button on code blocks
 │   │   ├── ArticleEnd.astro      # End window of a post: share links, copy-link button, thumbs-up
-│   │   ├── ArticleToc.astro      # Table of contents of a post: the neo-tree window in the left column from 1024px, a closed <details> before the body below it
+│   │   ├── ArticleToc.astro      # Table of contents of a post: the neo-tree window in the left column from 1024px, a closed <details> before the body below it; the h2 being read is marked
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: in a row from 1200px, below it stacked or one at a time with tabs
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
@@ -88,10 +88,12 @@ bun create astro@latest -- --template basics
 │   │   ├── PageHead.astro        # Head of the blog pages and the contact page: grid background, diagonal band and the slot with an h1
 │   │   ├── PostNav.astro         # Links to the posts one step older (prev) and newer (next) at the end of a post's page; nothing when there are none
 │   │   ├── PostRows.astro        # Window of blog posts: ls -lt command line with a command slot, rows with JST date, tags, PR and title, or one empty line
+│   │   ├── reading-progress.ts   # How far the reader is in a post and which h2 they are in, unit-tested
+│   │   ├── ReadingProgress.astro # How far the reader is in a post: a bar with a label, or a line under the site header
 │   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line drawn on scroll, path and link, and the Japanese heading; the size is a prop
-│   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, the path of the contact page, and which section of the top page the reader is in, unit-tested
+│   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, the path of the contact page, and which section the reader is in, on the top page and in a post, unit-tested
 │   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
-│   │   ├── SiteHeader.astro      # Site header, sticky: compact name logo; from 1024px the navigation 00 top to 04 works with an indicator on the top page that follows the section being read, JA / EN, theme switch and contact button, below 1024px the theme switch and a menu button that opens a popover sheet
+│   │   ├── SiteHeader.astro      # Site header, sticky: compact name logo; from 1024px the navigation 00 top to 04 works with an indicator on the top page that follows the section being read, JA / EN, theme switch and contact button, below 1024px the theme switch and a menu button that opens a popover sheet; on a post's page a line under it for how far the reader is
 │   │   ├── SponsorNotice.astro   # PR window above the body of a sponsored blog post: orange PR chip and the sponsor's name
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: an .iconbtn that shows the moon or the sun with a name that says the next theme, or a button with a sun and the current theme
@@ -113,7 +115,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, and the canonical and hreflang URLs of a page, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, shapes.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
+│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, shapes.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro, with the line of how far the reader is in a post when the readingProgress prop is set) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code blocks as a window <figure> with a title (file name, language or text), unit-tested
 │   │   ├── highlight.css     # Code block window (frame, title and copy button) and role colors
@@ -133,7 +135,7 @@ bun create astro@latest -- --template basics
 │   │   │   ├── color.txt.ts  # /ansi/color.txt: the avatar main-visual as 24-bit color text art
 │   │   │   └── plain.txt.ts  # /ansi/plain.txt: the same art without escape sequences
 │   │   ├── blog/
-│   │   │   ├── [slug].astro  # /blog/<slug>/: a post, with its head above the body, its table of contents and the compact footer
+│   │   │   ├── [slug].astro  # /blog/<slug>/: a post, with its head above the body, its table of contents with the reading progress and the compact footer
 │   │   │   ├── index.astro   # /blog/: every post, newest first
 │   │   │   └── tags/
 │   │   │       └── [tag].astro   # /blog/tags/devlog/, tech/ and diary/: the posts of one tag, built with or without posts

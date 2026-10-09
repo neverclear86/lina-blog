@@ -1,6 +1,7 @@
 /**
  * Link targets of the site: the navigation and the language switch of the site header
- * (`SiteHeader.astro`), the contact page, and which section of the top page the reader is in.
+ * (`SiteHeader.astro`), the contact page, and which section the reader is in, on the top page
+ * and in a post.
  */
 import { LOCALES, type Locale } from "../i18n/locales";
 import { localizedPath } from "../i18n/paths";
@@ -130,11 +131,12 @@ export function languageLinks(lang: Locale, pathname: string): LanguageLink[] {
 export const SECTION_LINE = 160;
 
 /**
- * Returns the index of the section that the reader is in. `tops` has, for each item of the
- * navigation in order, the distance from the top of the viewport to the top of its section, or
- * `null` when the page has no such section. The section is the one whose top is nearest to
- * `line` among those above it, whatever the order of the sections in the page; of two with the
- * same top, the later item. It is 0 when no section is above `line`.
+ * Returns the index of the section that the reader is in. `tops` has, for each section in order,
+ * the distance from the top of the viewport to its top, or `null` when the page has no such
+ * section. The sections are the items of the navigation of the top page, or the `h2` of a post
+ * (`currentHeadingIndex` in `./reading-progress`). The section is the one whose top is nearest
+ * to `line` among those above it, whatever the order of the sections in the page; of two with
+ * the same top, the later one. It is 0 when no section is above `line`.
  */
 export function currentSectionIndex(
   tops: readonly (number | null)[],
