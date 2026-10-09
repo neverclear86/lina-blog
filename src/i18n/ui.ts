@@ -96,8 +96,8 @@ const ja = {
   // Read after a post title on pages in other locales; the Japanese pages do not show it.
   "latest.blog.inJapanese": "(日本語)",
   "latest.blog.noPosts": "まだ記事はありません。",
-  // Subtitle of the Latest section on the home page.
-  "latest.subtitle": "さいきんの配信と記事",
+  // Heading of the Latest section on the home page.
+  "latest.title": "さいきんの配信",
   // Link to the YouTube channel: the button after the small video windows.
   "latest.videos.channel": "YouTubeチャンネルへ",
   // Shown in place of the newest video when the feed gives none, such as when it cannot be read.
@@ -226,7 +226,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "latest.blog.heading": "Blog",
     "latest.blog.inJapanese": "(in Japanese)",
     "latest.blog.noPosts": "No posts yet.",
-    "latest.subtitle": "Recent streams and posts",
+    "latest.title": "Recent streams",
     "latest.videos.channel": "Visit the YouTube channel",
     "latest.videos.empty": "Couldn't load the latest videos.",
     "menu.label": "Menu",
