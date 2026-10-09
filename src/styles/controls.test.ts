@@ -196,15 +196,21 @@ describe("配線", () => {
     expect(controls).toBeGreaterThan(shapes);
   });
 
-  it("ブラウザーの既定の下線に頼っていた .watch と .back は自分で下線を持つ", () => {
-    const watch = rulesOf(
-      styleOf(source("components/LatestVideoList.astro")),
-    ).find((rule) => rule.selector === ".watch");
-    const back = rulesOf(
-      styleOf(source("pages/[lang]/works/[slug].astro")),
-    ).find((rule) => rule.selector === ".back");
-    expect(watch?.body).toContain("text-decoration: underline;");
-    expect(back?.body).toContain("text-decoration: underline;");
+  it("ブラウザーの既定の下線に頼っていた .watch、.back、.all と 404 ページのリンクは自分で下線を持つ", () => {
+    const targets: [string, string][] = [
+      ["components/LatestVideoList.astro", ".watch"],
+      ["pages/[lang]/works/[slug].astro", ".back"],
+      ["components/LatestPosts.astro", ".all"],
+      ["pages/404.astro", "a"],
+    ];
+    for (const [path, selector] of targets) {
+      const found = rulesOf(styleOf(source(path))).find(
+        (rule) => rule.selector === selector,
+      );
+      expect(found?.body, `${path} ${selector}`).toContain(
+        "text-decoration: underline;",
+      );
+    }
   });
 });
 
