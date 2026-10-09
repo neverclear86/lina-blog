@@ -99,6 +99,8 @@ const ja = {
   "hero.links": "リンク",
   "hero.tagline": "バーチャルイキリプログラマ",
   "home.comingSoon": "準備中です。",
+  // Hidden text after "JA" of the language switch on a page only in Japanese.
+  "lang.jaOnly": "このページは日本語のみ",
   "latest.blog.all": "記事一覧",
   // Read after a post title on pages in other locales; the Japanese pages do not show it.
   "latest.blog.inJapanese": "(日本語)",
@@ -115,8 +117,9 @@ const ja = {
   "latest.videos.empty": "最新の動画を表示できませんでした。",
   // Name of the menu button of the site header; whether the menu is open is its expanded state.
   "menu.label": "メニュー",
-  // Main navigation of the site header; "nav.label" names its <nav>. "nav.breadcrumb" names the
-  // <nav> of the breadcrumb at the top of a page.
+  // "nav.label" names the <nav> of the site header and "nav.contact" is the text of its contact
+  // button. The items of the navigation are in `src/components/site-nav.ts`. "nav.breadcrumb"
+  // names the <nav> of the breadcrumb at the top of a page.
   "nav.about": "プロフィール",
   "nav.blog": "ブログ",
   "nav.breadcrumb": "パンくず",
@@ -138,6 +141,8 @@ const ja = {
     "創好リナ（Tsukusu Lina）の個人サイト兼ブログ。創好リナはバーチャルイキリプログラマで、ITで遊ぶ動画と配信を、Resoniteを中心に届けている。",
   // Label of the Twitter link; "X" appears only in its icon.
   "social.twitter": "Twitter(自称X)",
+  // Hidden text between the visible theme name and the name of the switch.
+  "theme.nameSeparator": "：",
   "theme.toDark": "ダークテーマに切り替え",
   "theme.toLight": "ライトテーマに切り替え",
   // Name of the breadcrumb on the page of a work.
@@ -236,6 +241,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "hero.links": "Links",
     "hero.tagline": 'Virtual "ikiri" programmer',
     "home.comingSoon": "Coming soon.",
+    "lang.jaOnly": "This page is only in Japanese",
     "latest.blog.all": "All posts",
     "latest.blog.inJapanese": "(in Japanese)",
     "latest.blog.noPosts": "No posts yet.",
@@ -260,6 +266,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "site.description":
       'Personal site and blog of Tsukusu Lina (創好リナ), a virtual "ikiri" programmer who makes videos and streams about playing with IT, mostly in Resonite.',
     "social.twitter": "Twitter (self-proclaimed X)",
+    "theme.nameSeparator": ": ",
     "theme.toDark": "Switch to dark theme",
     "theme.toLight": "Switch to light theme",
     "works.breadcrumb": "Breadcrumb",
