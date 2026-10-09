@@ -48,7 +48,7 @@ if (label === undefined && !Astro.slots.has("label")) {
     >
   </span>
   {Astro.slots.has("label") && (
-  <span class="label">
+  <span class="sr-label">
     <slot name="label" />
   </span>
 )}
@@ -70,7 +70,7 @@ if (label === undefined && !Astro.slots.has("label")) {
   display: block;
 }
 
-.label {
+.sr-label {
   position: absolute;
   width: 1px;
   height: 1px;

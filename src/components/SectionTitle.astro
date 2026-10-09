@@ -1,0 +1,185 @@
+---
+/**
+ * The heading of a section of plan A: a bar with the number chip (`01`), the English name
+ * (`about`), a line that fades from `--keyword` to `--line2`, the path (`~/about`) and a link
+ * (`ls ~/works →`), and under it the Japanese heading.
+ *
+ * With `title`, the heading element holds the title and the English name is a plain label. With
+ * no `title`, the English name is the heading element, so that the section still has a heading.
+ * A "\n" in `title` breaks the line. The number chip, the line and the path are hidden from
+ * assistive technology, because the path only repeats the name.
+ *
+ * The `link` slot takes an `<a>`. The component draws it as a one-line label with a 44px high
+ * target, in the color of the English name and without an underline at rest; it does not style
+ * the hovered or focused link. A caller writes a space and then the arrow as
+ * `<span aria-hidden="true">→</span>`, so that the name of the link is its visible text. The
+ * link is a block, not a flex box, so that the space stays between the text and the arrow.
+ *
+ * Below 768px the number chip is 12px, the path is hidden and the heading is 30px (`lg`) or 28px
+ * (`md`). From 768px the heading is 40px, and from 900px it is 52px (`lg`) or 48px (`md`). `md`
+ * has the taller line of the design: 1.35 below 768px and 1.25 from 768px. A title too long for
+ * the width breaks between any two letters. The line does not move. The margins around the
+ * component are the caller's, set with `class`.
+ */
+interface Props {
+  /** Number of the section in the chip, such as `01`. */
+  no: string;
+  /** English name of the section, such as `about`. */
+  label: string;
+  /** Path at the right end, such as `~/about`. Hidden below 768px. */
+  path?: string;
+  /** Japanese heading under the bar, such as `さいきんの配信`. */
+  title?: string;
+  /** Heading element, chosen by the level of the section in the page. */
+  as?: "h1" | "h2" | "h3";
+  /** Size of the heading: `lg` (52px from 900px) or `md` (48px from 900px). */
+  size?: "lg" | "md";
+  /** Classes for the root element, such as a margin of the caller. */
+  class?: string;
+}
+
+const {
+  no,
+  label,
+  path,
+  title,
+  as: Heading = "h2",
+  size = "lg",
+  class: className,
+} = Astro.props;
+
+const Name = title === undefined ? Heading : "span"; // without a title the name is the heading
+---
+
+<div class:list={["section-title", size, className]}>
+  <div class="bar">
+    <span class="no" aria-hidden="true">{no}</span>
+    <Name class="label name">{label}</Name>
+    <span class="rule" aria-hidden="true"></span>
+    {path !== undefined && (
+  <span class="label path" aria-hidden="true">
+    {path}
+  </span>
+)}
+    {Astro.slots.has("link") && (
+  <span class="label link">
+    <slot name="link" />
+  </span>
+)}
+  </div>
+  {title !== undefined && <Heading class="title">{title}</Heading>}
+</div>
+
+<style>
+.section-title {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.no {
+  flex: none;
+  padding: 2px 7px;
+  background: var(--keyword);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.label.name {
+  min-width: 0;
+  margin: 0;
+  font-weight: 400;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.rule {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--keyword), var(--line2) 35%);
+}
+
+.label.path {
+  display: none;
+}
+
+.label.link {
+  flex: none;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.link :global(a) {
+  display: block;
+  line-height: 44px;
+}
+
+.link :global(a:not(:hover, :focus-visible)) {
+  color: inherit;
+  text-decoration: none;
+}
+
+.title {
+  margin: 0;
+  font-weight: 900;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.lg .title {
+  font-size: 30px;
+}
+
+.md .title {
+  font-size: 28px;
+  line-height: 1.35;
+}
+
+@media (min-width: 768px) {
+  .section-title {
+    gap: 20px;
+  }
+
+  .bar {
+    gap: 16px;
+  }
+
+  .no {
+    padding: 3px 8px;
+    font-size: 13px;
+  }
+
+  .label.path {
+    display: inline;
+  }
+
+  .lg .title,
+  .md .title {
+    font-size: 40px;
+  }
+
+  .md .title {
+    line-height: 1.25;
+  }
+}
+
+@media (min-width: 900px) {
+  .lg .title {
+    font-size: 52px;
+  }
+
+  .md .title {
+    font-size: 48px;
+  }
+}
+</style>

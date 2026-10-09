@@ -28,7 +28,7 @@ const segments = labelSegments(label);
   <span class="shadow lift">
     <span class="shape icon" aria-hidden="true"><slot /></span>
   </span>
-  <span class="label"
+  <span class="link-label"
     >{segments.map((segment, index) => (
   <>
     {index > 0 && <wbr />}
@@ -68,7 +68,7 @@ const segments = labelSegments(label);
   height: 20px;
 }
 
-.label {
+.link-label {
   font-size: 12px;
   font-weight: 900;
   text-align: center;

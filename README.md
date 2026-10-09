@@ -74,6 +74,7 @@ bun create astro@latest -- --template basics
 │   │   ├── PostCard.astro        # Blog post card: emoji tile, title, JST date, tag chips and a PR chip; the whole card is a link
 │   │   ├── PostList.astro        # Post cards in one column, two from 1024px, or one line when there are none
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level and the contact variant are props
+│   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line, path and link, and the Japanese heading; the size is a prop
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, unit-tested
 │   │   ├── SiteFooter.astro      # Footer on --bg: full name logo, © year and name, curl hint
 │   │   ├── SiteHeader.astro      # Site header: compact name logo, navigation, JA / EN, theme switch, contact button, and a popover menu below 1024px
@@ -95,7 +96,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, and the canonical and hreflang URLs of a page, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, shapes.css, controls.css, window.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro) at the top of <body> and the site footer at the end of <body>, at the bottom of the viewport on a short page
+│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, shapes.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro) at the top of <body> and the site footer at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code block file names as <figure>, unit-tested
 │   │   ├── highlight.css     # Code block frame and role colors
@@ -124,6 +125,7 @@ bun create astro@latest -- --template basics
 │   └── styles/
 │       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ghost) and icon links (.sq, .iconbtn) of plan A
 │       ├── global.css    # body colors and their fade, the links, the keyboard focus outline, and the grid backgrounds (.grid, .cgrid)
+│       ├── labels.css    # Labels of plan A: .label, .tag and the category chip .chip-acc
 │       ├── motion.css    # Animations that keep running (.bob, .caret, .a-typeLoop) and the section reveal on scroll (.reveal), stopped under reduced motion
 │       ├── shapes.css    # Notched corners, hard shadows and the lift
 │       ├── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
@@ -178,6 +180,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | `shapes.css` | Notched corners (`.shape`, `.shapeL`, `.shapeS`), hard shadows (`.shadow`, `.shadowF`, `.shadowInk`) and the hover lift (`.lift`) |
 | `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ghost`) and icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) of plan A |
 | `window.css` | Plan A windows (`.win`; a link window turns its border on hover), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid and stripe backgrounds (`.gridbg`, `.stripes`) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions under `prefers-reduced-motion: reduce` |
+| `labels.css` | Labels of plan A: the caption `.label`, the bordered tag `.tag` and the orange category chip `.chip-acc` |
 | `motion.css` | Animations that keep running: the pixel art bob (`.bob`), the blinking cursor (`.caret`) and the typed command (`.a-typeLoop`); and the section reveal on scroll (`.reveal`), enabled only inside `@supports (animation-timeline: view())`. All are stopped under `prefers-reduced-motion: reduce` |
 
 A global file holds only what several components share.
