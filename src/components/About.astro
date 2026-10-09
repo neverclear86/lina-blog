@@ -1,20 +1,23 @@
 ---
 /**
- * The About section of the top page: the section heading with a lead paragraph, then three
- * terminal window cards (the full-body image, streaming and development), with the pixel art
- * standing on the development card.
+ * The About section of the top page down to the `lina.spec` window, copied from `#about` of
+ * `design/Main.dc.html` and the About of `design/AMobile.dc.html`: the bar of `SectionTitle`
+ * (`01 about ~/about`), the heading with the frame of the pixel art, the intro, two window
+ * tiles and the `lina.spec` window.
  *
- * The strings come from the `about.*` keys of `src/i18n/ui.ts`. The card titles are a file
- * name and commands, so they are written here and not translated. The cards sit in one row
- * from 1024px, in two columns from 768px with the full-body card spanning both rows, and in
- * one column below 768px.
+ * The strings come from the `about.*` keys of `src/i18n/ui.ts`; of `lina.spec` only the values
+ * of `job` and `like` are translated. The frame of the pixel art, `[dot lina]`, is a
+ * placeholder until the artwork is chosen. It and the prompts (`$ lina --stream`,
+ * `$ cat lina.spec`) are hidden from assistive technology.
+ *
+ * From 768px the intro has its second paragraph, and `lina.spec` has its title row and the
+ * `read` and `en` rows. Below 768px they are left out and the value of `name` is followed by
+ * its reading. The section is 1440px wide at most. The intro with the tiles and `lina.spec`
+ * sit in two columns from 1144px of the viewport and in one column below it.
  */
 import type { Locale } from "../i18n/locales";
 import { translate, type UiKey } from "../i18n/ui";
-import AboutFullBody from "./AboutFullBody.astro";
-import PixelArt from "./PixelArt.astro";
-import SectionHeading from "./SectionHeading.astro";
-import TerminalCard from "./TerminalCard.astro";
+import SectionTitle from "./SectionTitle.astro";
 
 interface Props {
   /** Language of the page, which picks the strings. */
@@ -24,58 +27,95 @@ interface Props {
 const { lang } = Astro.props;
 const t = (key: UiKey) => translate(lang, key);
 
-const streamItems: [UiKey, UiKey][] = [
-  ["about.stream.activity.label", "about.stream.activity.value"],
-  ["about.stream.topics.label", "about.stream.topics.value"],
-  ["about.stream.note.label", "about.stream.note.value"],
+/** A row of the `lina.spec` window. */
+interface SpecRow {
+  key: string;
+  value: string;
+  /** Reading that follows the value below 768px, where the `read` row is left out. */
+  reading?: string;
+  /** The value is drawn in the body font instead of the monospace font. */
+  sans?: boolean;
+  bold?: boolean;
+  /** The row is left out below 768px. */
+  wide?: boolean;
+}
+
+const specRows: SpecRow[] = [
+  {
+    key: "name",
+    value: "創好リナ",
+    reading: "（つくす りな）",
+    sans: true,
+    bold: true,
+  },
+  { key: "read", value: "つくす りな", sans: true, wide: true },
+  { key: "en", value: "LINA TSUKUSU", wide: true },
+  { key: "class", value: "Virtual Ikiri Programmer" },
+  { key: "job", value: t("about.spec.job"), sans: true },
+  { key: "like", value: t("about.spec.like"), sans: true },
+  { key: "hashtag", value: "#linatx" },
+  { key: "avatar", value: "v2.1" },
 ];
-const devItems: [UiKey, UiKey][] = [
-  ["about.dev.work.label", "about.dev.work.value"],
-  ["about.dev.skills.label", "about.dev.skills.value"],
-  ["about.dev.handle.label", "about.dev.handle.value"],
+
+const tiles: { option: string; title: UiKey; body: UiKey }[] = [
+  {
+    option: "--stream",
+    title: "about.stream.title",
+    body: "about.stream.body",
+  },
+  { option: "--dev", title: "about.dev.title", body: "about.dev.body" },
 ];
 ---
 
 <section id="about" class="about reveal">
-  <SectionHeading label="~/about" title="ABOUT" subtitle={t("about.subtitle")}>
-    <p class="lead">{t("about.lead")}</p>
-  </SectionHeading>
-  <div class="cards">
-    <TerminalCard title="lina.png" class="full-body-card">
-      <div class="full-body">
-        <div class="full-body-image">
-          <AboutFullBody alt={t("about.fullBodyAlt")} />
+  <SectionTitle no="01" label="about" path="~/about" />
+  <div class="layout">
+    <div class="main">
+      <div class="head">
+        <h3 class="heading">{t("about.heading")}</h3>
+        <div class="dot label" aria-hidden="true">
+          <span
+            >[dot<span class="wide"><br>lina</span>]</span
+          >
         </div>
       </div>
-    </TerminalCard>
-    <TerminalCard title="lina --stream">
-      <div class="body">
-        <h3 class="card-title">{t("about.stream.title")}</h3>
-        <dl class="items">
-          {streamItems.map(([label, value]) => (
-  <>
-    <dt>{t(label)}</dt>
-    <dd>{t(value)}</dd>
-  </>
-))}
-        </dl>
+      <div class="lead">
+        <p>{t("about.lead")}</p>
+        <p class="wide lead-more">{t("about.lead2")}</p>
       </div>
-    </TerminalCard>
-    <div class="dev-card">
-      <div class="dev-pixel"><PixelArt bob /></div>
-      <TerminalCard title="lina --dev">
-        <div class="body">
-          <h3 class="card-title">{t("about.dev.title")}</h3>
-          <dl class="items">
-            {devItems.map(([label, value]) => (
+      <div class="tiles">
+        {tiles.map(({ option, title, body }) => (
+  <div class="win tile">
+    <span class="prompt" aria-hidden="true">
+      $ lina <span class="option">{option}</span>
+    </span>
+    <strong class="tile-title">{t(title)}</strong>
+    <span class="tile-body">{t(body)}</span>
+  </div>
+))}
+      </div>
+    </div>
+    <div class="win spec">
+      <div class="spec-head wide">
+        <span class="spec-path"
+          >~/about/<span class="path-file">lina.spec</span></span
+        >
+        <span class="label">read-only</span>
+      </div>
+      <div class="spec-command" aria-hidden="true">
+        $ cat <span class="cmd-file">lina.spec</span>
+      </div>
+      <dl class="spec-list">
+        {specRows.map(({ key, value, reading, sans, bold, wide }) => (
   <>
-    <dt>{t(label)}</dt>
-    <dd>{t(value)}</dd>
+    <dt class:list={{ wide }}>{key}</dt>
+    <dd class:list={{ wide, sans, bold }}>
+      {value}
+      {reading && <span class="narrow">{reading}</span>}
+    </dd>
   </>
 ))}
-          </dl>
-        </div>
-      </TerminalCard>
+      </dl>
     </div>
   </div>
 </section>
@@ -84,121 +124,253 @@ const devItems: [UiKey, UiKey][] = [
 .about {
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  padding: 56px 18px;
-  border-bottom: 1px solid var(--legacy-line);
+  gap: 20px;
+  box-sizing: border-box;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 56px 16px 48px;
 }
 
-.lead {
-  margin: 0;
-  max-width: 480px;
-  font-size: 17px;
-  font-weight: 500;
-  line-height: 1.85;
-  padding-bottom: 4px;
-}
-
-.cards {
+.layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  row-gap: 40px;
+  grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr));
+  gap: 20px;
+  align-items: start;
 }
 
-.full-body {
-  position: relative;
-  flex-grow: 1;
-  min-height: 422px;
-  overflow: hidden;
-  background: var(--blush);
-  color: var(--legacy-ink);
-}
-
-.full-body-image {
-  position: absolute;
-  left: 50%;
-  top: 20px;
-  width: 151px;
-  transform: translateX(-50%);
-}
-
-.body {
-  padding: 26px 24px;
+.main {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
 }
 
-.card-title {
+.wide {
+  display: none;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.heading {
+  min-width: 0;
   margin: 0;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 900;
+  line-height: 1.35;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
-.items {
+.dot {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 56px;
+  height: 56px;
+  border: 1.5px dashed var(--line2);
+  font-size: 9px;
+  text-align: center;
+}
+
+.lead {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 15px;
+  line-height: 2;
+  text-wrap: pretty;
+}
+
+.lead p {
   margin: 0;
-  display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  row-gap: 16px;
-  column-gap: 12px;
-  font-size: 16px;
-  line-height: 1.6;
 }
 
-dt {
-  font-size: 13px;
-  font-weight: 700;
+.lead .lead-more {
   color: var(--muted);
 }
 
-dd {
+.tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+}
+
+.prompt {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.option {
+  color: var(--acc-text);
+}
+
+.tile-title {
+  font-size: 16px;
+}
+
+.tile-body {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+
+.spec-command {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.cmd-file {
+  color: var(--text);
+}
+
+.spec-list {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 10px 12px;
+  margin: 0;
+  padding: 14px 16px 18px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.spec-list dt {
+  color: var(--muted);
+}
+
+.spec-list dd {
   margin: 0;
   overflow-wrap: anywhere;
 }
 
-.dev-card {
-  position: relative;
+.spec-list dd.sans {
+  font-family: var(--font-body);
 }
 
-.dev-pixel {
-  display: flex;
-  position: absolute;
-  right: 30px;
-  top: -62px;
+.spec-list dd.bold {
+  font-weight: 700;
 }
 
 @media (min-width: 768px) {
   .about {
-    gap: 40px;
-    padding: 72px 40px;
+    padding: 120px 20px 100px;
   }
 
-  .cards {
-    grid-template-columns: 280px minmax(0, 1fr);
-    column-gap: 32px;
+  .layout {
+    gap: 56px;
   }
 
-  .cards > :global(.full-body-card) {
-    grid-row: span 2;
+  .main {
+    gap: 28px;
+  }
+
+  .wide {
+    display: revert;
+  }
+
+  .narrow {
+    display: none;
+  }
+
+  .head {
+    gap: 20px;
+  }
+
+  .heading {
+    font-size: 40px;
+    line-height: 1.25;
+  }
+
+  .dot {
+    width: 72px;
+    height: 72px;
+    font-size: 11px;
+  }
+
+  .lead {
+    font-size: 17px;
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+    gap: 14px;
+  }
+
+  .tile {
+    gap: 10px;
+    padding: 22px;
+  }
+
+  .prompt {
+    font-size: 13px;
+  }
+
+  .tile-title {
+    font-size: 18px;
+  }
+
+  .spec-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .spec-path {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .path-file {
+    color: var(--text);
+  }
+
+  .spec-command {
+    padding: 18px 20px 6px;
+    border-bottom: 0;
+    font-size: 13px;
+  }
+
+  .cmd-file {
+    color: inherit;
+  }
+
+  .spec-list {
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 12px 16px;
+    padding: 6px 20px 22px;
+    font-size: 14px;
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 900px) {
   .about {
-    gap: 44px;
-    padding: 88px 64px;
+    padding-inline: 64px;
   }
 
-  /* Keeps the last line of the lead clear of the pixel art standing on the development card. */
-  .lead {
-    padding-right: 80px;
-  }
-
-  .cards {
-    grid-template-columns: 280px repeat(2, minmax(0, 1fr));
-  }
-
-  .cards > :global(.full-body-card) {
-    grid-row: auto;
+  .heading {
+    font-size: 48px;
   }
 }
 </style>

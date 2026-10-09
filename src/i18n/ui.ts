@@ -6,24 +6,20 @@ import type { Locale } from "./locales";
 
 const ja = {
   // About section of the top page. Text in [brackets] is a placeholder for a line to be written.
-  "about.subtitle": "創好リナってこんな人",
+  // A "\n" in "about.heading" breaks the line.
+  "about.heading": "はじめまして、\n創好リナです。",
   "about.lead":
-    "名前の由来はLinux。配信もするし、開発もする、バーチャルイキリプログラマです。[自己紹介のひとこと]",
-  "about.fullBodyAlt": "創好リナの全身",
-  "about.stream.title": "配信",
-  "about.stream.activity.label": "活動",
-  "about.stream.activity.value": "YouTube・配信（Resonite中心）、雑談配信",
-  "about.stream.topics.label": "よく扱う",
-  "about.stream.topics.value": "Nostr、Gleam、Strudel、ComputerCraft",
-  "about.stream.note.label": "ひとこと",
-  "about.stream.note.value": "[配信のひとこと]",
+    "エンジニアをしながら、VTuberとして動画と配信をやっています。プログラミングやシステム構築を「遊び」として見せるのが好きで、役に立つかどうかより、おもしろいかどうかで技術をさわっています。",
+  "about.lead2":
+    "エンジニアじゃなくても楽しめるように作っているので、気軽にのぞいていってください。",
+  "about.stream.title": "動画と配信",
+  "about.stream.body":
+    "YouTubeで動画と配信をしています。Resoniteを題材にすることが多めです。",
   "about.dev.title": "開発",
-  "about.dev.work.label": "仕事",
-  "about.dev.work.value": "フリーランスエンジニア",
-  "about.dev.skills.label": "得意",
-  "about.dev.skills.value": "[得意な領域・技術]",
-  "about.dev.handle.label": "名義",
-  "about.dev.handle.value": "GitHubなどではLinaTsukusu",
+  "about.dev.body":
+    "フリーランスのエンジニア。このサイトやNostrまわりの道具も自作しています。",
+  "about.spec.job": "エンジニア兼VTuber",
+  "about.spec.like": "[好きなもの]",
   // Alt texts of the avatar images (src/avatar-images.ts). The poses are decorative and have none.
   "avatar.frontAlt": "創好リナ 正面",
   "avatar.sideAlt": "創好リナ 側面",
@@ -147,25 +143,19 @@ export type UiKey = keyof typeof ja;
 export const ui: Record<Locale, Record<UiKey, string>> = {
   ja,
   en: {
-    "about.subtitle": "Meet Tsukusu Lina",
+    "about.heading": "Hi there,\nI'm Tsukusu Lina.",
     "about.lead":
-      'Named after Linux. A virtual "ikiri" programmer who streams and builds software. [A line about herself]',
-    "about.fullBodyAlt": "Full-body illustration of Tsukusu Lina",
-    "about.stream.title": "Streaming",
-    "about.stream.activity.label": "Activity",
-    "about.stream.activity.value":
-      "YouTube videos and streams (mostly in Resonite), chat streams",
-    "about.stream.topics.label": "Topics",
-    "about.stream.topics.value": "Nostr, Gleam, Strudel, ComputerCraft",
-    "about.stream.note.label": "Note",
-    "about.stream.note.value": "[A line about streaming]",
+      "I'm an engineer who also makes videos and streams as a VTuber. I like showing programming and building systems as play, and I pick up technologies because they are fun, not because they are useful.",
+    "about.lead2":
+      "I make things that you can enjoy even if you are not an engineer, so feel free to look around.",
+    "about.stream.title": "Videos and streams",
+    "about.stream.body":
+      "I post videos and stream on YouTube, often about Resonite.",
     "about.dev.title": "Development",
-    "about.dev.work.label": "Work",
-    "about.dev.work.value": "Freelance engineer",
-    "about.dev.skills.label": "Strengths",
-    "about.dev.skills.value": "[Areas and technologies]",
-    "about.dev.handle.label": "Handle",
-    "about.dev.handle.value": "LinaTsukusu on GitHub and elsewhere",
+    "about.dev.body":
+      "A freelance engineer. I also build my own tools, such as this site and tools around Nostr.",
+    "about.spec.job": "Engineer and VTuber",
+    "about.spec.like": "[Things I like]",
     "avatar.frontAlt": "Tsukusu Lina, front view",
     "avatar.sideAlt": "Tsukusu Lina, side view",
     "avatar.backAlt": "Tsukusu Lina, back view",
