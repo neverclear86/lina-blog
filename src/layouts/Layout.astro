@@ -5,8 +5,8 @@ import type { FooterVariant } from "../components/footer-links";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import { DEFAULT_LOCALE, type Locale } from "../i18n/locales";
-import { alternateLinks, canonicalUrl } from "../i18n/paths";
-import { openGraphTags, pageDescription } from "../page-meta";
+import { absoluteUrl, alternateLinks, canonicalUrl } from "../i18n/paths";
+import { openGraphTags, pageDescription, twitterTags } from "../page-meta";
 import { THEME_SCRIPT } from "../theme";
 import "../styles/tokens.css";
 import "../styles/global.css";
@@ -31,6 +31,12 @@ interface Props {
    * the description of a work. Defaults to the description of the site in `lang`.
    */
   description?: string;
+  /**
+   * Site-relative path of the OGP image of the page, such as `/og/ja.png`. A page with an image
+   * has `og:image` (as an absolute URL), its size and `twitter:image`, and its Twitter card is
+   * `summary_large_image`. Defaults to no image.
+   */
+  image?: string;
   /** Footer of the page: "full" or "compact". Defaults to "full". */
   footer?: FooterVariant;
   /** Whether the site header shows how far the reader is in a post. */
@@ -41,6 +47,7 @@ const {
   lang = DEFAULT_LOCALE,
   title,
   description,
+  image,
   footer = "full",
   readingProgress = false,
 } = Astro.props;
@@ -51,12 +58,16 @@ const pageTitle =
 const canonical = canonicalUrl(Astro.url.pathname, Astro.site);
 const alternates = alternateLinks(Astro.url.pathname, Astro.site);
 const metaDescription = pageDescription(lang, description);
+const imageUrl =
+  image === undefined ? undefined : absoluteUrl(image, Astro.site);
 const openGraph = openGraphTags({
   lang,
   title: pageTitle,
   description: metaDescription,
   url: canonical,
+  image: imageUrl,
 });
+const twitter = twitterTags(imageUrl);
 ---
 
 <!doctype html>
@@ -97,7 +108,7 @@ const openGraph = openGraphTags({
     {openGraph.map(({ property, content }) => (
   <meta property={property} content={content}>
 ))}
-    <meta name="twitter:card" content="summary">
+    {twitter.map(({ name, content }) => <meta name={name} content={content}>)}
     <meta name="generator" content={Astro.generator}>
     <title>{pageTitle}</title>
     <Font cssVariable="--font-body" />

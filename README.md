@@ -40,7 +40,7 @@ bun create astro@latest -- --template basics
 │   ├── og-font.ts        # Downloads the OGP fonts (headings and labels) as TrueType from Google Fonts, unit-tested
 │   ├── og-image.ts       # Draws OGP images with Satori and sharp (Node only): the plan A element tree of a title, language, category and sponsor, and the PNG of any tree, unit-tested
 │   ├── og-pages.ts       # Paths of the OGP images and what each one says (title, category, sponsor), unit-tested
-│   ├── page-meta.ts      # Description (default from ui.ts) and Open Graph tags of a page, unit-tested
+│   ├── page-meta.ts      # Description (default from ui.ts), Open Graph tags (with the OGP image) and Twitter card tags of a page, unit-tested
 │   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro, hero-account.ts and footer-links.ts
 │   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
 │   ├── sponsor-notice.ts # PR notice of a sponsored blog post: label, sentence and rel="sponsored" link, unit-tested
@@ -106,7 +106,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, and the canonical and hreflang URLs of a page, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro, with the line of how far the reader is in a post when the readingProgress prop is set) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
+│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description, Open Graph and Twitter card tags (description and image props, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro, with the line of how far the reader is in a post when the readingProgress prop is set) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code blocks as a window <figure> with a title (file name, language or text), unit-tested
 │   │   ├── highlight.css     # Code block window (frame, title and copy button) and role colors

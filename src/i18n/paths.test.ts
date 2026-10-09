@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { alternateLinks, canonicalUrl, localizedPath } from "./paths";
+import {
+  absoluteUrl,
+  alternateLinks,
+  canonicalUrl,
+  localizedPath,
+} from "./paths";
 
 const site = new URL("https://example.com");
 
@@ -21,6 +26,14 @@ describe("localizedPath", () => {
 
   it("言語の一覧に無い語で始まるパスは接頭辞の無いパスとして扱う", () => {
     expect(localizedPath("/japan/about/", "en")).toBe("/en/");
+  });
+});
+
+describe("absoluteUrl", () => {
+  it("サイト内のパスを site の絶対 URL にする", () => {
+    expect(absoluteUrl("/og/ja.png", site)).toBe(
+      "https://example.com/og/ja.png",
+    );
   });
 });
 
