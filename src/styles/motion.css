@@ -1,8 +1,10 @@
 /*
- * Animations that keep running or play on scroll, shared by every page and imported by
- * `src/layouts/Layout.astro` after `labels.css`. The keyframes and timings of `.bob`, `.caret` and
- * `.a-typeLoop` are copied from `.bob`, `.cursor` and `.a-typeLoop` in `design/CBMain.dc.html`;
- * `.blink-on` is `.blink-on .cur` in `design/Main.dc.html`; `.reveal` is not in the design.
+ * Animations shared by every page, imported by `src/layouts/Layout.astro` after `labels.css`.
+ * Only `.blink-on` is used by a page; it is `.blink-on .cur` in `design/Main.dc.html`. The other
+ * four, `.bob`, `.caret`, `.a-typeLoop` and `.reveal`, are of the old design and no page uses
+ * them; they stay for the samples in `src/dev/components.astro`. The keyframes and timings of
+ * `.bob`, `.caret` and `.a-typeLoop` are copied from `.bob`, `.cursor` and `.a-typeLoop` in
+ * `design/CBMain.dc.html`; `.reveal` is not in the design.
  *
  * `.bob` moves an element up by 4px and back in two steps, for the pixel art
  * (`<PixelArt class="bob" />`). It sets `transform`, so it goes on the image itself, and another

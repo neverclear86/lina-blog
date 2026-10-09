@@ -18,7 +18,11 @@
  * Below 768px the number chip is 12px, the path is hidden and the heading is 30px (`lg`) or 28px
  * (`md`). From 768px the heading is 40px, and from 900px it is 52px (`lg`) or 48px (`md`). `md`
  * has the taller line of the design: 1.35 below 768px and 1.25 from 768px. A title too long for
- * the width breaks between any two letters. The line does not move. The margins around the
+ * the width breaks between any two letters. The line is drawn from the left, from `scaleX(0)` to
+ * `scaleX(1)`, while it rises from the bottom edge of the viewport to 35% of the viewport height
+ * above it (`animation-timeline: view()`); a line already above that point when the page opens
+ * is drawn whole. A browser without scroll-driven animations, a printed page and
+ * `prefers-reduced-motion: reduce` show the line whole from the start. The margins around the
  * component are the caller's, set with `class`.
  */
 interface Props {
@@ -107,6 +111,34 @@ const Name = title === undefined ? Heading : "span"; // without a title the name
   min-width: 0;
   height: 1px;
   background: linear-gradient(90deg, var(--keyword), var(--line2) 35%);
+}
+
+@keyframes rule-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* The shorthand resets `animation-timeline` and `animation-range`, so they come after it. */
+@supports (animation-timeline: view()) {
+  @media screen {
+    .rule {
+      transform-origin: left center;
+      animation: rule-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 35%;
+    }
+  }
+}
+
+/* Same specificity as the rule above, so it comes after it. */
+@media (prefers-reduced-motion: reduce) {
+  .rule {
+    animation: none;
+  }
 }
 
 .label.path {
