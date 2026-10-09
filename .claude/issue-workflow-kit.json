@@ -1,6 +1,6 @@
 {
   "kit": "issue-workflow-kit",
-  "kitCommit": "ee65e784028a4ac1ab926d55fd6afc37fa953a5b",
+  "kitCommit": "c706463d196f48850fa07ddc728f6ecbed8993c4",
   "config": {
     "values": {
       "REPO": "neverclear86/lina-blog",
@@ -22,7 +22,8 @@
       "FORMAT_FILE_CMD": "bunx biome format --write --no-errors-on-unmatched --files-ignore-unknown=true",
       "PUSH_CHECK_CMD": "bunx biome ci",
       "PROJECT_MARKER_FILE": "biome.json",
-      "MERGE_BUILD_CMD": "bun install --frozen-lockfile && bunx astro check"
+      "MERGE_BUILD_CMD": "bun install --frozen-lockfile && bunx astro check",
+      "INSTRUCTIONS_FILE": "AGENTS.md"
     },
     "modules": {
       "split": true,

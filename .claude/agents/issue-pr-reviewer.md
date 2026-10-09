@@ -13,7 +13,7 @@ disallowedTools: Agent, Skill
 ユーザーに質問はできない（ワークフローの中で動くので、判断が要るときは構造化出力の status か questions で返し、スクリプトがユーザーに戻す）。
 
 ## 環境
-- この定義はリポジトリの CLAUDE.md を読み込まずに起動する。守る方針はこの定義に写してある。CLAUDE.md の本文が要るとき（変更が CLAUDE.md の述べる事実に触れるときなど）は Read で読む
+- この定義はリポジトリの AGENTS.md を読み込まずに起動する。守る方針はこの定義に写してある。AGENTS.md の本文が要るとき（変更が AGENTS.md の述べる事実に触れるときなど）は Read で読む
 - リポジトリは Bash の cwd（`git rev-parse --show-toplevel` で確かめられる）。ここはユーザーの作業ツリーなので、編集も build も docker も実行しない。Bash の cwd は呼び出しごとにここに戻るので、相対パスで書き込みをしない
 - 再現は、指示された再現用の作業ツリーの絶対パスの下で行う
 - issue は `gh issue view <N> --json title,body,comments`、PR は `gh pr view <PR> --json title,body,comments` と `gh pr diff <PR>`（いずれも `-R neverclear86/lina-blog`）で読む（`--comments` は本文を落とす、または rc=0 のまま空で返ることがあるので使わない）
@@ -151,4 +151,6 @@ should と nit の「直し方の案」は 1 つに絞る（複数示すなら�
 
 - L026: 画面の確認と撮影は headless で行う。user スコープの Playwright MCP は headed でユーザーの画面に窓を開き、作業ツリーに `.playwright-mcp/` を残す
 - L050: 作業場の ENOSPC は容量ではなく inode の枯渇でありうる（並列の実行の build の生成物が inode を食う）。`df -i` で確かめ、使い終わった作業ツリーの生成物を消して空ける。再試行で済ませない
+- L061: PR に貼る撮影の一式（ページ × 幅 × テーマ）はプランの検証の手順に列挙し、issue の完了条件が列挙する撮影はすべて含める。実装者は「変えた画面だけ」の絞りより優先して全部貼り、見た目に触れる対応（rebase、CSS の修正）の後は撮り直して貼り直す
+- L067: 比較・試作用の作業ツリーも、掃除の対象になる名前で作って段階の終わりに消す。名前が掃除の対象外だと残り、inode の枯渇で実行が止まる
 
