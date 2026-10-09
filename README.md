@@ -25,7 +25,7 @@ bun create astro@latest -- --template basics
 │   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
 │   ├── article-share.ts  # Post address and share addresses for Twitter (self-proclaimed X) and Nostr, unit-tested
 │   ├── avatar-images.ts  # The nine v2.1 avatar images of src/assets/ with their alt keys, widths, sizes and priority, unit-tested
-│   ├── blog-pages.ts     # Paths of /blog/<slug>/ and /blog/tags/<slug>/, the heading texts, the breadcrumbs, the tag filter links, the breadcrumb, date and reading time of a post, and the posts next to it, unit-tested
+│   ├── blog-pages.ts     # Paths of /blog/<slug>/ and /blog/tags/<slug>/, the heading texts, the breadcrumbs, the tag filter links, the breadcrumb, date, reading time and table of contents items of a post, and the posts next to it, unit-tested
 │   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
@@ -60,6 +60,7 @@ bun create astro@latest -- --template basics
 │   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
 │   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, YouTube embeds, accordions, message boxes) and puts the copy button on code blocks
 │   │   ├── ArticleEnd.astro      # End window of a post: share links, copy-link button, thumbs-up
+│   │   ├── ArticleToc.astro      # Table of contents of a post: the neo-tree window in the left column from 1024px, a closed <details> before the body below it
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: in a row from 1200px, below it stacked or one at a time with tabs
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
@@ -132,7 +133,7 @@ bun create astro@latest -- --template basics
 │   │   │   ├── color.txt.ts  # /ansi/color.txt: the avatar main-visual as 24-bit color text art
 │   │   │   └── plain.txt.ts  # /ansi/plain.txt: the same art without escape sequences
 │   │   ├── blog/
-│   │   │   ├── [slug].astro  # /blog/<slug>/: a post, with its head above the body and the compact footer
+│   │   │   ├── [slug].astro  # /blog/<slug>/: a post, with its head above the body, its table of contents and the compact footer
 │   │   │   ├── index.astro   # /blog/: every post, newest first
 │   │   │   └── tags/
 │   │   │       └── [tag].astro   # /blog/tags/devlog/, tech/ and diary/: the posts of one tag, built with or without posts

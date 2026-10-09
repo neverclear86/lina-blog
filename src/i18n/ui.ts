@@ -64,6 +64,10 @@ const ja = {
   "blog.tagPage.diary.subtitle": "日記の記事",
   "blog.tagPage.tech.noPosts": "技術の記事はまだありません。",
   "blog.tagPage.tech.subtitle": "技術の記事",
+  // Table of contents of a post (src/components/ArticleToc.astro): the name of its `<nav>` and the
+  // `<summary>` of the closed one below 1024px.
+  "blog.toc.label": "目次",
+  "blog.toc.summary": "toc — 目次",
   // Copy button of a code block (src/code-copy.ts): its name, its three texts and two messages.
   "code.copy.name": "コードをコピー",
   "code.copy.idle": "copy",
@@ -236,6 +240,8 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "blog.tagPage.diary.subtitle": "Diary posts",
     "blog.tagPage.tech.noPosts": "No Tech posts yet.",
     "blog.tagPage.tech.subtitle": "Tech posts",
+    "blog.toc.label": "Table of contents",
+    "blog.toc.summary": "toc — Contents",
     "code.copy.name": "Copy code",
     "code.copy.idle": "copy",
     "code.copy.done": "copied",

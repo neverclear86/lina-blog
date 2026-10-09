@@ -19,6 +19,8 @@
  * this wrapper. The wrapper sets no width: the page around it decides the column. The windows of
  * code blocks are styled by the imported src/markdown/highlight.css, whose rules match
  * `figure.code-window` and `pre.shiki`.
+ * An `h2` stops 72px below the top of the viewport when a link scrolls to it, so that the sticky
+ * site header does not cover it.
  * A script in this file puts a copy button last in each `figure.code-window` when the browser
  * can write to the clipboard and the code is not blank, so a page without script has no button.
  * `lang` is the language of the button and of the messages a live region reads out.
@@ -362,6 +364,12 @@ const copyLabels: CopyLabels = {
   .article-body :global(details) {
     margin-bottom: 1.6em;
   }
+}
+
+/* The site header sticks to the top (61px), so a heading that a link scrolls to stops 72px below
+   the top, as `section[id]` does in global.css. */
+.article-body :global(h2) {
+  scroll-margin-top: 72px;
 }
 
 /* Message boxes: `<aside class="note">` and `<aside class="warning">`. The ground and ring come

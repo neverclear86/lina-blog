@@ -1,3 +1,4 @@
+import type { MarkdownHeading } from "astro";
 import { describe, expect, it } from "vitest";
 import {
   adjacentPosts,
@@ -6,6 +7,7 @@ import {
   blogPostBreadcrumb,
   blogPostDate,
   blogPostPaths,
+  blogPostToc,
   blogTagPagePaths,
   readingMinutes,
   tagFilterLinks,
@@ -311,5 +313,42 @@ describe("readingMinutes", () => {
   it("フェンスの外のインラインコードと Markdown の記号は数える", () => {
     const body = [`## ${chars(496)}`, "`a`"].join("\n");
     expect(readingMinutes(body)).toBe(2);
+  });
+});
+
+/** A heading as `render()` returns it. */
+function heading(depth: number, slug: string, text: string): MarkdownHeading {
+  return { depth, slug, text };
+}
+
+describe("blogPostToc", () => {
+  it("depth が 2 の見出しだけを slug と text にして、記事の順に返す", () => {
+    expect(
+      blogPostToc([
+        heading(1, "title", "題"),
+        heading(2, "first", "最初"),
+        heading(3, "sub", "小見出し"),
+        heading(2, "second", "次"),
+        heading(4, "deep", "深い"),
+      ]),
+    ).toEqual([
+      { slug: "first", text: "最初" },
+      { slug: "second", text: "次" },
+    ]);
+  });
+
+  it("h2 が無いときは空の配列を返す", () => {
+    expect(blogPostToc([])).toEqual([]);
+    expect(blogPostToc([heading(3, "sub", "小見出し")])).toEqual([]);
+  });
+
+  it("slug が空の h2 と、text が空白だけの h2 は項目にしない", () => {
+    expect(
+      blogPostToc([
+        heading(2, "", "id が無い"),
+        heading(2, "blank", " \u3000 "),
+        heading(2, "ok", "残る"),
+      ]),
+    ).toEqual([{ slug: "ok", text: "残る" }]);
   });
 });

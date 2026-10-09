@@ -2,8 +2,9 @@
  * Paths, texts, breadcrumbs and tag filter links of the pages of blog posts: `/blog/`, which
  * lists every post, `/blog/tags/<slug>/`, which lists the posts of one tag, and `/blog/<slug>/`,
  * a post. For a post's page it also gives the posts next to it and the parts of its breadcrumb,
- * its date and its reading time.
+ * its date, its reading time and the items of its table of contents.
  */
+import type { MarkdownHeading } from "astro";
 import { type BlogFrontmatter, blogSchema } from "./blog-schema";
 import { homeSectionPath } from "./components/site-nav";
 import type { UiKey } from "./i18n/ui";
@@ -261,4 +262,29 @@ export function readingMinutes(body: string | undefined): number {
     }
   }
   return Math.max(1, Math.ceil(characters / CHARACTERS_PER_MINUTE));
+}
+
+/** An item of the table of contents of a post: the text of an `h2` and its `id`. */
+export interface BlogPostTocItem {
+  /** `id` of the `h2`, which the link of the item points at as `#<slug>`. */
+  slug: string;
+  /** Text of the `h2`. */
+  text: string;
+}
+
+/**
+ * Returns the items of the table of contents of a post, one for each `h2` of `headings` that
+ * has an `id` and a text, in the order of the post. `headings` is what `render()` returns.
+ */
+export function blogPostToc(
+  headings: readonly MarkdownHeading[],
+): BlogPostTocItem[] {
+  return headings
+    .filter(
+      (heading) =>
+        heading.depth === 2 &&
+        heading.slug !== "" &&
+        heading.text.trim() !== "",
+    )
+    .map(({ slug, text }) => ({ slug, text }));
 }
