@@ -417,6 +417,21 @@ function tokensUsedFor(css: string, properties: readonly string[]): string[] {
   ].sort();
 }
 
+/**
+ * Declarations of the first rule of `src/markdown/highlight.css` whose selector list is
+ * `selector`, written with single spaces as in `.a, .b`. Comments are removed. Returns an empty
+ * string when there is no such rule.
+ */
+function highlightRule(selector: string): string {
+  const source = highlightCss.replace(/\/\*[\s\S]*?\*\//g, "");
+  for (const match of source.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (match[1].trim().replace(/\s*,\s*/g, ", ") === selector) {
+      return match[2];
+    }
+  }
+  return "";
+}
+
 /** Returns the labels of the pairs of `A_TEXT_PAIRS` that are under 4.5:1 in `colors`. */
 function failingTextPairs(colors: Record<string, string>): string[] {
   return A_TEXT_PAIRS.flatMap(([foreground, background]) => {
@@ -562,6 +577,31 @@ describe("tokens.css のコントラスト", () => {
       ).toBeGreaterThanOrEqual(3);
     },
   );
+
+  it("コピーのボタンの枠と輪はコードのトークンで描く", () => {
+    expect(highlightRule(".code-copy")).toContain(
+      "border: 1px solid var(--code-line2)",
+    );
+    expect(
+      highlightRule(".code-copy:hover, .code-copy:focus-visible"),
+    ).toContain("border-color: var(--code-keyword)");
+    expect(highlightRule(".code-copy:focus-visible")).toContain(
+      "outline: 2px solid var(--keyword)",
+    );
+  });
+
+  it("コピーのボタンの文字の色は状態ごとのコードのトークン", () => {
+    expect(highlightRule(".code-copy")).toContain("color: var(--code-comment)");
+    expect(
+      highlightRule(".code-copy:hover, .code-copy:focus-visible"),
+    ).toContain("color: var(--code-fg)");
+    expect(highlightRule('.code-copy[data-state="copied"]')).toContain(
+      "color: var(--code-string)",
+    );
+    expect(highlightRule('.code-copy[data-state="failed"]')).toContain(
+      "color: var(--code-constant)",
+    );
+  });
 
   it.each(Object.entries(themes))(
     "%s のお問い合わせの入力欄の枠は --panel と --bg の上で 3:1 以上になる",

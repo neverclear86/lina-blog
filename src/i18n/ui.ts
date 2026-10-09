@@ -54,6 +54,14 @@ const ja = {
   "blog.tagPage.diary.subtitle": "日記の記事",
   "blog.tagPage.tech.noPosts": "技術の記事はまだありません。",
   "blog.tagPage.tech.subtitle": "技術の記事",
+  // Copy button of a code block (src/code-copy.ts): its name, its three texts and two messages.
+  "code.copy.name": "コードをコピー",
+  "code.copy.idle": "copy",
+  "code.copy.done": "copied",
+  "code.copy.fail": "failed",
+  "code.copy.doneMessage": "コードをコピーしました",
+  "code.copy.failMessage":
+    "コピーできませんでした。コードを選んであるので、手でコピーしてください",
   // Contact page and the contact section of the top page.
   "contact.subtitle": "お問い合わせ",
   "contact.lead": "お仕事のご相談、コラボのお誘いなどはこちらから。",
@@ -207,6 +215,13 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "blog.tagPage.diary.subtitle": "Diary posts",
     "blog.tagPage.tech.noPosts": "No Tech posts yet.",
     "blog.tagPage.tech.subtitle": "Tech posts",
+    "code.copy.name": "Copy code",
+    "code.copy.idle": "copy",
+    "code.copy.done": "copied",
+    "code.copy.fail": "failed",
+    "code.copy.doneMessage": "Copied the code.",
+    "code.copy.failMessage":
+      "Couldn't copy. The code is selected, so copy it by hand.",
     "contact.subtitle": "Get in touch",
     "contact.lead":
       "For work inquiries, collaborations and more, get in touch here.",

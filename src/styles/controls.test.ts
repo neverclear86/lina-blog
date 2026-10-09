@@ -315,8 +315,13 @@ describe("記事のアコーディオン", () => {
     expect(found?.body).toContain("cursor: pointer;");
   });
 
-  it("開閉は <details> に任せ、ArticleBody は <script> を持たない", () => {
-    expect(source("components/ArticleBody.astro")).not.toContain("<script");
+  it("開閉は <details> に任せ、ArticleBody のスクリプトは details に触れない", () => {
+    const scripts =
+      source("components/ArticleBody.astro").match(
+        /<script>[\s\S]*?<\/script>/g,
+      ) ?? [];
+    expect(scripts).toHaveLength(1);
+    expect(scripts[0]).not.toMatch(/details|summary/);
   });
 });
 

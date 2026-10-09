@@ -19,14 +19,37 @@
  * this wrapper. The wrapper sets no width: the page around it decides the column. The windows of
  * code blocks are styled by the imported src/markdown/highlight.css, whose rules match
  * `figure.code-window` and `pre.shiki`.
+ * A script in this file puts a copy button last in each `figure.code-window` when the browser
+ * can write to the clipboard and the code is not blank, so a page without script has no button.
+ * `lang` is the language of the button and of the messages a live region reads out.
  */
+import type { CopyLabels } from "../code-copy";
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
 import "../markdown/highlight.css";
 // The `face` background below is a `url()` in CSS, which Astro does not count as a use of the
 // image, so the build would delete the original file. This import keeps it.
 import "../assets/hate.webp?url";
+
+interface Props {
+  /** Language of the copy button and of the messages read out after a click. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const copyLabels: CopyLabels = {
+  name: translate(lang, "code.copy.name"),
+  idle: translate(lang, "code.copy.idle"),
+  done: translate(lang, "code.copy.done"),
+  fail: translate(lang, "code.copy.fail"),
+  doneMessage: translate(lang, "code.copy.doneMessage"),
+  failMessage: translate(lang, "code.copy.failMessage"),
+};
 ---
 
-<div class="article-body"><slot /></div>
+<div class="article-body" data-code-copy={JSON.stringify(copyLabels)}>
+  <slot />
+</div>
 
 <style>
 .article-body :global(a) {
@@ -431,3 +454,70 @@ import "../assets/hate.webp?url";
   }
 }
 </style>
+
+<script>
+import {
+  type CopyLabels,
+  canCopy,
+  copyText,
+  parseCopyLabels,
+} from "../code-copy";
+
+// A button shows its result for 2 seconds, then goes back to waiting.
+const RESULT_MS = 2000;
+
+let status: HTMLElement | undefined;
+
+function liveRegion(): HTMLElement {
+  if (!status) {
+    status = document.createElement("div");
+    status.className = "code-copy-status";
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    document.body.append(status);
+  }
+  return status;
+}
+
+function createButton(labels: CopyLabels, code: Element): HTMLButtonElement {
+  const region = liveRegion();
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "code-copy";
+  button.setAttribute("aria-label", labels.name);
+  button.textContent = labels.idle;
+  let timer: number | undefined;
+  button.addEventListener("click", async () => {
+    const result = await copyText(
+      (text) => navigator.clipboard.writeText(text),
+      code.textContent ?? "",
+    );
+    if (result === "failed") getSelection()?.selectAllChildren(code);
+    const copied = result === "copied";
+    button.dataset.state = result;
+    button.textContent = copied ? labels.done : labels.fail;
+    region.textContent = copied ? labels.doneMessage : labels.failMessage;
+    clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      delete button.dataset.state;
+      button.textContent = labels.idle;
+      region.textContent = "";
+    }, RESULT_MS);
+  });
+  return button;
+}
+
+for (const body of document.querySelectorAll<HTMLElement>(".article-body")) {
+  const labels = parseCopyLabels(body.dataset.codeCopy);
+  if (!labels) continue;
+  for (const figure of body.querySelectorAll("figure.code-window")) {
+    const code = figure.querySelector("pre code");
+    if (
+      code &&
+      canCopy(navigator.clipboard?.writeText, code.textContent ?? "")
+    ) {
+      figure.append(createButton(labels, code));
+    }
+  }
+}
+</script>

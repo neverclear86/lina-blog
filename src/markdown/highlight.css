@@ -4,7 +4,9 @@
    and diff lines carry `diff-add` or `diff-del`. The window is on `--code`, which follows the
    site theme, and the text colors and the line under the title are the `--code-*` properties in
    src/styles/tokens.css, which are the same in both themes. The type of the title and the code
-   is 11px and 12.5px, and 12px and 14px from 768px. */
+   is 11px and 12.5px, and 12px and 14px from 768px. It also styles the copy button that the
+   script of src/components/ArticleBody.astro puts last in a window, and the live region that
+   reads out its result. */
 
 figure.code-window {
   margin: 0 0 1.4em;
@@ -106,4 +108,84 @@ pre.shiki .diff-add {
 pre.shiki .diff-del {
   background: var(--code-del-bg);
   box-shadow: inset 3px 0 0 var(--code-del-bar);
+}
+
+/* The copy button. The title spans both columns, so the line under it is unbroken. */
+figure.code-window:has(> .code-copy) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+figure.code-window:has(> .code-copy) > figcaption {
+  display: flex;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  align-items: center;
+  padding-inline-end: 84px;
+}
+
+figure.code-window:has(> .code-copy) > pre {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.code-copy {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  box-sizing: border-box;
+  width: 64px;
+  height: 32px;
+  margin: 8px 12px 8px 0;
+  padding: 0 10px;
+  border: 1px solid var(--code-line2);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--code-comment);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.code-copy:hover,
+.code-copy:focus-visible {
+  border-color: var(--code-keyword);
+  color: var(--code-fg);
+}
+
+.code-copy:focus-visible {
+  outline: 2px solid var(--keyword);
+  outline-offset: 2px;
+}
+
+.code-copy[data-state="copied"] {
+  color: var(--code-string);
+}
+
+.code-copy[data-state="failed"] {
+  color: var(--code-constant);
+}
+
+/* The live region of the copy button, hidden from the eye. */
+.code-copy-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  figure.code-window:has(> .code-copy) > figcaption {
+    padding-inline-end: 86px;
+  }
+
+  .code-copy {
+    margin-right: 14px;
+  }
 }
