@@ -6,8 +6,9 @@
  *
  * The grid is one column below 1280px. From 1280px the `video-feature` slot takes two thirds
  * and the `video-list` slot one third. The slots are the grid items themselves, so the root
- * element of a slot can hide itself and leave no gap. The `blog` slot sits under the grid, 56px
- * below it (96px from 768px). A slot left empty leaves the heading and the rest in place.
+ * element of a slot can hide itself and leave no gap. The `blog` slot sits under the grid; the
+ * section in it keeps its own distance from the grid. A slot left empty leaves the heading and
+ * the rest in place.
  *
  * The content is at most 1440px wide and centered, and the ground fills the width. The side
  * padding is 16px, 20px from 768px and 64px from 900px.
@@ -38,9 +39,7 @@ const { lang } = Astro.props;
       <slot name="video-feature" />
       <slot name="video-list" />
     </div>
-    <div class="blog">
-      <slot name="blog" />
-    </div>
+    <slot name="blog" />
   </div>
 </section>
 
@@ -71,10 +70,6 @@ const { lang } = Astro.props;
   min-width: 0;
 }
 
-.blog {
-  margin-top: 56px;
-}
-
 @media (min-width: 768px) {
   .inner {
     padding: 100px 20px;
@@ -82,10 +77,6 @@ const { lang } = Astro.props;
 
   .head {
     margin-bottom: 40px;
-  }
-
-  .blog {
-    margin-top: 96px;
   }
 }
 

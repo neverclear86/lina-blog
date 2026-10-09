@@ -68,13 +68,13 @@ bun create astro@latest -- --template basics
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
-│   │   ├── LatestPosts.astro     # Blog block of the Latest section: newest posts with tag chips
+│   │   ├── LatestPosts.astro     # Blog section of the home page: heading and a PostRows window of the newest posts
 │   │   ├── LatestVideoFeature.astro # Latest section: newest video as a large window with a NEW chip, or a no-signal window that links to the channel
 │   │   ├── LatestVideoList.astro # Latest section: the next videos as small windows with JST dates, and the YouTube channel button; hidden below 768px
 │   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for --inv faces
 │   │   ├── NameLogo.astro        # Name logo of the brand kit as inline SVG: compact, full and full-sub, painted with the --lg-* tokens
 │   │   ├── PageHead.astro        # Head of the blog pages: grid background, diagonal band and the slot with an h1
-│   │   ├── PostRows.astro        # Window of blog posts: ls -lt command line, rows with JST date, tags, PR and title, or one empty line
+│   │   ├── PostRows.astro        # Window of blog posts: ls -lt command line with a command slot, rows with JST date, tags, PR and title, or one empty line
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level and the contact variant are props
 │   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line, path and link, and the Japanese heading; the size is a prop
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, unit-tested

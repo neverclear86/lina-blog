@@ -1,186 +1,90 @@
 ---
 /**
- * The blog block of the Latest section: the "ブログ" heading, a link to `/blog/` and the
- * newest `LATEST_POSTS_SHOWN` posts, each a link to `/blog/<slug>/` with its tag chips and
- * title.
+ * The blog section of the home page (`03 blog`): the heading, then the newest
+ * `LATEST_POSTS_SHOWN` posts in a `PostRows` window with the command `$ ls -lt ~/blog | head -3`.
+ * The root has `id="blog"` unless `id` is given. It puts 56px above the heading, 96px from
+ * 768px, so that the section that holds it adds no margin.
  *
- * The posts are in Japanese only. On a page in another locale, the tag chips read in that
- * locale, a `JA` chip hidden from assistive technology follows them, the title has
- * `lang="ja"`, the link name ends with a visually hidden "(in Japanese)", and the links have
- * `hreflang="ja"`. Without posts, one line says there are none and the link to `/blog/` is
- * left out.
- *
- * The list is a size container: from 480px wide the chips and the title sit side by side;
- * narrower, the chips go above the title.
+ * From 768px the command line ends with a link to `/blog/`; below 768px the command loses
+ * ` | head -3` and the link is left out, as the navigation of the header links to the list.
+ * Without posts, the link is left out at any width.
  */
-import type { BlogFrontmatter } from "../blog-schema";
+import type { ComponentProps } from "astro/types";
 import type { Locale } from "../i18n/locales";
-import { translate, type UiKey } from "../i18n/ui";
-import { type BlogTag, newestPosts, tagChipTone } from "../latest-posts";
-import Chip from "./Chip.astro";
+import { translate } from "../i18n/ui";
+import { newestPosts } from "../latest-posts";
+import PostRows from "./PostRows.astro";
+import SectionTitle from "./SectionTitle.astro";
 
 interface Props {
   /** Language of the page, for the strings and the tag labels. */
   lang: Locale;
   /** Posts of the `blog` collection, in any order. */
-  posts: readonly {
-    data: Pick<BlogFrontmatter, "title" | "slug" | "date" | "tags">;
-  }[];
+  posts: ComponentProps<typeof PostRows>["posts"];
+  /** `id` of the root. A page that shows the section more than once gives each its own. */
+  id?: string;
 }
 
-/** Number of posts shown, as in `design/CBMain.dc.html`. */
+/** Number of posts shown, as in `design/Main.dc.html`. */
 const LATEST_POSTS_SHOWN = 3;
 
-/** UI string key of the label of each tag. */
-const TAG_LABEL_KEYS = {
-  制作記: "blog.tag.devlog",
-  技術: "blog.tag.tech",
-  日記: "blog.tag.diary",
-} as const satisfies Record<BlogTag, UiKey>;
-
-const { lang, posts } = Astro.props;
+const { lang, posts, id = "blog" } = Astro.props;
 const latest = newestPosts(posts, LATEST_POSTS_SHOWN);
-const inJapanese = lang !== "ja";
-const hreflang = inJapanese ? "ja" : undefined;
 ---
 
-<div class="latest-posts">
-  <div class="head">
-    <h3>{translate(lang, "latest.blog.heading")}</h3>
+<section id={id} class="latest-posts">
+  <SectionTitle
+    no="03"
+    label="blog"
+    path="~/blog"
+    title={translate(lang, "latest.blog.title")}
+  />
+  <PostRows
+    path="~/blog"
+    posts={latest}
+    emptyText={translate(lang, "latest.blog.noPosts")}
+    lang={lang}
+  >
+    <span slot="command" class="limit">{" | head -3"}</span>
     {latest.length > 0 && (
-  <a class="all" href="/blog/" hreflang={hreflang}>
-    <span>{translate(lang, "latest.blog.all")}</span>
+  <a
+    slot="action"
+    class="all"
+    href="/blog/"
+    hreflang={lang === "ja" ? undefined : "ja"}
+  >
+    {translate(lang, "latest.blog.all")} <span aria-hidden="true">→</span>
   </a>
 )}
-  </div>
-  {latest.length === 0 ? (
-  <p class="empty">{translate(lang, "latest.blog.noPosts")}</p>
-) : (
-  <ul class="list">
-    {latest.map(({ data }) => (
-      <li>
-        <a class="post" href={`/blog/${data.slug}/`} hreflang={hreflang}>
-          <span class="chips">
-            {data.tags.map((tag) => (
-              <Chip tone={tagChipTone(tag)}>
-                {translate(lang, TAG_LABEL_KEYS[tag])}
-              </Chip>
-            ))}
-            {inJapanese && (
-              <span class="ja-chip" aria-hidden="true">
-                <Chip>JA</Chip>
-              </span>
-            )}
-          </span>
-          <span class="title" lang={inJapanese ? "ja" : undefined}>
-            {data.title}
-          </span>
-          {inJapanese && (
-            <span class="sr-only">
-              {" "}
-              {translate(lang, "latest.blog.inJapanese")}
-            </span>
-          )}
-        </a>
-      </li>
-    ))}
-  </ul>
-)}
-</div>
+  </PostRows>
+</section>
 
 <style>
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--legacy-line);
-}
-
-h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 900;
-}
-
-a {
-  color: var(--fg);
-}
-
-.all {
-  font-size: 14px;
-  font-weight: 900;
-  text-decoration: underline;
-}
-
-.list {
-  container-type: inline-size;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-li {
-  border-bottom: 1px solid var(--hair);
-}
-
-.post {
-  position: relative;
+.latest-posts {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 0;
-  text-decoration: none;
+  gap: 16px;
+  margin-top: 56px;
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.limit {
+  display: none;
 }
 
-.ja-chip {
-  display: flex;
-}
-
-.title {
-  font-size: 16px;
-  font-weight: 900;
-  line-height: 28px;
-}
-
-@container (min-width: 480px) {
-  .post {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 12px;
+@media (min-width: 768px) {
+  .latest-posts {
+    gap: 40px;
+    margin-top: 96px;
   }
 
-  .chips {
-    flex-shrink: 0;
+  .limit {
+    display: inline;
   }
-}
 
-.post:hover .title,
-.all:hover span {
-  opacity: 0.8;
-}
-
-.empty {
-  margin: 0;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--hair);
-  color: var(--muted);
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  .all {
+    display: block;
+    line-height: 44px;
+    white-space: nowrap;
+  }
 }
 </style>

@@ -236,11 +236,8 @@ describe("配線", () => {
     expect(head).toContain('aria-current={link.current ? "page" : undefined}');
   });
 
-  it("ブラウザーの既定の下線に頼っていた .all と 404 ページのリンクは自分で下線を持つ", () => {
-    const targets: [string, string][] = [
-      ["components/LatestPosts.astro", ".all"],
-      ["pages/404.astro", "a"],
-    ];
+  it("ブラウザーの既定の下線に頼っていた 404 ページのリンクは自分で下線を持つ", () => {
+    const targets: [string, string][] = [["pages/404.astro", "a"]];
     for (const [path, selector] of targets) {
       const found = rulesOf(styleOf(source(path))).find(
         (rule) => rule.selector === selector,

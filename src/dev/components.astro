@@ -771,12 +771,11 @@ const sampleVideos: YouTubeVideo[] = [
     <section id="latest-posts">
       <h2>最新記事</h2>
       <div class="latest-samples">
-        <LatestPosts lang="ja" posts={samplePosts} />
-        <div lang="en"><LatestPosts lang="en" posts={samplePosts} /></div>
-        <div class="latest-narrow" lang="en">
-          <LatestPosts lang="en" posts={samplePosts} />
+        <LatestPosts id="blog-ja" lang="ja" posts={samplePosts} />
+        <div lang="en">
+          <LatestPosts id="blog-en" lang="en" posts={samplePosts} />
         </div>
-        <LatestPosts lang="ja" posts={[]} />
+        <LatestPosts id="blog-empty" lang="ja" posts={[]} />
       </div>
     </section>
 
@@ -1068,16 +1067,15 @@ const sampleVideos: YouTubeVideo[] = [
 </Layout>
 
 <style>
+/* The blog section takes the whole width of the page, like `#blog` of the home page. */
+.latest-samples {
+  display: grid;
+}
+
 /*
  * Widths of the large window (870px) and the list (536px) of #latest at 1440px, and of the list at
  * 1024px (320px).
  */
-.latest-samples {
-  display: grid;
-  gap: 48px;
-  max-width: 536px;
-}
-
 .latest-video-sample {
   max-width: 870px;
 }
@@ -1097,7 +1095,6 @@ const sampleVideos: YouTubeVideo[] = [
   display: flex;
 }
 
-.latest-narrow,
 .latest-list-narrow {
   max-width: 320px;
 }
