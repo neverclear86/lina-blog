@@ -1,4 +1,7 @@
-/** Link targets of the site header (`SiteHeader.astro`): its navigation and language switch. */
+/**
+ * Link targets of the site: the navigation and the language switch of the site header
+ * (`SiteHeader.astro`), and the contact page.
+ */
 import { LOCALES, type Locale } from "../i18n/locales";
 import { localizedPath } from "../i18n/paths";
 
@@ -22,6 +25,11 @@ function isBlogPath(pathname: string): boolean {
 /** Returns the link to `section` of the top page of `lang`, such as `/ja/#about`. */
 export function homeSectionPath(lang: Locale, section: HomeSection): string {
   return `/${lang}/#${section}`;
+}
+
+/** Returns the path of the contact page of `lang`, such as `/ja/contact/`. */
+export function contactPagePath(lang: Locale): string {
+  return `/${lang}/contact/`;
 }
 
 /** Value of `aria-current` of the item of the page: "page" or "true". */

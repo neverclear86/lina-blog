@@ -1,11 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { homeSectionPath, languageLinks, navLinks } from "./site-nav";
+import {
+  contactPagePath,
+  homeSectionPath,
+  languageLinks,
+  navLinks,
+} from "./site-nav";
 
 describe("homeSectionPath", () => {
   it("言語のトップのページの節を指すパスを返す", () => {
     expect(homeSectionPath("ja", "about")).toBe("/ja/#about");
     expect(homeSectionPath("en", "contact")).toBe("/en/#contact");
     expect(homeSectionPath("ja", "blog")).toBe("/ja/#blog");
+  });
+});
+
+describe("contactPagePath", () => {
+  it("言語ごとのお問い合わせのページを指す、末尾がスラッシュのパスを返す", () => {
+    expect(contactPagePath("ja")).toBe("/ja/contact/");
+    expect(contactPagePath("en")).toBe("/en/contact/");
   });
 });
 

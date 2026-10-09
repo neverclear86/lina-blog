@@ -1,0 +1,113 @@
+---
+/**
+ * The contact page, `/ja/contact/` and `/en/contact/`: a head after the article pages of plan A
+ * (the path, `$ mail lina`, the heading and the lead in `PageHead`) and the contact form in a
+ * window.
+ */
+import type { GetStaticPaths } from "astro";
+import ContactForm from "../../../components/ContactForm.astro";
+import PageHead from "../../../components/PageHead.astro";
+import { LOCALES, type Locale } from "../../../i18n/locales";
+import { translate } from "../../../i18n/ui";
+import Layout from "../../../layouts/Layout.astro";
+
+export const getStaticPaths = (() =>
+  LOCALES.map((lang) => ({
+    params: { lang },
+    props: { lang },
+  }))) satisfies GetStaticPaths;
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
+---
+
+<Layout
+  lang={lang}
+  title={t("contact.title")}
+  description={t("contact.description")}
+>
+  <main>
+    <PageHead>
+      <nav class="crumbs" aria-label={t("nav.breadcrumb")}>
+        <a href={`/${lang}/`} aria-label={t("nav.top")}>~</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">contact</span>
+      </nav>
+      <p class="prompt">$ mail lina</p>
+      <h1>{t("contact.title")}</h1>
+      <p class="lead">{t("contact.lead")}</p>
+    </PageHead>
+    <div class="content"><ContactForm lang={lang} /></div>
+  </main>
+</Layout>
+
+<style>
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.crumbs a {
+  padding-block: 4px;
+}
+
+.crumbs [aria-current="page"] {
+  padding-block: 4px;
+  color: var(--text);
+}
+
+.prompt {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--acc-text);
+}
+
+.lead {
+  margin: 0;
+  max-width: 560px;
+  padding-right: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.9;
+}
+
+.content {
+  box-sizing: border-box;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 28px 16px 56px;
+}
+
+@media (min-width: 600px) {
+  .content {
+    padding: 40px 20px 72px;
+  }
+}
+
+@media (min-width: 768px) {
+  .crumbs {
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 900px) {
+  .lead {
+    padding-right: 0;
+  }
+
+  .content {
+    padding: 56px 64px 96px;
+  }
+}
+</style>
