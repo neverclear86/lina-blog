@@ -100,10 +100,11 @@ const ja = {
   "hero.tagline": "バーチャルイキリプログラマ",
   "home.comingSoon": "準備中です。",
   "latest.blog.all": "記事一覧",
-  "latest.blog.heading": "ブログ",
   // Read after a post title on pages in other locales; the Japanese pages do not show it.
   "latest.blog.inJapanese": "(日本語)",
   "latest.blog.noPosts": "まだ記事はありません。",
+  // Heading of the blog section on the home page.
+  "latest.blog.title": "さいきんの記事",
   // Heading of the Latest section on the home page.
   "latest.title": "さいきんの配信",
   // Link to the YouTube channel: the button after the small video windows and the link text of the
@@ -236,9 +237,9 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "hero.tagline": 'Virtual "ikiri" programmer',
     "home.comingSoon": "Coming soon.",
     "latest.blog.all": "All posts",
-    "latest.blog.heading": "Blog",
     "latest.blog.inJapanese": "(in Japanese)",
     "latest.blog.noPosts": "No posts yet.",
+    "latest.blog.title": "Recent posts",
     "latest.title": "Recent streams",
     "latest.videos.channel": "Visit the YouTube channel",
     "latest.videos.empty": "Couldn't show the latest videos.",

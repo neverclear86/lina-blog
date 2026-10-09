@@ -3,8 +3,9 @@
  * A window of blog posts: a command line `$ ls -lt <path>`, then one row for each post, in the
  * order given. A row links to `/blog/<slug>/` and shows the date in Japan time, every tag of
  * the post in `lang`, a `PR` tag after them when the post has a sponsor, and the title. Without
- * posts, one line of `emptyText` takes the place of the rows. From 768px, the `action` slot sits
- * at the right end of the command line; below 768px it is hidden.
+ * posts, one line of `emptyText` takes the place of the rows. The `command` slot follows the
+ * path in the command line, at any width. From 768px, the `action` slot sits at the right end
+ * of the command line; below 768px it is hidden.
  *
  * The posts are in Japanese only. When `lang` is not `"ja"`, a `JA` tag hidden from assistive
  * technology follows the tags, the title has `lang="ja"`, the link name ends with a visually
@@ -52,7 +53,7 @@ const hreflang = inJapanese ? "ja" : undefined;
   <div class="command">
     <span
       ><span aria-hidden="true">$ </span>ls -lt{" "}
-      <span class="dir">{path}</span></span
+      <span class="dir">{path}</span><slot name="command" /></span
     >
     {Astro.slots.has("action") && (
   <span class="action">
