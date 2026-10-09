@@ -10,7 +10,7 @@ const MOTION = read("../styles/motion.css");
 
 describe("カーソルの点滅の切り替え", () => {
   it("Hero のロゴとヘッダーのロゴの親が blink-on を持つ", () => {
-    expect(HERO).toMatch(/<h1 class="hero-logo blink-on">/);
+    expect(HERO).toMatch(/<div class="ticks hero-logo blink-on">/);
     expect(HEADER).toMatch(/class="brand blink-on"/);
   });
 

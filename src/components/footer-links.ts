@@ -37,7 +37,7 @@ export function footerSiteLinks(lang: Locale): FooterSiteLink[] {
 export interface FooterProfileLink {
   label: string;
   href: string;
-  /** `rel` of the link; "me" for the profiles, as in the hero. */
+  /** `rel` of the link; "me" for the profiles. */
   rel?: string;
 }
 

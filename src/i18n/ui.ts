@@ -91,13 +91,14 @@ const ja = {
   "footer.siteLabel": "サイト",
   // Name of the link from the logo in the site header to the top page.
   "header.homeLabel": "ikili.pro トップ",
-  // Hero of the top page; "hero.intro" shows from 768px and "hero.introShort" below it.
+  // Hero of the top page: the heading in two parts (the second one is marked), the intro and the
+  // button to the latest video.
+  "hero.headingLead": "IT技術で、",
+  "hero.headingMark": "本気で遊ぶ。",
   "hero.intro":
-    "配信もするし、開発もする。ITで遊ぶ動画と配信を、Resoniteを中心に届けています。",
-  "hero.introShort":
-    "配信もするし、開発もする。ITで遊ぶ動画と配信を届けています。",
+    "配信もするし、開発もする。プログラミングやシステム構築を「遊び」として見せる、バーチャルイキリプログラマの創好リナです。",
+  "hero.latestVideo": "最新の動画を見る",
   "hero.links": "リンク",
-  "hero.tagline": "バーチャルイキリプログラマ",
   "home.comingSoon": "準備中です。",
   // Hidden text after "JA" of the language switch on a page only in Japanese.
   "lang.jaOnly": "このページは日本語のみ",
@@ -133,8 +134,6 @@ const ja = {
   "notFound.message": "このページは存在しないよ。",
   "notFound.subtitle": "ページが見つからないよ",
   "notFound.topLink": "日本語のトップページへ",
-  // Says that the site can also be read with curl; shown at the end of the strip of the hero.
-  "site.curlHint": "$ curl ikili.pro でも読めるよ",
   // Description of the site: the meta description and og:description of the pages that do not
   // pass their own, such as the top page.
   "site.description":
@@ -235,12 +234,12 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "footer.linksLabel": "Links",
     "footer.siteLabel": "Site",
     "header.homeLabel": "ikili.pro home",
+    "hero.headingLead": "Playing with tech,",
+    "hero.headingMark": "for real.",
     "hero.intro":
-      "I stream, and I build software. I make videos and streams about having fun with IT, mostly in Resonite.",
-    "hero.introShort":
-      "I stream, and I build software. I make videos and streams about having fun with IT.",
+      'I stream, and I build. I\'m Tsukusu Lina, a virtual "ikiri" programmer who turns programming and building systems into play.',
+    "hero.latestVideo": "Watch the latest video",
     "hero.links": "Links",
-    "hero.tagline": 'Virtual "ikiri" programmer',
     "home.comingSoon": "Coming soon.",
     "lang.jaOnly": "This page is only in Japanese",
     "latest.blog.all": "All posts",
@@ -263,7 +262,6 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "notFound.message": "This page doesn't exist.",
     "notFound.subtitle": "Page not found",
     "notFound.topLink": "Go to the English top page",
-    "site.curlHint": "$ curl ikili.pro works too",
     "site.description":
       'Personal site and blog of Tsukusu Lina (創好リナ), a virtual "ikiri" programmer who makes videos and streams about playing with IT, mostly in Resonite.',
     "social.twitter": "Twitter (self-proclaimed X)",

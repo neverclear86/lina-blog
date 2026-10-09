@@ -37,7 +37,7 @@ bun create astro@latest -- --template basics
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
 │   ├── og-font.ts        # Downloads the OGP fonts (headings and labels) as TrueType from Google Fonts, unit-tested
 │   ├── page-meta.ts      # Description (default from ui.ts) and Open Graph tags of a page, unit-tested
-│   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro, Hero.astro and footer-links.ts
+│   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro and footer-links.ts
 │   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
 │   ├── text-site.ts      # Builds the text version of the site for curl (80 columns), unit-tested
 │   ├── theme.ts          # Theme key and values, the inline script that sets <html data-theme> and the toggle, unit-tested
@@ -65,7 +65,7 @@ bun create astro@latest -- --template basics
 │   │   ├── face-icon.ts          # Picks the brand kit files of a face mark or avatar from its size and tone, unit-tested
 │   │   ├── FaceIcon.astro        # Face mark or avatar from the brand kit SVGs, switched with the theme; tone="inverse" for the mark on --inv and --cbg faces
 │   │   ├── footer-links.ts       # Link targets of the footer columns and the footer variants, unit-tested
-│   │   ├── Hero.astro            # Hero of the top page: full-sub name logo with a blinking cursor, tagline chip, intro and profile links
+│   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band, name logo with a blinking cursor, heading, intro, button to the latest video and the stripes below
 │   │   ├── IconButton.astro      # Square icon-only button, named by an aria-label or a hidden label slot
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
 │   │   ├── Kao.astro             # Three kaomoji switching every 2 seconds; only the first under reduced motion
@@ -164,7 +164,7 @@ Blog posts are Markdown files in `src/content/blog/`, committed by the publishin
 
 Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are highlighted at build time by `src/markdown/highlight.ts`, which gives tokens role classes such as `hl-keyword` instead of inline styles; `markdown.syntaxHighlight` is off so Astro's own Shiki does not run. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player. An accordion is written as raw HTML (`<details>` and `<summary>`), and how to write one is in `docs/markdown.md`. An `<aside class="note">` or `<aside class="warning">` written as raw HTML in an article is styled as a message box (`docs/markdown.md` shows how to write one).
 
-`astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the works, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt`, the Latest section and the hero of the home page, and the links column of the site footer use as well.
+`astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the works, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt`, the Latest section of the home page and the links column of the site footer use as well.
 
 Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema, the RSS items and the Markdown plugins; `src/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`, and the plugins in `src/markdown/` with Sätteri's `markdownToHtml()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet).
