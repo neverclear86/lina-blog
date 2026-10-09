@@ -1,6 +1,7 @@
 ---
 import { Font } from "astro:assets";
 import { FEED_PATH, FEED_TITLE } from "../blog-rss";
+import type { FooterVariant } from "../components/footer-links";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import { DEFAULT_LOCALE, type Locale } from "../i18n/locales";
@@ -17,8 +18,8 @@ import "../styles/motion.css";
 
 interface Props {
   /**
-   * Language of the page, written to `<html lang>` and passed to the site header. Defaults to
-   * `DEFAULT_LOCALE`.
+   * Language of the page, written to `<html lang>` and passed to the site header and the site
+   * footer. Defaults to `DEFAULT_LOCALE`.
    */
   lang?: Locale;
   /**
@@ -31,9 +32,16 @@ interface Props {
    * the description of a work. Defaults to the description of the site in `lang`.
    */
   description?: string;
+  /** Footer of the page: "full" or "compact". Defaults to "full". */
+  footer?: FooterVariant;
 }
 
-const { lang = DEFAULT_LOCALE, title, description } = Astro.props;
+const {
+  lang = DEFAULT_LOCALE,
+  title,
+  description,
+  footer = "full",
+} = Astro.props;
 
 const pageTitle =
   title && title !== "ikili.pro" ? `${title} | ikili.pro` : "ikili.pro";
@@ -101,7 +109,7 @@ const openGraph = openGraphTags({
     {/* The page content; it grows so that the footer sits at the bottom of a short page. */}
     <div class="site-content"><slot /></div>
     {/* The site footer, after the page content. */}
-    <SiteFooter lang={lang} />
+    <SiteFooter lang={lang} variant={footer} />
   </body>
 </html>
 
