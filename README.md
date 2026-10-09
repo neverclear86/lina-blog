@@ -64,7 +64,6 @@ bun create astro@latest -- --template basics
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: in a row from 1200px, below it stacked or one at a time with tabs
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
-│   │   ├── Button.astro          # Orange main button, as a link or a <button>
 │   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
 │   │   ├── ContactBand.astro     # Contact band of the top page: heading, lead, a button to the contact page and the thumbs-up
 │   │   ├── ContactForm.astro     # Contact form of the contact page in a window of plan A, sent with Turnstile
@@ -97,7 +96,6 @@ bun create astro@latest -- --template basics
 │   │   ├── SponsorNotice.astro   # PR window above the body of a sponsored blog post: orange PR chip and the sponsor's name
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: an .iconbtn that shows the moon or the sun with a name that says the next theme, or a button with a sun and the current theme
-│   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
 │   │   ├── three-view-tabs.ts    # Which view of the avatar a key, a swipe or a tap selects, and the swipe gesture, unit-tested
 │   │   ├── WorkTile.astro        # Window tile of a work: ~/works/<title>, a line of description and the technology tags; a link or a plain box
 │   │   ├── Works.astro           # Works section of the top page (04 works): the heading and a WorkTile per work, from the works collection
