@@ -72,7 +72,7 @@ bun create astro@latest -- --template basics
 │   │   ├── footer-links.ts       # Link targets of the footer columns and the footer variants, unit-tested
 │   │   ├── hero-account.ts       # Links of the account window of the hero, with the icon each one shows, unit-tested
 │   │   ├── hero-poses.ts         # Rules of the pose switch of the hero, unit-tested
-│   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band whose text and hatch flow, name logo with a blinking cursor, heading, intro, button to the latest video, the account window, the stripes below (flowing right) and HeroPoses in the right column
+│   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band whose text and hatch flow, name logo with a blinking cursor, heading, intro, button to the latest video, the account window, the stripes below (flowing right) and HeroPoses in the right column; when the page opens, the left column rises in turn and the band and the hatch open upwards
 │   │   ├── HeroAccount.astro     # Account window of the hero: avatar, @LinaTsukusu and six link squares
 │   │   ├── HeroPoses.astro       # Right column of the hero: four poses switched by a button, ruler and table
 │   │   ├── IconButton.astro      # Square icon-only button of the earlier design (only the dev samples use it), named by an aria-label or a hidden label slot
@@ -145,7 +145,7 @@ bun create astro@latest -- --template basics
 │       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ink, .btn-ghost), icon links (.sq, .iconbtn) and page switch links (.ws) of plan A
 │       ├── global.css    # body colors and their fade, the links, the keyboard focus outline, and the grid backgrounds (.grid, .cgrid)
 │       ├── labels.css    # Labels of plan A: .label (shared with the labels of an article's message boxes), .tag and the category chip .chip-acc
-│       ├── motion.css    # The blinking cursor of the name logo (.blink-on) and the animations of the old design that only the component samples use (.bob, .caret, .a-typeLoop, .reveal), stopped under reduced motion
+│       ├── motion.css    # The blinking cursor of the name logo (.blink-on), the appearance when the page opens (.rv, band-in) and the animations of the old design that only the component samples use (.bob, .caret, .a-typeLoop, .reveal), stopped under reduced motion
 │       ├── shapes.css    # Notched corners, hard shadows and the lift
 │       ├── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
 │       └── window.css    # Windows (.win, shared with the accordions and the message boxes of articles), corner ticks (.ticks, .ticks-acc), grid background, the stripe band (flowing right) and the avatar shadow of plan A
@@ -200,7 +200,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ink`, `.btn-ghost`), icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) and page switch links (`.ws`, `.ws.on`) of plan A |
 | `window.css` | Plan A windows (`.win`, `.article-body details` and an article's message boxes; a link window turns its border on hover, and an accordion while its `<summary>` is hovered or focused), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid background (`.gridbg`) and the stripe band (`.stripes`, flowing right) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions, and the flow of `.stripes` stops, under `prefers-reduced-motion: reduce` |
 | `labels.css` | Labels of plan A: the caption `.label` (whose declarations the labels of an article's message boxes share), the bordered tag `.tag` and the orange category chip `.chip-acc` |
-| `motion.css` | The blinking cursor of the name logo (`.blink-on`), the only animation a page uses. The animations of the old design, which only `src/dev/components.astro` uses, are the pixel art bob (`.bob`), the blinking cursor (`.caret`), the typed command (`.a-typeLoop`) and the section reveal on scroll (`.reveal`, enabled only inside `@supports (animation-timeline: view())`). All are stopped under `prefers-reduced-motion: reduce` |
+| `motion.css` | The animations a page uses: the blinking cursor of the name logo (`.blink-on`) and the appearance when the page opens (`.rv`, and the keyframes `band-in` that `Hero.astro` plays). The animations of the old design, which only `src/dev/components.astro` uses, are the pixel art bob (`.bob`), the blinking cursor (`.caret`), the typed command (`.a-typeLoop`) and the section reveal on scroll (`.reveal`, enabled only inside `@supports (animation-timeline: view())`). All are stopped under `prefers-reduced-motion: reduce` |
 
 A global file holds only what several components share.
 Styles that belong to one component go in that component's scoped `<style>`.

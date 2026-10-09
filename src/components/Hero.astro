@@ -37,6 +37,17 @@
  * heading is 36px and the intro is 15px in `--text`. The logo box has neither the ticks nor the
  * ground, and the button fills the column, 48px high, without the triangle.
  *
+ * When the page opens, the elements of the left column rise from 18px below in turn (`.rv` in
+ * `src/styles/motion.css`): the prompt after 0.2s, the logo after 0.35s, the heading after 0.5s,
+ * the intro after 0.6s, the button after 0.7s and the account window after 0.8s. Up to 767px the
+ * rise is 16px, the logo starts after 0.4s, the heading after 0.55s and the account window after
+ * 0.7s, and the prompt stays still. The band and the hatch open upwards from their lower ends in
+ * 0.9s (`band-in`), the band after 0.1s. They are set on `.band` and `.hatch`, and the loops above on
+ * `.band-text` and `.hatch::before`, so the two do not replace each other. The two lines and the
+ * crosses stand still. The animations play once when the page opens and not
+ * when the theme changes, which sets only `data-theme` on `<html>`. Under
+ * `prefers-reduced-motion: reduce` everything is shown at once.
+ *
  * The cursor of the logo blinks (`.blink-on` in `src/styles/motion.css`) while some part of the
  * logo is in the viewport, starting 1.6s after the page opens or the logo comes back into it. A
  * script sets `data-offscreen` on the logo while no part of it is; the cursor of the logo then
@@ -78,21 +89,21 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
   </div>
   <div class="hero-grid">
     <div class="hero-left">
-      <p class="whoami" aria-hidden="true">
+      <p class="whoami rv" aria-hidden="true">
         lina@tsukusu:~$ <span>whoami</span>
       </p>
-      <div class="ticks hero-logo blink-on">
+      <div class="ticks hero-logo rv blink-on">
         <NameLogo
           variant="full-sub"
           label="/tsukusu/lina $_ # 創好リナ ── VIRTUAL IKIRI PROGRAMMER"
         />
       </div>
-      <h1 class="heading">
+      <h1 class="heading rv">
         {translate(lang, "hero.headingLead")}<br>
         <span class="mark">{translate(lang, "hero.headingMark")}</span>
       </h1>
-      <p class="intro">{translate(lang, "hero.intro")}</p>
-      <a class="btn btn-acc latest" href="#latest">
+      <p class="intro rv">{translate(lang, "hero.intro")}</p>
+      <a class="btn btn-acc latest rv" href="#latest">
         <svg
           width="18"
           height="18"
@@ -107,7 +118,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
           <path d="M7 4l13 8-13 8z"></path>
         </svg>{translate(lang, "hero.latestVideo")}
       </a>
-      <div class="hero-account"><HeroAccount lang={lang} /></div>
+      <div class="hero-account rv"><HeroAccount lang={lang} /></div>
     </div>
     <div class="hero-right"><HeroPoses lang={lang} /></div>
   </div>
@@ -138,6 +149,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
   overflow: hidden;
   background: var(--keyword);
   transform: rotate(22deg);
+  animation: band-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s backwards;
 }
 
 .band-text {
@@ -170,6 +182,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
   overflow: hidden;
   opacity: 0.7;
   transform: rotate(22deg);
+  animation: band-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 
 /* The pattern is one period longer than the hatch; `translate` moves it up by one period, and
@@ -271,6 +284,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
   font-family: var(--font-mono);
   font-size: 14px;
   color: var(--muted);
+  animation-delay: 0.2s;
 }
 
 .whoami span {
@@ -282,6 +296,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
   max-width: 640px;
   padding: 30px 32px;
   background-color: var(--shade);
+  animation-delay: 0.35s;
 }
 
 .hero-logo :global(.cur) {
@@ -299,6 +314,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
   line-height: 1.12;
   letter-spacing: 0.01em;
   text-wrap: balance;
+  animation-delay: 0.5s;
 }
 
 .mark {
@@ -315,15 +331,18 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
   line-height: 1.9;
   color: var(--muted);
   text-wrap: pretty;
+  animation-delay: 0.6s;
 }
 
 .latest {
   align-self: flex-start;
+  animation-delay: 0.7s;
 }
 
 .hero-account {
   max-width: 520px;
   margin-top: 8px;
+  animation-delay: 0.8s;
 }
 
 .hero-right {
@@ -370,6 +389,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
   .hero-logo {
     padding: 0;
     background: none;
+    animation-delay: 0.4s;
   }
 
   .intro {
@@ -462,20 +482,28 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
     padding: 4px 8px;
     font-size: 12px;
     background: var(--shade);
+    animation: none;
   }
 
   .heading {
     margin-top: 6px;
     font-size: 36px;
     line-height: 1.18;
+    animation-delay: 0.55s;
   }
 
   .hero-account {
     margin-top: 0;
+    animation-delay: 0.7s;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .band,
+  .hatch {
+    animation: none;
+  }
+
   .band-text,
   .hatch::before {
     animation: none;

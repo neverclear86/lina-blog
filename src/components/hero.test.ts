@@ -6,6 +6,10 @@ const POSES = readFileSync(
   new URL("./HeroPoses.astro", import.meta.url),
   "utf8",
 );
+const MOTION = readFileSync(
+  new URL("../styles/motion.css", import.meta.url),
+  "utf8",
+);
 const WINDOW_CSS = readFileSync(
   new URL("../styles/window.css", import.meta.url),
   "utf8",
@@ -35,11 +39,11 @@ describe("Hero の飾りと窓の差し込み口", () => {
   });
 
   it("プロンプトは支援技術から隠す", () => {
-    expect(HERO).toMatch(/<p class="whoami" aria-hidden="true">/);
+    expect(HERO).toMatch(/<p class="whoami rv" aria-hidden="true">/);
   });
 
   it("ボタンは #latest へのリンクで、A案の .btn .btn-acc を使う", () => {
-    expect(HERO).toMatch(/<a class="btn btn-acc latest" href="#latest">/);
+    expect(HERO).toMatch(/<a class="btn btn-acc latest rv" href="#latest">/);
   });
 
   it("C'案の部品を使わない", () => {
@@ -54,7 +58,7 @@ describe("Hero の飾りと窓の差し込み口", () => {
   it("アカウントの窓の箱は左の列の最後で HeroAccount を入れ、右の列の箱は格子の 2 つ目の子で HeroPoses だけを持つ", () => {
     const left = between('<div class="hero-left">', '<div class="hero-right">');
     expect(left).toMatch(
-      /<div class="hero-account"><HeroAccount lang=\{lang\} \/><\/div>\s*<\/div>\s*$/,
+      /<div class="hero-account rv"><HeroAccount lang=\{lang\} \/><\/div>\s*<\/div>\s*$/,
     );
     expect(
       HERO.match(
@@ -203,7 +207,10 @@ describe("Hero の 767px 以下の組み", () => {
     expect(declarationsOf(hero, ".intro")).toEqual(
       expect.arrayContaining(["font-size: 15px"]),
     );
-    expect(declarationsOf(hero, ".hero-account")).toEqual(["margin-top: 0"]);
+    expect(declarationsOf(hero, ".hero-account")).toEqual([
+      "margin-top: 0",
+      "animation-delay: 0.7s",
+    ]);
   });
 
   it("ポーズは上から 20px で高さ 1195px、スペック表は右上 16px に 2 行だけ出す", () => {
@@ -258,7 +265,7 @@ describe("Hero の帯・斜線・下の帯の流れ", () => {
     );
   });
 
-  it("斜線は ::before を 1 周期ぶん長くして上へずらし、.hatch 自身と background-position は動かさない", () => {
+  it("斜線は ::before を 1 周期ぶん長くして上へずらし、.hatch 自身の流れと background-position は動かさない", () => {
     expect(declarationsOf(style(), ".hatch::before")).toEqual(
       expect.arrayContaining([
         "inset: 0 0 calc(-1 * var(--hatch-period))",
@@ -270,7 +277,7 @@ describe("Hero の帯・斜線・下の帯の流れ", () => {
     );
     expect(declarationsOf(style(), ".hatch")).toContain("overflow: hidden");
     expect(declarationsOf(style(), ".hatch").join("\n")).not.toMatch(
-      /animation/,
+      /hatch-up/,
     );
     expect(style()).not.toMatch(/background-position/);
   });
@@ -327,5 +334,131 @@ describe("Hero の帯・斜線・下の帯の流れ", () => {
     expect(windowReduce()).toMatch(
       /\.stripes::before\s*\{\s*animation: none;\s*\}/,
     );
+  });
+});
+
+/** Returns the declarations of every rule of `selector` in `css`, one entry for each. */
+const rulesDeclarationsOf = (css: string, selector: string) => {
+  const bare = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const rules = [...bare.matchAll(/([^{}]+)\{([^{}]*)\}/g)].filter(
+    (m) => m[1].trim().replace(/\s+/g, " ") === selector,
+  );
+  expect(rules.length, selector).toBeGreaterThan(0);
+  return rules
+    .flatMap((m) => m[2].split(";"))
+    .map((d) => d.trim().replace(/\s+/g, " "))
+    .filter(Boolean);
+};
+
+describe("Hero の初回表示の演出", () => {
+  const EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+  /** The style of `Hero.astro` before its first `@media`. */
+  const outsideMedia = () => between("<style>", "@media");
+  /** The 767px block of `Hero.astro`. */
+  const mobile = () =>
+    between("@media (max-width: 767px)", "@media (prefers-reduced-motion");
+  /** The reduced-motion block of `Hero.astro`. */
+  const reduce = () => between("@media (prefers-reduced-motion", "</style>");
+
+  it("左の列の 6 つの要素が .rv を持つ", () => {
+    const left = between('<div class="hero-left">', '<div class="hero-right">');
+    for (const cls of [
+      "whoami",
+      "ticks hero-logo",
+      "heading",
+      "intro",
+      "btn btn-acc latest",
+      "hero-account",
+    ]) {
+      expect(left, cls).toMatch(
+        new RegExp(`class="${cls}\\b[^"]*\\brv\\b[^"]*"`),
+      );
+    }
+    expect(left.match(/class="[^"]*\brv\b[^"]*"/g)).toHaveLength(6);
+  });
+
+  it("遅延は whoami 0.2s、ロゴ 0.35s、見出し 0.5s、紹介文 0.6s、ボタン 0.7s、アカウントの窓 0.8s", () => {
+    const css = outsideMedia();
+    const delays = [
+      [".whoami", "0.2s"],
+      [".hero-logo", "0.35s"],
+      [".heading", "0.5s"],
+      [".intro", "0.6s"],
+      [".latest", "0.7s"],
+      [".hero-account", "0.8s"],
+    ];
+    for (const [selector, delay] of delays) {
+      expect(declarationsOf(css, selector), selector).toContain(
+        `animation-delay: ${delay}`,
+      );
+    }
+  });
+
+  it("767px 以下はロゴ 0.4s、見出し 0.55s、アカウントの窓 0.7s、whoami は演出なしで、紹介文とボタンは変えない", () => {
+    const css = mobile();
+    expect(declarationsOf(css, ".hero-logo")).toContain(
+      "animation-delay: 0.4s",
+    );
+    expect(declarationsOf(css, ".heading")).toContain("animation-delay: 0.55s");
+    expect(declarationsOf(css, ".hero-account")).toContain(
+      "animation-delay: 0.7s",
+    );
+    expect(declarationsOf(css, ".whoami")).toContain("animation: none");
+    expect(declarationsOf(css, ".intro").join(";")).not.toMatch(/animation/);
+    expect(declarationsOf(css, ".latest").join(";")).not.toMatch(/animation/);
+  });
+
+  it("帯は band-in を 0.9s、遅延 0.1s で、斜線は遅延なしで再生する", () => {
+    const css = outsideMedia();
+    expect(declarationsOf(css, ".band")).toContain(
+      `animation: band-in 0.9s ${EASE} 0.1s backwards`,
+    );
+    expect(declarationsOf(css, ".hatch")).toContain(
+      `animation: band-in 0.9s ${EASE} backwards`,
+    );
+  });
+
+  it("ロゴのカーソルの点滅は 1.6s 後に始まる", () => {
+    expect(declarationsOf(outsideMedia(), ".hero-logo :global(.cur)")).toEqual([
+      "animation-delay: 1.6s",
+    ]);
+  });
+
+  it("動きを減らす設定では帯と斜線の出現を止める", () => {
+    expect(rulesDeclarationsOf(reduce(), ".band, .hatch")).toEqual([
+      "animation: none",
+    ]);
+  });
+
+  it("rv-up は 18px 下から出て、767px 以下は 16px にし、動きを減らす設定では止める", () => {
+    const keyframes = MOTION.slice(MOTION.indexOf("@keyframes rv-up"));
+    expect(keyframes.slice(0, keyframes.indexOf("@keyframes band-in"))).toMatch(
+      /from\s*\{\s*opacity: 0;\s*translate: 0 var\(--rv-dy, 18px\);\s*\}/,
+    );
+    expect(rulesDeclarationsOf(MOTION, ".rv")).toEqual([
+      `animation: rv-up 0.7s ${EASE} backwards`,
+      "--rv-dy: 16px",
+    ]);
+    expect(MOTION).toMatch(
+      /@media \(max-width: 767px\) \{\s*\.rv \{\s*--rv-dy: 16px;/,
+    );
+    expect(MOTION).toMatch(
+      /@media \(prefers-reduced-motion: reduce\) \{[^@]*\.rv,[^@]*animation: none/,
+    );
+  });
+
+  it("band-in は下から上へ開く", () => {
+    const keyframes = MOTION.slice(MOTION.indexOf("@keyframes band-in"));
+    expect(
+      keyframes.slice(0, keyframes.indexOf("@keyframes typeLoop")),
+    ).toMatch(
+      /from\s*\{\s*clip-path: inset\(100% 0 0 0\);\s*\}\s*to\s*\{\s*clip-path: inset\(0 0 0 0\);/,
+    );
+  });
+
+  it("テーマの属性やテーマの設定で出現の規則を変えない", () => {
+    const style = HERO.slice(HERO.indexOf("<style>"));
+    expect(style).not.toMatch(/data-theme|prefers-color-scheme/);
+    expect(MOTION).not.toMatch(/data-theme|prefers-color-scheme/);
   });
 });
