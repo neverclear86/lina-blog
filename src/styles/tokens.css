@@ -36,9 +36,9 @@
  *
  * `tokens.test.ts` checks the plan A tokens against the design, checks that every foreground and
  * background pair used for text reaches 4.5:1 (WCAG AA) in both themes, and checks 3:1 for the
- * icon colors on `--surf`, for `--focus-ring` on `--bg`, `--bg2` and `--panel`, for the diff bars
- * of code blocks on their lines and for the focus ring of code blocks (`--keyword`) on `--code`.
- * Components use these tokens instead of color values.
+ * icon colors on `--surf` and `--bg2`, for `--focus-ring` on `--bg`, `--bg2` and `--panel`, for
+ * the diff bars of code blocks on their lines and for the focus ring of code blocks (`--keyword`)
+ * on `--code`. Components use these tokens instead of color values.
  */
 :root {
   color-scheme: light;

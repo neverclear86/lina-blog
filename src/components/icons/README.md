@@ -1,6 +1,6 @@
 # サービスのアイコン
 
-`IconLink` の四角に入れるサービスのアイコンの出典と利用条件である。図柄は配布物のパスを変えずに使い、色は `currentColor`（YouTube と Twitter(自称X) はトークン `--icon-yt`・`--icon-x`）で塗る。取得日はすべて 2026-09-28。
+`IconLink` の四角とトップのアカウントの窓（`HeroAccount`）の `.sq` に入れるサービスのアイコンの出典と利用条件である。図柄は配布物のパスを変えずに使い、色は `currentColor`（YouTube と Twitter(自称X) はトークン `--icon-yt`・`--icon-x`）で塗る。取得日はすべて 2026-09-28。
 
 | 部品 | 配布元の URL | ライセンス・利用条件 | 単色表示の根拠 | 最小サイズ・余白 | 元の SVG からの変更 |
 | --- | --- | --- | --- | --- | --- |
@@ -16,5 +16,5 @@
 どれも、アイコンの列を置くときに #27 で見直す。
 
 - YouTube の最小の高さ: アイコンのページは "To ensure our logos are always legible, their height should never be smaller than the following: Digital: 100px" とする。https://brand.youtube/promoting-your-channel は "When using YouTube inline with other social media icons, you should use the YouTube icon rather than the YouTube logo, being mindful of our logo usage and clear space guidelines." とする。図柄の高さは `IconLink` の 24px / 20px の箱の中で約 17px / 14px で、100px に届かない。
-- Twitter(自称X) の背景: ガイドラインは "Logo should be white on black background or black on white background." とするが、`IconLink` の四角の面は `--surf`（ライト `#f8f7f3`、ダーク `#222428`）で、純粋な白・黒ではない。
+- Twitter(自称X) の背景: ガイドラインは "Logo should be white on black background or black on white background." とするが、`IconLink` の四角の面は `--surf`（ライト `#f8f7f3`、ダーク `#222428`）で、純粋な白・黒ではない。`HeroAccount` の `.sq` の面は `--bg2` で、これも純粋な白・黒ではない。
 - Twitter(自称X) の余白: ガイドラインは "The empty space around the logo should be at minimum equal width left, right, top, bottom." とする。`IconLink` の四角の余白 16px / 12px は図柄の 24px / 20px 以上ではない。「等しい幅」を上下左右で等しい余白と読み、四角の余白が上下左右で同じ幅であることで満たすとした。

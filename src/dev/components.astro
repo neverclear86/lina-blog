@@ -9,6 +9,7 @@ import Button from "../components/Button.astro";
 import Chip from "../components/Chip.astro";
 import ContactForm from "../components/ContactForm.astro";
 import FaceIcon from "../components/FaceIcon.astro";
+import HeroAccount from "../components/HeroAccount.astro";
 import IconButton from "../components/IconButton.astro";
 import IconLink from "../components/IconLink.astro";
 import GitHubIcon from "../components/icons/GitHubIcon.astro";
@@ -201,6 +202,13 @@ const sampleVideos: YouTubeVideo[] = [
         />
       </div>
       <div class="stripes"></div>
+    </section>
+
+    <section id="a-hero-account">
+      <h2>A案: Hero のアカウントの窓</h2>
+      <div class="a-acct a-acct-520"><HeroAccount lang="ja" /></div>
+      <div class="a-acct a-acct-459"><HeroAccount lang="en" /></div>
+      <div class="a-acct a-acct-317"><HeroAccount lang="ja" /></div>
     </section>
 
     <section id="a-labels">
@@ -1125,6 +1133,22 @@ const sampleVideos: YouTubeVideo[] = [
   grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   gap: 14px;
   margin-top: 16px;
+}
+
+.a-acct {
+  margin-top: 16px;
+}
+
+.a-acct-520 {
+  max-width: 520px;
+}
+
+.a-acct-459 {
+  max-width: 459px;
+}
+
+.a-acct-317 {
+  max-width: 317px;
 }
 
 .a-samples {

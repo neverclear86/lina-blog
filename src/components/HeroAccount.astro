@@ -1,0 +1,167 @@
+---
+/**
+ * The account window of the hero, copied from `.win.acct` of `design/Main.dc.html` and
+ * `design/AMobile.dc.html`: the avatar of the brand kit in `.ticks-acc`, the label `account`,
+ * the handle `@LinaTsukusu` and a square link (`.sq`) with an icon for each of `accountLinks`.
+ * The label and the handle are the same in every locale. The avatar has an empty `alt` because
+ * the handle next to it names it, a link is named by its `aria-label`, and the `<nav>` by
+ * `hero.links`.
+ *
+ * The root is the size container and the window fills it, so the layout follows the width of
+ * the window, not of the screen. From 768px the squares stand under the handle while the window
+ * is wider than 459px: they need 294px and the column next to the avatar is 164px narrower than
+ * the window. A narrower window puts the squares in a second row under the avatar, and under
+ * 318px they wrap onto more rows. Up to 767px the squares are always in the second row, the
+ * label is left out and the avatar is 70px.
+ */
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import FaceIcon from "./FaceIcon.astro";
+import { type AccountLinkId, accountLinks } from "./hero-account";
+import GitHubIcon from "./icons/GitHubIcon.astro";
+import NostrIcon from "./icons/NostrIcon.astro";
+import RssIcon from "./icons/RssIcon.astro";
+import XIcon from "./icons/XIcon.astro";
+import YouTubeIcon from "./icons/YouTubeIcon.astro";
+import ZennIcon from "./icons/ZennIcon.astro";
+
+interface Props {
+  /** Language of the page, which picks the names of the links. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+
+const ICONS = {
+  youtube: YouTubeIcon,
+  twitter: XIcon,
+  github: GitHubIcon,
+  nostr: NostrIcon,
+  zenn: ZennIcon,
+  rss: RssIcon,
+} satisfies Record<AccountLinkId, unknown>;
+
+const links = accountLinks(lang);
+---
+
+<div class="account">
+  <div class="win acct">
+    <div class="ticks-acc"><FaceIcon kind="avatar" size={96} alt="" /></div>
+    <div class="text">
+      <div class="who">
+        <span class="label">account</span>
+        <span class="handle">@LinaTsukusu</span>
+      </div>
+      <nav aria-label={translate(lang, "hero.links")}>
+        {links.map(({ id, label, href, rel }) => {
+  const Icon = ICONS[id];
+  return (
+    <a class:list={["sq", `sq-${id}`]} href={href} rel={rel} aria-label={label}>
+      <Icon />
+    </a>
+  );
+})}
+      </nav>
+    </div>
+  </div>
+</div>
+
+<style>
+.account {
+  container-type: inline-size;
+}
+
+.acct {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 12px 20px;
+  align-items: center;
+  padding: 16px 20px 16px 16px;
+}
+
+.ticks-acc {
+  display: flex;
+  padding: 6px;
+}
+
+.text,
+.who {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.handle {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
+nav {
+  display: flex;
+  gap: 6px;
+}
+
+.sq :global(svg) {
+  width: 18px;
+  height: 18px;
+}
+
+.sq-twitter :global(svg) {
+  width: 15px;
+  height: 15px;
+}
+
+@container (max-width: 459px) {
+  .text {
+    display: contents;
+  }
+
+  nav {
+    grid-column: 1 / -1;
+  }
+}
+
+@container (max-width: 317px) {
+  nav {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 767px) {
+  .acct {
+    grid-template-columns: 80px minmax(0, 1fr);
+    gap: 12px 14px;
+    padding: 12px;
+  }
+
+  .ticks-acc {
+    padding: 5px;
+  }
+
+  .ticks-acc :global(img) {
+    width: 70px;
+    height: 70px;
+  }
+
+  .text {
+    display: contents;
+  }
+
+  nav {
+    grid-column: 1 / -1;
+  }
+
+  .label {
+    display: none;
+  }
+
+  .handle {
+    font-size: 16px;
+    letter-spacing: normal;
+  }
+}
+</style>

@@ -342,8 +342,9 @@ const FIELD_BORDER_PAIRS: readonly (readonly [
 );
 
 /**
- * Icon colors of `src/components/icons/` on the face of `IconLink` (`--surf`), checked in both
- * themes. An icon is a graphical object, so it must reach 3:1 (WCAG 2.2 SC 1.4.11).
+ * Icon colors of `src/components/icons/` on the face of `IconLink` (`--surf`) and on the face of
+ * `.sq` (`--bg2`), checked in both themes. An icon is a graphical object, so it must reach 3:1
+ * (WCAG 2.2 SC 1.4.11).
  */
 const ICON_PAIRS: readonly (readonly [
   foreground: string,
@@ -352,6 +353,9 @@ const ICON_PAIRS: readonly (readonly [
   ["--fg", "--surf"],
   ["--icon-yt", "--surf"],
   ["--icon-x", "--surf"],
+  ["--fg", "--bg2"],
+  ["--icon-yt", "--bg2"],
+  ["--icon-x", "--bg2"],
 ];
 
 /**
@@ -617,7 +621,7 @@ describe("tokens.css のコントラスト", () => {
   );
 
   it.each(Object.entries(themes))(
-    "%s のアイコンの色は --surf の上で 3:1 以上になる",
+    "%s のアイコンの色は --surf と --bg2 の上で 3:1 以上になる",
     (_theme, colors) => {
       const failures = ICON_PAIRS.flatMap(([foreground, background]) => {
         const ratio = contrastRatio(colors[foreground], colors[background]);

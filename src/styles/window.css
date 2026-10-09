@@ -1,7 +1,8 @@
 /*
  * Windows, corner ticks and background decorations of plan A, imported by
- * `src/layouts/Layout.astro` after `shapes.css`. The values are copied from `design/Main.dc.html`,
- * with the colors replaced by the tokens of `tokens.css`.
+ * `src/layouts/Layout.astro` after `shapes.css`. The values are copied from `design/Main.dc.html`
+ * and, up to 767px, from `design/AMobile.dc.html`, with the colors replaced by the tokens of
+ * `tokens.css`.
  *
  * `.win` is a panel (`--panel`, radius 6px) with a 1.5px border that fades from the keyword
  * orange through `--line2` to `--line`. The border is `.win::before`, a gradient ring cut out
@@ -29,8 +30,9 @@
  * `.ticks-acc` draws four keyword orange ticks, 14px long and 2px thick, on its `::after`, which
  * covers its box. Inside an `.acct`, they move out by 8px over 0.28s while the `.acct` is
  * hovered or an element in it has keyboard focus, and at once under
- * `prefers-reduced-motion: reduce`. `.acct` has no style of its own: it marks the box whose
- * hover and focus move the ticks. `.acct.is-hover` and `.acct.is-focus` show that state.
+ * `prefers-reduced-motion: reduce`. Up to 767px the ticks are 10px long and move out by 6px, also
+ * while the `.acct` is pressed. `.acct` has no style of its own: it marks the box whose hover and
+ * focus move the ticks. `.acct.is-hover` and `.acct.is-focus` show that state.
  *
  * `.gridbg` draws `--grid` lines every 48px on `--bg`. `.stripes` is an 18px band of diagonal
  * stripes in the keyword orange and `--ink` that repeat every 40px. `.av-shadow` gives an image
@@ -151,6 +153,28 @@ a.win:focus-visible::before,
 .acct.is-hover .ticks-acc::after,
 .acct.is-focus .ticks-acc::after {
   inset: -8px;
+}
+
+@media (max-width: 767px) {
+  .ticks-acc::after {
+    background-size:
+      10px 2px,
+      2px 10px,
+      10px 2px,
+      2px 10px,
+      10px 2px,
+      2px 10px,
+      10px 2px,
+      2px 10px;
+  }
+
+  .acct:hover .ticks-acc::after,
+  .acct:active .ticks-acc::after,
+  .acct:has(:focus-visible) .ticks-acc::after,
+  .acct.is-hover .ticks-acc::after,
+  .acct.is-focus .ticks-acc::after {
+    inset: -6px;
+  }
 }
 
 .gridbg {
