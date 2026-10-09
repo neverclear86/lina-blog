@@ -511,6 +511,24 @@ describe("tokens.css のコントラスト", () => {
     ).toEqual([...CODE_BACKGROUNDS].sort());
   });
 
+  it("コードブロックの題の帯の下線 --code-line と枠 --code-line2 は、ダークの --line と --line2 と同じ値で、両テーマで変えない", () => {
+    const darkOnly = declarations(tokens, ':root[data-theme="dark"]');
+    expect(light["--code-line"]).toBe("rgba(236,234,229,.12)");
+    expect(light["--code-line"]).toBe(darkOnly["--line"]);
+    expect(light["--code-line2"]).toBe(darkOnly["--line2"]);
+    expect(darkOnly).not.toHaveProperty("--code-line");
+    expect(darkOnly).not.toHaveProperty("--code-line2");
+  });
+
+  it("コードブロックの窓は枠を --line2、題の帯の下線を --code-line で描く", () => {
+    expect(highlightCss).toMatch(
+      /figure\.code-window\s*\{[^}]*?border:\s*1px solid var\(--line2\)/,
+    );
+    expect(highlightCss).toMatch(
+      /figure\.code-window > figcaption\s*\{[^}]*?border-bottom:\s*1px solid var\(--code-line\)/,
+    );
+  });
+
   it.each(Object.entries(themes))(
     "%s のコードブロックのフォーカスの輪は --keyword で描き、--code の上で 3:1 以上になる",
     (_theme, colors) => {

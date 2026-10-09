@@ -8,35 +8,65 @@ function render(markdown: string) {
 }
 
 describe("codeFilename", () => {
-  it("ファイル名付きのコードブロックを figure と figcaption で包み、言語はファイル名を除いた値にする", () => {
+  it("ファイル名付きのコードブロックを figure と figcaption で包み、題をファイル名、言語をファイル名を除いた値にする", () => {
     const html = render("```ts:src/hello.ts\nconst a = 1;\n```\n");
     expect(html).toContain(
-      '<figure class="code-file"><figcaption>src/hello.ts</figcaption><pre><code class="language-ts">const a = 1;',
+      '<figure class="code-window"><figcaption>src/hello.ts</figcaption><pre><code class="language-ts">const a = 1;',
     );
   });
 
   it("言語の無いファイル名付きのコードブロックは、言語のクラスを付けずに包む", () => {
     const html = render("```:notes.txt\nhi\n```\n");
     expect(html).toContain(
-      '<figure class="code-file"><figcaption>notes.txt</figcaption><pre><code>hi',
+      '<figure class="code-window"><figcaption>notes.txt</figcaption><pre><code>hi',
     );
   });
 
-  it("ファイル名の無いコードブロックは変えない", () => {
-    const html = render("```ts\nconst a = 1;\n```\n");
-    expect(html).toBe(
-      '<pre><code class="language-ts">const a = 1;\n</code></pre>\n',
-    );
-  });
+  it.each(["ts", "brainfuck"])(
+    "ファイル名の無いコードブロックは、書いた言語 %s を題にして包む",
+    (lang) => {
+      const html = render(`\`\`\`${lang}\nx\n\`\`\`\n`);
+      expect(html).toBe(
+        `<figure class="code-window"><figcaption>${lang}</figcaption><pre><code class="language-${lang}">x\n</code></pre></figure>\n`,
+      );
+    },
+  );
 
-  it("言語もファイル名も無いコードブロックは変えない", () => {
+  it("言語もファイル名も無いコードブロックは、題を text にして包む", () => {
     const html = render("```\nhi\n```\n");
-    expect(html).toBe("<pre><code>hi\n</code></pre>\n");
+    expect(html).toBe(
+      '<figure class="code-window"><figcaption>text</figcaption><pre><code>hi\n</code></pre></figure>\n',
+    );
   });
 
-  it("言語の後ろの : にファイル名が続かないコードブロックは変えない", () => {
+  it("字下げのコードブロックも、題を text にして包む", () => {
+    const html = render("    hi\n");
+    expect(html).toBe(
+      '<figure class="code-window"><figcaption>text</figcaption><pre><code>hi\n</code></pre></figure>\n',
+    );
+  });
+
+  it("diff の後ろの meta は題に出さず、言語の diff だけを題にする", () => {
+    const html = render("```diff js\n+a\n```\n");
+    expect(html).toContain("<figcaption>diff</figcaption>");
+    expect(html).toContain('class="language-diff"');
+    expect(html).not.toContain("<figcaption>diff js");
+  });
+
+  it("言語の後ろの : にファイル名が続かないコードブロックは、書いたままの言語を題にして包む", () => {
     const html = render("```ts:\nx\n```\n");
-    expect(html).toBe('<pre><code class="language-ts:">x\n</code></pre>\n');
+    expect(html).toBe(
+      '<figure class="code-window"><figcaption>ts:</figcaption><pre><code class="language-ts:">x\n</code></pre></figure>\n',
+    );
+  });
+
+  it("リストと引用の中のコードブロックも包み、包んだ中を二重に包まない", () => {
+    const html = render(
+      "- item\n\n  ```ts\n  a\n  ```\n\n> ```sh:run.sh\n> b\n> ```\n",
+    );
+    expect(html.match(/<figure /g)).toHaveLength(2);
+    expect(html).toContain("<figcaption>ts</figcaption>");
+    expect(html).toContain("<figcaption>run.sh</figcaption>");
   });
 
   it("ハイライトの関数にファイル名を除いた言語とメタを渡す", async () => {
@@ -64,7 +94,7 @@ describe("codeFilename", () => {
   it("ファイル名が : を含むときは、最初の : より前を言語にする", () => {
     const html = render("```ts:C:\\work\\a.ts\nx\n```\n");
     expect(html).toContain(
-      '<figure class="code-file"><figcaption>C:\\work\\a.ts</figcaption><pre><code class="language-ts">x',
+      '<figure class="code-window"><figcaption>C:\\work\\a.ts</figcaption><pre><code class="language-ts">x',
     );
   });
 });

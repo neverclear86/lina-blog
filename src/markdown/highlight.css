@@ -1,24 +1,53 @@
-/* Code blocks rendered by src/markdown/highlight.ts. Tokens carry role classes (`hl-keyword` and
-   so on) and diff lines carry `diff-add` or `diff-del`. The block is on `--code`, which follows the
-   site theme, and the text colors are the `--code-*` properties in src/styles/tokens.css, which
-   are the same in both themes. */
+/* Code blocks: the window that src/markdown/code-filename.ts puts around each of them
+   (`figure.code-window`, with the title in a `figcaption` above the `pre`) and the `pre.shiki`
+   that src/markdown/highlight.ts renders. Tokens carry role classes (`hl-keyword` and so on)
+   and diff lines carry `diff-add` or `diff-del`. The window is on `--code`, which follows the
+   site theme, and the text colors and the line under the title are the `--code-*` properties in
+   src/styles/tokens.css, which are the same in both themes. The type of the title and the code
+   is 11px and 12.5px, and 12px and 14px from 768px. */
 
-pre.shiki {
-  padding: 14px 16px 14px 8px;
-  overflow-x: auto;
+figure.code-window {
+  margin: 0 0 1.4em;
+  overflow: hidden;
+  border: 1px solid var(--line2);
+  border-radius: 6px;
   background: var(--code);
   color: var(--code-fg);
+}
+
+figure.code-window > figcaption {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--code-line);
+  color: var(--code-comment);
   font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.7;
+  font-size: 11px;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+
+pre.shiki {
+  margin: 0;
+  padding: 14px 14px 14px 6px;
+  overflow-x: auto;
+  color: var(--code-fg);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.9;
   tab-size: 2;
-  border-radius: 4px;
-  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
 }
 
 @media (min-width: 768px) {
+  figure.code-window {
+    margin-bottom: 1.6em;
+  }
+
+  figure.code-window > figcaption {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
   pre.shiki {
-    padding: 16px 20px 16px 12px;
+    padding: 18px 20px 18px 12px;
     font-size: 14px;
   }
 }

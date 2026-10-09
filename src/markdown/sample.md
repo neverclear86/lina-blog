@@ -72,9 +72,9 @@ h4 は本文と同じ大きさで、太さで区別する。
 | --- | --- | --- | --- | :-: | --: | --- |
 | `processor` | Markdown の処理系 | Sätteri | `MarkdownProcessor` | いいえ | 7.0 | 長い説明の文をここに置いて、列の幅が広がることを確かめる |
 
-## コードブロックのファイル名
+## コードブロックの題の帯
 
-言語の後ろに `:` とファイル名を書くと、コードブロックの上にファイル名が出る。
+言語の後ろに `:` とファイル名を書くと、コードブロックの題の帯にファイル名が出る。
 
 ```ts:src/hello.ts
 export function hello(name: string): string {
@@ -89,10 +89,16 @@ dist/
 node_modules/
 ```
 
-ファイル名を書かないコードブロックは、そのまま出る。
+ファイル名を書かないコードブロックの題の帯には、書いた言語が出る。
 
 ```sh
 bun run build
+```
+
+ファイル名が長いときは、題の帯の中で折り返す。
+
+```ts:src/components/articles/very-long-directory-name/another-long-directory-name/hello-world-example.ts
+export const hello = "world";
 ```
 
 ## タスクリスト
