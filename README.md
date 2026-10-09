@@ -39,6 +39,7 @@ bun create astro@latest -- --template basics
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
 │   ├── og-font.ts        # Downloads the OGP fonts (headings and labels) as TrueType from Google Fonts, unit-tested
 │   ├── og-image.ts       # Draws OGP images with Satori and sharp (Node only): the plan A element tree of a title, language, category and sponsor, and the PNG of any tree, unit-tested
+│   ├── og-pages.ts       # Paths of the OGP images and what each one says (title, category, sponsor), unit-tested
 │   ├── page-meta.ts      # Description (default from ui.ts) and Open Graph tags of a page, unit-tested
 │   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro, hero-account.ts and footer-links.ts
 │   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
@@ -130,6 +131,8 @@ bun create astro@latest -- --template basics
 │   │   │   └── tags/
 │   │   │       └── [tag].astro   # /blog/tags/devlog/, tech/ and diary/: the posts of one tag, built with or without posts
 │   │   ├── llms.txt.ts   # /llms.txt, prerendered to dist/client/
+│   │   ├── og/
+│   │   │   └── images.json.ts # /og/images.json: the OGP images to draw, read and deleted by astro.config.mjs after the build
 │   │   ├── robots.txt.ts # /robots.txt, prerendered to dist/client/
 │   │   ├── rss.xml.ts    # /rss.xml: prerendered RSS feed with each post's full HTML
 │   │   └── text/
@@ -156,7 +159,7 @@ bun create astro@latest -- --template basics
 │       │   └── published-record.ts  # Reads src/content/published.json on GitHub for GET /articles
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
-├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin, sitemap; pages are prerendered by default
+├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin, sitemap, OGP image writer; pages are prerendered by default
 ├── biome.json
 ├── wrangler.jsonc
 └── package.json
@@ -166,7 +169,7 @@ Pages are prerendered unless they export `prerender = false`. The Worker runs fi
 
 Pages that exist in every language go in `src/pages/[lang]/` and are generated once for each locale in `src/i18n/locales.ts` (`/ja/`, `/en/`); their UI strings come from `src/i18n/ui.ts`. Pages outside `[lang]/`, such as the Japanese-only blog under `/blog/`, have no language prefix. Astro's `i18n()` handler in `src/fetch.ts` is never reached, so `astro build` warns that the project does not call it; running it would answer 404 for those unprefixed paths. The layout links every page to the same path in the other locales (`src/i18n/paths.ts`); a page without a language prefix links to the other locale's top page. Every page also has a canonical link and hreflang alternates, as absolute URLs under `site` in `astro.config.mjs` (`canonicalUrl` and `alternateLinks` in `src/i18n/paths.ts`): a page under `[lang]/` lists itself in each locale and `x-default` pointing to `/`, and a page without a language prefix lists only itself, in Japanese.
 
-Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema. `astro build` leaves them out unless `LINA_DEV_PAGES=1` is set (see “CSS”); with it they reach `dist/` like other posts, in `/blog/`, the tag pages, their own pages `/blog/<slug>/`, the latest posts on the home page, `/rss.xml` and the text version, so that build is only for screenshots and is never deployed.
+Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema. `astro build` leaves them out unless `LINA_DEV_PAGES=1` is set (see “CSS”); with it they reach `dist/` like other posts, in `/blog/`, the tag pages, their own pages `/blog/<slug>/`, the latest posts on the home page, `/rss.xml`, the text version and the OGP images `/og/blog/<slug>.png`, so that build is only for screenshots and is never deployed.
 
 Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are highlighted at build time by `src/markdown/highlight.ts`, which gives tokens role classes such as `hl-keyword` instead of inline styles; `markdown.syntaxHighlight` is off so Astro's own Shiki does not run. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player. An accordion is written as raw HTML (`<details>` and `<summary>`), and how to write one is in `docs/markdown.md`. An `<aside class="note">` or `<aside class="warning">` written as raw HTML in an article is styled as a message box (`docs/markdown.md` shows how to write one).
 
@@ -253,6 +256,14 @@ Satori and sharp, in Node: the ink ground and grid of plan A in the dark colors 
 `src/assets/name-logo/t3_full_for-dark.svg` of the brand kit, kept as it is. A sponsored post
 also has a "PR" chip and a row with the sponsor's name. A title is cut after three lines with an
 ellipsis, and a sponsor's name after one.
+
+`astro build` writes the OGP images to `dist/client/og/`: `/og/ja.png` and `/og/en.png` for the
+top pages and `/og/blog/<slug>.png` for every post (`src/og-pages.ts` gives the paths and what
+each image says). They are drawn in Node, because sharp cannot be loaded in workerd, where the
+pages are prerendered. The endpoint `src/pages/og/images.json.ts` lists the images, and the
+`ogImages()` integration in `astro.config.mjs` draws them with `renderOgImage()` and the fonts of
+`src/og-font.ts` when the build is done, then deletes the list. The build downloads the fonts, so
+it needs the network, as the Fonts API already makes it. `astro dev` does not draw the images.
 
 The avatar `src/assets/main-visual.webp` (the fourth pose of the Hero) is also turned into text art
 for terminals. The `linaAnsiArt()` Vite plugin in `astro.config.mjs` calls `decodeAnsiArtSource()`

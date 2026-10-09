@@ -121,7 +121,8 @@ const ja = {
   // Name of the link from the logo in the site header to the top page.
   "header.homeLabel": "ikili.pro トップ",
   // Hero of the top page: the heading in two parts (the second one is marked), the intro and the
-  // button to the latest video.
+  // button to the latest video. The two parts of the heading also make the title of the OGP image
+  // of the top page (src/og-pages.ts).
   "hero.headingLead": "IT技術で、",
   "hero.headingMark": "本気で遊ぶ。",
   "hero.intro":

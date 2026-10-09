@@ -1,5 +1,8 @@
 // @ts-check
 import { existsSync, readFileSync } from "node:fs";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import cloudflare from "@astrojs/cloudflare";
 import { satteri } from "@astrojs/markdown-satteri";
 import sitemap from "@astrojs/sitemap";
@@ -12,6 +15,9 @@ import { codeFilename } from "./src/markdown/code-filename.ts";
 import { highlightCodeBlocks } from "./src/markdown/highlight.ts";
 import { tableAlignToClass } from "./src/markdown/table-align.ts";
 import { youtubeEmbed } from "./src/markdown/youtube.ts";
+import { loadOgFonts } from "./src/og-font.ts";
+import { renderOgImage } from "./src/og-image.ts";
+import { OG_IMAGES_LIST_PATH } from "./src/og-pages.ts";
 import { isSitemapPage, withXDefault } from "./src/sitemap.ts";
 
 /** Same pattern Astro uses to read a page's `export const prerender`. */
@@ -81,6 +87,39 @@ function linaAnsiArt() {
   };
 }
 
+/**
+ * Writes the OGP images to `dist/client/og/` when the build is done.
+ *
+ * The images are drawn here, in Node, because sharp cannot be loaded in workerd, where the pages
+ * are prerendered. `astro:content` cannot be imported in this file, so the endpoint
+ * `src/pages/og/images.json.ts`, which is prerendered with the pages, lists the images
+ * (`ogImagePages` in `src/og-pages.ts`) in `dist/client/og/images.json`. This hook draws each
+ * image of the list with the fonts of `loadOgFonts`, writes it to its path in `dist/client/` and
+ * deletes the list, so Workers Static Assets does not serve it. A missing or empty list, or a
+ * font that cannot be downloaded, fails the build.
+ * @returns {import('astro').AstroIntegration}
+ */
+function ogImages() {
+  return {
+    name: "og-images",
+    hooks: {
+      "astro:build:done": async ({ dir, logger }) => {
+        const list = fileURLToPath(new URL(`.${OG_IMAGES_LIST_PATH}`, dir));
+        /** @type {import('./src/og-pages.ts').OgImagePage[]} */
+        const pages = JSON.parse(await readFile(list, "utf8"));
+        const fonts = await loadOgFonts();
+        for (const { path, input } of pages) {
+          const file = fileURLToPath(new URL(`.${path}`, dir));
+          await mkdir(dirname(file), { recursive: true });
+          await writeFile(file, await renderOgImage(input, fonts));
+        }
+        await rm(list);
+        logger.info(`Wrote ${pages.length} OGP images.`);
+      },
+    },
+  };
+}
+
 // https://astro.build/config
 export default defineConfig({
   // Origin of absolute URLs, such as the links in /llms.txt and /rss.xml, the sitemap, the
@@ -115,6 +154,7 @@ export default defineConfig({
         locales: Object.fromEntries(LOCALES.map((locale) => [locale, locale])),
       },
     }),
+    ogImages(),
   ],
   vite: { plugins: [linaAnsiArt()] },
   // Sessions are not used; this also keeps the adapter from provisioning a KV namespace.

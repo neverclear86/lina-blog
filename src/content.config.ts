@@ -11,8 +11,9 @@ import { workSchema } from "./work-schema";
  * `astro dev` also loads `src/content/blog-dev/`, posts for checking how pages look, and so does
  * `astro build` when `LINA_DEV_PAGES` is `1` (the same switch as the dev pages, `devPagesEnabled`).
  * They are checked by the same schema. In that build they also reach `/blog/`, the tag pages,
- * the pages of the posts (`/blog/<slug>/`), the latest posts on the home page, `/rss.xml` and the
- * text version; without the variable `astro build` leaves them out.
+ * the pages of the posts (`/blog/<slug>/`), the latest posts on the home page, `/rss.xml`, the
+ * text version and the OGP images of the posts (`/og/blog/<slug>.png`); without the variable
+ * `astro build` leaves them out.
  */
 const blog = defineCollection({
   loader: glob({
