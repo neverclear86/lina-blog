@@ -1,8 +1,8 @@
 /**
  * Links to the profiles on other services, shared by `/llms.txt` (`src/llms.ts`), the text
- * version of the site (`src/text-site.ts`), the video list of the Latest section
- * (`src/components/LatestVideoList.astro`) and the icon row of the hero
- * (`src/components/Hero.astro`).
+ * version of the site (`src/text-site.ts`), the large window and the video list of the Latest
+ * section (`src/components/LatestVideoFeature.astro`, `src/components/LatestVideoList.astro`)
+ * and the icon row of the hero (`src/components/Hero.astro`).
  */
 import type { Locale } from "./i18n/locales";
 
