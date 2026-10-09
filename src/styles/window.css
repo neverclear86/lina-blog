@@ -12,6 +12,11 @@
  * focus, for `src/dev/components.astro`. Under `prefers-reduced-motion: reduce` the angle changes
  * without a transition.
  *
+ * `.article-body details`, the accordion of an article (see `ArticleBody.astro`), has the same
+ * panel and ring as `.win` without a class. Its ring turns like the one of `a.win` while its
+ * direct `<summary>` is hovered or has keyboard focus, and its transition stops under
+ * `prefers-reduced-motion: reduce` too.
+ *
  * `.ticks` draws four `--muted` L-shaped ticks, 16px long and 1.5px thick, at the corners of its
  * box with `background`, so it replaces the `background-color` of the element.
  * `.ticks-acc` draws four keyword orange ticks, 14px long and 2px thick, on its `::after`, which
@@ -38,13 +43,15 @@
   initial-value: 0deg;
 }
 
-.win {
+.win,
+.article-body details {
   position: relative;
   background: var(--panel);
   border-radius: 6px;
 }
 
-.win::before {
+.win::before,
+.article-body details::before {
   --wa: 0deg;
   --wb: 360deg;
 
@@ -73,6 +80,8 @@
 
 a.win:hover::before,
 a.win:focus-visible::before,
+.article-body details:has(> summary:hover)::before,
+.article-body details:has(> summary:focus-visible)::before,
 .win.is-hover::before,
 .win.is-focus::before {
   --wa: 180deg;
@@ -165,8 +174,11 @@ a.win:focus-visible::before,
 
 @media (prefers-reduced-motion: reduce) {
   .win::before,
+  .article-body details::before,
   a.win:hover::before,
   a.win:focus-visible::before,
+  .article-body details:has(> summary:hover)::before,
+  .article-body details:has(> summary:focus-visible)::before,
   .win.is-hover::before,
   .win.is-focus::before,
   .ticks-acc::after {

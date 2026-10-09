@@ -55,6 +55,38 @@ h4 は本文と同じ大きさで、太さで区別する。
 
 区切り線の後の段落。
 
+## アコーディオン
+
+`<details>` と `<summary>` を書くと、開閉できる窓になる。
+
+<details>
+<summary>閉じた例（<code>code</code> と <strong>太字</strong> を含む要約）</summary>
+
+中身は Markdown で書ける。**太字**、`inline code`、[リンク](https://ikili.pro/)、リストも使える。
+
+- 1 つ目の項目
+- 2 つ目の項目
+
+</details>
+
+<details open>
+<summary>最初から開いている例</summary>
+
+`open` を付けると、最初から開いた状態で出る。中にコードブロックも置ける。
+
+```sh
+bun run build
+```
+
+</details>
+
+<details>
+<summary>要約が長いと折り返す。長い要約の例として、本文の幅を超える長さの文をここに置いて、2 行以上になることを確かめる</summary>
+
+折り返した要約でも、印は右端に残る。
+
+</details>
+
 ## 脚注
 
 脚注は本文の末尾にまとめて出る[^first]。同じ脚注を 2 か所から参照できる[^first]。名前の長い脚注も書ける[^long-name]。
