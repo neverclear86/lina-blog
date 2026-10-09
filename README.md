@@ -23,7 +23,7 @@ bun create astro@latest -- --template basics
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
 │   ├── avatar-images.ts  # The nine v2.1 avatar images of src/assets/ with their alt keys, widths, sizes and priority, unit-tested
-│   ├── blog-pages.ts     # Tag pages of /blog/tags/<slug>/, the heading texts, the breadcrumbs and the tag filter links of the blog pages, unit-tested
+│   ├── blog-pages.ts     # Paths of /blog/<slug>/ and /blog/tags/<slug>/, the heading texts, the breadcrumbs, the tag filter links, and the breadcrumb, date and reading time of a post, unit-tested
 │   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
 │   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
