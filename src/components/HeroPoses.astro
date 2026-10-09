@@ -6,12 +6,16 @@
  * `0`, and a table of five rows at the bottom right. The root fills the box that holds it
  * (`position: absolute; inset: 0`), which the parent places.
  *
- * Only the first pose is shown. A click on the button, which Enter and Space also make, wipes the
- * next pose in and the shown one out, diagonally from the bottom (`pz-in`, `pz-out`); the others
- * are `visibility: hidden`, so that their lazy images load.
- * `poseClass` in `hero-poses.ts` gives the class of each image, for the first view here and for
- * each click in the script. Under `prefers-reduced-motion: reduce` the poses change without the
- * wipe. The button and the `pose · click` row of the table are `hidden` until the script runs,
+ * Only the first pose is shown. When the page opens, it fades in and slides 90px from the right in
+ * 1s after 0.3s (`pz-init`, with the keyframes `av-in` of `design/Main.dc.html`; 60px up to 767px,
+ * as in `design/AMobile.dc.html`), and keeps nothing after it ends. The animation is in CSS, so
+ * the first pose is shown without JavaScript too, and it does not read the theme, so switching it
+ * does not play the animation again. A click on the button, which Enter and Space also make, wipes
+ * the next pose in and the shown one out, diagonally from the bottom (`pz-in`, `pz-out`); the
+ * others are `visibility: hidden`, so that their lazy images load. `poseClass` in `hero-poses.ts`
+ * gives the class of each image, for the first view here and for each click in the script. Under
+ * `prefers-reduced-motion: reduce` the first pose is shown at once and the poses change without
+ * the wipe. The button and the `pose · click` row of the table are `hidden` until the script runs,
  * so without JavaScript the first pose stays and no button that does nothing is left.
  *
  * The button is named by `hero.poseButton`, which the script rebuilds with the number of the pose
@@ -193,12 +197,27 @@ const label = translate(lang, "hero.poseButton");
   visibility: hidden;
 }
 
+.pose.pz-init {
+  animation: av-in 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s backwards;
+}
+
 .pose.pz-in {
   animation: pz-in 0.6s cubic-bezier(0.65, 0, 0.35, 1) both;
 }
 
 .pose.pz-out {
   animation: pz-out 0.6s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+@keyframes av-in {
+  from {
+    opacity: 0;
+    translate: var(--av-in-dx, 90px) 0;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+  }
 }
 
 @keyframes pz-in {
@@ -225,6 +244,7 @@ const label = translate(lang, "hero.poseButton");
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .pose.pz-init,
   .pose.pz-in,
   .pose.pz-out {
     animation: none;
@@ -258,6 +278,7 @@ const label = translate(lang, "hero.poseButton");
   }
 
   .pose {
+    --av-in-dx: 60px;
     top: 20px;
     bottom: auto;
     height: 1195px;
@@ -307,11 +328,8 @@ for (const root of document.querySelectorAll<HTMLElement>(
     const previous = current;
     current = nextPose(current, images.length);
     images.forEach((image, i) => {
-      image.classList.remove("pz-in", "pz-out", "pz-off");
-      const state = poseClass(i, current, previous);
-      if (state) {
-        image.classList.add(state);
-      }
+      image.classList.remove("pz-init", "pz-in", "pz-out", "pz-off");
+      image.classList.add(poseClass(i, current, previous));
     });
     button.setAttribute(
       "aria-label",
