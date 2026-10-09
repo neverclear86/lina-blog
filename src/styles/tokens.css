@@ -11,6 +11,9 @@
  * design's names. `--focus-ring` is not in the design: the keyword orange is 2.53:1 on the light
  * `--bg`, below the 3:1 of WCAG 2.2 SC 1.4.11, so it is the orange in the dark theme and the text
  * color in the light theme.
+ * The light `--hdr` is not the design's either: at 0.88 the header over
+ * a code block (`--code`) is 4.44:1 for `--muted`, the text of its navigation, and at 0.9 it is
+ * 4.63:1.
  *
  * The legacy tokens are the ones of the earlier design, copied from `.root` and `.root.dark` in
  * `design/CBMain.dc.html`, except the dark `--num`: the design's `#b85510` is 3.7:1 on the dark
@@ -42,7 +45,7 @@
   --bg: #eceae5;
   --bg2: #e2e0da;
   --panel: #f6f5f1;
-  --hdr: rgba(236, 234, 229, 0.88);
+  --hdr: rgba(236, 234, 229, 0.9);
   --line: rgba(35, 36, 39, 0.14);
   --line2: rgba(35, 36, 39, 0.3);
   --grid: rgba(35, 36, 39, 0.06);
