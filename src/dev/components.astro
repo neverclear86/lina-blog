@@ -5,6 +5,7 @@ import { AVATAR_IMAGES, avatarAlt, THUMBS_UP_BAND } from "../avatar-images";
 import Bubble from "../components/Bubble.astro";
 import Button from "../components/Button.astro";
 import Chip from "../components/Chip.astro";
+import FaceIcon from "../components/FaceIcon.astro";
 import IconButton from "../components/IconButton.astro";
 import IconLink from "../components/IconLink.astro";
 import GitHubIcon from "../components/icons/GitHubIcon.astro";
@@ -491,6 +492,34 @@ const sampleVideos: YouTubeVideo[] = [
       </div>
     </section>
 
+    <section id="face-icon">
+      <h2>顔アイコン</h2>
+      <div class="row">
+        <FaceIcon kind="mark" size={27} alt="" />
+        <FaceIcon kind="mark" size={28} alt="" />
+        <FaceIcon kind="mark" size={44} alt="" />
+        <FaceIcon kind="mark" size={45} alt="" />
+        <FaceIcon kind="mark" size={96} alt="" />
+      </div>
+      <div class="row">
+        <div class="inv-face">
+          <FaceIcon kind="mark" size={28} alt="" tone="inverse" />
+        </div>
+        <div class="inv-face">
+          <FaceIcon kind="mark" size={45} alt="" tone="inverse" />
+        </div>
+        <div class="inv-face">
+          <FaceIcon kind="mark" size={96} alt="" tone="inverse" />
+        </div>
+      </div>
+      <div class="row">
+        <FaceIcon kind="avatar" size={24} alt="" />
+        <FaceIcon kind="avatar" size={39} alt="" />
+        <FaceIcon kind="avatar" size={40} alt="" />
+        <FaceIcon kind="avatar" size={96} alt="創好リナ アイコン" />
+      </div>
+    </section>
+
     <section id="chips">
       <h2>チップ</h2>
       <div class="row">
@@ -815,6 +844,12 @@ const sampleVideos: YouTubeVideo[] = [
 
 .part > span {
   display: block;
+}
+
+.inv-face {
+  display: inline-flex;
+  padding: 16px;
+  background: var(--inv);
 }
 
 .cbg {

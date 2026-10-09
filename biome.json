@@ -6,7 +6,14 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!!**/dist", "!!.claude", "!!design", "!!public/favicon"]
+    "includes": [
+      "**",
+      "!!**/dist",
+      "!!.claude",
+      "!!design",
+      "!!public/favicon",
+      "!!src/assets/icon"
+    ]
   },
   "formatter": {
     "enabled": true,

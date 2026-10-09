@@ -1,0 +1,103 @@
+---
+import avatarDark from "../assets/icon/avatar-dark-on-ivory-square.svg";
+import avatarIvory from "../assets/icon/avatar-ivory-on-ink-square.svg";
+import avatarSmallDark from "../assets/icon/avatar-small-dark-on-ivory-square.svg";
+import avatarSmallIvory from "../assets/icon/avatar-small-ivory-on-ink-square.svg";
+import iconDark from "../assets/icon/icon-dark.svg";
+import iconIvory from "../assets/icon/icon-ivory.svg";
+import iconSmallDark from "../assets/icon/icon-small-dark.svg";
+import iconSmallIvory from "../assets/icon/icon-small-ivory.svg";
+import {
+  type AvatarFile,
+  avatarFiles,
+  type FaceTone,
+  type MarkFile,
+  markFiles,
+} from "./face-icon";
+
+/**
+ * A face icon of the brand kit (`src/assets/icon/`), switched with the theme.
+ *
+ * `kind="mark"` is the face alone, in the color that stands out on the face it is drawn on:
+ * `tone="default"`, for faces such as `--bg`, is the dark mark on the light theme and the ivory
+ * mark on the dark theme, and `tone="inverse"`, for the inverted faces `--inv` and `--cbg`, is
+ * the other way round. `kind="avatar"` is the face on a square ground of its own (ivory on ink in
+ * the dark theme, dark on ivory in the light theme), so it takes no tone. `size` picks the
+ * version of the kit: see `markFiles` and `avatarFiles` in `face-icon.ts`.
+ *
+ * The files are shown as the kit ships them, as two `<img>` elements, and CSS hides the one that
+ * does not match the theme. The dark theme is `<html data-theme="dark">`, which `Layout.astro`
+ * renders and `THEME_SCRIPT` in `src/theme.ts` sets before the first paint, so it is also the
+ * theme when JavaScript does not run; any other value shows the image for the light theme. The
+ * hidden `<img>` is `display: none`, so assistive technology reads the `alt` only once and the
+ * lazily loaded file is not fetched. A style that resizes the icons must keep each one in the
+ * range of its `size`, because the version is picked from `size`.
+ */
+type Props = {
+  /** Side in CSS pixels of the square the icon is drawn in; a mark needs 27 or more. */
+  size: number;
+  /**
+   * Text alternative. Pass `""` when the icon is decoration or text next to it already names the
+   * site; otherwise describe it.
+   */
+  alt: string;
+} & (
+  | {
+      kind: "mark";
+      /**
+       * Face the mark is drawn on: "default" for faces such as `--bg`, or "inverse" for `--inv`
+       * and `--cbg`. Defaults to "default".
+       */
+      tone?: FaceTone;
+    }
+  | { kind: "avatar" }
+);
+
+const FILES: Record<MarkFile | AvatarFile, ImageMetadata> = {
+  "icon-dark": iconDark,
+  "icon-ivory": iconIvory,
+  "icon-small-dark": iconSmallDark,
+  "icon-small-ivory": iconSmallIvory,
+  "avatar-dark-on-ivory-square": avatarDark,
+  "avatar-ivory-on-ink-square": avatarIvory,
+  "avatar-small-dark-on-ivory-square": avatarSmallDark,
+  "avatar-small-ivory-on-ink-square": avatarSmallIvory,
+};
+
+const props = Astro.props;
+const { size, alt } = props;
+const files =
+  props.kind === "mark" ? markFiles(size, props.tone) : avatarFiles(size);
+---
+
+<span class="face-icon">
+  {(["light", "dark"] as const).map((theme) => (
+  <img
+    src={FILES[files[theme]].src}
+    alt={alt}
+    width={size}
+    height={size}
+    loading="lazy"
+    decoding="async"
+    class={`on-${theme}`}
+  />
+))}
+</span>
+
+<style>
+.face-icon {
+  display: inline-flex;
+}
+img {
+  display: block;
+}
+.on-dark {
+  display: none;
+}
+:global(:root[data-theme="dark"]) .on-light {
+  display: none;
+}
+:global(:root[data-theme="dark"]) .on-dark {
+  display: block;
+}
+</style>

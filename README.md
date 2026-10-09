@@ -47,6 +47,7 @@ bun create astro@latest -- --template basics
 │   ├── youtube-feed.ts   # Channel RSS feed to the newest videos at build time (WebP or JPEG thumbnails), unit-tested
 │   ├── assets/           # Images processed by astro:assets
 │   │   ├── <avatar>.webp   # Nine avatars of v2.1 (rohan, lgtm-fullbody, happy-fullbody, main-visual, threeview-front/side/back, lgtm-bastup, hate), made by scripts/avatars/ (see "Images and caching")
+│   │   ├── icon/           # Face mark and avatar SVGs of the brand kit (regular and small versions), used as they are by FaceIcon
 │   │   ├── logo-black.png  # Black logo (light theme, or inverse faces on the dark theme), optimized by astro:assets
 │   │   ├── logo-light.png  # Logo (light theme)
 │   │   └── logo-white.png  # White logo (dark theme, or inverse faces on the light theme)
@@ -58,6 +59,8 @@ bun create astro@latest -- --template basics
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
 │   │   ├── Chip.astro            # Small notched label in pink, orange or neutral, optionally tilted
 │   │   ├── ContactSection.astro  # Contact section of the top page: heading, lead and the form in a paper terminal window, sent with Turnstile by its script
+│   │   ├── face-icon.ts          # Picks the brand kit files of a face mark or avatar from its size and tone, unit-tested
+│   │   ├── FaceIcon.astro        # Face mark or avatar from the brand kit SVGs, switched with the theme; tone="inverse" for the mark on --inv and --cbg faces
 │   │   ├── Hero.astro            # Hero of the top page: LINA, TSUKUSU, name, tagline chip, intro and profile links
 │   │   ├── IconButton.astro      # Square icon-only button, named by an aria-label or a hidden label slot
 │   │   ├── IconLink.astro        # Icon square with a label below, for the social links
@@ -71,7 +74,7 @@ bun create astro@latest -- --template basics
 │   │   ├── PostList.astro        # Post cards in one column, two from 1024px, or one line when there are none
 │   │   ├── SectionHeading.astro  # ~/label, English display title and subtitle; the level and the contact variant are props
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, unit-tested
-│   │   ├── SiteFooter.astro      # Footer band on --cbg: inverse logo, © year and name, curl hint
+│   │   ├── SiteFooter.astro      # Footer band on --cbg: inverse face mark, © year and name, curl hint
 │   │   ├── SiteHeader.astro      # Site header: logo, navigation, JA / EN, theme switch, contact button, and a popover menu below 1024px
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: moon or sun, and a name that says the next theme
@@ -219,12 +222,15 @@ repository or to `dist/`.
 
 ## 🖼️ Images and caching
 
-Images in `src/assets/` are rendered with `Picture` or `getImage` from `astro:assets`.
+Raster images in `src/assets/` are rendered with `Picture` or `getImage` from `astro:assets`.
 `astro build` converts them once (`imageService: "compile"`), so no image is transformed at
 request time. Photos and the logo are offered as AVIF and WebP at several widths or densities.
 The pixel art stays PNG at a fixed size, so no pixel is blended.
 The favicons are files of the brand kit in `public/favicon/`, copied without changes, so their
 URLs do not change between builds.
+The face icons in `src/assets/icon/` are the SVG files of the brand kit, kept as they are:
+`FaceIcon` uses their URLs in `<img>` elements, and `astro build` only gives the files hashed
+names.
 
 The standing illustration, `src/assets/lina-standing.webp`, is also turned into text art for
 terminals. The `linaAnsiArt()` Vite plugin in `astro.config.mjs` resizes it with sharp to 80

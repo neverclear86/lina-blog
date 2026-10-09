@@ -35,8 +35,8 @@ export const workSchema = <I extends z.ZodType>(image: I) =>
     }),
     // Languages, frameworks and services, such as `astro`.
     tech: z.array(z.string().min(1)).default([]),
-    // `logo` for the site's logo, or the path of an image. An image is 16:9 and at least 1600px
-    // wide, with its subject near the center so that it can be cropped to other ratios.
+    // `logo` for the site's face mark, or the path of an image. An image is 16:9 and at least
+    // 1600px wide, with its subject near the center so that it can be cropped to other ratios.
     // Omitted when the work has no thumbnail.
     thumbnail: z.union([z.literal("logo"), image]).optional(),
     links: z
