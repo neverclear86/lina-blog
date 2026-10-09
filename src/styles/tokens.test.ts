@@ -42,6 +42,10 @@ const designA = `
 }
 `;
 const tokens = readFileSync(new URL("./tokens.css", import.meta.url), "utf8");
+const highlightCss = readFileSync(
+  new URL("../markdown/highlight.css", import.meta.url),
+  "utf8",
+);
 
 /**
  * Returns the declarations of the rule whose selector starts a line of `css`.
@@ -177,6 +181,21 @@ describe("tokens.css", () => {
     });
   });
 
+  it("コードブロックの文字色は A案 の文字・コメント・オレンジと同じ値を軸にする", () => {
+    expect(light).toMatchObject({
+      "--code-fg": light["--ivory"],
+      "--code-comment": light["--comment"],
+      "--code-keyword": light["--keyword"],
+    });
+  });
+
+  it("コードブロックの文字色と diff の色はダークの規則で変えず、地は --code-bg でなく --code を使う", () => {
+    expect(
+      Object.keys(dark).filter((name) => name.startsWith("--code-")),
+    ).toEqual([]);
+    expect(light).not.toHaveProperty("--code-bg");
+  });
+
   it("color-scheme はライトで light、ダークで dark になる", () => {
     expect(light["color-scheme"]).toBe("light");
     expect(dark["color-scheme"]).toBe("dark");
@@ -184,13 +203,10 @@ describe("tokens.css", () => {
 });
 
 /**
- * Text colors of code blocks (`src/markdown/highlight.css`) on each fill a code line can have:
- * the block, an added line and a deleted line.
+ * Text colors of code blocks. `src/markdown/highlight.css` sets `color` only to these tokens, and
+ * each must reach 4.5:1 on every one of `CODE_BACKGROUNDS` in both themes.
  */
-const CODE_TEXT_PAIRS: readonly (readonly [
-  foreground: string,
-  background: string,
-])[] = [
+const CODE_FOREGROUNDS = [
   "--code-fg",
   "--code-comment",
   "--code-keyword",
@@ -199,11 +215,35 @@ const CODE_TEXT_PAIRS: readonly (readonly [
   "--code-function",
   "--code-type",
   "--code-punctuation",
-].flatMap((foreground) =>
-  ["--code-bg", "--code-add-bg", "--code-del-bg"].map(
-    (background) => [foreground, background] as const,
-  ),
+] as const;
+
+/**
+ * Fills under code block text: the block itself, which changes with the theme, and an added and a
+ * deleted line of a diff. `src/markdown/highlight.css` sets `background` or `background-color`
+ * only to these tokens.
+ */
+const CODE_BACKGROUNDS = ["--code", "--code-add-bg", "--code-del-bg"] as const;
+
+/** Each text color of a code block on each fill a code line can have. */
+const CODE_TEXT_PAIRS: readonly (readonly [
+  foreground: string,
+  background: string,
+])[] = CODE_FOREGROUNDS.flatMap((foreground) =>
+  CODE_BACKGROUNDS.map((background) => [foreground, background] as const),
 );
+
+/**
+ * The bar at the left edge of a diff line on the fill of that line. A diff line is told apart by
+ * its bar and its `+` or `-`, not by its fill, so a bar is a graphical object that must reach 3:1
+ * (WCAG 2.2 SC 1.4.11).
+ */
+const CODE_BAR_PAIRS: readonly (readonly [
+  foreground: string,
+  background: string,
+])[] = [
+  ["--code-add-bar", "--code-add-bg"],
+  ["--code-del-bar", "--code-del-bg"],
+];
 
 /**
  * Foreground and background tokens of every text color in the design, checked in both themes.
@@ -212,7 +252,8 @@ const CODE_TEXT_PAIRS: readonly (readonly [
  * as background. Every pair must reach 4.5:1: none relies on the 3:1 allowance for large text.
  * `--orange` is not a text color on `--bg` (2.53:1 in the light theme): text in `--orange` is
  * limited to decorative marks hidden from assistive technology. `--invmuted` is used only on
- * `--inv`. These are the pairs of the legacy tokens; `A_TEXT_PAIRS` holds the plan A tokens'.
+ * `--inv`. These are the pairs of the legacy tokens and of the code blocks (`CODE_TEXT_PAIRS`);
+ * `A_TEXT_PAIRS` holds the plan A tokens'.
  */
 const TEXT_PAIRS: readonly (readonly [
   foreground: string,
@@ -340,6 +381,22 @@ function flatten(top: string, under: string): string {
   return `#${channels.join("")}`;
 }
 
+/**
+ * Returns the tokens that `css` assigns with `var()` to any of `properties`, sorted and without
+ * duplicates. Comments are ignored, and a property name only counts as a whole name, so `color`
+ * does not match `outline-color` or `--code-color`.
+ */
+function tokensUsedFor(css: string, properties: readonly string[]): string[] {
+  const source = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const pattern = new RegExp(
+    String.raw`(?<![\w-])(?:${properties.join("|")})\s*:\s*var\((--[\w-]+)\)`,
+    "g",
+  );
+  return [
+    ...new Set([...source.matchAll(pattern)].map((match) => match[1])),
+  ].sort();
+}
+
 /** Returns the labels of the pairs of `A_TEXT_PAIRS` that are under 4.5:1 in `colors`. */
 function failingTextPairs(colors: Record<string, string>): string[] {
   return A_TEXT_PAIRS.flatMap(([foreground, background]) => {
@@ -417,6 +474,54 @@ describe("tokens.css のコントラスト", () => {
         return ratio < 3 ? [`${foreground} / ${background}: ${ratio}`] : [];
       });
       expect(failures).toEqual([]);
+    },
+  );
+
+  it.each(Object.entries(themes))(
+    "%s のコードブロックの diff の帯は行の地の上で 3:1 以上になる",
+    (_theme, colors) => {
+      const failures = CODE_BAR_PAIRS.flatMap(([foreground, background]) => {
+        const ratio = contrastRatio(colors[foreground], colors[background]);
+        return ratio < 3 ? [`${foreground} / ${background}: ${ratio}`] : [];
+      });
+      expect(failures).toEqual([]);
+    },
+  );
+
+  it("tokensUsedFor は color と background に var() で渡したトークンだけを整列して重複なく返す", () => {
+    const css = `
+      /* color: var(--in-comment); */
+      .a { color: var(--b); outline-color: var(--outline); --code-color: var(--custom); }
+      .b { color: var(--a); background: var(--c); background-color: var(--d); }
+      .c { color: var(--b); box-shadow: inset 3px 0 0 var(--shadow); color: red; }
+    `;
+    expect(tokensUsedFor(css, ["color"])).toEqual(["--a", "--b"]);
+    expect(tokensUsedFor(css, ["background", "background-color"])).toEqual([
+      "--c",
+      "--d",
+    ]);
+  });
+
+  it("コードブロックの CSS が文字色と地に使うトークンは、コントラストを確かめる一覧と一致する", () => {
+    expect(tokensUsedFor(highlightCss, ["color"])).toEqual(
+      [...CODE_FOREGROUNDS].sort(),
+    );
+    expect(
+      tokensUsedFor(highlightCss, ["background", "background-color"]),
+    ).toEqual([...CODE_BACKGROUNDS].sort());
+  });
+
+  it.each(Object.entries(themes))(
+    "%s のコードブロックのフォーカスの輪は --keyword で描き、--code の上で 3:1 以上になる",
+    (_theme, colors) => {
+      const ring =
+        /pre\.shiki:focus-visible\s*\{[^}]*?outline:\s*2px solid var\((--[\w-]+)\)/.exec(
+          highlightCss,
+        );
+      expect(ring?.[1]).toBe("--keyword");
+      expect(
+        contrastRatio(colors["--keyword"], colors["--code"]),
+      ).toBeGreaterThanOrEqual(3);
     },
   );
 

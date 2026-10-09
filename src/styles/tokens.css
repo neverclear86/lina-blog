@@ -25,12 +25,15 @@
  * The colors in the group that stays the same in both themes are named after the color rather
  * than a role because the design uses each of them for several roles (text, fills, dots and
  * shadows). The `--code-*` colors of code blocks, which only `src/markdown/highlight.css` uses,
- * stay the same in both themes too.
+ * stay the same in both themes too, because a code block is dark in both: its background is
+ * `--code`, which changes only between the two dark values of the design. `--code-fg`,
+ * `--code-comment` and `--code-keyword` have the values of `--ivory`, `--comment` and `--keyword`.
  *
  * `tokens.test.ts` checks the plan A tokens against the design, checks that every foreground and
  * background pair used for text reaches 4.5:1 (WCAG AA) in both themes, and checks 3:1 for the
- * icon colors on `--surf` and for `--focus-ring` on `--bg`, `--bg2` and `--panel`. Components use
- * these tokens instead of color values.
+ * icon colors on `--surf`, for `--focus-ring` on `--bg`, `--bg2` and `--panel`, for the diff bars
+ * of code blocks on their lines and for the focus ring of code blocks (`--keyword`) on `--code`.
+ * Components use these tokens instead of color values.
  */
 :root {
   color-scheme: light;
@@ -94,17 +97,16 @@
   --field: #ffffff;
 
   /* Colors of code blocks, the same in both themes. */
-  --code-bg: #232427;
-  --code-fg: #f8f7f3;
-  --code-comment: #a9a8a3;
-  --code-keyword: #f08fa6;
+  --code-fg: #eceae5;
+  --code-comment: #a3a3a0;
+  --code-keyword: #e8731a;
   --code-string: #8bbf5a;
-  --code-constant: #f0873a;
+  --code-constant: #f08fa6;
   --code-function: #f5b36b;
   --code-type: #8fc7c1;
   --code-punctuation: #cfcbc3;
-  --code-add-bg: #2a3526;
-  --code-del-bg: #3a292d;
+  --code-add-bg: #1d2619;
+  --code-del-bg: #2a1b1f;
   --code-add-bar: #8bbf5a;
   --code-del-bar: #f08fa6;
 }

@@ -1,11 +1,12 @@
 /* Code blocks rendered by src/markdown/highlight.ts. Tokens carry role classes (`hl-keyword` and
-   so on) and diff lines carry `diff-add` or `diff-del`. The colors are the `--code-*` properties
-   in src/styles/tokens.css, one set for both site themes. */
+   so on) and diff lines carry `diff-add` or `diff-del`. The block is on `--code`, which follows the
+   site theme, and the text colors are the `--code-*` properties in src/styles/tokens.css, which
+   are the same in both themes. */
 
 pre.shiki {
   padding: 14px 16px 14px 8px;
   overflow-x: auto;
-  background: var(--code-bg);
+  background: var(--code);
   color: var(--code-fg);
   font-family: var(--font-mono);
   font-size: 13px;
@@ -23,7 +24,7 @@ pre.shiki {
 }
 
 pre.shiki:focus-visible {
-  outline: 2px solid var(--num);
+  outline: 2px solid var(--keyword);
   outline-offset: -2px;
 }
 
