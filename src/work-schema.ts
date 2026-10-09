@@ -52,8 +52,8 @@ export const workSchema = <I extends z.ZodType>(image: I) =>
     order: z.number().int(),
     // Whether the work has a page of its own.
     hasPage: z.boolean().default(false),
-    // The command shown with the work, such as `$ npm run deploy`.
+    // A command such as `$ npm run deploy`. No page shows it.
     label: z.string().min(1).default("$ cat README.md"),
-    // Whether a text cursor follows the label.
+    // Whether a text cursor follows `label`. No page shows it.
     cursor: z.boolean().default(false),
   });

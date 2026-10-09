@@ -129,11 +129,11 @@ const ja = {
   "theme.toLight": "ライトテーマに切り替え",
   // Link from the page of a work back to the Works section of the home page.
   "works.back": "つくったものに戻る",
+  // Text hidden from the eyes after the title of a work tile that links to another site.
+  "works.external": "（外部サイト）",
   "works.links": "リンク",
   // Subtitle next to the title of a work on its page.
   "works.pageSubtitle": "つくったもの",
-  // Subtitle of the Works section on the top page.
-  "works.subtitle": "つくったもの",
   // Name of the list of the technologies of a work.
   "works.tech": "使用技術",
 } as const;
@@ -249,9 +249,9 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "theme.toDark": "Switch to dark theme",
     "theme.toLight": "Switch to light theme",
     "works.back": "Back to Works",
+    "works.external": "(external site)",
     "works.links": "Links",
     "works.pageSubtitle": "Project",
-    "works.subtitle": "Things I made",
     "works.tech": "Tech stack",
   },
 };

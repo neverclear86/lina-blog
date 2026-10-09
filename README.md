@@ -82,7 +82,8 @@ bun create astro@latest -- --template basics
 │   │   ├── Tape.astro            # Orange and ink stripes flowing right with transform; stops under reduced motion
 │   │   ├── ThemeToggle.astro     # Theme switch: moon or sun, and a name that says the next theme
 │   │   ├── TerminalCard.astro    # Terminal window card with a title bar; a link when given href
-│   │   ├── Works.astro           # Works section: heading and a terminal card per work, from the works collection
+│   │   ├── WorkTile.astro        # Window tile of a work: ~/works/<title>, a line of description and the technology tags; a link or a plain box
+│   │   ├── Works.astro           # Works section of the top page (04 works): the heading and a WorkTile per work, from the works collection
 │   │   └── icons/                # Service icons for IconLink; sources and terms in icons/README.md
 │   ├── content/
 │   │   ├── blog-dev/     # Posts for checking how pages look; loaded by astro dev only

@@ -1,0 +1,156 @@
+---
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import type { WorkCardLink } from "../work-card";
+
+/**
+ * A work of the Works section of plan A: a window `~/works/<title>`, one line of description
+ * and the tags of its technologies.
+ *
+ * With `link` the window is an `<a>`, so its border turns on hover and on keyboard focus. An
+ * external link adds `↗` after the title and a text hidden from the eyes that says "external
+ * site". Without `link` the window is a `<div>` and its border stays.
+ *
+ * From 768px the description takes the color of the link. While the window is hovered or
+ * focused, the description gets the `--keyword` underline in the light theme and turns
+ * `--keyword` in the dark theme. The name row has colors of its own. Below 768px the name row
+ * takes the color of the link and gets that underline or color instead, the description is
+ * `--muted` and the tags are hidden.
+ */
+interface Props {
+  /** Locale of the page, which picks the text hidden from the eyes. */
+  lang: Locale;
+  /** Name of the work, written after `~/works/`. */
+  title: string;
+  /** One line of description, already in the locale of the page. */
+  description: string;
+  /** Technologies of the work, one tag each. */
+  tech: readonly string[];
+  /** Where the window links to. Omitted for a work with no page, demo or repository. */
+  link?: WorkCardLink;
+  /** Classes for the root element, such as `is-hover` of the samples. */
+  class?: string;
+}
+
+const { lang, title, description, tech, link, class: className } = Astro.props;
+
+const Root = link === undefined ? "div" : "a";
+---
+
+<Root href={link?.href} class:list={["win", "tile", className]}>
+  <h3 class="name">
+    <span class="prefix">~/works/</span><span class="title">{title}</span>
+    {link?.external && (
+  <>
+    <span class="ext" aria-hidden="true">
+      ↗
+    </span>
+    <span class="sr-only">{translate(lang, "works.external")}</span>
+  </>
+)}
+  </h3>
+  <p class="desc">{description}</p>
+  {tech.length > 0 && (
+  <ul class="tags">
+    {tech.map((name) => (
+      <li class="tag">{name}</li>
+    ))}
+  </ul>
+)}
+</Root>
+
+<style>
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.ext {
+  margin-left: 6px;
+  color: var(--muted);
+}
+
+.desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.tags {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+  :global(:root:not([data-theme="dark"]))
+    a.tile:is(:hover, :focus-visible, .is-hover, .is-focus)
+    .name {
+    text-decoration: underline var(--keyword) 2px;
+    text-underline-offset: 4px;
+  }
+}
+
+@media (min-width: 768px) {
+  .tile {
+    gap: 10px;
+    padding: 22px;
+  }
+
+  .name {
+    font-weight: 400;
+  }
+
+  .prefix {
+    color: var(--muted);
+  }
+
+  .title {
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .desc {
+    font-size: 15px;
+    line-height: 1.8;
+    color: inherit;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  :global(:root:not([data-theme="dark"]))
+    a.tile:is(:hover, :focus-visible, .is-hover, .is-focus)
+    .desc {
+    text-decoration: underline var(--keyword) 2px;
+    text-underline-offset: 4px;
+  }
+}
+</style>
