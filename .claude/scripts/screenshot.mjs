@@ -15,7 +15,9 @@
 //   node .claude/scripts/screenshot.mjs --root <worktree> --port <port> --out <dir> [options] <path>...
 // Options:
 //   --widths 1440,390          viewport widths (default 1440,390)
-//   --themes light,dark        prefers-color-scheme values (default light,dark)
+//   --themes light,dark        themes to capture (default light,dark): each is the
+//                              prefers-color-scheme value and the theme saved in localStorage
+//                              under "theme" (the pages follow the saved theme, not the OS)
 //   --motion reduce            prefers-reduced-motion: reduce (default) or no-preference
 //   --height 900               viewport height before the full-page capture (default 900)
 
@@ -125,6 +127,12 @@ try {
           colorScheme: theme,
           reducedMotion: values.motion,
         });
+        // The pages take the theme from localStorage and ignore prefers-color-scheme.
+        await context.addInitScript((saved) => {
+          try {
+            localStorage.setItem("theme", saved);
+          } catch {}
+        }, theme);
         const page = await context.newPage();
         const response = await page.goto(`${base}${path}`, {
           waitUntil: "networkidle",
