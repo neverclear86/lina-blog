@@ -22,6 +22,7 @@
  * and the table are left out. Up to 767px the poses are 1195px high and start 20px from the top,
  * and the table comes back with two rows, `pose · tap` and `version`, at the top right. The
  * `pose · click` row holds `tap` beside `click` and shows `tap` in its place up to 767px.
+ * Below 360px the table starts 48px from the top, so that it clears the prompt.
  */
 import { Picture } from "astro:assets";
 import { avatarAlt, HERO_POSES } from "../avatar-images";
@@ -277,6 +278,12 @@ const label = translate(lang, "hero.poseButton");
 
   .spec-row:nth-child(-n + 3) {
     display: none;
+  }
+}
+
+@media (max-width: 359px) {
+  .spec {
+    top: 48px;
   }
 }
 </style>
