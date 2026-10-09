@@ -275,3 +275,47 @@ describe("記事の一覧の行", () => {
     expect(underlined[0].body).toContain("text-decoration-thickness: 2px;");
   });
 });
+
+describe("記事のアコーディオン", () => {
+  const SELECTORS = {
+    ring: ".article-body details::before",
+    hover: ".article-body details:has(> summary:hover)::before",
+    focus: ".article-body details:has(> summary:focus-visible)::before",
+  };
+  const article = () =>
+    rulesOf(styleOf(source("components/ArticleBody.astro")));
+
+  it("details の地と輪は .win の規則と同じ規則で描く", () => {
+    const [panel] = withDeclaration("window.css", "background: var(--panel)");
+    const [ring] = withDeclaration("window.css", "--wb: 360deg");
+    expect(panel.selector.split(", ")).toContain(".article-body details");
+    expect(ring.selector.split(", ")).toContain(SELECTORS.ring);
+  });
+
+  it("summary のホバーとキーボードのフォーカスは同じ規則で輪を回す", () => {
+    const [turn] = withDeclaration("window.css", "--wa: 180deg");
+    expect(turn.selector.split(", ")).toEqual(
+      expect.arrayContaining([SELECTORS.hover, SELECTORS.focus]),
+    );
+  });
+
+  it("輪の動きは prefers-reduced-motion: reduce で止まる", () => {
+    const [stop] = withDeclaration("window.css", "transition: none");
+    expect(stop.selector.split(", ")).toEqual(
+      expect.arrayContaining(Object.values(SELECTORS)),
+    );
+  });
+
+  it("summary は JetBrains Mono で、高さ 48px 以上の押せる行になる", () => {
+    const found = article().find(
+      (rule) => rule.selector === ".article-body :global(summary)",
+    );
+    expect(found?.body).toContain("font-family: var(--font-mono);");
+    expect(found?.body).toContain("min-height: 48px;");
+    expect(found?.body).toContain("cursor: pointer;");
+  });
+
+  it("開閉は <details> に任せ、ArticleBody は <script> を持たない", () => {
+    expect(source("components/ArticleBody.astro")).not.toContain("<script");
+  });
+});

@@ -6,10 +6,13 @@
  * 768px. It also styles the other elements that Sätteri and the plugins in src/markdown/ output:
  * GFM tables, task lists, footnotes, YouTube embeds and links. A link is underlined, because
  * `global.css` leaves a link plain and the text color alone would not set it apart (WCAG 1.4.1).
- * The rules reach those elements through `:global()` under `.article-body`, so they apply only
- * inside this wrapper. The wrapper sets no width: the page around it decides the column. The
- * windows of code blocks are styled by the imported src/markdown/highlight.css, whose rules match
- * `figure.code-window` and `pre.shiki`.
+ * It styles the accordion too, a `<details>` with its `<summary>` that an article writes as raw
+ * HTML: the window of `.win` (shared in `window.css`) with a `<summary>` of at least 48px in
+ * JetBrains Mono, whose mark is a plus while the accordion is closed and a minus while it is
+ * open. The browser opens and closes it, without script. The rules reach those elements through
+ * `:global()` under `.article-body`, so they apply only inside this wrapper. The wrapper sets no
+ * width: the page around it decides the column. The windows of code blocks are styled by the
+ * imported src/markdown/highlight.css, whose rules match `figure.code-window` and `pre.shiki`.
  */
 import "../markdown/highlight.css";
 ---
@@ -235,6 +238,57 @@ import "../markdown/highlight.css";
   background: var(--panel);
 }
 
+.article-body :global(details) {
+  box-sizing: border-box;
+  margin: 0 0 1.4em;
+  padding: 0 16px;
+}
+
+.article-body :global(details[open]) {
+  padding-bottom: 12px;
+}
+
+.article-body :global(summary) {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  min-height: 48px;
+  margin-inline: -16px;
+  padding: 14px 44px 14px 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.article-body :global(summary::-webkit-details-marker) {
+  display: none;
+}
+
+.article-body :global(summary::after) {
+  content: "+" / "";
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  translate: 0 -50%;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.article-body :global(details[open] > summary::after) {
+  content: "\2212" / "";
+}
+
+.article-body :global(details > summary + *) {
+  margin-top: 0;
+}
+
+.article-body :global(details > :last-child) {
+  margin-bottom: 0;
+}
+
 /* From 768px the type is larger, as in the PC article of the design. */
 @media (min-width: 768px) {
   .article-body {
@@ -271,6 +325,10 @@ import "../markdown/highlight.css";
 
   .article-body :global(:not(pre) > code) {
     padding: 2px 6px;
+  }
+
+  .article-body :global(details) {
+    margin-bottom: 1.6em;
   }
 }
 </style>
