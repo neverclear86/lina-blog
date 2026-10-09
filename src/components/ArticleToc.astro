@@ -1,0 +1,152 @@
+---
+/**
+ * The table of contents of a post: a link to each of `items`, `#<slug>` for the `h2` of the item,
+ * which works without script. The component has two variants, both windows of `.win`.
+ * `window` is for the left column of the page from 1024px: the title `neo-tree · toc` above the
+ * links, each with a square at its left, in a `<nav>` that scrolls inside the window when the
+ * links are taller than the viewport less 200px. `sheet` is for the narrower pages: a closed
+ * `<details>` whose `<summary>` has a plus, or a minus while it is open, like the accordion of an
+ * article, and a `<nav>` of links with `##` before their text, which screen readers skip. The
+ * text of an item wraps. A link takes `--text` on hover and focus, and `--keyword` in the dark
+ * theme, because its own `color` wins over the rule for links in `global.css`. The page decides
+ * where the component stands and which variant is shown: it sets no position and no width.
+ */
+import type { BlogPostTocItem } from "../blog-pages";
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+
+interface Props {
+  /** Items of `blogPostToc`, in the order of the post. */
+  items: readonly BlogPostTocItem[];
+  /** Language of the name of the `<nav>` and of the text of the `<summary>`. */
+  lang: Locale;
+  /** `window` for the left column from 1024px, `sheet` for the `<details>` before the body. */
+  variant: "window" | "sheet";
+}
+
+const { items, lang, variant } = Astro.props;
+const label = translate(lang, "blog.toc.label");
+---
+
+{variant === "window" ? (
+  <div class="win panel">
+    <div class="title" lang="en">
+      neo-tree · <span>toc</span>
+    </div>
+    <nav class="toc" aria-label={label}>
+      {items.map((item) => (
+        <a href={`#${item.slug}`}>{item.text}</a>
+      ))}
+    </nav>
+  </div>
+) : (
+  <details class="win sheet">
+    <summary>{translate(lang, "blog.toc.summary")}</summary>
+    <nav class="toc" aria-label={label}>
+      {items.map((item) => (
+        <a href={`#${item.slug}`}>{item.text}</a>
+      ))}
+    </nav>
+  </details>
+)}
+
+<style>
+.panel {
+  padding: 16px 16px 12px;
+}
+.title {
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.title span {
+  color: var(--text);
+}
+.toc {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  color: var(--muted);
+}
+.panel .toc {
+  max-height: calc(100dvh - 200px);
+  overflow-y: auto;
+}
+.toc a {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+.panel .toc a {
+  min-height: 34px;
+  padding: 6px 0 6px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.panel .toc a::before {
+  content: "";
+  position: absolute;
+  top: calc(6px + 0.75em - 3px);
+  left: 2px;
+  width: 6px;
+  height: 6px;
+  background: var(--line2);
+}
+.sheet summary {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 14px 44px 14px 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+  list-style: none;
+}
+.sheet summary::-webkit-details-marker {
+  display: none;
+}
+.sheet summary::after {
+  content: "+" / "";
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  translate: 0 -50%;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+}
+.sheet[open] > summary::after {
+  content: "\2212" / "";
+}
+.sheet summary:focus-visible {
+  outline-offset: -4px;
+}
+.sheet .toc {
+  padding: 0 16px 12px;
+  font-size: 13px;
+}
+.sheet .toc a {
+  min-height: 36px;
+  padding: 6px 0;
+  line-height: 24px;
+}
+.sheet .toc a::before {
+  content: "##" / "";
+  margin-inline-end: 8px;
+}
+.toc a:focus-visible {
+  outline-offset: -2px;
+}
+.toc a:is(:hover, :focus-visible) {
+  color: var(--text);
+}
+:root[data-theme="dark"] .toc a:is(:hover, :focus-visible) {
+  color: var(--keyword);
+}
+</style>

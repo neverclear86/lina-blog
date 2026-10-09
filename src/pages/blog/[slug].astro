@@ -4,11 +4,16 @@
  * (`.gridbg`) and holds the breadcrumb `~ / blog / <year> / <slug>.md`, the category chips
  * (`tags`), the topic tags (`topics`, none when the post has no topics), the `h1`, and the date,
  * the reading time and the author. Below it, `<Content />` in `ArticleBody` fills a column of at
- * most 760px. From 1024px an empty column of 240px stands at its left, so that the body keeps its
- * place when something is put in that column. A post with `sponsor` has its PR notice
- * (`SponsorNotice`) between the head and the columns. `emoji` is not shown. At the end of that
- * column, after `ArticleEnd`, `PostNav` holds the links to the posts one step older (`prev`) and
- * one step newer (`next`), which `getStaticPaths` gives as props.
+ * most 760px. From 1024px a column of 240px, `.toc-col`, stands at its left. A post with
+ * `sponsor` has its PR notice (`SponsorNotice`) between the head and the columns. `emoji` is not
+ * shown. At the end of the body column, after `ArticleEnd`, `PostNav` holds the links to the posts
+ * one step older (`prev`) and one step newer (`next`), which `getStaticPaths` gives as props.
+ *
+ * From 1024px `.toc-col` holds the table of contents of the `h2` headings of the post in a window
+ * (`ArticleToc`) that sticks 88px below the top of the viewport; below 1024px the same items are
+ * in a closed `<details>` before the body. The hidden `h2` of the footnotes is not an item. A post
+ * without an `h2` of its own has no table of contents, and `.toc-col` stays empty so that the
+ * body keeps its place.
  *
  * A diagonal band at the right of the head is drawn with `::before`. It is 64px wide below 768px,
  * where the rows of the head keep clear of it with a right padding, and 120px wide from 1280px,
@@ -27,10 +32,12 @@ import {
   blogPostBreadcrumb,
   blogPostDate,
   blogPostPaths,
+  blogPostToc,
   readingMinutes,
 } from "../../blog-pages";
 import ArticleBody from "../../components/ArticleBody.astro";
 import ArticleEnd from "../../components/ArticleEnd.astro";
+import ArticleToc from "../../components/ArticleToc.astro";
 import PostNav from "../../components/PostNav.astro";
 import SponsorNotice from "../../components/SponsorNotice.astro";
 import { homeSectionPath } from "../../components/site-nav";
@@ -49,7 +56,8 @@ interface Props {
 
 const { post, prev, next } = Astro.props;
 const { title, slug, date, tags, topics, sponsor, description } = post.data;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+const toc = blogPostToc(headings);
 if (!Astro.site) {
   throw new Error(
     "`site` in astro.config.mjs is required to build the pages of posts.",
@@ -121,8 +129,19 @@ const notice = sponsorNotice(sponsor);
   </div>
 )}
       <div class="cols">
-        <div class="toc-col"></div>
+        <div class="toc-col">
+          {toc.length > 0 && (
+  <aside class="toc-side">
+    <ArticleToc items={toc} lang="ja" variant="window" />
+  </aside>
+)}
+        </div>
         <div class="text">
+          {toc.length > 0 && (
+  <div class="toc-sheet">
+    <ArticleToc items={toc} lang="ja" variant="sheet" />
+  </div>
+)}
           <ArticleBody lang="ja"><Content /></ArticleBody>
           <ArticleEnd title={title} url={url} />
           <PostNav prev={prev} next={next} />
@@ -259,6 +278,9 @@ h1 {
 .toc-col {
   display: none;
 }
+.toc-sheet {
+  margin-bottom: 24px;
+}
 .text {
   min-width: 0;
   max-width: 760px;
@@ -359,6 +381,14 @@ h1 {
   .toc-col {
     display: block;
     flex: 0 0 240px;
+    align-self: stretch;
+  }
+  .toc-side {
+    position: sticky;
+    top: 88px;
+  }
+  .toc-sheet {
+    display: none;
   }
   .cols {
     display: flex;
