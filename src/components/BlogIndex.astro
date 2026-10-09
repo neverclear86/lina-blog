@@ -1,19 +1,20 @@
 ---
 /**
- * The main part of a page of blog posts, `/blog/` or a tag's page `/blog/tags/<slug>/`: the
- * heading, the tag filter and the posts as `PostList`. Both kinds of page share this layout, so
- * the filter and the cards stay in place when the reader switches between them.
+ * The main part of a page of blog posts, `/blog/` or a tag's page `/blog/tags/<slug>/`: the head
+ * (`PageHead`) with the breadcrumb, the `h1` and the tag filter, and below it the posts as
+ * `PostList`. Both kinds of page share this layout, so the filter and the cards stay in place.
  *
- * The tag filter is a row of links to `/blog/` and the page of each tag, without JavaScript; the
- * link to the current page has `aria-current="page"` and a pink underline on the line under the
- * row. The page is in Japanese only.
+ * The breadcrumb ends with the current page, which is not a link. The tag filter is a row of
+ * `.ws` links to `/blog/` and the page of each tag, without JavaScript. The last element of the
+ * breadcrumb and the filter link to the current page have `aria-current="page"`. The page is in
+ * Japanese only.
  */
 import type { ComponentProps } from "astro/types";
-import { blogListText, tagFilterLinks } from "../blog-pages";
+import { blogCrumbs, blogListText, tagFilterLinks } from "../blog-pages";
 import { translate } from "../i18n/ui";
 import type { BlogTag } from "../latest-posts";
+import PageHead from "./PageHead.astro";
 import PostList from "./PostList.astro";
-import SectionHeading from "./SectionHeading.astro";
 
 interface Props {
   /** Tag of the page, or undefined for `/blog/`, which lists every post. */
@@ -24,90 +25,104 @@ interface Props {
 
 const { tag, posts } = Astro.props;
 const text = blogListText(tag);
+const crumbs = blogCrumbs(tag);
 ---
 
-<main class="blog">
-  <SectionHeading
-    as="h1"
-    label={text.label}
-    title="BLOG"
-    subtitle={translate("ja", text.subtitle)}
-  />
-  <nav class="filter" aria-label={translate("ja", "blog.filter.label")}>
-    <ul>
-      {tagFilterLinks(tag).map((link) => (
+<main>
+  <PageHead>
+    <nav class="crumbs" aria-label={translate("ja", "nav.breadcrumb")}>
+      {crumbs.map((crumb, index) => (
+  <>
+    {index > 0 && <span aria-hidden="true">/</span>}
+    {crumb.href === undefined ? (
+      <span aria-current={index === crumbs.length - 1 ? "page" : undefined}>
+        {crumb.text}
+      </span>
+    ) : (
+      <a href={crumb.href}>{crumb.text}</a>
+    )}
+  </>
+))}
+    </nav>
+    <h1>{translate("ja", text.subtitle)}</h1>
+    <nav class="filter" aria-label={translate("ja", "blog.filter.label")}>
+      <ul>
+        {tagFilterLinks(tag).map((link) => (
   <li>
-    <a href={link.href} aria-current={link.current ? "page" : undefined}>
+    <a
+      class:list={["ws", { on: link.current }]}
+      href={link.href}
+      aria-current={link.current ? "page" : undefined}
+    >
       {translate("ja", link.key)}
     </a>
   </li>
 ))}
-    </ul>
-  </nav>
-  <PostList posts={posts} emptyText={translate("ja", text.noPosts)} />
+      </ul>
+    </nav>
+  </PageHead>
+  <div class="list">
+    <PostList posts={posts} emptyText={translate("ja", text.noPosts)} />
+  </div>
 </main>
 
 <style>
-.blog {
+.crumbs {
   display: flex;
-  flex-direction: column;
-  padding: 56px 18px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
 }
 
-@media (min-width: 768px) {
-  .blog {
-    padding: 72px 40px;
-  }
+.crumbs a {
+  padding-block: 4px;
 }
 
-@media (min-width: 1024px) {
-  .blog {
-    padding: 88px 64px;
-  }
-}
-
-.filter {
-  margin: 32px 0;
-}
-
-@media (min-width: 768px) {
-  .filter {
-    margin-top: 40px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .filter {
-    margin-top: 44px;
-  }
+.crumbs [aria-current="page"] {
+  padding-block: 4px;
+  color: var(--text);
 }
 
 .filter ul {
   display: flex;
   flex-wrap: wrap;
-  column-gap: 28px;
+  gap: 4px;
   margin: 0;
   padding: 0;
   list-style: none;
-  border-bottom: 1px solid var(--legacy-line);
 }
 
-.filter a {
-  display: block;
-  margin-bottom: -1px;
-  padding: 10px 0;
-  color: var(--fg);
-  font-size: 15px;
-  font-weight: 900;
-  text-decoration: none;
-  border-bottom: 3px solid transparent;
+.filter .ws {
+  height: 36px;
 }
 
-.filter a[aria-current="page"] {
-  border-bottom-color: var(--pink);
+.list {
+  box-sizing: border-box;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 16px 56px;
 }
 
-.filter a:hover {
-  opacity: 0.8;
+@media (min-width: 768px) {
+  .crumbs {
+    font-size: 13px;
+  }
+
+  .filter .ws {
+    height: 30px;
+  }
+
+  .list {
+    padding: 40px 20px 72px;
+  }
+}
+
+@media (min-width: 900px) {
+  .list {
+    padding: 56px 64px 96px;
+  }
 }
 </style>

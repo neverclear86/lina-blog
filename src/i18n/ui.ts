@@ -106,9 +106,11 @@ const ja = {
   "latest.videos.empty": "最新の動画を表示できませんでした。",
   // Name of the menu button of the site header; whether the menu is open is its expanded state.
   "menu.label": "メニュー",
-  // Main navigation of the site header; "nav.label" names its <nav>.
+  // Main navigation of the site header; "nav.label" names its <nav>. "nav.breadcrumb" names the
+  // <nav> of the breadcrumb at the top of a page.
   "nav.about": "プロフィール",
   "nav.blog": "ブログ",
+  "nav.breadcrumb": "パンくず",
   "nav.contact": "お問い合わせ",
   "nav.label": "メイン",
   "nav.latest": "さいきん",
@@ -232,6 +234,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "menu.label": "Menu",
     "nav.about": "About",
     "nav.blog": "Blog",
+    "nav.breadcrumb": "Breadcrumb",
     "nav.contact": "Contact",
     "nav.label": "Main",
     "nav.latest": "Latest",

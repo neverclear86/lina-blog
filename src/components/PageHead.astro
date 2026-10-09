@@ -1,0 +1,108 @@
+---
+/**
+ * The head of a page of blog posts: a section on the grid background (`.gridbg`) with a diagonal
+ * band, and the content of the slot above it. The values are copied from the first `section` of
+ * `design/AArticle.dc.html` and `design/AArticleMobile.dc.html`.
+ *
+ * From 900px the band is 120px wide and a hatched line runs beside it; below that the band is
+ * 64px wide at the right edge and there is no line. The band and the line are drawn with
+ * `::before` and `::after`, so they are not part of the document, and the content is painted
+ * above them, so a long line that reaches the band stays on top of it. The content is at most
+ * 1440px wide and centered. An `h1` in the slot is styled here: 52px from 900px, 32px from 768px
+ * and 28px below, with a right padding below 900px that keeps it from the band.
+ */
+---
+
+<section class="page-head gridbg">
+  <div class="inner"><slot /></div>
+</section>
+
+<style>
+.page-head {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+
+.page-head::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -40px;
+  width: 64px;
+  height: 200%;
+  background: var(--keyword);
+  pointer-events: none;
+  transform: rotate(22deg);
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 28px 16px 24px;
+}
+
+.inner :global(h1) {
+  margin: 0;
+  max-width: 900px;
+  padding-right: 24px;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+@media (min-width: 768px) {
+  .inner {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .inner :global(h1) {
+    font-size: 32px;
+    line-height: 1.3;
+  }
+}
+
+@media (min-width: 900px) {
+  .page-head::before {
+    top: -60%;
+    right: 6%;
+    width: 120px;
+    height: 220%;
+  }
+
+  .page-head::after {
+    content: "";
+    position: absolute;
+    top: -60%;
+    right: calc(6% + 150px);
+    width: 28px;
+    height: 220%;
+    background: repeating-linear-gradient(
+      to bottom,
+      var(--keyword) 0 5px,
+      transparent 5px 15px
+    );
+    opacity: 0.7;
+    pointer-events: none;
+    transform: rotate(22deg);
+  }
+
+  .inner {
+    gap: 22px;
+    padding: 64px 64px 48px;
+  }
+
+  .inner :global(h1) {
+    padding-right: 0;
+    font-size: 52px;
+  }
+}
+</style>
