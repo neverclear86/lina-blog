@@ -4,7 +4,7 @@ import { getCollection } from "astro:content";
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import { workCardLink, worksInOrder } from "../work-card";
-import Logo from "./Logo.astro";
+import FaceIcon from "./FaceIcon.astro";
 import SectionHeading from "./SectionHeading.astro";
 import TerminalCard from "./TerminalCard.astro";
 
@@ -12,7 +12,7 @@ import TerminalCard from "./TerminalCard.astro";
  * The Works section of the top page: the section heading, then a terminal window card for
  * each work in the `works` collection, sorted by `order`.
  *
- * A card shows the work's thumbnail (an image, the logo on `--inv`, or an empty grid face),
+ * A card shows the work's thumbnail (an image, the face mark on `--inv`, or an empty grid face),
  * its label, title, description in `lang` and technologies. A work with a page of its own
  * links to it; another work links to its demo or repository with `↗` after the title, and a
  * work with neither is not a link and does not lift. The cards sit in three columns from
@@ -49,7 +49,7 @@ const works = worksInOrder(await getCollection("works"));
           >
             {data.thumbnail === "logo" ? (
               <div class="thumb logo">
-                <Logo size={80} alt="" tone="inverse" />
+                <FaceIcon kind="mark" size={80} alt="" tone="inverse" />
               </div>
             ) : data.thumbnail ? (
               <div class="thumb">

@@ -1,13 +1,13 @@
 ---
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
-import Logo from "./Logo.astro";
+import FaceIcon from "./FaceIcon.astro";
 
 /**
- * The footer at the end of every page, copied from the `<footer>` of `design/CBMain.dc.html`:
- * the inverse logo and "© <year> <name>" on the left, and the curl hint in JetBrains Mono on
- * the right. It is a band of its own on `--cbg` with the `.cgrid` lines, so it looks the same
- * on every page. Below 768px the two parts stack, aligned to the left.
+ * The footer at the end of every page: the inverse face mark and "© <year> <name>" on the left,
+ * and the curl hint in JetBrains Mono on the right. It is a band of its own on `--cbg` with the
+ * `.cgrid` lines, so it looks the same on every page. Below 768px the two parts stack, aligned
+ * to the left.
  *
  * The year is the year of the build.
  */
@@ -22,7 +22,7 @@ const year = new Date().getFullYear();
 
 <footer class="site-footer cgrid">
   <div class="owner">
-    <Logo size={36} alt="" tone="inverse" />
+    <FaceIcon kind="mark" size={28} alt="" tone="inverse" />
     <span>© {year} {translate(lang, "footer.copyrightHolder")}</span>
   </div>
   <span class="curl">{translate(lang, "site.curlHint")}</span>
@@ -43,7 +43,7 @@ const year = new Date().getFullYear();
 .owner {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
 }
 .curl {
   font-family: var(--font-mono);

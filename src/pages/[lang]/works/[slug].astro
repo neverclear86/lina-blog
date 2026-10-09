@@ -3,7 +3,7 @@ import { Picture } from "astro:assets";
 import { type CollectionEntry, getCollection } from "astro:content";
 import type { GetStaticPaths } from "astro";
 import Chip from "../../../components/Chip.astro";
-import Logo from "../../../components/Logo.astro";
+import FaceIcon from "../../../components/FaceIcon.astro";
 import SectionHeading from "../../../components/SectionHeading.astro";
 import TerminalCard from "../../../components/TerminalCard.astro";
 import type { Locale } from "../../../i18n/locales";
@@ -49,7 +49,7 @@ const cardTitle = `~/works/${title}`;
     <TerminalCard title={cardTitle} lift={false}>
       {thumbnail === "logo" ? (
         <div class="thumb logo-face">
-          <Logo size={120} alt="" tone="inverse" />
+          <FaceIcon kind="mark" size={120} alt="" tone="inverse" />
         </div>
       ) : (
         <div class="thumb photo">
