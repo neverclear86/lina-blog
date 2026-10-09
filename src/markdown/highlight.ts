@@ -162,7 +162,7 @@ export async function highlightCode(
 ): Promise<HastNode> {
   const highlighter = await getHighlighter();
   const isDiff = lang === "diff";
-  const requested = isDiff ? meta?.trim() || "diff" : lang;
+  const requested = (isDiff ? meta?.trim() || "diff" : lang).toLowerCase();
   const root = highlighter.codeToHast(code, {
     lang: highlighter.getLoadedLanguages().includes(requested)
       ? requested

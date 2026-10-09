@@ -48,6 +48,7 @@ describe("highlightCodeBlocks", () => {
 
   it.each([
     ["ts", "const a = 1;"],
+    ["TS", "const a = 1;"],
     ["sh", "echo hi"],
     ["py", "def f(): pass"],
     ["yml", "a: true"],
