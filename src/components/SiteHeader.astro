@@ -9,6 +9,12 @@
  * the language of the page as text and links to the others; a page that exists only in Japanese
  * shows `JA` alone.
  *
+ * On the top page (`isTopPath` in `./site-nav`) the navigation follows the scroll: the item of
+ * the section that the reader is in (`currentSectionIndex` in `./site-nav`) has
+ * `aria-current="location"`, and its `--keyword` face is the block `.nav-ind`, which slides
+ * to it unless reduced motion is preferred. The menu gets the same `aria-current`. Without
+ * script the block is hidden and `00 top` has the face as `.ws.on`.
+ *
  * The cursor of the logo blinks (`.blink-on` in `src/styles/motion.css`), except while the logo of
  * the hero of the top page (`.hero-logo` in `Hero`) is in the viewport, that is, has no
  * `data-offscreen`: that logo blinks in its place, so that one cursor blinks on a screen.
@@ -24,7 +30,12 @@ import { translate } from "../i18n/ui";
 import Button from "./Button.astro";
 import IconButton from "./IconButton.astro";
 import NameLogo from "./NameLogo.astro";
-import { homeSectionPath, languageLinks, navLinks } from "./site-nav";
+import {
+  homeSectionPath,
+  isTopPath,
+  languageLinks,
+  navLinks,
+} from "./site-nav";
 import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
@@ -36,6 +47,7 @@ const { lang } = Astro.props;
 const pathname = Astro.url.pathname;
 const nav = navLinks(lang, pathname);
 const languages = languageLinks(lang, pathname);
+const follow = isTopPath(lang, pathname);
 ---
 
 <header class="site-header">
@@ -47,9 +59,18 @@ const languages = languageLinks(lang, pathname);
     >
       <NameLogo variant="compact" />
     </a>
-    <nav class="site-nav" aria-label={translate(lang, "nav.label")}>
-      {nav.map((item) => (
-  <a class="ws" href={item.href} aria-current={item.current}>
+    <nav
+      class="site-nav"
+      aria-label={translate(lang, "nav.label")}
+      data-follow={follow ? "" : undefined}
+    >
+      {follow && <span class="nav-ind" aria-hidden="true"></span>}
+      {nav.map((item, index) => (
+  <a
+    class:list={["ws", { on: follow && index === 0 }]}
+    href={item.href}
+    aria-current={item.current}
+  >
     {item.label}
   </a>
 ))}
@@ -388,10 +409,48 @@ const languages = languageLinks(lang, pathname);
     color: var(--text);
   }
   .site-nav .ws[aria-current],
-  .site-nav .ws[aria-current]:is(:hover, :focus-visible) {
+  .site-nav .ws[aria-current]:is(:hover, :focus-visible),
+  .site-nav .ws.on:is(:hover, :focus-visible) {
     background: var(--keyword);
     color: var(--ink);
     font-weight: 700;
+  }
+}
+/* `.nav-ind` is 92px, the width of a `.ws`, and moves 96px per item, with the 4px `gap`. */
+.site-nav[data-follow] {
+  position: relative;
+}
+.site-nav[data-follow] .ws {
+  position: relative;
+  z-index: 1;
+  transition: color 0.25s;
+}
+.nav-ind {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 92px;
+  height: 30px;
+  margin-top: -15px;
+  border-radius: 4px;
+  background: var(--keyword);
+  pointer-events: none;
+  transform: translateX(calc(var(--nav-index, 0) * 96px));
+}
+.site-nav.following .nav-ind {
+  display: block;
+}
+.site-nav.ready .nav-ind {
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.site-nav.following .ws[aria-current] {
+  background: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-nav.ready .nav-ind,
+  .site-nav[data-follow] .ws {
+    transition: none;
   }
 }
 </style>
@@ -404,6 +463,54 @@ const menu = document.getElementById("site-menu");
 for (const link of menu?.querySelectorAll("a") ?? []) {
   link.addEventListener("click", () => {
     if (menu && "hidePopover" in menu) menu.hidePopover();
+  });
+}
+</script>
+
+<script>
+// On the top page, moves `.nav-ind` and `aria-current="location"` to the item of the section
+// that the reader is in. The sections are the ids in the fragments of the navigation links.
+import { currentSectionIndex } from "./site-nav";
+
+const nav = document.querySelector<HTMLElement>(".site-nav[data-follow]");
+if (nav) {
+  const ids = [...nav.querySelectorAll("a")].map((a) => a.hash.slice(1));
+  const links = document.querySelectorAll<HTMLAnchorElement>(
+    ".site-nav a, .menu-nav a",
+  );
+  const update = () => {
+    const tops = ids.map(
+      (id) => document.getElementById(id)?.getBoundingClientRect().top ?? null,
+    );
+    const index = currentSectionIndex(tops);
+    nav.style.setProperty("--nav-index", String(index));
+    for (const link of links) {
+      if (link.hash.slice(1) === ids[index]) {
+        link.setAttribute("aria-current", "location");
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    }
+  };
+  let queued = false;
+  const schedule = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      update();
+    });
+  };
+  for (const link of nav.querySelectorAll("a.on")) link.classList.remove("on");
+  nav.classList.add("following");
+  update();
+  addEventListener("scroll", schedule, { passive: true });
+  addEventListener("resize", schedule);
+  addEventListener("load", () => {
+    update();
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => nav.classList.add("ready")),
+    );
   });
 }
 </script>
