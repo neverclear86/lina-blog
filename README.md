@@ -44,7 +44,7 @@ bun create astro@latest -- --template basics
 │   │   └── logo-white.png  # White logo (dark theme, or inverse faces on the light theme)
 │   ├── components/
 │   │   ├── About.astro           # About section: heading, lead and three terminal cards
-│   │   ├── ArticleBody.astro     # Styles rendered Markdown (tables, task lists, footnotes, code file names, YouTube embeds)
+│   │   ├── ArticleBody.astro     # Styles rendered Markdown (tables, task lists, footnotes, code file names, code blocks, YouTube embeds)
 │   │   ├── BlogIndex.astro       # Blog pages: heading, tag filter links with the current one underlined, and the post cards
 │   │   ├── Bubble.astro          # Speech bubble on --blush with a hard shadow
 │   │   ├── Button.astro          # Orange main button, as a link or a <button>
@@ -86,6 +86,8 @@ bun create astro@latest -- --template basics
 │   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description and Open Graph tags (description prop, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, shapes.css and motion.css; sets --font-body on html; puts the site header (SiteHeader.astro) at the top of <body> and the site footer at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code block file names as <figure>, unit-tested
+│   │   ├── highlight.css     # Code block frame and role colors
+│   │   ├── highlight.ts      # Shiki highlighting of code blocks with role classes, unit-tested
 │   │   ├── sample.md         # Sample article shown at /dev/markdown/
 │   │   ├── table-align.ts    # Sätteri hast plugin: table alignment as classes, unit-tested
 │   │   └── youtube.ts        # Sätteri hast plugin: YouTube URL paragraphs as iframes, unit-tested
@@ -139,7 +141,7 @@ Pages that exist in every language go in `src/pages/[lang]/` and are generated o
 
 Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema, and `astro build` leaves them out, so they never reach `dist/`.
 
-Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are not syntax-highlighted (`markdown.syntaxHighlight: false`), because Astro's default Shiki output has `style` attributes. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player.
+Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are highlighted at build time by `src/markdown/highlight.ts`, which gives tokens role classes such as `hl-keyword` instead of inline styles; `markdown.syntaxHighlight` is off so Astro's own Shiki does not run. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player.
 
 `astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the works, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt` and the Latest section and the hero of the home page use as well.
 
@@ -190,7 +192,7 @@ CDN. `src/layouts/Layout.astro` emits the `@font-face` rules on every page and s
 | :--------------- | :-------------- | :------- | :-------------------------------------------------------------- |
 | `--font-body`    | Zen Maru Gothic | 500, 900 | Everything by default: Japanese and body text, navigation, buttons |
 | `--font-display` | Saira Condensed | 600, 800 | Large English headings such as LINA and ABOUT (800), TSUKUSU (600) |
-| `--font-mono`    | JetBrains Mono  | 400, 500 | Small labels such as `$ whoami`, dates and the terminal bar      |
+| `--font-mono`    | JetBrains Mono  | 400, 500 | Small labels such as `$ whoami`, dates and the terminal bar, and code blocks |
 
 Components use these variables and never name a font. Form controls (`button`, `input`,
 `select`, `textarea`) do not inherit `font-family` from `html`, so components set

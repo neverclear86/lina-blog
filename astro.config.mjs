@@ -14,6 +14,7 @@ import {
 import { devPages } from "./src/dev/dev-pages.ts";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
 import { codeFilename } from "./src/markdown/code-filename.ts";
+import { highlightCodeBlocks } from "./src/markdown/highlight.ts";
 import { tableAlignToClass } from "./src/markdown/table-align.ts";
 import { youtubeEmbed } from "./src/markdown/youtube.ts";
 import { isSitemapPage, withXDefault } from "./src/sitemap.ts";
@@ -106,9 +107,10 @@ export default defineConfig({
     // src/markdown/.
     processor: satteri({
       mdastPlugins: [codeFilename],
-      hastPlugins: [tableAlignToClass, youtubeEmbed],
+      hastPlugins: [tableAlignToClass, youtubeEmbed, highlightCodeBlocks],
     }),
-    // Astro's default Shiki highlighting writes `style` attributes, which articles must not have.
+    // Code blocks are highlighted by highlightCodeBlocks (src/markdown/highlight.ts). Astro's own
+    // Shiki would run before it and add inline styles.
     syntaxHighlight: false,
   },
   output: "server",

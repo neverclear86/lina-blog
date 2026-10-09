@@ -12,7 +12,8 @@
  *
  * The colors in the second group stay the same in both themes. They are named after the color
  * rather than a role because the design uses each of them for several roles (text, fills, dots
- * and shadows).
+ * and shadows). The `--code-*` colors of code blocks, which only `src/markdown/highlight.css`
+ * uses, stay the same in both themes too.
  *
  * `tokens.test.ts` lists every foreground and background pair used for text and checks that each
  * reaches 4.5:1 (WCAG AA) in both themes, and checks that each icon color reaches 3:1 on `--surf`.
@@ -54,6 +55,21 @@
   --paper: #f8f7f3;
   --paper-muted: #a9a8a3;
   --field: #ffffff;
+
+  /* Colors of code blocks, the same in both themes. */
+  --code-bg: #232427;
+  --code-fg: #f8f7f3;
+  --code-comment: #a9a8a3;
+  --code-keyword: #f08fa6;
+  --code-string: #8bbf5a;
+  --code-constant: #f0873a;
+  --code-function: #f5b36b;
+  --code-type: #8fc7c1;
+  --code-punctuation: #cfcbc3;
+  --code-add-bg: #2a3526;
+  --code-del-bg: #3a292d;
+  --code-add-bar: #8bbf5a;
+  --code-del-bar: #f08fa6;
 }
 
 :root[data-theme="dark"] {

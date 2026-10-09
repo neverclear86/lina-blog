@@ -1,0 +1,79 @@
+/* Code blocks rendered by src/markdown/highlight.ts. Tokens carry role classes (`hl-keyword` and
+   so on) and diff lines carry `diff-add` or `diff-del`. The colors are the `--code-*` properties
+   in src/styles/tokens.css, one set for both site themes. */
+
+pre.shiki {
+  padding: 14px 16px 14px 8px;
+  overflow-x: auto;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  tab-size: 2;
+  border-radius: 4px;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+}
+
+@media (min-width: 768px) {
+  pre.shiki {
+    padding: 16px 20px 16px 12px;
+    font-size: 14px;
+  }
+}
+
+pre.shiki:focus-visible {
+  outline: 2px solid var(--num);
+  outline-offset: -2px;
+}
+
+pre.shiki code {
+  display: inline-block;
+  min-width: 100%;
+  font: inherit;
+}
+
+pre.shiki .line {
+  display: inline-block;
+  box-sizing: border-box;
+  min-width: 100%;
+  padding-inline-start: 8px;
+}
+
+pre.shiki .hl-comment {
+  color: var(--code-comment);
+}
+
+pre.shiki .hl-keyword {
+  color: var(--code-keyword);
+}
+
+pre.shiki .hl-string {
+  color: var(--code-string);
+}
+
+pre.shiki .hl-constant {
+  color: var(--code-constant);
+}
+
+pre.shiki .hl-function {
+  color: var(--code-function);
+}
+
+pre.shiki .hl-type {
+  color: var(--code-type);
+}
+
+pre.shiki .hl-punctuation {
+  color: var(--code-punctuation);
+}
+
+pre.shiki .diff-add {
+  background: var(--code-add-bg);
+  box-shadow: inset 3px 0 0 var(--code-add-bar);
+}
+
+pre.shiki .diff-del {
+  background: var(--code-del-bg);
+  box-shadow: inset 3px 0 0 var(--code-del-bar);
+}

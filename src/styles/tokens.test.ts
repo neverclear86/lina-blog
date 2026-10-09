@@ -115,6 +115,28 @@ describe("tokens.css", () => {
 });
 
 /**
+ * Text colors of code blocks (`src/markdown/highlight.css`) on each fill a code line can have:
+ * the block, an added line and a deleted line.
+ */
+const CODE_TEXT_PAIRS: readonly (readonly [
+  foreground: string,
+  background: string,
+])[] = [
+  "--code-fg",
+  "--code-comment",
+  "--code-keyword",
+  "--code-string",
+  "--code-constant",
+  "--code-function",
+  "--code-type",
+  "--code-punctuation",
+].flatMap((foreground) =>
+  ["--code-bg", "--code-add-bg", "--code-del-bg"].map(
+    (background) => [foreground, background] as const,
+  ),
+);
+
+/**
  * Foreground and background tokens of every text color in the design, checked in both themes.
  *
  * Text is judged against the fill under it; the 1px lines of `.grid` and `.cgrid` are not counted
@@ -144,6 +166,7 @@ const TEXT_PAIRS: readonly (readonly [
   ["--ink", "--paper"],
   ["--ink", "--field"],
   ["--paper-muted", "--ink"],
+  ...CODE_TEXT_PAIRS,
 ];
 
 /**

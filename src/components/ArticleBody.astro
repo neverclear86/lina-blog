@@ -3,8 +3,10 @@
  * Wraps rendered Markdown (an article's `<Content />`) and styles the elements that Sätteri
  * and the plugins in src/markdown/ output: GFM tables, task lists, footnotes, the file names
  * of code blocks and YouTube embeds. The rules reach those elements through `:global()` under
- * `.article-body`, so they apply only inside this wrapper.
+ * `.article-body`, so they apply only inside this wrapper. Code blocks are styled by the imported
+ * src/markdown/highlight.css, whose rules match `pre.shiki`.
  */
+import "../markdown/highlight.css";
 ---
 
 <div class="article-body"><slot /></div>
