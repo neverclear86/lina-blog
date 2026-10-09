@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import opentype from "opentype.js";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
+import { LOCALES } from "./i18n/locales";
+import { translate } from "./i18n/ui";
 import { OG_FONT_FACES, type OgFont } from "./og-font";
 import {
   OG_COLORS,
@@ -143,6 +145,17 @@ async function redOf(png: Buffer) {
   return (x: number, y: number) => data[(y * info.width + x) * info.channels];
 }
 
+/** The color of every pixel of a PNG, as `rgb(x, y)` in `[red, green, blue]`. */
+async function rgbOf(png: Buffer) {
+  const { data, info } = await sharp(png)
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  return (x: number, y: number) => {
+    const at = (y * info.width + x) * info.channels;
+    return [...data.subarray(at, at + 3)];
+  };
+}
+
 const IS_INK = 128;
 
 describe("OG_COLORS", () => {
@@ -183,11 +196,36 @@ describe("ogImageElement", () => {
   });
 });
 
+describe("ogImageElement の sponsor", () => {
+  const input: OgImageInput = { title: "題", lang: "ja", sponsor: "ACME" };
+
+  it("sponsor があるときは PR のチップとラベルとスポンサー名を持つ", () => {
+    const ja = JSON.stringify(ogImageElement(input));
+    expect(ja).toContain('"children":"PR"');
+    expect(ja).toContain(translate("ja", "og.sponsor.label"));
+    expect(ja).toContain("ACME");
+    const en = JSON.stringify(ogImageElement({ ...input, lang: "en" }));
+    expect(en).toContain(translate("en", "og.sponsor.label"));
+  });
+
+  it.each([undefined, ""])(
+    "sponsor が %j のときは PR の表記を持たない",
+    (sponsor) => {
+      const tree = JSON.stringify(ogImageElement({ ...input, sponsor }));
+      expect(tree).not.toContain('"PR"');
+      expect(tree).not.toContain(translate("ja", "og.sponsor.label"));
+    },
+  );
+});
+
 describe("renderOgImage", () => {
+  const labels = LOCALES.map((l) => translate(l, "og.sponsor.label")).join("");
   const render = (input: OgImageInput, chars = input.title) =>
     renderOgImage(
       input,
-      squareFonts(`${chars}${input.category ?? ""}ikili.pro/jaen`),
+      squareFonts(
+        `${chars}${input.category ?? ""}${input.sponsor ?? ""}PRikili.pro/jaen${labels}`,
+      ),
     ).then(redOf);
 
   it("地を ink で塗って 48px の格子を引き、右に斜めのオレンジの帯とハッチを描く", async () => {
@@ -288,5 +326,63 @@ describe("renderOgImage", () => {
     };
     expect(await lastGlyphIsLow("あ".repeat(100))).toBe(true);
     expect(await lastGlyphIsLow("あ".repeat(30))).toBe(false);
+  });
+
+  /** Whether the caption row has the box of the "PR" chip: an ivory box left of the path. */
+  const hasPrChip = async (input: OgImageInput) => {
+    const rgb = await renderOgImage(
+      input,
+      squareFonts(
+        `${input.title}PRikili.pro/jaen${input.sponsor ?? ""}${labels}`,
+      ),
+    ).then(rgbOf);
+    return [...Array(300).keys()].some(
+      (dx) => rgb(64 + dx, 76).join() === [0xec, 0xea, 0xe5].join(),
+    );
+  };
+
+  it("sponsor があるときだけ、カテゴリのチップの隣に ivory の PR のチップを描く", async () => {
+    const withCategory: OgImageInput = {
+      title: "題",
+      lang: "ja",
+      category: "制作記",
+    };
+    expect([
+      await hasPrChip({ ...withCategory, sponsor: "ACME" }),
+      await hasPrChip(withCategory),
+      await hasPrChip({ title: "題", lang: "en", sponsor: "ACME" }),
+    ]).toEqual([true, false, true]);
+  });
+
+  it("sponsor があるときだけ、題の下にラベルとスポンサー名の 1 行を描く", async () => {
+    const input: OgImageInput = { title: "題", lang: "ja" };
+    const withSponsor = await render({ ...input, sponsor: "ACME" });
+    const without = await render(input);
+    expect([lines(withSponsor).length, lines(without).length]).toEqual([2, 1]);
+  });
+
+  it("3 行の題と長いスポンサー名でも、題の 3 行とスポンサー名の 1 行に収まる", async () => {
+    const red = await render({
+      title: "あ".repeat(100),
+      lang: "ja",
+      sponsor: "あ".repeat(80),
+    });
+    expect(lines(red)).toHaveLength(4);
+    expect(overflows(red)).toBe(false);
+  });
+
+  it("長いスポンサー名は 1 行目の末尾を省略記号にし、短い名前は省略しない", async () => {
+    const endsLow = async (sponsor: string) => {
+      const red = await render({ title: "題", lang: "ja", sponsor });
+      const [top, bottom] = lines(red).at(-1) ?? [0, 0];
+      const right = (y: number) =>
+        [...Array(760).keys()]
+          .filter((dx) => red(64 + dx, y) > IS_INK)
+          .at(-1) ?? 0;
+      return right(bottom) > right(top);
+    };
+    expect(await endsLow("あ".repeat(80))).toBe(true);
+    expect(await endsLow("A".repeat(120))).toBe(true);
+    expect(await endsLow("あ".repeat(5))).toBe(false);
   });
 });

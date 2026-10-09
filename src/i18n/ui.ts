@@ -166,6 +166,8 @@ const ja = {
   "notFound.message": "このページは存在しないよ。",
   "notFound.subtitle": "ページが見つからないよ",
   "notFound.topLink": "日本語のトップページへ",
+  // Label in front of the name of the sponsor in the OGP image of a sponsored post.
+  "og.sponsor.label": "スポンサー",
   // Description of the site: the meta description and og:description of the pages that do not
   // pass their own, such as the top page.
   "site.description":
@@ -317,6 +319,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "notFound.message": "This page doesn't exist.",
     "notFound.subtitle": "Page not found",
     "notFound.topLink": "Go to the English top page",
+    "og.sponsor.label": "Sponsored by",
     "site.description":
       'Personal site and blog of Tsukusu Lina (創好リナ), a virtual "ikiri" programmer who makes videos and streams about playing with IT, mostly in Resonite.',
     "social.twitter": "Twitter (self-proclaimed X)",
