@@ -4,9 +4,9 @@
  * `<html data-theme>`, which `THEME_SCRIPT` in `src/theme.ts` sets before the first paint, so it
  * matches the theme from then on. A click runs `toggleTheme`.
  *
- * `variant="icon"` is the icon button of the earlier design. It shows the moon in the light theme
- * and the sun in the dark theme, and its name says which theme a click switches to. The icon is
- * 18px below 768px and 20px from 768px.
+ * `variant="icon"` is the icon button of the header of `design/AMobile.dc.html`: a `.iconbtn`
+ * (`src/styles/controls.css`) with an 18px icon, the moon in the light theme and the sun in the
+ * dark theme. Its name is hidden text that says which theme a click switches to.
  *
  * `variant="labeled"` is the button of the header of `design/Main.dc.html`: a sun and the name
  * of the current theme, `dark` or `light`. Its name is that text, the hidden text
@@ -14,7 +14,6 @@
  */
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
-import IconButton from "./IconButton.astro";
 
 interface Props {
   /** Language of the button's name. */
@@ -59,11 +58,11 @@ const { lang, variant = "icon" } = Astro.props;
     </span>
   </button>
 ) : (
-  <IconButton class="theme-toggle">
+  <button class="theme-toggle iconbtn" type="button">
     <svg
       class="moon"
-      width="20"
-      height="20"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -76,8 +75,8 @@ const { lang, variant = "icon" } = Astro.props;
     </svg>
     <svg
       class="sun"
-      width="20"
-      height="20"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -88,11 +87,11 @@ const { lang, variant = "icon" } = Astro.props;
       <circle cx="12" cy="12" r="4"></circle>
       <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
     </svg>
-    <Fragment slot="label">
+    <span class="sr-only">
       <span class="to-dark">{translate(lang, "theme.toDark")}</span>
       <span class="to-light">{translate(lang, "theme.toLight")}</span>
-    </Fragment>
-  </IconButton>
+    </span>
+  </button>
 )}
 
 <script>
@@ -122,18 +121,6 @@ for (const button of document.querySelectorAll(".theme-toggle")) {
 
 :global(:root[data-theme="dark"]) .to-light {
   display: inline;
-}
-
-svg {
-  width: 18px;
-  height: 18px;
-}
-
-@media (min-width: 768px) {
-  svg {
-    width: 20px;
-    height: 20px;
-  }
 }
 
 .labeled {
