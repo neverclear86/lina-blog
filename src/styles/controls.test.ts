@@ -196,9 +196,8 @@ describe("配線", () => {
     expect(controls).toBeGreaterThan(shapes);
   });
 
-  it("ブラウザーの既定の下線に頼っていた .watch、.back、.all と 404 ページのリンクは自分で下線を持つ", () => {
+  it("ブラウザーの既定の下線に頼っていた .back、.all と 404 ページのリンクは自分で下線を持つ", () => {
     const targets: [string, string][] = [
-      ["components/LatestVideoList.astro", ".watch"],
       ["pages/[lang]/works/[slug].astro", ".back"],
       ["components/LatestPosts.astro", ".all"],
       ["pages/404.astro", "a"],

@@ -1,9 +1,13 @@
 ---
 /**
- * The video list of the Latest section: the "動画" heading with a link to the YouTube channel,
- * then the given videos, each a link with its date in Japan time and its title.
+ * The column of the Latest section after the large video window: one small window for each
+ * given video, then a button to the YouTube channel. A small window is a link to the watch page
+ * with the thumbnail, the date in Japan time and the title. The button stays when there are no
+ * videos, such as when the feed could not be read.
  *
- * Without videos only the heading row is shown.
+ * Below 768px the column is hidden with `display: none`, so the large window is the only video
+ * of the section there. From 768px it takes the full width of its place and the height of its
+ * content (`align-self: start`), so a short column does not stretch the large window.
  */
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
@@ -12,7 +16,7 @@ import { YOUTUBE_URL } from "../profile-links";
 import type { YouTubeVideo } from "../youtube-feed";
 
 interface Props {
-  /** Locale of the page, which chooses the heading and the link text. */
+  /** Locale of the page, which chooses the text of the button. */
   lang: Locale;
   /** Videos to list, newest first; all of them are shown. */
   videos: readonly YouTubeVideo[];
@@ -22,76 +26,98 @@ const { lang, videos } = Astro.props;
 ---
 
 <div class="latest-video-list">
-  <div class="head">
-    <h3>{translate(lang, "latest.videos.heading")}</h3>
-    <a class="watch" href={YOUTUBE_URL}
-      ><span>{translate(lang, "latest.videos.watchOnYouTube")}</span></a
-    >
-  </div>
   {videos.length > 0 && (
   <ul class="list">
     {videos.map((v) => (
       <li>
-        <a class="video" href={v.url}>
-          <time datetime={v.publishedAt.toISOString()}>
-            {formatVideoDate(v.publishedAt)}
-          </time>
-          <span class="title" lang="ja">
-            {v.title}
-          </span>
+        <a class="win video" href={v.url}>
+          <div class="gridbg thumb">
+            <img
+              src={v.thumbnail.src}
+              srcset={v.thumbnail.srcset}
+              sizes="140px"
+              width="480"
+              height="270"
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <div class="text">
+            <time class="label" datetime={v.publishedAt.toISOString()}>
+              {formatVideoDate(v.publishedAt)}
+            </time>
+            <span class="title" lang="ja">
+              {v.title}
+            </span>
+          </div>
         </a>
       </li>
     ))}
   </ul>
 )}
+  <a class="btn btn-ghost channel" href={YOUTUBE_URL}>
+    {translate(lang, "latest.videos.channel")}<span aria-hidden="true">→</span>
+  </a>
 </div>
 
 <style>
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--legacy-line);
+.latest-video-list {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
 }
 
-h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 900;
-}
-
-.watch {
-  flex-shrink: 0;
-  color: var(--fg);
-  font-size: 14px;
-  font-weight: 900;
-  text-decoration: underline;
+@media (min-width: 768px) {
+  .latest-video-list {
+    display: flex;
+    align-self: start;
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.video {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--hair);
-  color: var(--fg);
-  text-decoration: none;
+li {
+  min-width: 0;
 }
 
-time {
-  flex-shrink: 0;
-  width: 96px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
+.video {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+}
+
+.thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
 }
 
 .title {
@@ -100,14 +126,13 @@ time {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   overflow: hidden;
-  min-width: 0;
-  font-size: 16px;
-  font-weight: 900;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
   overflow-wrap: anywhere;
 }
 
-.watch:hover span,
-.video:hover .title {
-  opacity: 0.8;
+.channel {
+  justify-content: space-between;
 }
 </style>

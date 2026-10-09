@@ -69,7 +69,7 @@ bun create astro@latest -- --template basics
 │   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
 │   │   ├── LatestPosts.astro     # Blog column of the Latest section: newest posts with tag chips
 │   │   ├── LatestVideoFeature.astro # Latest section: newest video as a latest.mp4 card with a NEW chip
-│   │   ├── LatestVideoList.astro # Latest section: the next videos with JST dates and the YouTube link
+│   │   ├── LatestVideoList.astro # Latest section: the next videos as small windows with JST dates, and the YouTube channel button; hidden below 768px
 │   │   ├── Logo.astro            # Switches the logo with the theme; tone="inverse" for --inv faces
 │   │   ├── NameLogo.astro        # Name logo of the brand kit as inline SVG: compact, full and full-sub, painted with the --lg-* tokens
 │   │   ├── PostCard.astro        # Blog post card: emoji tile, title, JST date, tag chips and a PR chip; the whole card is a link
