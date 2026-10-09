@@ -12,6 +12,8 @@ bun create astro@latest -- --template basics
 /
 ├── docs/
 │   └── publish-api.md    # API contract between the article sync script and the publishing Worker
+├── public/
+│   └── favicon/          # Favicons from the brand kit, unchanged: the mark /li on ink as SVG, and PNGs of 32, 180 and 192 pixels
 ├── scripts/
 │   ├── avatars/          # Makes the avatar images in src/assets/ from the v2.1 originals (bun run import:avatars), unit-tested
 │   └── sync/             # Article sync script for the publish Worker: Vault scan, images, Markdown, diff and API client, unit-tested
@@ -46,7 +48,7 @@ bun create astro@latest -- --template basics
 │   ├── assets/           # Images processed by astro:assets
 │   │   ├── <avatar>.webp   # Nine avatars of v2.1 (rohan, lgtm-fullbody, happy-fullbody, main-visual, threeview-front/side/back, lgtm-bastup, hate), made by scripts/avatars/ (see "Images and caching")
 │   │   ├── logo-black.png  # Black logo (light theme, or inverse faces on the dark theme), optimized by astro:assets
-│   │   ├── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
+│   │   ├── logo-light.png  # Logo (light theme)
 │   │   └── logo-white.png  # White logo (dark theme, or inverse faces on the light theme)
 │   ├── components/
 │   │   ├── About.astro           # About section: heading, lead and three terminal cards
@@ -218,7 +220,9 @@ repository or to `dist/`.
 Images in `src/assets/` are rendered with `Picture` or `getImage` from `astro:assets`.
 `astro build` converts them once (`imageService: "compile"`), so no image is transformed at
 request time. Photos and the logo are offered as AVIF and WebP at several widths or densities.
-The pixel art and the favicons stay PNG at a fixed size, so no pixel is blended.
+The pixel art stays PNG at a fixed size, so no pixel is blended.
+The favicons are files of the brand kit in `public/favicon/`, copied without changes, so their
+URLs do not change between builds.
 
 The standing illustration, `src/assets/lina-standing.webp`, is also turned into text art for
 terminals. The `linaAnsiArt()` Vite plugin in `astro.config.mjs` resizes it with sharp to 80
@@ -255,6 +259,7 @@ the other files with its default.
 | :---------- | :-------------------------------------- | :-------------------------------------- |
 | `/_astro/*` | `public, max-age=31536000, immutable`   | The Cloudflare adapter (`_headers`)     |
 | HTML pages  | `public, max-age=0, must-revalidate`    | The Workers Static Assets default (with an `ETag`) |
+| `/favicon/*` | `public, max-age=0, must-revalidate`   | The Workers Static Assets default (with an `ETag`) |
 
 HTML is revalidated on every request, so a deploy shows up at once and a page never points
 at hashed files that the deploy removed. The adapter skips its rule when a `_headers` file in

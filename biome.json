@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!!**/dist", "!!.claude", "!!design"]
+    "includes": ["**", "!!**/dist", "!!.claude", "!!design", "!!public/favicon"]
   },
   "formatter": {
     "enabled": true,
