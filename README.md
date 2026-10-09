@@ -19,6 +19,7 @@ bun create astro@latest -- --template basics
 │   ├── ansi-art.ts       # Pixels to terminal text art (half blocks, 24-bit color), unit-tested
 │   ├── contact.ts        # Contact form input validation, unit-tested
 │   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
+│   ├── avatar-images.ts  # The nine v2.1 avatar images of src/assets/ with their alt keys, widths, sizes and priority, unit-tested
 │   ├── blog-pages.ts     # Tag pages of /blog/tags/<slug>/, the heading texts and the tag filter links of the blog pages, unit-tested
 │   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
 │   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
@@ -78,7 +79,7 @@ bun create astro@latest -- --template basics
 │   │   ├── blog-dev/     # Posts for checking how pages look; loaded by astro dev only
 │   │   └── works/        # Works, one YAML file per work (placeholder data), with placeholder.png
 │   ├── dev/
-│   │   ├── components.astro  # /dev/components/: samples of the shared shapes, animations and components
+│   │   ├── components.astro  # /dev/components/: samples of the shared shapes, animations, components and avatar images
 │   │   ├── dev-pages.ts      # Adds the dev pages in astro dev (or with LINA_DEV_PAGES=1), unit-tested
 │   │   └── markdown.astro    # /dev/markdown/: sample article with every supported Markdown syntax
 │   ├── i18n/
@@ -179,7 +180,7 @@ It sets the light theme when `localStorage` holds `light` under the key `theme`,
 Without JavaScript, the page keeps the dark theme that `Layout.astro` renders.
 `src/components/ThemeToggle.astro` switches the theme with `toggleTheme` and saves it under the same key; when saving throws, the switch lasts only until the next page.
 
-`src/dev/components.astro` shows the shared shapes, the shared animations and the components on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
+`src/dev/components.astro` shows the shared shapes, the shared animations, the components and the avatar images on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
 `astro dev` serves them at `/dev/components/` and `/dev/markdown/`, and `astro build` leaves them out of `dist/` unless `LINA_DEV_PAGES=1` is set.
 Add `?theme=dark` or `?theme=light` to the URL of `/dev/components/` to see that theme whatever is saved.
 To capture them with `.claude/scripts/screenshot.mjs`, which serves `dist/`, build with `LINA_DEV_PAGES=1 bun run build`.
@@ -228,6 +229,15 @@ three views `threeview-front`, `threeview-side` and `threeview-back` (459 × 110
 `hate` (145 × 192). `scripts/avatars/avatars.ts` crops each original to the bounds of its
 non-transparent pixels and shrinks it to at least twice the largest size it is shown at, which is
 why the originals are not committed. The output is the same on every run.
+
+`src/avatar-images.ts` holds what a component needs to show the nine avatars with `Picture`: the
+imported image, the key of its alt text in `src/i18n/ui.ts`, the candidate `widths`, the `sizes`
+and `priority`. The four Hero poses are decorative, so their `alt` is empty, and only the first
+(`rohan`) has `priority`, which turns off lazy loading and raises the fetch priority. A component
+passes these values to `Picture` with `formats={["avif", "webp"]}` and `fallbackFormat="webp"`,
+takes the `alt` from `avatarAlt(avatar, lang)`, and changes `widths` and `sizes` in the module
+when a display size changes. `/dev/components/` shows all nine; they are written to `dist/`
+only while a page uses them, so build with `LINA_DEV_PAGES=1` to see them.
 
 Every file whose name carries a content hash, images and fonts included, is written to
 `/_astro/`. The repository has no `_headers` file: the Cloudflare adapter writes
