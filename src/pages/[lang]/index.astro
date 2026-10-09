@@ -40,12 +40,12 @@ const { feature, list } = latestVideos(result);
     <Hero lang={lang} />
     <div class="preview-standing"><HeroStanding /></div>
     <About lang={lang} />
-    <Works lang={lang} />
     <LatestSection lang={lang}>
       <LatestVideoFeature slot="video-feature" lang={lang} video={feature} />
       <LatestVideoList slot="video-list" lang={lang} videos={list} />
       <LatestPosts slot="blog" lang={lang} posts={posts} />
     </LatestSection>
+    <Works lang={lang} />
     <ContactSection lang={lang} />
   </main>
 </Layout>

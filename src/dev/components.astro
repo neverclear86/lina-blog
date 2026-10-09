@@ -27,6 +27,7 @@ import SectionHeading from "../components/SectionHeading.astro";
 import SectionTitle from "../components/SectionTitle.astro";
 import Tape from "../components/Tape.astro";
 import TerminalCard from "../components/TerminalCard.astro";
+import WorkTile from "../components/WorkTile.astro";
 import { translate } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
 import type { YouTubeVideo } from "../youtube-feed";
@@ -272,6 +273,58 @@ const sampleVideos: YouTubeVideo[] = [
             >ls ~/focus <span aria-hidden="true">→</span></a
           >
         </SectionTitle>
+      </div>
+    </section>
+
+    <section id="a-works">
+      <h2>A案: 作品のタイル</h2>
+      <div class="a-tiles">
+        <WorkTile
+          lang="ja"
+          title="ikili.pro"
+          description="創好リナの個人サイト兼ブログ。Astro と Cloudflare Workers で作っている。"
+          tech={["astro", "typescript", "cloudflare"]}
+          link={{ href: "#a-works", external: false }}
+        />
+        <WorkTile
+          lang="ja"
+          title="placeholder-work"
+          description="外部のサイトへのリンクになる作品。名前の後ろに ↗ が付く。"
+          tech={["typescript"]}
+          link={{ href: "#a-works", external: true }}
+        />
+        <WorkTile
+          lang="ja"
+          class="is-hover"
+          title="is-hover"
+          description="ホバーのとき。枠が回った後の角度になる。"
+          tech={["astro"]}
+          link={{ href: "#a-works", external: false }}
+        />
+        <WorkTile
+          lang="ja"
+          class="is-focus"
+          title="is-focus"
+          description="キーボードのフォーカスのとき。枠が回った後の角度になり、輪が付く。"
+          tech={["astro"]}
+          link={{ href: "#a-works", external: false }}
+        />
+        <WorkTile
+          lang="ja"
+          title="a-work-with-a-very-long-name-that-has-no-break-in-it-at-all-1234567890"
+          description="Averyveryverylongwordwithoutanybreakinthedescriptionthatmustwrapinsidethewindow"
+          tech={[
+  "a-technology-with-a-very-long-name-that-the-tag-cuts-with-an-ellipsis",
+  "astro",
+]}
+        />
+        <WorkTile
+          lang="en"
+          title="no-tags"
+          description="A work without technologies, with a link to another site."
+          tech={[]}
+          link={{ href: "#a-works", external: true }}
+        />
       </div>
     </section>
 
@@ -984,6 +1037,13 @@ const sampleVideos: YouTubeVideo[] = [
 .latest-narrow,
 .latest-list-narrow {
   max-width: 320px;
+}
+
+.a-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: 14px;
+  margin-top: 16px;
 }
 
 .a-samples {
