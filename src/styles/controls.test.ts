@@ -256,7 +256,7 @@ describe("配線", () => {
   });
 
   it("ブラウザーの既定の下線に頼っていた 404 ページのリンクは自分で下線を持つ", () => {
-    const targets: [string, string][] = [["pages/404.astro", "a"]];
+    const targets: [string, string][] = [["pages/404.astro", "p a"]];
     for (const [path, selector] of targets) {
       const found = rulesOf(styleOf(source(path))).find(
         (rule) => rule.selector === selector,
@@ -265,6 +265,12 @@ describe("配線", () => {
         "text-decoration: underline;",
       );
     }
+  });
+
+  it("404 ページの戻るボタン .btn-acc の色と下線を、ページの a の規則が上書きしない", () => {
+    const rules = rulesOf(styleOf(source("pages/404.astro")));
+    expect(rules.map((rule) => rule.selector)).not.toContain("a");
+    expect(source("pages/404.astro")).toContain('class="btn btn-acc back"');
   });
 });
 

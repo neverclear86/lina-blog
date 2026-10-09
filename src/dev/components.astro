@@ -7,7 +7,6 @@ import ArticleEnd from "../components/ArticleEnd.astro";
 import ArticleToc from "../components/ArticleToc.astro";
 import AvatarThreeView from "../components/AvatarThreeView.astro";
 import Bubble from "../components/Bubble.astro";
-import Button from "../components/Button.astro";
 import Chip from "../components/Chip.astro";
 import ContactBand from "../components/ContactBand.astro";
 import ContactForm from "../components/ContactForm.astro";
@@ -36,7 +35,6 @@ import SectionTitle from "../components/SectionTitle.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import SponsorNotice from "../components/SponsorNotice.astro";
 import Tape from "../components/Tape.astro";
-import TerminalCard from "../components/TerminalCard.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import WorkTile from "../components/WorkTile.astro";
 import { translate } from "../i18n/ui";
@@ -514,47 +512,6 @@ const sampleVideos: YouTubeVideo[] = [
       </div>
     </section>
 
-    <section id="cards">
-      <h2>ターミナル窓カード</h2>
-      <div class="cards">
-        <TerminalCard title="~/works/nostr-no-su" href="#cards">
-          <p class="card-body">リンクのカード</p>
-        </TerminalCard>
-        <TerminalCard
-          title="~/works/nostr-no-su"
-          href="#cards"
-          class="is-focus"
-        >
-          <p class="card-body">フォーカス</p>
-        </TerminalCard>
-        <TerminalCard title="lina --stream">
-          <p class="card-body">リンクでないカード</p>
-        </TerminalCard>
-        <TerminalCard title="lina --stream" class="is-lift">
-          <p class="card-body">lift</p>
-        </TerminalCard>
-        <TerminalCard
-          title="~/works/a-very-long-project-name-for-the-ellipsis"
-          shape="shapeL"
-        >
-          <p class="card-body">shapeL と長い題</p>
-        </TerminalCard>
-      </div>
-      <div class="cbg">
-        <TerminalCard
-          title="new-message.txt"
-          shape="shapeL"
-          shadow="fshadow"
-          tone="paper"
-          lift={false}
-        >
-          <p class="card-body">
-            <a class="is-focus" href="#cards">紙の面のフォーカス</a>
-          </p>
-        </TerminalCard>
-      </div>
-    </section>
-
     <section id="bubbles">
       <h2>吹き出し</h2>
       <div class="row">
@@ -567,31 +524,6 @@ const sampleVideos: YouTubeVideo[] = [
             >長い本文は吹き出しの幅に収まるように折り返す。長い本文は吹き出しの幅に収まるように折り返す。長い本文は吹き出しの幅に収まるように折り返す。</span
           >
         </Bubble>
-      </div>
-    </section>
-
-    <section id="buttons">
-      <h2>ボタン</h2>
-      <div class="row">
-        <Button href="#buttons">お問い合わせ</Button>
-        <Button href="#buttons" class="is-hover">お問い合わせ</Button>
-        <Button href="#buttons" class="is-focus">お問い合わせ</Button>
-      </div>
-      <div class="cbg">
-        <div class="form">
-          <div class="row">
-            <Button size="lg" shadow="ink" type="submit">送信する</Button>
-            <Button size="lg" shadow="ink" type="submit" class="is-hover"
-              >送信する</Button
-            >
-            <Button size="lg" shadow="ink" type="submit" class="is-focus"
-              >送信する</Button
-            >
-            <Button size="lg" shadow="ink" type="submit" disabled
-              >送信する</Button
-            >
-          </div>
-        </div>
       </div>
     </section>
 
@@ -1102,8 +1034,7 @@ const sampleVideos: YouTubeVideo[] = [
     <section id="english" lang="en">
       <h2>英語</h2>
       <div class="row">
-        <Button href="#english">Contact</Button>
-        <Button size="lg" shadow="ink">Send</Button>
+        <a class="btn btn-acc" href="#english">Contact</a>
         <IconButton label="Switch between light and dark"
           ><svg
             aria-hidden="true"
@@ -1424,17 +1355,6 @@ section {
   margin-top: 40px;
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
-  gap: 32px;
-}
-
-.card-body {
-  margin: 0;
-  padding: 20px 22px;
-}
-
 .a-panel {
   display: flex;
   flex-wrap: wrap;
@@ -1502,13 +1422,6 @@ section {
 
 .row + .row {
   margin-top: 24px;
-}
-
-.form {
-  padding: 24px;
-  background: var(--paper);
-  color: var(--legacy-ink);
-  --focus-ring: var(--legacy-ink);
 }
 
 .narrow-btn {

@@ -1,7 +1,5 @@
 ---
-import Button from "../components/Button.astro";
 import SectionTitle from "../components/SectionTitle.astro";
-import TerminalCard from "../components/TerminalCard.astro";
 import { translate } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
 ---
@@ -15,7 +13,8 @@ import Layout from "../layouts/Layout.astro";
       path="~/404"
       title={translate("ja", "notFound.subtitle")}
     />
-    <TerminalCard title="~/404" lift={false} class="card">
+    <div class="win card">
+      <p class="window-title">~/404</p>
       <div class="body">
         <p class="shell" aria-hidden="true">
           <span class="prompt">$</span>{" "}cd ~/404<br>
@@ -27,11 +26,11 @@ import Layout from "../layouts/Layout.astro";
             >{translate("en", "notFound.topLink")}</a
           >
         </p>
-        <Button href="/ja/" class="back"
-          >{translate("ja", "notFound.back")}</Button
+        <a class="btn btn-acc back" href="/ja/"
+          >{translate("ja", "notFound.back")}</a
         >
       </div>
-    </TerminalCard>
+    </div>
   </main>
 </Layout>
 
@@ -56,9 +55,18 @@ import Layout from "../layouts/Layout.astro";
   }
 }
 
-.not-found :global(.card) {
+.card {
   width: 100%;
   max-width: 720px;
+}
+
+.window-title {
+  margin: 0;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .body {
@@ -69,7 +77,7 @@ import Layout from "../layouts/Layout.astro";
   padding: 26px 24px;
 }
 
-p {
+.body p {
   margin: 0;
   line-height: 1.8;
 }
@@ -87,15 +95,15 @@ p {
 }
 
 .error {
-  color: var(--fg);
+  color: var(--text);
 }
 
-a {
+p a {
   color: inherit;
   text-decoration: underline;
 }
 
-.body :global(.back) {
+.back {
   margin-top: 8px;
 }
 </style>
