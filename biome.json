@@ -12,7 +12,8 @@
       "!!.claude",
       "!!design",
       "!!public/favicon",
-      "!!src/assets/icon"
+      "!!src/assets/icon",
+      "!!src/assets/name-logo"
     ]
   },
   "formatter": {
