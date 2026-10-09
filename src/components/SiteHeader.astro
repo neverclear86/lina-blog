@@ -1,13 +1,14 @@
 ---
 /**
- * The site header of every page. From 1024px it is the header of `design/Main.dc.html`: the name
- * logo (`NameLogo`, `compact`), the main navigation `00 top` to `04 works`, the language switch,
- * the theme toggle with the name of the current theme, and the contact button (`.btn-acc`). It
- * sticks to the top of the viewport, 61px high, on `--hdr` blurred with a `--line` line under it,
- * and its content is at most 1440px wide. The items come from `navLinks` in `./site-nav`, and the
- * item of the current page has `aria-current` and a `--keyword` face. The language switch shows
- * the language of the page as text and links to the others; a page that exists only in Japanese
- * shows `JA` alone.
+ * The site header of every page. It sticks to the top of the viewport, 61px high, on `--hdr`
+ * blurred with a `--line` line under it, and its content is at most 1440px wide.
+ *
+ * From 1024px it is the header of `design/Main.dc.html`: the name logo (`NameLogo`, `compact`)
+ * linking to the top of the top page, the main navigation `00 top` to `04 works`, the language
+ * switch, the theme toggle with the name of the current theme, and the contact button
+ * (`.btn-acc`). The items come from `navLinks` in `./site-nav`, and the item of the current
+ * page has `aria-current` and a `--keyword` face. The language switch shows the language of the
+ * page as text and links to the others; a page that exists only in Japanese shows `JA` alone.
  *
  * On the top page (`isTopPath` in `./site-nav`) the navigation follows the scroll: the item of
  * the section that the reader is in (`currentSectionIndex` in `./site-nav`) has
@@ -19,16 +20,16 @@
  * the hero of the top page (`.hero-logo` in `Hero`) is in the viewport, that is, has no
  * `data-offscreen`: that logo blinks in its place, so that one cursor blinks on a screen.
  *
- * Below 1024px the header is the earlier design, in the page flow, 60px high below 768px and 72px
- * from 768px. The navigation, the language switch and the contact button move into the menu, a
- * popover under the header that the menu button next to the theme toggle shows and hides without
- * script. The button shows three bars, and a cross while the menu is open. While it is open, the
- * page behind it does not scroll, and a script closes it when a link in it is clicked.
+ * Below 1024px it is the header of `design/AMobile.dc.html`: the logo, the theme toggle as an
+ * icon button and the menu button (`.iconbtn-acc`), with 16px beside them (32px from 768px).
+ * The menu button shows and hides the menu without script. The menu is a popover sheet on
+ * `--bg` under the header, with the items of the navigation as rows 48px high, the language
+ * switch and the contact button. The button shows three bars, and a cross while the menu is
+ * open. While the menu is open, the page behind it does not scroll. A script closes it when a
+ * link in it is clicked and when the focus moves out of the header.
  */
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
-import Button from "./Button.astro";
-import IconButton from "./IconButton.astro";
 import NameLogo from "./NameLogo.astro";
 import {
   homeSectionPath,
@@ -108,38 +109,39 @@ const follow = isTopPath(lang, pathname);
       <a class="btn btn-acc contact" href={homeSectionPath(lang, "contact")}>
         {translate(lang, "nav.contact")}
       </a>
-      <div class="menu-toggle">
-        <IconButton
-          label={translate(lang, "menu.label")}
-          tone="inverse"
-          popovertarget="site-menu"
+      <button
+        class="iconbtn iconbtn-acc menu-toggle"
+        type="button"
+        aria-label={translate(lang, "menu.label")}
+        popovertarget="site-menu"
+      >
+        <svg
+          class="menu-open-icon"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="square"
+          aria-hidden="true"
         >
-          <svg
-            class="menu-open-icon"
-            width="18"
-            height="12"
-            viewBox="0 0 18 12"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path d="M0 1h18M0 6h18M0 11h10"></path>
-          </svg>
-          <svg
-            class="menu-close-icon"
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path d="M2 2l14 14M16 2L2 16"></path>
-          </svg>
-        </IconButton>
-      </div>
+          <path d="M4 7h16M4 12h16M4 17h10"></path>
+        </svg>
+        <svg
+          class="menu-close-icon"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="square"
+          aria-hidden="true"
+        >
+          <path d="M6 6l12 12M18 6L6 18"></path>
+        </svg>
+      </button>
     </div>
   </div>
   <div id="site-menu" class="menu-panel" popover>
@@ -159,11 +161,14 @@ const follow = isTopPath(lang, pathname);
       </span>
     )}
     {link.current ? (
-      <span lang={link.locale} aria-current="page">
+      <span class="current-language" lang={link.locale} aria-current="page">
         {link.locale.toUpperCase()}
+        {languages.length === 1 && (
+          <span class="sr-only">{translate(lang, "lang.jaOnly")}</span>
+        )}
       </span>
     ) : (
-      <a href={link.href} hreflang={link.locale} lang={link.locale}>
+      <a class="ws" href={link.href} hreflang={link.locale} lang={link.locale}>
         {link.locale.toUpperCase()}
       </a>
     )}
@@ -171,29 +176,31 @@ const follow = isTopPath(lang, pathname);
 ))}
     </div>
     <div class="menu-contact">
-      <Button href={homeSectionPath(lang, "contact")} size="md">
+      <a class="btn btn-acc" href={homeSectionPath(lang, "contact")}>
         {translate(lang, "nav.contact")}
-      </Button>
+      </a>
     </div>
   </div>
 </header>
 
 <style>
 .site-header {
-  box-sizing: border-box;
-  height: 60px;
-  padding: 0 14px 0 18px;
-  border-bottom: 1px solid var(--legacy-line);
+  --gutter: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--line);
+  background: var(--hdr);
+  backdrop-filter: blur(10px);
 }
 .bar {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 100%;
-}
-.brand,
-.menu-panel a {
-  color: var(--fg);
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 8px var(--gutter);
 }
 .brand {
   display: flex;
@@ -206,14 +213,8 @@ const follow = isTopPath(lang, pathname);
 :global(:root:has(.hero-logo:not([data-offscreen]))) .brand :global(.cur) {
   animation: none;
 }
-@media (min-width: 768px) {
-  .site-header {
-    height: 72px;
-    padding: 0 32px;
-  }
-  .brand {
-    width: 92px;
-  }
+.brand:hover {
+  opacity: 0.8;
 }
 .site-nav,
 .languages,
@@ -224,10 +225,8 @@ const follow = isTopPath(lang, pathname);
 .actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-.menu-toggle {
-  display: flex;
+  gap: 8px;
+  margin-left: auto;
 }
 .sr-only {
   position: absolute;
@@ -252,18 +251,18 @@ const follow = isTopPath(lang, pathname);
  */
 .menu-panel {
   position: fixed;
-  inset: 60px 0 auto;
+  inset: 61px 0 auto;
   box-sizing: border-box;
   width: auto;
   height: auto;
-  max-height: calc(100dvh - 60px);
+  max-height: calc(100dvh - 61px);
   overflow-y: auto;
   margin: 0;
-  padding: 8px 14px 24px 18px;
+  padding: 0;
   border: 0;
-  border-bottom: 1px solid var(--legacy-line);
+  border-bottom: 1px solid var(--line);
   background: var(--bg);
-  color: var(--fg);
+  color: var(--text);
 }
 .menu-nav {
   display: flex;
@@ -273,51 +272,70 @@ const follow = isTopPath(lang, pathname);
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  min-height: 48px;
+  height: 48px;
+  padding: 0 var(--gutter);
+  color: var(--muted);
   font-family: var(--font-mono);
-  font-size: 16px;
-  font-weight: 900;
+  font-size: 14px;
   text-decoration: none;
 }
-.menu-nav a[aria-current] {
-  text-decoration-line: underline;
-  text-decoration-thickness: 3px;
-  text-decoration-color: var(--pink);
-  text-underline-offset: 6px;
+.menu-nav a + a {
+  border-top: 1px solid var(--line);
+}
+.menu-nav a:is(:hover, :focus-visible) {
+  background: var(--panel);
+  color: var(--text);
+}
+.menu-nav a:focus-visible {
+  outline-offset: -2px;
+}
+.menu-nav a[aria-current],
+.menu-nav a[aria-current]:is(:hover, :focus-visible) {
+  background: var(--keyword);
+  color: var(--ink);
+  font-weight: 700;
+}
+.menu-nav a[aria-current]:focus-visible {
+  outline-color: var(--ink);
 }
 .menu-languages {
   display: flex;
   align-items: center;
-  gap: 6px;
+  padding: 8px calc(var(--gutter) - 12px);
+  border-top: 1px solid var(--line);
   font-family: var(--font-mono);
-  font-size: 15px;
-}
-.menu-languages a,
-.menu-languages span[aria-current] {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
+  font-size: 14px;
 }
 .menu-contact {
-  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  padding: 4px var(--gutter) 16px;
 }
-.menu-languages a {
-  color: var(--muted);
-  text-decoration: none;
-}
-.menu-languages span[aria-current] {
-  color: var(--fg);
-  font-weight: 500;
-  text-decoration: underline;
+.menu-contact .btn {
+  display: flex;
+  flex: 1;
+  justify-content: center;
 }
 .separator {
   color: var(--muted);
 }
+.menu-languages .ws,
+.menu-languages .current-language {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+.menu-languages .current-language {
+  color: var(--text);
+  font-weight: 700;
+}
 @media (min-width: 768px) {
-  .menu-panel {
-    inset: 72px 0 auto;
-    max-height: calc(100dvh - 72px);
-    padding: 8px 32px 24px;
+  .site-header {
+    --gutter: 32px;
   }
 }
 @media (max-width: 1023px) {
@@ -325,44 +343,15 @@ const follow = isTopPath(lang, pathname);
     overflow: hidden;
   }
 }
-.menu-nav a + a {
-  border-top: 1px solid var(--hair);
-}
-.brand:hover,
-.menu-panel a:hover {
-  color: var(--fg);
-  opacity: 0.8;
-}
-/*
- * From 1024px: sticky, translucent and blurred. `backdrop-filter` is written without the prefix
- * only, because the CSS build drops the unprefixed line when the prefixed one is also written.
- */
+/* From 1024px the navigation, the language switch and the contact button are in the bar. */
 @media (min-width: 1024px) {
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    height: auto;
-    padding: 0;
-    border-bottom: 1px solid var(--line);
-    background: var(--hdr);
-    backdrop-filter: blur(10px);
-  }
-  .bar {
-    box-sizing: border-box;
-    max-width: 1440px;
-    height: auto;
-    margin: 0 auto;
-    padding: 8px 32px;
+  .brand {
+    width: 92px;
   }
   .site-nav {
     display: flex;
     gap: 4px;
     margin-left: 20px;
-  }
-  .actions {
-    gap: 8px;
-    margin-left: auto;
   }
   .languages {
     display: flex;
@@ -465,6 +454,19 @@ for (const link of menu?.querySelectorAll("a") ?? []) {
     if (menu && "hidePopover" in menu) menu.hidePopover();
   });
 }
+
+// Tabbing out of the header leaves the open menu over the page, so close it then.
+const header = menu?.closest("header");
+menu?.addEventListener("focusout", (event) => {
+  const next = event.relatedTarget;
+  if (
+    next instanceof Node &&
+    !header?.contains(next) &&
+    menu.matches(":popover-open")
+  ) {
+    menu.hidePopover();
+  }
+});
 </script>
 
 <script>
