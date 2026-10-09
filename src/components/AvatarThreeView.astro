@@ -11,12 +11,21 @@
  * of the image, with `top` and `left` or `right`, by the classes `.n-<id>` and `.front`, `.side`
  * and `.back`, because the CSP does not allow the `style` attribute.
  *
- * The three figures are stacked below 1200px, with the back moved to the left so that its name
- * stays on the screen, and stand in a row from 1200px. The images are 380px high below 768px
- * (less on a narrower screen), 360px up to 900px, 440px up to 1199px, and from 1200px as high as
+ * The three figures stand in a row from 1200px. Below 1200px the back is moved to the left so
+ * that its name stays on the screen, and the figures are stacked until the script at the end of
+ * the file has run. The images are 380px high below 768px (less on a narrower screen), 360px up
+ * to 900px, 440px up to 1199px, and from 1200px as high as
  * `min(520px, calc((100vw - 698px) * 0.8))`. Below 768px the stage extends 16px past the parent
  * on both sides, which is the edge of the screen when the parent has 16px of padding. The margin
  * above the component is its own: 16px below 768px, 52px from 768px.
+ *
+ * Below 1200px the figures can be switched. The markup holds a tab list (`role="tablist"`, a
+ * `button` for each view) and the hint `tap / swipe`, which stay hidden, and without script the
+ * figures stay stacked. The script sets the ids and roles, selects the front, and sets `data-tabs`
+ * on the root. With `data-tabs`, below 1200px, only the figure with the class `on` is shown (it
+ * fades in, except under `prefers-reduced-motion: reduce`), the tabs are shown, and a tap or a
+ * swipe to the left on the stage selects the next view, a swipe to the right the previous one. The
+ * hint is next to `v2.1` below 768px and next to the tabs from 768px. See `./three-view-tabs`.
  */
 import { Picture } from "astro:assets";
 import { type AvatarImage, avatarAlt, THREE_VIEW } from "../avatar-images";
@@ -118,7 +127,11 @@ const views: View[] = [
 <div class="three-view">
   <div class="head">
     <span class="label name">avatar</span>
-    <span class="label">v2.1</span>
+    <span class="label"
+      >v2.1<span class="head-hint" aria-hidden="true"
+        >{" · tap / swipe"}</span
+      ></span
+    >
   </div>
   <div class="model-stage gridbg">
     <div class="model-row">
@@ -166,6 +179,20 @@ const views: View[] = [
         </figure>
       ))}
     </div>
+  </div>
+  <div class="tabs">
+    <div
+      class="tablist"
+      role="tablist"
+      aria-label={translate(lang, "avatar.tabsLabel")}
+    >
+      {views.map((v) => (
+        <button type="button" role="tab" class="vt">
+          {v.id}
+        </button>
+      ))}
+    </div>
+    <span class="label vt-hint" aria-hidden="true">tap / swipe</span>
   </div>
 </div>
 
@@ -318,6 +345,44 @@ figcaption {
 .n-nametag {
   top: 46.91%;
 }
+.tabs,
+.head-hint,
+.vt-hint {
+  display: none;
+}
+.tabs {
+  align-items: center;
+  justify-content: center;
+  margin: 12px 16px 0;
+}
+.tablist {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 6px;
+}
+.vt {
+  flex: 1 1 0;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line2);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.vt:is(:hover, :focus-visible),
+.vt[aria-selected="true"] {
+  border-color: var(--keyword);
+}
+.vt[aria-selected="true"] {
+  background: var(--keyword);
+  color: var(--ink);
+  font-weight: 700;
+}
 
 @media (min-width: 768px) {
   .three-view {
@@ -349,6 +414,21 @@ figcaption {
   }
   .co-t {
     gap: 2px;
+  }
+  .tabs {
+    margin: 14px 0 0;
+  }
+  .tablist {
+    flex: none;
+  }
+  .vt {
+    flex: none;
+    min-width: 72px;
+    padding: 0 14px;
+  }
+  .vt-hint {
+    display: inline;
+    margin-left: 10px;
   }
 }
 
@@ -388,4 +468,110 @@ figcaption {
     height: min(520px, calc((100vw - 698px) * 0.8));
   }
 }
+@media (max-width: 767px) {
+  [data-tabs] .head-hint {
+    display: inline;
+  }
+}
+
+@media (max-width: 1199px) {
+  [data-tabs] .model-stage {
+    cursor: pointer;
+    touch-action: pan-y;
+    user-select: none;
+  }
+  [data-tabs] .fig-img {
+    pointer-events: none;
+  }
+  [data-tabs] .fig:not(.on) {
+    display: none;
+  }
+  [data-tabs] .fig.on {
+    animation: fig-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  [data-tabs] .tabs {
+    display: flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-tabs] .fig.on {
+    animation: none;
+  }
+}
+
+@keyframes fig-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
 </style>
+
+<script>
+// Below 1200px, shows one view at a time with tabs, a tap and a swipe. `data-tabs` is set last,
+// after the first view is selected, because the CSS that hides the other figures relies on it.
+import { createSwipe, viewAfterKey, viewAfterSwipe } from "./three-view-tabs";
+
+const narrow = window.matchMedia("(max-width: 1199px)");
+const roots = document.querySelectorAll<HTMLElement>(".three-view");
+
+roots.forEach((root, index) => {
+  const stage = root.querySelector<HTMLElement>(".model-stage");
+  const tabs = [...root.querySelectorAll<HTMLButtonElement>("[role=tab]")];
+  const figures = [...root.querySelectorAll<HTMLElement>(".fig")];
+  if (!stage || tabs.length === 0 || tabs.length !== figures.length) {
+    return;
+  }
+  let current = 0;
+
+  const select = (next: number, focus = false) => {
+    current = next;
+    tabs.forEach((tab, i) => {
+      tab.setAttribute("aria-selected", String(i === next));
+      tab.tabIndex = i === next ? 0 : -1;
+      figures[i]?.classList.toggle("on", i === next);
+    });
+    if (focus) {
+      tabs[next]?.focus();
+    }
+  };
+
+  tabs.forEach((tab, i) => {
+    const figure = figures[i];
+    if (!figure) {
+      return;
+    }
+    tab.id = `three-view-${index}-tab-${i}`;
+    figure.id = `three-view-${index}-panel-${i}`;
+    tab.setAttribute("aria-controls", figure.id);
+    figure.setAttribute("role", "tabpanel");
+    figure.setAttribute("aria-labelledby", tab.id);
+    tab.addEventListener("click", () => select(i));
+    tab.addEventListener("keydown", (event) => {
+      const next = viewAfterKey(event, current, tabs.length);
+      if (next !== null) {
+        event.preventDefault();
+        select(next, true);
+      }
+    });
+  });
+
+  const swipe = createSwipe();
+  stage.addEventListener("pointerdown", (event) => swipe.down(event));
+  stage.addEventListener("pointercancel", () => swipe.cancel());
+  stage.addEventListener("pointerup", (event) => {
+    const dx = swipe.up(event);
+    if (dx !== null && narrow.matches) {
+      select(viewAfterSwipe(dx, current, figures.length));
+    }
+  });
+
+  select(0);
+  root.setAttribute("data-tabs", "");
+});
+</script>
