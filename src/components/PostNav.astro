@@ -1,0 +1,97 @@
+---
+/**
+ * The links to the posts next to a post, at the end of its page: a `<nav>` of up to two
+ * windows, `prev` (the post one step older) and `next` (the post one step newer). Each window
+ * is a link to `/blog/<slug>/` with a label, `← prev` or `next →`, and the title of the post.
+ * Nothing is rendered when neither is given. The name of the `<nav>` is in Japanese, as the posts.
+ *
+ * Below 768px the windows are in one column, `prev` first, with their text at the left. From
+ * 768px they are in two columns: `prev` in the first and `next` in the second, with its text at
+ * the right, and a window that is the only one stays in its own column. A long title wraps and
+ * is never cut. In the light theme the title of the window that is hovered or has keyboard focus
+ * is underlined; in the dark theme it takes the keyword color from the rule of `a:hover` in
+ * `global.css`.
+ */
+import type { BlogFrontmatter } from "../blog-schema";
+import { translate } from "../i18n/ui";
+
+/** A post as this part needs it: the title shown and the slug of the path. */
+type Post = { data: Pick<BlogFrontmatter, "title" | "slug"> };
+
+interface Props {
+  /** The post one step older, shown as `prev`. */
+  prev?: Post | undefined;
+  /** The post one step newer, shown as `next`. */
+  next?: Post | undefined;
+}
+
+const { prev, next } = Astro.props;
+---
+
+{(prev || next) && (
+  <nav class="post-nav" aria-label={translate("ja", "blog.postNav.label")}>
+    {prev && (
+      <a class="win item prev" href={`/blog/${prev.data.slug}/`}>
+        <span class="label" lang="en">
+          <span aria-hidden="true">←</span> prev
+        </span>
+        <strong class="title">{prev.data.title}</strong>
+      </a>
+    )}
+    {next && (
+      <a class="win item next" href={`/blog/${next.data.slug}/`}>
+        <span class="label" lang="en">
+          next <span aria-hidden="true">→</span>
+        </span>
+        <strong class="title">{next.data.title}</strong>
+      </a>
+    )}
+  </nav>
+)}
+
+<style>
+.post-nav {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px;
+  text-decoration: none;
+}
+.title {
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+:global(:root:not([data-theme="dark"]))
+  .item:is(:hover, :focus-visible)
+  .title {
+  text-decoration: underline;
+  text-decoration-color: var(--keyword);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+@media (min-width: 768px) {
+  .post-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 20px;
+  }
+  .item {
+    padding: 18px 20px;
+  }
+  .prev {
+    grid-column: 1;
+  }
+  .next {
+    grid-column: 2;
+    text-align: right;
+  }
+}
+</style>

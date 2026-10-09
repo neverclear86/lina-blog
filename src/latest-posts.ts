@@ -1,6 +1,7 @@
 /**
- * Orders and labels blog posts for the lists of posts: the posts newest first by date, the posts
- * with a tag, the chip tone of each tag, and the URL slug and path of each tag's list.
+ * Orders and labels blog posts for the lists of posts and for the links between posts: the posts
+ * newest first by date, the posts with a tag, the chip tone of each tag, and the URL slug and
+ * path of each tag's list.
  */
 import type { BlogFrontmatter } from "./blog-schema";
 
