@@ -154,6 +154,7 @@ bun create astro@latest -- --template basics
 │       │   ├── content-hash.ts      # Content hash of an article (SHA-256 of its markdown)
 │       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL, IMAGES)
 │       │   ├── errors.ts            # Error body shared by every error response
+│       │   ├── github-commit.ts     # Writes files to main on GitHub in one commit (Git Data API)
 │       │   ├── images.ts            # Image names, R2 lookups and uploads for /images/{name}
 │       │   ├── nostr-relays.ts      # Reads write relays (kind 10002) and sends events to relays
 │       │   └── published-record.ts  # Reads src/content/published.json on GitHub for GET /articles
