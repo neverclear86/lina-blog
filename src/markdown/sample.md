@@ -59,5 +59,38 @@ https://www.youtube.com/watch?v=jNQXAC9IVRw
 
 https://youtu.be/jNQXAC9IVR
 
+## コードブロック
+
+```ts
+// 型の付いた関数
+export function greet(name: string): string {
+  return `Hello, ${name}!`;
+}
+```
+
+```diff js
+ const site = "ikili.pro";
+-const title = "準備中";
++const title = "創好リナのブログ";
++console.log(`${site} の記事のタイトルは「${title}」で、この行は本文の列より長いので横にスクロールする`);
+```
+
+```sh
+bun run build # ビルドする
+```
+
+言語を指定しないブロックと、一覧に無い言語のブロックは単色で出る。
+
+```
+plain text
+```
+
+```brainfuck
+++++++++[>++++<-]>.
+```
+
+```ts
+```
+
 [^first]: 最初の脚注である。
 [^long-name]: 名前を付けた脚注である。番号は出てきた順に振られる。
