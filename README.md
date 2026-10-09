@@ -38,6 +38,7 @@ bun create astro@latest -- --template basics
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
 │   ├── og-font.ts        # Downloads the OGP fonts (headings and labels) as TrueType from Google Fonts, unit-tested
+│   ├── og-image.ts       # Draws an element tree into a 1200x630 PNG with Satori and sharp (Node only), unit-tested
 │   ├── page-meta.ts      # Description (default from ui.ts) and Open Graph tags of a page, unit-tested
 │   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro, hero-account.ts and footer-links.ts
 │   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
