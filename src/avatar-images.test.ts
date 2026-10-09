@@ -84,7 +84,11 @@ describe("THUMBS_UP_BAND", () => {
 });
 
 describe("THUMBS_UP_ARTICLE", () => {
-  it("帯と同じ画像と alt で、sizes だけが記事の 340px になる", () => {
-    expect(THUMBS_UP_ARTICLE).toEqual({ ...THUMBS_UP_BAND, sizes: "340px" });
+  it("帯と同じ画像と alt で、widths に 400 を足し、sizes が記事の幅になる", () => {
+    expect(THUMBS_UP_ARTICLE).toEqual({
+      ...THUMBS_UP_BAND,
+      widths: [128, 256, 340, 374, 400, 680, 748],
+      sizes: "(max-width: 767px) min(400px, calc(100vw - 32px)), 340px",
+    });
   });
 });

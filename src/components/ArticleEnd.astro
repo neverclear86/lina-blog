@@ -1,0 +1,261 @@
+---
+import { Picture } from "astro:assets";
+import { nostrShareUrl, twitterShareUrl } from "../article-share";
+import { avatarAlt, THUMBS_UP_ARTICLE } from "../avatar-images";
+import { translate } from "../i18n/ui";
+import { labelSegments } from "./label-break";
+
+/**
+ * The window at the end of an article, in Japanese only: the prompt `$ exit 0`, a thanks with a
+ * face, three buttons and the thumbs-up of Lina.
+ *
+ * Two buttons are links to the post forms of Twitter (self-proclaimed X) and Nostr, which open in
+ * a new tab. The third copies `url` with the Clipboard API and reads the result out in a
+ * `role="status"` line below the buttons. The copy button and the line are `hidden` in the HTML,
+ * and the script shows them only when `navigator.clipboard.writeText` exists, so that they do not
+ * appear without JavaScript or outside a secure context.
+ *
+ * Below 768px the three buttons share a row and show only part of their names: "Twitter(自称X)"
+ * (wrapped before the "("), "Nostr" and "コピー". The rest of each name ("で共有", "リンクを") is
+ * hidden from the eyes only, so that the names of the buttons stay the same in every width. From
+ * 768px the window has two columns, with the thumbs-up at the right. The thanks is 20px below
+ * 768px and from 1024px to 1279px, where the column of the table of contents narrows the text, and
+ * 24px elsewhere.
+ */
+interface Props {
+  /** Title of the post, put in the text of the shared post. */
+  title: string;
+  /** Address of the post, shared and copied. */
+  url: string;
+}
+
+const { title, url } = Astro.props;
+const twitter = labelSegments(translate("ja", "social.twitter"));
+---
+
+<aside class="win end" aria-labelledby="end-heading" data-article-end>
+  <div class="text-col">
+    <span class="prompt" aria-hidden="true">$ exit 0</span>
+    <strong id="end-heading" class="heading"
+      >{translate("ja", "articleEnd.heading")}{" "}<span class="face"
+        >⸜(*ˊᗜˋ*)⸝</span
+      ></strong
+    >
+    <div class="buttons">
+      <a
+        class="btn btn-ghost"
+        href={twitterShareUrl(title, url)}
+        target="_blank"
+        rel="noopener noreferrer"
+        ><span class="name"
+          >{twitter.map((segment, index) => (
+  <>
+    {index > 0 && <wbr />}
+    <span class="segment">{segment}</span>
+  </>
+))}<span class="part">{translate("ja", "articleEnd.shareSuffix")}</span></span
+        ></a
+      >
+      <a
+        class="btn btn-ghost"
+        href={nostrShareUrl(title, url)}
+        target="_blank"
+        rel="noopener noreferrer"
+        ><span class="name"
+          >{translate("ja", "articleEnd.nostr")}<span class="part"
+            >{translate("ja", "articleEnd.shareSuffix")}</span
+          ></span
+        ></a
+      >
+      <button
+        class="btn btn-ghost copy"
+        type="button"
+        data-url={url}
+        data-done={translate("ja", "articleEnd.copyDone")}
+        data-fail={translate("ja", "articleEnd.copyFail")}
+        hidden
+      >
+        <span class="name"
+          ><span class="part">{translate("ja", "articleEnd.copyPrefix")}</span>
+          {translate("ja", "articleEnd.copy")}</span
+        >
+      </button>
+    </div>
+    <p class="status" role="status" aria-live="polite" hidden></p>
+  </div>
+  <div class="thumb-col">
+    <Picture
+      src={THUMBS_UP_ARTICLE.src}
+      alt={avatarAlt(THUMBS_UP_ARTICLE, "ja")}
+      formats={["avif", "webp"]}
+      fallbackFormat="webp"
+      widths={THUMBS_UP_ARTICLE.widths}
+      sizes={THUMBS_UP_ARTICLE.sizes}
+      class="thumb av-shadow"
+    />
+  </div>
+</aside>
+
+<script>
+import { canCopy, copyText } from "../code-copy";
+
+for (const root of document.querySelectorAll<HTMLElement>(
+  "[data-article-end]",
+)) {
+  const copy = root.querySelector<HTMLButtonElement>(".copy");
+  const status = root.querySelector<HTMLElement>(".status");
+  const url = copy?.dataset.url ?? "";
+  if (!copy || !status || !canCopy(navigator.clipboard?.writeText, url)) {
+    continue;
+  }
+  copy.hidden = false;
+  status.hidden = false;
+  copy.addEventListener("click", async () => {
+    // Empty the line first, so that the same message is read out again after a second click.
+    status.textContent = "";
+    const result = await copyText(
+      (text) => navigator.clipboard.writeText(text),
+      url,
+    );
+    status.textContent =
+      (result === "copied" ? copy.dataset.done : copy.dataset.fail) ?? "";
+  });
+}
+</script>
+
+<style>
+.end {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 40px;
+  overflow: hidden;
+}
+.text-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 22px 18px 0;
+}
+.prompt {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.heading {
+  font-size: 20px;
+  line-height: 1.5;
+}
+.face {
+  white-space: nowrap;
+}
+.buttons {
+  display: flex;
+  gap: 6px;
+}
+.btn {
+  position: relative;
+  flex: 1 1 0;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 8px;
+  line-height: 1.3;
+  text-align: center;
+}
+.copy {
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+:global(:root[data-theme="dark"]) .copy:is(:hover, :focus-visible) {
+  color: var(--keyword);
+}
+.copy[hidden],
+.status[hidden] {
+  display: none;
+}
+.segment {
+  white-space: nowrap;
+}
+.part {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.status {
+  min-height: 20px;
+  margin: 0;
+  font: 12px / 1.6 var(--font-mono);
+  color: var(--muted);
+}
+.thumb-col {
+  min-width: 0;
+  margin-top: 8px;
+}
+.thumb {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  margin: 0 auto;
+}
+@media (max-width: 767px) {
+  .thumb {
+    filter: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .end {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+    margin-top: 56px;
+  }
+  .text-col {
+    gap: 14px;
+    padding: 28px;
+  }
+  .prompt {
+    font-size: 13px;
+  }
+  .heading {
+    font-size: 24px;
+  }
+  .face {
+    display: block;
+  }
+  .buttons {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .btn {
+    flex: 0 0 auto;
+    padding: 0 20px;
+  }
+  .part {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+  .thumb-col {
+    justify-self: end;
+    width: min(340px, 100%);
+    margin-top: 0;
+  }
+  .thumb {
+    margin: 0;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .heading {
+    font-size: 20px;
+  }
+}
+</style>

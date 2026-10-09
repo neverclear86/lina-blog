@@ -1,7 +1,8 @@
 /**
- * The copy button of a code block: the texts it shows and the logic that does not touch the DOM.
- * `ArticleBody.astro` puts the texts on `.article-body` as JSON and its script builds the
- * buttons.
+ * The copy buttons of a post's page: the texts and the logic of the copy button of a code block
+ * that do not touch the DOM, and `canCopy` and `copyText`, which the copy button at the end of
+ * the post (`ArticleEnd.astro`) uses too. `ArticleBody.astro` puts the texts of the code block
+ * button on `.article-body` as JSON and its script builds the buttons.
  */
 
 /** Texts of the copy button and of the messages read out after a click. */
@@ -62,9 +63,10 @@ export function parseCopyLabels(
 }
 
 /**
- * Whether a code block gets a copy button: the browser has a function that writes to the
- * clipboard (`writeText` of `navigator.clipboard`, which is missing outside a secure context),
- * and the code has something other than whitespace.
+ * Whether a copy button works for `code`, the code of a code block or the address that the
+ * button copies: the browser has a function that writes to the clipboard (`writeText` of
+ * `navigator.clipboard`, which is missing outside a secure context), and `code` has something
+ * other than whitespace.
  */
 export function canCopy(writeText: unknown, code: string): boolean {
   return typeof writeText === "function" && code.trim() !== "";
