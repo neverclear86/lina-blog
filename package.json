@@ -15,7 +15,8 @@
     "format": "biome format --write",
     "lint": "biome lint",
     "check": "biome check",
-    "test": "vitest run"
+    "test": "vitest run",
+    "import:avatars": "bun scripts/avatars/import.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.3",

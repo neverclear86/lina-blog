@@ -12,6 +12,9 @@ bun create astro@latest -- --template basics
 /
 ├── docs/
 │   └── publish-api.md    # API contract between the article sync script and the publishing Worker
+├── scripts/
+│   ├── avatars/          # Makes the avatar images in src/assets/ from the v2.1 originals (bun run import:avatars), unit-tested
+│   └── sync/             # Article sync script for the publish Worker: Vault scan, images, Markdown, diff and API client, unit-tested
 ├── src/
 │   ├── ansi-art.ts       # Pixels to terminal text art (half blocks, 24-bit color), unit-tested
 │   ├── contact.ts        # Contact form input validation, unit-tested
@@ -39,6 +42,7 @@ bun create astro@latest -- --template basics
 │   ├── work-schema.ts    # Schema of the works data (ja and en in one entry, no astro:content), unit-tested
 │   ├── youtube-feed.ts   # Channel RSS feed to the newest videos at build time (WebP or JPEG thumbnails), unit-tested
 │   ├── assets/           # Images processed by astro:assets
+│   │   ├── <avatar>.webp   # Nine avatars of v2.1 (rohan, lgtm-fullbody, happy-fullbody, main-visual, threeview-front/side/back, lgtm-bastup, hate), made by scripts/avatars/ (see "Images and caching")
 │   │   ├── logo-black.png  # Black logo (light theme, or inverse faces on the dark theme), optimized by astro:assets
 │   │   ├── logo-light.png  # Logo (light theme); the favicons are generated from it in Layout.astro
 │   │   └── logo-white.png  # White logo (dark theme, or inverse faces on the light theme)
@@ -213,6 +217,17 @@ pixels wide, and the endpoints in `src/pages/ansi/` are prerendered to `/ansi/co
 color) and `/ansi/plain.txt` (no escape sequences) in `dist/client/`. Every line fits in 80
 columns.
 
+The avatars of the character are cut from v2.1, a set of transparent PNGs of 2160 × 3840,
+3840 × 2160 and 4320 × 7680 pixels that is kept outside the repository (`~/Pictures/v2.1.zip`).
+Unzip the set into a new empty directory and run `bun run import:avatars <directory>/v2.1` to
+write nine lossless WebP files to `src/assets/`: the poses `rohan`, `lgtm-fullbody`,
+`happy-fullbody` and `main-visual` (1356 × 2390, centred in a frame of the ratio 851:1500), the
+three views `threeview-front`, `threeview-side` and `threeview-back` (459 × 1100, 316 × 1100 and
+597 × 1100, the sizes of the annotation lines of the design), `lgtm-bastup` (748 × 600) and
+`hate` (145 × 192). `scripts/avatars/avatars.ts` crops each original to the bounds of its
+non-transparent pixels and shrinks it to at least twice the largest size it is shown at, which is
+why the originals are not committed. The output is the same on every run.
+
 Every file whose name carries a content hash, images and fonts included, is written to
 `/_astro/`. The repository has no `_headers` file: the Cloudflare adapter writes
 `dist/client/_headers` during `astro build` with one rule, and Workers Static Assets serves
@@ -265,6 +280,7 @@ All commands are run from the root of the project, from a terminal:
 | `bun run lint`        | Lints files with Biome                              |
 | `bun run check`       | Runs Biome formatting, lint and import checks       |
 | `bun run test`        | Runs unit tests with Vitest                         |
+| `bun run import:avatars <dir>` | Makes the nine avatar images in `src/assets/` from the v2.1 originals in `<dir>` |
 | `bun astro ...`       | Runs CLI commands like `astro add`, `astro check`   |
 
 ## 🚢 CI and deployment
