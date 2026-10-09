@@ -318,11 +318,8 @@ const sampleVideos: YouTubeVideo[] = [
         <a class="ws is-focus" href="#a-page-head">.ws.is-focus</a>
       </div>
       <PageHead>
-        <nav
-          aria-label="パンくず"
-          style="font-family: var(--font-mono); font-size: 13px; color: var(--muted)"
-        >
-          ~ / blog / <span style="color: var(--text)">tags</span>
+        <nav aria-label="パンくず" class="crumbs-sample">
+          ~ / blog / <span class="crumbs-current">tags</span>
         </nav>
         <h1>技術の記事</h1>
         <div class="row">
@@ -807,6 +804,17 @@ const sampleVideos: YouTubeVideo[] = [
 </Layout>
 
 <style>
+/* The breadcrumb of the sample page head, with the current page in the text color. */
+.crumbs-sample {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.crumbs-current {
+  color: var(--text);
+}
+
 /* The blog section takes the whole width of the page, like `#blog` of the home page. */
 .latest-samples {
   display: grid;
