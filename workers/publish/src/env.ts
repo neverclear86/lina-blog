@@ -14,6 +14,10 @@ export type PublishEnv = {
     GITHUB_TOKEN?: string;
     /** Base URL of the GitHub API; `https://api.github.com` when not set. */
     GITHUB_API_URL?: string;
+    /** Private key of this Worker as a NIP-46 client, in 64 lowercase hex digits. */
+    NOSTR_CLIENT_KEY?: string;
+    /** Bunker URL issued by nostr-no-su, which `parseBunkerUrl` reads. It contains a secret. */
+    NOSTR_BUNKER_URL?: string;
     /** Public image bucket (R2), served at https://img.ikili.pro. */
     IMAGES: ImageBucket;
   };
