@@ -12,7 +12,8 @@ bun create astro@latest -- --template basics
 /
 ├── docs/
 │   ├── markdown.md       # How to write an article body: Markdown, and the message boxes and the accordion written as raw HTML
-│   └── publish-api.md    # API contract between the article sync script and the publishing Worker
+│   ├── publish-api.md    # API contract between the article sync script and the publishing Worker
+│   └── vault-sync.md     # How to write articles in the Vault, the Bases view and the Hermes skill
 ├── public/
 │   ├── _headers          # Security headers of the static files; the Worker sends the same values
 │   └── favicon/          # Favicons from the brand kit, unchanged: the mark /li on ink as SVG, and PNGs of 32, 180 and 192 pixels
@@ -576,6 +577,7 @@ curl -sS -X POST http://localhost:8787/api/contact -F kind=work -F name=Lina \
 
 - [Publishing Worker API](docs/publish-api.md) (in Japanese): the contract between the article sync script and the publishing Worker, covering authentication, requests and responses, errors, the list of published articles and its content hash, and the processing order and retries.
 - [Writing an article body](docs/markdown.md) (in Japanese): the Markdown of an article, the message boxes and the accordion written as raw HTML, and the rules that HTML follows.
+- [Vault articles and sync](docs/vault-sync.md) (in Japanese): how to write articles in the Obsidian Vault (files, properties, publishing and taking down, Obsidian syntax, sync errors), the Templater template, the Bases view and the Hermes skill that runs the sync.
 
 ## 📄 License
 
