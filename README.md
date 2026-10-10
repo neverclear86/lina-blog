@@ -18,6 +18,7 @@ bun create astro@latest -- --template basics
 │   └── favicon/          # Favicons from the brand kit, unchanged: the mark /li on ink as SVG, and PNGs of 32, 180 and 192 pixels
 ├── scripts/
 │   ├── avatars/          # Makes the avatar images in src/assets/ from the v2.1 originals (bun run import:avatars), unit-tested
+│   ├── lighthouse/       # Job summary table of the Lighthouse CI scores (bun scripts/lighthouse/report.ts), unit-tested
 │   └── sync/             # Article sync script for the publish Worker: Vault scan, images, Markdown, diff and API client, unit-tested
 ├── src/
 │   ├── ansi-art.ts       # Pixels to terminal text art (half blocks, 24-bit color), unit-tested
@@ -164,6 +165,7 @@ bun create astro@latest -- --template basics
 │       └── wrangler.jsonc
 ├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin, sitemap, OGP image writer; pages are prerendered by default
 ├── biome.json
+├── lighthouserc.cjs      # Lighthouse CI: the four pages, three runs, warn assertions (bun run lighthouse)
 ├── wrangler.jsonc
 └── package.json
 ```
@@ -351,14 +353,20 @@ All commands are run from the root of the project, from a terminal:
 | `bun run lint`        | Lints files with Biome                              |
 | `bun run check`       | Runs Biome formatting, lint and import checks       |
 | `bun run test`        | Runs unit tests with Vitest                         |
+| `bun run lighthouse`  | Measures four pages of `./dist/` with Lighthouse CI (see "CI and deployment") |
 | `bun run import:avatars <dir>` | Makes the nine avatar images in `src/assets/` from the v2.1 originals in `<dir>` |
 | `bun astro ...`       | Runs CLI commands like `astro add`, `astro check`   |
 
 ## 🚢 CI and deployment
 
-GitHub Actions runs three workflows:
+GitHub Actions runs four workflows:
 
 - `.github/workflows/ci.yml` runs on every pull request: `biome ci`, `astro check`, `bun run test` and `bun run build`.
+- `.github/workflows/lighthouse.yml` runs on every pull request: it builds the site with
+  `LINA_DEV_PAGES=1`, measures `/ja/`, `/en/`, `/blog/` and `/blog/dev-preview-sample/` with
+  Lighthouse CI as mobile (three runs each, set in `lighthouserc.cjs`) and writes the scores of
+  Performance, Accessibility, Best Practices and SEO to the job summary (Actions > the run >
+  Summary). A score under 95 only makes a warning in the log; the job does not fail for it.
 - `.github/workflows/deploy.yml` builds the site and runs `wrangler deploy`. For now it only runs when started manually (Actions > Deploy > Run workflow); it will run on every push to `main` once the site is ready to go public. A running deploy always finishes; if several runs are queued meanwhile, only the latest waiting run is kept.
 - `.github/workflows/deploy-publish.yml` runs `wrangler deploy` for the publish Worker in
   `workers/publish/`. Like the site deploy, it only runs when started manually for now (Actions >
@@ -375,6 +383,11 @@ directory with `python3 -m http.server <port>`: the list is empty until the dire
 `repos/neverclear86/lina-blog/contents/src/content/published.json`.
 `HEAD` and `PUT /images/<sha256>.<ext>` use a local R2 bucket that `wrangler dev` keeps in
 `workers/publish/.wrangler/state`.
+
+Run Lighthouse CI locally with `LINA_DEV_PAGES=1 bun run build` and then `bun run lighthouse`,
+which starts `astro preview` itself (on port 4321, or on `LHCI_PORT`) and keeps the reports in
+`.lighthouseci/`, which git ignores. Set `CHROME_PATH` if Chrome is not found.
+`bun scripts/lighthouse/report.ts` prints the table that the workflow writes to the job summary.
 
 Both deploy workflows need the same two repository secrets:
 
