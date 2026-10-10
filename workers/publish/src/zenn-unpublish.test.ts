@@ -89,7 +89,7 @@ describe("markZennUnpublished", () => {
   });
 
   it.each([
-    { name: "frontmatter が無い", text: "published: true\n本文\n" },
+    { name: "frontmatter が無い", text: "title: a\npublished: true\n---\n" },
     {
       name: "published の行が frontmatter の外にしか無い",
       text: '---\ntitle: "a"\n---\npublished: true\n',
