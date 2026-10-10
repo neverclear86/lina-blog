@@ -1,5 +1,16 @@
-import { describe, expect, it } from "vitest";
-import { buildArticleEvent } from "./article-event";
+import { verifyEvent } from "nostr-tools/pure";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { buildArticleEvent, buildDeletionEvent } from "./article-event";
+import {
+  AUTHOR_PUBKEY,
+  BUNKER_RELAY,
+  CLIENT_KEY,
+  FakeNostrSocket,
+  nostr,
+  SIGNER_PUBKEY,
+} from "./fake-nostr";
+import { openNip46Session } from "./nip46-message";
+import { signEventWithBunker } from "./nip46-signer";
 
 type Options = Parameters<typeof buildArticleEvent>[0];
 
@@ -107,5 +118,56 @@ describe("buildArticleEvent", () => {
     expect(() =>
       buildArticleEvent({ ...OPTIONS, publishedDate: "not a date" }),
     ).toThrow(new RangeError("Invalid published date: not a date"));
+  });
+});
+
+describe("buildDeletionEvent", () => {
+  const DELETION = {
+    pubkey: AUTHOR_PUBKEY,
+    slug: "hello-ikili-pro",
+    now: new Date("2026-09-28T00:00:00.600Z"),
+  };
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("kind は 5 で、created_at は now の UNIX 秒（小数は切り捨て）", () => {
+    const event = buildDeletionEvent(DELETION);
+    expect(event.kind).toBe(5);
+    expect(event.created_at).toBe(1790553600);
+  });
+
+  it("タグは a（30023:<pubkey>:<slug>）、k（30023）の順に並ぶ", () => {
+    expect(buildDeletionEvent(DELETION).tags).toEqual([
+      ["a", `30023:${AUTHOR_PUBKEY}:hello-ikili-pro`],
+      ["k", "30023"],
+    ]);
+  });
+
+  it("content は空で、pubkey、id、sig を持たない", () => {
+    expect(buildDeletionEvent(DELETION)).toEqual({
+      kind: 5,
+      created_at: 1790553600,
+      tags: expect.any(Array),
+      content: "",
+    });
+  });
+
+  it("signEventWithBunker にそのまま渡すと、author の鍵で署名された kind 5 が返る", async () => {
+    nostr.reset();
+    vi.stubGlobal("WebSocket", FakeNostrSocket);
+    const opened = openNip46Session(CLIENT_KEY, SIGNER_PUBKEY);
+    if (!opened.ok) throw new Error(opened.message);
+    const template = buildDeletionEvent(DELETION);
+    const signed = await signEventWithBunker(template, {
+      session: opened.session,
+      relays: [BUNKER_RELAY],
+      secret: "s3cret",
+      now: DELETION.now,
+    });
+    if (!signed.ok) throw new Error(signed.message);
+    expect(verifyEvent(signed.event)).toBe(true);
+    expect(signed.event).toMatchObject({ ...template, pubkey: AUTHOR_PUBKEY });
   });
 });

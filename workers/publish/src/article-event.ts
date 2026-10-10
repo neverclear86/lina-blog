@@ -65,3 +65,45 @@ export function buildArticleEvent(options: {
     content: body,
   };
 }
+
+/**
+ * A kind 5 (NIP-09 deletion request) event before signing. It has no `pubkey`, `id` or `sig`.
+ */
+export type DeletionEventTemplate = {
+  kind: 5;
+  created_at: number;
+  tags: string[][];
+  content: string;
+};
+
+/**
+ * Builds the kind 5 (NIP-09 deletion request) event that asks to delete the kind 30023 event
+ * of an article, before signing.
+ *
+ * The tags are, in this order: `a` with `30023:<pubkey>:<slug>`, and `k` with `30023`.
+ * `content` is empty. Relays that follow NIP-09 delete every version of the article up to
+ * `created_at`.
+ *
+ * @param options.pubkey The author's public key in lowercase hex, the `pubkey` of the article's
+ *   event. It is used as is, without checking.
+ * @param options.slug The slug of the article, the `d` tag of the article's event.
+ * @param options.now The time the event is created. `created_at` is its UNIX time in seconds,
+ *   rounded down.
+ * @returns The event without `pubkey`, `id` and `sig`.
+ */
+export function buildDeletionEvent(options: {
+  pubkey: string;
+  slug: string;
+  now: Date;
+}): DeletionEventTemplate {
+  const { pubkey, slug, now } = options;
+  return {
+    kind: 5,
+    created_at: Math.floor(now.getTime() / 1000),
+    tags: [
+      ["a", `30023:${pubkey}:${slug}`],
+      ["k", "30023"],
+    ],
+    content: "",
+  };
+}
