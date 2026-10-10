@@ -1,4 +1,5 @@
 import {
+  chmodSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -374,6 +375,9 @@ describe("runSync", () => {
       ["[a]: memo.md", "memo.md"],
       ["[a]:\n  <私的.md>", "私的.md"],
       ["`![](a.png)`", "a.png"],
+      ["[a]:\r\n  memo.md\r", "memo.md"],
+      ["[a]:\r  memo.md\r", "memo.md"],
+      ["[a]:\uFEFF\n  memo.md", "memo.md"],
     ])(
       "相対パスの %j を含む記事は markdown_link のエラーにする",
       async (text, destination) => {
@@ -394,7 +398,7 @@ describe("runSync", () => {
 
     it("https: と /blog/ と #見出し へのリンクと脚注の記事は送る", async () => {
       const body =
-        "[a](https://example.com/x) [b](/blog/x) [c](#見出し) [d](mailto:a@example.com) [e](<https://example.com/y z>)\n\n脚注[^1]\n\n[^1]: 本文\n";
+        "[a](https://example.com/x) [b](/blog/x) [c](#見出し) [d](mailto:a@example.com) [e](<https://example.com/y z>) [f](<>)\n\n脚注[^1]\n\n[^1]: 本文\n";
       const { report, calls } = await sync({
         [`articles/${A}.md`]: article(A, body),
       });
@@ -404,6 +408,37 @@ describe("runSync", () => {
       ]);
     });
   });
+
+  it.skipIf(process.getuid?.() === 0)(
+    "画像のファイルが読めない記事はエラーにし、他の記事は送る",
+    async () => {
+      const files = {
+        [`articles/${A}.md`]: article(A, "![x](pic.png)\n"),
+        [`articles/${B}.md`]: article(B),
+        "articles/pic.png": "fixture-a",
+      };
+      const vaultRoot = makeVault(files);
+      chmodSync(join(vaultRoot, "articles/pic.png"), 0o000);
+      const worker = fakeWorker();
+      const client = createPublishClient(
+        { url: URL_BASE, token: "t" },
+        { fetchImpl: worker.fetchImpl, ...RETRY },
+      );
+      const report = await runSync({ vaultRoot, client, dryRun: false });
+      expect(worker.calls).toEqual(["GET /articles", `PUT /articles/${B}`]);
+      expect(report).toEqual({
+        dryRun: false,
+        ok: false,
+        fatal: null,
+        articles: [
+          entry("error", A, `articles/${A}.md`, [
+            `unreadable_image: EACCES: permission denied, open '${join(vaultRoot, "articles/pic.png")}'`,
+          ]),
+          entry("publish", B, `articles/${B}.md`),
+        ],
+      });
+    },
+  );
 
   it("画像の送信に失敗した記事は記事を PUT せず、次の記事は送る", async () => {
     const { report, calls } = await sync(

@@ -136,11 +136,11 @@ function formatImageError(error: ImageError): string {
 }
 
 /**
- * Lists the link destinations of a converted article body that are relative paths, such as
- * `../notes/memo.md` in `[memo](../notes/memo.md)` or in the definition `[memo]: memo.md`. Only
- * what follows `](` or a definition label is read, whatever the link text looks like. A
- * destination with a scheme, a leading `/` or a leading `#` is left alone, and so are images
- * converted to `image:`. Code is not skipped.
+ * Lists the link destinations that are relative paths in an article body as `buildMarkdown`
+ * writes it (LF, no BOM), such as `../notes/memo.md` in `[memo](../notes/memo.md)` or in the
+ * definition `[memo]: memo.md`. Only what follows `](` or a definition label is read, whatever
+ * the link text looks like. A destination that is empty, has a scheme, or starts with `/` or
+ * `#` is left alone, and so are images converted to `image:`. Code is not skipped.
  */
 function findMarkdownLinks(markdown: string): string[] {
   const destinations: string[] = [];
@@ -150,6 +150,7 @@ function findMarkdownLinks(markdown: string): string[] {
       ? written.slice(1, -1)
       : written;
     if (
+      destination !== "" &&
       !URL_SCHEME.test(destination) &&
       !destination.startsWith("/") &&
       !destination.startsWith("#")
@@ -279,19 +280,22 @@ export async function runSync(options: SyncOptions): Promise<SyncReport> {
       });
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      return fatalReport(dryRun, `Could not read the Vault: ${reason}`);
+      failWithSlug([`unreadable_image: ${reason}`]);
+      continue;
     }
     if (!resolved.ok) {
       failWithSlug(resolved.errors.map(formatImageError));
       continue;
     }
+    const markdown = buildMarkdown(article.frontmatter, resolved.markdown);
+    const bodyStart = buildMarkdown(article.frontmatter, "").length;
     const errors = [
       ...(resolved.images.length > MAX_IMAGES_PER_ARTICLE
         ? [
             `too_many_images: ${resolved.images.length} images (at most ${MAX_IMAGES_PER_ARTICLE})`,
           ]
         : []),
-      ...findMarkdownLinks(resolved.markdown).map(
+      ...findMarkdownLinks(markdown.slice(bodyStart)).map(
         (destination) => `markdown_link: ${destination}`,
       ),
     ];
@@ -300,7 +304,6 @@ export async function runSync(options: SyncOptions): Promise<SyncReport> {
       continue;
     }
 
-    const markdown = buildMarkdown(article.frontmatter, resolved.markdown);
     ready.set(article.path, {
       path: article.path,
       updated,
