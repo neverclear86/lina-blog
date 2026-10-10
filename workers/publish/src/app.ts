@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import {
+  DATE_LINE_MESSAGE,
   insertFrontmatterDate,
   parseArticleMarkdown,
 } from "./article-markdown";
@@ -112,7 +113,7 @@ const ARTICLE_BASE_URL = "https://ikili.pro/blog";
 // Publishes an article (docs/publish-api.md) by running steps 0 to 3: the request, the
 // frontmatter and the image references are checked, each referenced image is looked up in R2 in
 // turn, the references are rewritten, and the article file and its entry of the published record
-// are written to main in one commit. No Nostr event is made yet, so `nostr` is null.
+// are written to main in one commit. No Nostr event is made, so `nostr` is null.
 app.put("/articles/:slug", async (c) => {
   let body: unknown;
   try {
@@ -180,13 +181,7 @@ app.put("/articles/:slug", async (c) => {
     : `${new Date().toISOString().slice(0, 19)}Z`;
   const articleFile = insertFrontmatterDate(rewritten.markdown, date);
   if (articleFile === null) {
-    return c.json(
-      errorBody(
-        "invalid_frontmatter",
-        "Markdown must start with a YAML frontmatter between --- lines.",
-      ),
-      422,
-    );
+    return c.json(errorBody("invalid_frontmatter", DATE_LINE_MESSAGE), 422);
   }
   const committed = await commitFiles({
     token,

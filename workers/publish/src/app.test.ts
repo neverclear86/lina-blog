@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { experimental_readRawConfig } from "wrangler";
 import app from "./app";
+import { DATE_LINE_MESSAGE } from "./article-markdown";
 import { contentHash } from "./content-hash";
 import type { ImageBucket, StoredImage } from "./images";
 
@@ -819,7 +820,10 @@ describe("PUT /articles/{slug} のコミット", () => {
     put: vi.fn(),
   };
 
-  function publish(githubToken: string | null = "github-token") {
+  function publish(
+    githubToken: string | null = "github-token",
+    markdown = MARKDOWN,
+  ) {
     return app.request(
       `/articles/${SLUG}`,
       {
@@ -828,7 +832,7 @@ describe("PUT /articles/{slug} のコミット", () => {
           Authorization: "Bearer test-token",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ markdown: MARKDOWN }),
+        body: JSON.stringify({ markdown }),
       },
       { ...env, GITHUB_TOKEN: githubToken ?? undefined, IMAGES: bucket },
     );
@@ -984,6 +988,21 @@ describe("PUT /articles/{slug} のコミット", () => {
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({
       error: { code: "misconfigured", message: "GITHUB_TOKEN is not set." },
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("frontmatter が ... の行で終わる記事は 422 と invalid_frontmatter を返し、GitHub を呼ばない", async () => {
+    const fetchImpl = stubGitHub();
+
+    const res = await publish(
+      "github-token",
+      MARKDOWN.replace("説明\n---\n", "説明\n...\n---\n"),
+    );
+
+    expect(res.status).toBe(422);
+    expect(await res.json()).toEqual({
+      error: { code: "invalid_frontmatter", message: DATE_LINE_MESSAGE },
     });
     expect(fetchImpl).not.toHaveBeenCalled();
   });

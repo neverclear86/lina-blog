@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DATE_LINE_MESSAGE,
   insertFrontmatterDate,
   parseArticleMarkdown,
 } from "./article-markdown";
@@ -94,6 +95,24 @@ describe("parseArticleMarkdown", () => {
     });
   });
 
+  it.each([
+    ["... の行で終わる", `${FRONTMATTER}\n...`],
+    ["マッピングを字下げした", FRONTMATTER.replaceAll(/^/gm, "  ")],
+    [
+      "フロー形式のマッピングで書いた",
+      `{ title: 記事の題, slug: ${SLUG}, emoji: 📝, tags: [技術], description: 記事の説明 }`,
+    ],
+  ])(
+    "%s frontmatter を、末尾に date の行を足すと読めないので invalid_frontmatter で拒む",
+    (_, frontmatter) => {
+      expect(parseArticleMarkdown(article(frontmatter), SLUG)).toEqual({
+        ok: false,
+        code: "invalid_frontmatter",
+        message: DATE_LINE_MESSAGE,
+      });
+    },
+  );
+
   it("スキーマに合わない frontmatter を invalid_frontmatter で拒む", () => {
     const markdown = article(FRONTMATTER.replace("技術", "雑記"));
     expect(parseArticleMarkdown(markdown, SLUG)).toMatchObject({
@@ -114,6 +133,15 @@ describe("insertFrontmatterDate", () => {
     expect(
       insertFrontmatterDate(article(FRONTMATTER), "2026-09-28T12:34:56Z"),
     ).toBe(`---\n${FRONTMATTER}\ndate: 2026-09-28T12:34:56Z\n---\n${BODY}`);
+  });
+
+  it("date の行を足すと YAML として読めなくなる frontmatter には null を返す", () => {
+    expect(
+      insertFrontmatterDate(
+        article(`${FRONTMATTER}\n...`),
+        "2026-09-28T12:34:56Z",
+      ),
+    ).toBeNull();
   });
 
   it("frontmatter で始まらない markdown には null を返す", () => {

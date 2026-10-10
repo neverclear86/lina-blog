@@ -82,6 +82,7 @@ frontmatter は、`markdown` の 1 行目の `---` の行と、次の `---` だ�
 Worker は、サイトのビルド（Astro）と同じ `js-yaml` で読む。
 閉じの `---` の行より前に `---` か `+++` で始まる行があるときは、Astro と区切りの位置が変わるので、frontmatter が無いものとして扱う。
 frontmatter に `date` が有るときは、422 `invalid_frontmatter` で拒む。
+Worker は段 3 で frontmatter の末尾に `date` の行を足すので、足すと YAML として読めなくなる frontmatter（`...` の行で終わるもの、マッピングを字下げしたもの、フロー形式の `{…}` で書いたもの）も、422 `invalid_frontmatter` で拒む。
 frontmatter が無いとき、YAML のマッピングとして読めないとき、スキーマに合わないときも、同じ 422 `invalid_frontmatter` で拒む（検証は #49）。
 frontmatter の `slug` がパスの `{slug}` と違うときは、422 `slug_mismatch` で拒む。
 パスの `{slug}` の形は別に検査せず、slug の形でないパスも frontmatter の `slug` と違うので 422 `slug_mismatch` になる。
@@ -248,7 +249,7 @@ Worker に GitHub のトークンが無いときは、GitHub を呼ぶ前に 500
 | 409 | `conflict` | GitHub の先頭が並行した公開で動いた | する |
 | 422 | `hash_mismatch` | 画像の中身がパスのハッシュと違う | しない |
 | 422 | `invalid_markdown` | `\r` か BOM を含む、`image:` の参照の名前の形が違う、`image:` を `](image:<name>)` 以外の形で書いた | しない |
-| 422 | `invalid_frontmatter` | frontmatter が無い、YAML のマッピングとして読めない、スキーマに合わない、`date` が有る | しない |
+| 422 | `invalid_frontmatter` | frontmatter が無い、YAML のマッピングとして読めない、スキーマに合わない、`date` が有る、末尾に `date` の行を足すと YAML として読めない | しない |
 | 422 | `slug_mismatch` | frontmatter の `slug` がパスと違う | しない |
 | 422 | `missing_image` | 参照した画像が R2 に無い | 画像を置いてから |
 | 422 | `too_many_images` | `image:` の参照が 21 種以上 | しない |
