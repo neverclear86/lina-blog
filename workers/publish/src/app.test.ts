@@ -4,10 +4,13 @@ import app from "./app";
 import { DATE_LINE_MESSAGE } from "./article-markdown";
 import { contentHash } from "./content-hash";
 import {
+  AUTHOR_PUBKEY,
+  BUNKER_RELAY,
   BUNKER_URL,
   CLIENT_KEY,
   FakeNostrSocket,
   nostr,
+  SIGNER_PUBKEY,
   WRITE_RELAYS,
 } from "./fake-nostr";
 import type { ImageBucket, StoredImage } from "./images";
@@ -1482,4 +1485,506 @@ describe("PUT /articles/{slug} の Nostr への投稿", () => {
       expect(nostr.urls).toEqual([]);
     },
   );
+});
+
+describe("DELETE /articles/{slug}", () => {
+  const SLUG = "hello-ikili-pro";
+  const A = `${"a".repeat(64)}.png`;
+  const B = `${"b".repeat(64)}.jpg`;
+  const DATE = "2026-01-02T03:04:05Z";
+  const TREES = `POST ${GIT}/trees`;
+  const COMMITS = `POST ${GIT}/commits`;
+  const REFS = `PATCH ${GIT}/refs/heads/main`;
+  const MAIN_REF = `GET ${GIT}/ref/heads/main`;
+  // The tree of the commit that step 4 builds on, as `GET git/trees/{sha}?recursive=1` lists it.
+  const TREE_LIST = `GET ${GIT}/trees/${NEW_TREE}?recursive=1`;
+  const entry = (images: string[]) => ({
+    hash: "d".repeat(64),
+    date: DATE,
+    images,
+  });
+  // The published record: the article has A and B, and `other` has B.
+  const RECORD_BODY = {
+    articles: { [SLUG]: entry([A, B]), other: entry([B]) },
+  };
+
+  const bucket = () => ({
+    head: vi.fn<ImageBucket["head"]>(),
+    put: vi.fn(),
+    delete: vi.fn<ImageBucket["delete"]>(async () => undefined),
+  });
+
+  /**
+   * Stubs GitHub for a successful withdrawal: step 1 reads `HEAD`, step 4 reads `COMMIT`
+   * (main has moved by then), and the tree of `COMMIT` has the article file.
+   */
+  const stubWithdraw = (overrides: Record<string, Answer | Answer[]> = {}) =>
+    stubGitHub({
+      [MAIN_REF]: [
+        () => json({ object: { sha: HEAD } }),
+        () => json({ object: { sha: COMMIT } }),
+      ],
+      [`GET ${RECORD}`]: () => json(RECORD_BODY),
+      [`GET ${RECORD_AT_COMMIT}`]: () => json(RECORD_BODY),
+      [TREE_LIST]: () =>
+        json({
+          tree: [
+            { type: "blob", path: `src/content/blog/${SLUG}.md` },
+            { type: "blob", path: "src/content/published.json" },
+          ],
+          truncated: false,
+        }),
+      [TREES]: () => json({ sha: RECORD_TREE }, { status: 201 }),
+      [COMMITS]: () => json({ sha: RECORD_COMMIT }, { status: 201 }),
+      ...overrides,
+    });
+
+  function withdraw(
+    images: ReturnType<typeof bucket>,
+    options: {
+      authorization?: string | null;
+      githubToken?: string | null;
+      nostrEnv?: { NOSTR_CLIENT_KEY?: string; NOSTR_BUNKER_URL?: string };
+    } = {},
+  ) {
+    const {
+      authorization = "Bearer test-token",
+      githubToken = "github-token",
+    } = options;
+    return app.request(
+      `/articles/${SLUG}`,
+      {
+        method: "DELETE",
+        headers: authorization === null ? {} : { Authorization: authorization },
+      },
+      {
+        ...env,
+        ...(options.nostrEnv ?? NOSTR_ENV),
+        GITHUB_TOKEN: githubToken ?? undefined,
+        IMAGES: images,
+      },
+    );
+  }
+
+  it("認証の無いリクエストは 401 を返し、GitHub・R2・Nostr に触れない", async () => {
+    const fetchImpl = stubWithdraw();
+    const images = bucket();
+
+    const res = await withdraw(images, { authorization: null });
+
+    expect(res.status).toBe(401);
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(images.delete).not.toHaveBeenCalled();
+    expect(nostr.urls).toEqual([]);
+  });
+
+  it("他の記事が参照しない画像だけを R2 から消し、記事のファイルと項目を 1 つのコミットで消して 200 を返す", async () => {
+    const fetchImpl = stubWithdraw();
+    const images = bucket();
+
+    const res = await withdraw(images);
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      slug: SLUG,
+      commit: RECORD_COMMIT,
+      nostr: { eventId: nostr.posted[0].event.id },
+      images: [A],
+    });
+    expect(images.delete.mock.calls).toEqual([[[A]]]);
+    expect(bodyOf(fetchImpl, TREES)).toEqual({
+      base_tree: NEW_TREE,
+      tree: [
+        {
+          path: "src/content/published.json",
+          mode: "100644",
+          type: "blob",
+          content: `${JSON.stringify({ articles: { other: entry([B]) } }, null, 2)}\n`,
+        },
+        {
+          path: `src/content/blog/${SLUG}.md`,
+          mode: "100644",
+          type: "blob",
+          sha: null,
+        },
+      ],
+    });
+    expect(bodyOf(fetchImpl, COMMITS)).toEqual({
+      message: `content: ${SLUG} を取り下げる`,
+      tree: RECORD_TREE,
+      parents: [COMMIT],
+    });
+    expect(bodyOf(fetchImpl, REFS)).toEqual({
+      sha: RECORD_COMMIT,
+      force: false,
+    });
+  });
+
+  it("どの画像も他の記事が参照していれば R2 を呼ばない", async () => {
+    const shared = {
+      articles: { [SLUG]: entry([A, B]), other: entry([A, B]) },
+    };
+    stubWithdraw({
+      [`GET ${RECORD}`]: () => json(shared),
+      [`GET ${RECORD_AT_COMMIT}`]: () => json(shared),
+    });
+    const images = bucket();
+
+    const res = await withdraw(images);
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { images: string[] }).images).toEqual([]);
+    expect(images.delete).not.toHaveBeenCalled();
+  });
+
+  it("NIP-09 の削除依頼を、バンカーが返す投稿者の公開鍵の a タグで write リレーに投稿する", async () => {
+    stubWithdraw();
+
+    const res = await withdraw(bucket());
+
+    expect(res.status).toBe(200);
+    expect(nostr.posted.map((post) => post.relay)).toEqual(WRITE_RELAYS);
+    const { event } = nostr.posted[0];
+    expect(event.kind).toBe(5);
+    expect(event.pubkey).toBe(AUTHOR_PUBKEY);
+    expect(AUTHOR_PUBKEY).not.toBe(SIGNER_PUBKEY);
+    expect(event.tags).toEqual([
+      ["a", `30023:${AUTHOR_PUBKEY}:${SLUG}`],
+      ["k", "30023"],
+    ]);
+    expect(nostr.methods).toEqual([
+      "get_public_key",
+      "get_public_key",
+      "sign_event",
+    ]);
+    expect(nostr.urls.filter((url) => url === BUNKER_RELAY)).toHaveLength(2);
+    expect(nostr.peak).toBeLessThanOrEqual(5);
+    expect(nostr.open).toBe(0);
+    expect(((await res.json()) as { nostr: unknown }).nostr).toEqual({
+      eventId: event.id,
+    });
+  });
+
+  it("署名者が知らない client なら、公開と取り下げの両方の署名の権限で connect を送る", async () => {
+    stubWithdraw();
+    nostr.known = false;
+
+    const res = await withdraw(bucket());
+
+    expect(res.status).toBe(200);
+    expect(nostr.connects).toEqual([
+      [SIGNER_PUBKEY, "s3cret", "sign_event:30023,sign_event:5"],
+    ]);
+  });
+
+  it("段は Nostr、画像、コミットの順に行う", async () => {
+    const postedBeforeDelete: number[] = [];
+    const deletesBeforeRef: number[] = [];
+    const images = bucket();
+    images.delete.mockImplementation(async () => {
+      postedBeforeDelete.push(nostr.posted.length);
+    });
+    stubWithdraw({
+      [REFS]: () => {
+        deletesBeforeRef.push(images.delete.mock.calls.length);
+        return json({ ref: "refs/heads/main" });
+      },
+    });
+
+    await withdraw(images);
+
+    expect(postedBeforeDelete).toEqual([WRITE_RELAYS.length]);
+    expect(deletesBeforeRef).toEqual([1]);
+  });
+
+  it("段 4 は読み直した main の先頭を親にする", async () => {
+    const fetchImpl = stubWithdraw();
+
+    await withdraw(bucket());
+
+    expect(calls(fetchImpl)).toEqual([
+      MAIN_REF,
+      `GET ${RECORD}`,
+      MAIN_REF,
+      `GET ${RECORD_AT_COMMIT}`,
+      `GET ${GIT}/commits/${COMMIT}`,
+      TREE_LIST,
+      TREES,
+      COMMITS,
+      REFS,
+    ]);
+    expect(bodiesOf(fetchImpl, COMMITS).map((b) => b.parents)).toEqual([
+      [COMMIT],
+    ]);
+  });
+
+  it("公開の記録に無い slug は 404 not_found を返し、何も書かない", async () => {
+    const fetchImpl = stubWithdraw({
+      [`GET ${RECORD}`]: () => json({ articles: { other: entry([B]) } }),
+    });
+    const images = bucket();
+
+    const res = await withdraw(images);
+
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "not_found",
+        message: `The published record has no article ${SLUG}.`,
+      },
+    });
+    expect(nostr.urls).toEqual([]);
+    expect(images.delete).not.toHaveBeenCalled();
+    expect(calls(fetchImpl)).not.toContain(TREES);
+  });
+
+  it.each([
+    {
+      name: "GitHub のトークンが無い",
+      options: { githubToken: null },
+    },
+    {
+      name: "クライアント鍵が無い",
+      options: { nostrEnv: { NOSTR_BUNKER_URL: BUNKER_URL } },
+    },
+    {
+      name: "bunker URL が無い",
+      options: { nostrEnv: { NOSTR_CLIENT_KEY: CLIENT_KEY } },
+    },
+    {
+      name: "bunker URL の形が違う",
+      options: {
+        nostrEnv: {
+          NOSTR_CLIENT_KEY: CLIENT_KEY,
+          NOSTR_BUNKER_URL: "bunker://x",
+        },
+      },
+    },
+  ])(
+    "$name なら 500 と misconfigured を返し、GitHub と Nostr に触れない",
+    async ({ options }) => {
+      const fetchImpl = stubWithdraw();
+
+      const res = await withdraw(bucket(), options);
+
+      expect(res.status).toBe(500);
+      expect(
+        ((await res.json()) as { error: { code: string } }).error.code,
+      ).toBe("misconfigured");
+      expect(fetchImpl).not.toHaveBeenCalled();
+      expect(nostr.urls).toEqual([]);
+    },
+  );
+
+  // The last step that a failing request reaches, in order: the bunker is contacted, a
+  // signature is asked, R2 is called, a tree is created, a commit is created.
+  const STAGES = [
+    "none",
+    "bunker",
+    "signed",
+    "images",
+    "trees",
+    "commits",
+  ] as const;
+  type Stage = (typeof STAGES)[number];
+
+  const failure = (status: number) => () => new Response("failed", { status });
+  const SECOND_REF_500 = [() => json({ object: { sha: HEAD } }), failure(500)];
+
+  it.each([
+    {
+      name: "1 回目の main の先頭の読み出しが失敗する",
+      overrides: { [MAIN_REF]: failure(500) },
+      status: 502,
+      code: "upstream_error",
+      step: "record",
+      reached: "none",
+    },
+    {
+      name: "1 回目の公開の記録の読み出しが失敗する",
+      overrides: { [`GET ${RECORD}`]: failure(500) },
+      status: 502,
+      code: "upstream_error",
+      step: "record",
+      reached: "none",
+    },
+    {
+      name: "投稿者の公開鍵が得られない",
+      setup: () => {
+        nostr.publicKeyError = "busy";
+      },
+      status: 502,
+      code: "upstream_error",
+      step: "nostr",
+      message: "Getting the public key failed: get_public_key: busy",
+      reached: "bunker",
+    },
+    {
+      name: "署名が断られる",
+      setup: () => {
+        nostr.signError = "permission denied";
+      },
+      status: 502,
+      code: "upstream_error",
+      step: "nostr",
+      message: "Signing failed: sign_event: permission denied",
+      reached: "signed",
+    },
+    {
+      name: "どのリレーも受理しない",
+      setup: () => {
+        nostr.accepts = { [WRITE_RELAYS[0]]: false, [WRITE_RELAYS[1]]: false };
+        nostr.okMessages = {
+          [WRITE_RELAYS[0]]: "blocked: no deletes",
+          [WRITE_RELAYS[1]]: "blocked: no deletes",
+        };
+      },
+      status: 502,
+      code: "upstream_error",
+      step: "nostr",
+      messageContains: "blocked: no deletes",
+      reached: "signed",
+    },
+    {
+      name: "R2 の削除が失敗する",
+      setup: (images: ReturnType<typeof bucket>) => {
+        images.delete.mockRejectedValue(new Error("delete: Internal error"));
+      },
+      status: 502,
+      code: "upstream_error",
+      step: "images",
+      reached: "images",
+    },
+    {
+      name: "2 回目の main の先頭の読み出しが失敗する",
+      overrides: { [MAIN_REF]: SECOND_REF_500 },
+      status: 502,
+      code: "upstream_error",
+      step: "commit",
+      reached: "images",
+    },
+    {
+      name: "2 回目の公開の記録の読み出しが失敗する",
+      overrides: { [`GET ${RECORD_AT_COMMIT}`]: failure(500) },
+      status: 502,
+      code: "upstream_error",
+      step: "commit",
+      reached: "images",
+    },
+    {
+      name: "2 回目の公開の記録に項目が無い",
+      overrides: {
+        [`GET ${RECORD_AT_COMMIT}`]: () =>
+          json({ articles: { other: entry([B]) } }),
+      },
+      status: 409,
+      code: "conflict",
+      step: "commit",
+      message: `src/content/published.json on main has no entry for ${SLUG}; another call has withdrawn it.`,
+      reached: "images",
+    },
+    {
+      name: "tree の作成が失敗する",
+      overrides: { [TREES]: failure(500) },
+      status: 502,
+      code: "upstream_error",
+      step: "commit",
+      reached: "trees",
+    },
+    {
+      name: "main の更新が 422 で断られる",
+      overrides: { [REFS]: failure(422) },
+      status: 409,
+      code: "conflict",
+      step: "commit",
+      reached: "commits",
+    },
+  ] as {
+    name: string;
+    overrides?: Record<string, Answer | Answer[]>;
+    setup?: (images: ReturnType<typeof bucket>) => void;
+    status: number;
+    code: string;
+    step: string;
+    message?: string;
+    messageContains?: string;
+    reached: Stage;
+  }[])(
+    "$name とき、$status と $code（step: $step）を返し、後の段に進まない",
+    async ({
+      overrides,
+      setup,
+      status,
+      code,
+      step,
+      message,
+      messageContains,
+      reached,
+    }) => {
+      const fetchImpl = stubWithdraw(overrides);
+      const images = bucket();
+      setup?.(images);
+
+      const res = await withdraw(images);
+
+      expect(res.status).toBe(status);
+      const { error } = (await res.json()) as {
+        error: { code: string; message: string; step: string };
+      };
+      expect(error.code).toBe(code);
+      expect(error.step).toBe(step);
+      if (message !== undefined) expect(error.message).toBe(message);
+      if (messageContains !== undefined) {
+        expect(error.message).toContain(messageContains);
+      }
+      const made = calls(fetchImpl);
+      const at = STAGES.indexOf(reached);
+      expect(nostr.urls.length > 0).toBe(at >= 1);
+      expect(nostr.methods.includes("sign_event")).toBe(at >= 2);
+      if (reached === "bunker")
+        expect(nostr.methods).toEqual(["get_public_key"]);
+      expect(images.delete.mock.calls.length > 0).toBe(at >= 3);
+      expect(made.includes(TREES)).toBe(at >= 4);
+      expect(made.includes(COMMITS)).toBe(at >= 5);
+    },
+  );
+
+  it("画像の削除が失敗した後の再送で、取り下げが完了する", async () => {
+    const images = bucket();
+    images.delete.mockRejectedValueOnce(new Error("delete: Internal error"));
+    stubWithdraw();
+
+    const first = await withdraw(images);
+    const second = await (async () => {
+      stubWithdraw();
+      return withdraw(images);
+    })();
+
+    expect(first.status).toBe(502);
+    expect(second.status).toBe(200);
+    expect(images.delete.mock.calls).toEqual([[[A]], [[A]]]);
+    expect(
+      nostr.posted.filter((p) => p.relay === WRITE_RELAYS[0]),
+    ).toHaveLength(2);
+    expect(nostr.posted.every((p) => p.event.kind === 5)).toBe(true);
+  });
+
+  it("コミットが失敗した後の再送で、取り下げが完了する", async () => {
+    const images = bucket();
+    stubWithdraw({ [REFS]: failure(500) });
+
+    const first = await withdraw(images);
+    stubWithdraw();
+    const second = await withdraw(images);
+
+    expect(first.status).toBe(502);
+    expect(
+      ((await first.json()) as { error: { step: string } }).error.step,
+    ).toBe("commit");
+    expect(second.status).toBe(200);
+    expect(
+      nostr.posted.filter((p) => p.relay === WRITE_RELAYS[0]),
+    ).toHaveLength(2);
+    expect(images.delete.mock.calls).toEqual([[[A]], [[A]]]);
+  });
 });

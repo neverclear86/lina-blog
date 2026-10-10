@@ -2,6 +2,7 @@
 export type ErrorCode =
   | "invalid_request"
   | "unauthorized"
+  | "not_found"
   | "conflict"
   | "hash_mismatch"
   | "invalid_markdown"

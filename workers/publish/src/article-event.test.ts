@@ -164,6 +164,7 @@ describe("buildDeletionEvent", () => {
       session: opened.session,
       relays: [BUNKER_RELAY],
       secret: "s3cret",
+      perms: "sign_event:5",
       now: DELETION.now,
     });
     if (!signed.ok) throw new Error(signed.message);
