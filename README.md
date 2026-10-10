@@ -447,7 +447,9 @@ commits the article and `src/content/published.json` to `main` with `GITHUB_TOKE
 its Nostr event signed by the bunker of `NOSTR_BUNKER_URL`; with `.dev.vars.example` no bunker
 answers, so it ends with 502 (`step: "nostr"`) after the commit. A mock at `GITHUB_API_URL`
 must then also answer the Git database API (`git/ref`, `git/commits`, `git/trees`,
-`git/refs`), which `python3 -m http.server` cannot.
+`git/refs`), which `python3 -m http.server` cannot. An article with the tag 技術 is also
+written to `articles/<slug>.md` on `master` of `neverclear86/zenn-contents`, so the mock must
+answer the same API for `repos/neverclear86/zenn-contents` too.
 `DELETE /articles/<slug>` reads the published record with `GITHUB_TOKEN`, posts a deletion
 request (kind 5) signed by the bunker of `NOSTR_BUNKER_URL`, deletes the images that only this
 article uses from that bucket, and commits the removal to `main`. With `.dev.vars.example`

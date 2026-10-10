@@ -530,7 +530,12 @@ const NEW_TREE = "3".repeat(40);
 const COMMIT = "4".repeat(40);
 const RECORD_TREE = "5".repeat(40);
 const RECORD_COMMIT = "6".repeat(40);
+const ZENN_HEAD = "7".repeat(40);
+const ZENN_TREE = "8".repeat(40);
+const ZENN_NEW_TREE = "9".repeat(40);
+const ZENN_COMMIT = "a".repeat(40);
 const GIT = "https://api.github.com/repos/neverclear86/lina-blog/git";
+const ZENN_GIT = "https://api.github.com/repos/neverclear86/zenn-contents/git";
 const RECORD_URL =
   "https://api.github.com/repos/neverclear86/lina-blog/contents/src/content/published.json";
 const RECORD = `${RECORD_URL}?ref=${HEAD}`;
@@ -545,10 +550,10 @@ type Answer = () => Response | Promise<Response>;
 /**
  * Replaces the global `fetch` with a stub that answers by `"<METHOD> <URL>"`. The default
  * answers are those of a successful publish: step 3 on top of `HEAD`, whose published record
- * does not exist, and step 6 on top of `COMMIT`, whose published record has the article with a
- * null hash. `overrides` replaces the answer of a key; an array answers the n-th call of the
- * key with its n-th element and the calls after its end with its last element. A key it does
- * not know is answered 599.
+ * does not exist, step 5 on top of `ZENN_HEAD` of zenn-contents, and step 6 on top of
+ * `COMMIT`, whose published record has the article with a null hash. `overrides` replaces the
+ * answer of a key; an array answers the n-th call of the key with its n-th element and the
+ * calls after its end with its last element. A key it does not know is answered 599.
  */
 const stubGitHub = (overrides: Record<string, Answer | Answer[]> = {}) => {
   const ref =
@@ -579,6 +584,15 @@ const stubGitHub = (overrides: Record<string, Answer | Answer[]> = {}) => {
       () => json({ sha: RECORD_COMMIT }, { status: 201 }),
     ],
     [`PATCH ${GIT}/refs/heads/main`]: () => json({ ref: "refs/heads/main" }),
+    [`GET ${ZENN_GIT}/ref/heads/master`]: ref(ZENN_HEAD),
+    [`GET ${ZENN_GIT}/commits/${ZENN_HEAD}`]: () =>
+      json({ tree: { sha: ZENN_TREE } }),
+    [`POST ${ZENN_GIT}/trees`]: () =>
+      json({ sha: ZENN_NEW_TREE }, { status: 201 }),
+    [`POST ${ZENN_GIT}/commits`]: () =>
+      json({ sha: ZENN_COMMIT }, { status: 201 }),
+    [`PATCH ${ZENN_GIT}/refs/heads/master`]: () =>
+      json({ ref: "refs/heads/master" }),
     ...overrides,
   };
   const counts: Record<string, number> = {};
@@ -806,7 +820,7 @@ describe("PUT /articles/{slug}", () => {
     });
   });
 
-  it("画像が揃った記事は 200 と、コミットの SHA と段 4 以降の null を返す", async () => {
+  it("画像が揃った記事は 200 と、段 3 のコミット、Nostr のイベント ID、Zenn のコミットの SHA を返す", async () => {
     stubGitHub();
     const bucket = bucketWith([A, B]);
     const markdown = article([A, B]);
@@ -820,7 +834,7 @@ describe("PUT /articles/{slug}", () => {
       hash: await contentHash(markdown),
       commit: COMMIT,
       nostr: { eventId: nostr.posted[0].event.id },
-      zenn: { commit: null },
+      zenn: { commit: ZENN_COMMIT },
     });
     expect(bucket.head.mock.calls).toEqual([[A], [B]]);
   });
@@ -920,7 +934,7 @@ describe("PUT /articles/{slug} のコミット", () => {
       hash: await contentHash(MARKDOWN),
       commit: COMMIT,
       nostr: { eventId: nostr.posted[0].event.id },
-      zenn: { commit: null },
+      zenn: { commit: ZENN_COMMIT },
     });
     expect(bodyOf(fetchImpl, TREES)).toEqual({
       base_tree: TREE,
@@ -963,6 +977,11 @@ describe("PUT /articles/{slug} のコミット", () => {
       TREES,
       COMMITS,
       REFS,
+      `GET ${ZENN_GIT}/ref/heads/master`,
+      `GET ${ZENN_GIT}/commits/${ZENN_HEAD}`,
+      `POST ${ZENN_GIT}/trees`,
+      `POST ${ZENN_GIT}/commits`,
+      `PATCH ${ZENN_GIT}/refs/heads/master`,
       `GET ${GIT}/ref/heads/main`,
       `GET ${RECORD_AT_COMMIT}`,
       `GET ${GIT}/commits/${COMMIT}`,
@@ -1027,7 +1046,7 @@ describe("PUT /articles/{slug} のコミット", () => {
     const res = await publish();
 
     expect(res.status).toBe(200);
-    expect(calls(fetchImpl).slice(6)).toEqual([
+    expect(calls(fetchImpl).slice(11)).toEqual([
       `GET ${GIT}/ref/heads/main`,
       `GET ${RECORD_AT_COMMIT}`,
     ]);
@@ -1131,7 +1150,7 @@ describe("PUT /articles/{slug} のコミット", () => {
         step: "record",
       },
     });
-    expect(calls(fetchImpl)).toHaveLength(8);
+    expect(calls(fetchImpl)).toHaveLength(13);
   });
 
   it.each([
@@ -1986,5 +2005,238 @@ describe("DELETE /articles/{slug}", () => {
       nostr.posted.filter((p) => p.relay === WRITE_RELAYS[0]),
     ).toHaveLength(2);
     expect(images.delete.mock.calls).toEqual([[[A]], [[A]]]);
+  });
+});
+
+describe("PUT /articles/{slug} の Zenn への転載", () => {
+  const SLUG = "hello-ikili-pro";
+  const A = `${"a".repeat(64)}.png`;
+  const ZENN_TREES = `POST ${ZENN_GIT}/trees`;
+  const ZENN_COMMITS = `POST ${ZENN_GIT}/commits`;
+  const ZENN_REFS = `PATCH ${ZENN_GIT}/refs/heads/master`;
+  const ZENN_READ = `GET ${ZENN_GIT}/ref/heads/master`;
+  const MAIN_READ = `GET ${GIT}/ref/heads/main`;
+
+  function article(tags: string, body: string): string {
+    return `---\ntitle: 記事の題\nslug: ${SLUG}\nemoji: 📝\ntags:\n  - ${tags}\ndescription: 記事の説明\n---\n\n${body}\n`;
+  }
+
+  const bucket = {
+    head: vi.fn<ImageBucket["head"]>(async () => ({
+      httpEtag: '"etag"',
+      writeHttpMetadata: vi.fn(),
+    })),
+    put: vi.fn(),
+  };
+
+  function publish(markdown: string, extra: Record<string, unknown> = {}) {
+    return app.request(
+      `/articles/${SLUG}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: "Bearer test-token",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ markdown }),
+      },
+      {
+        ...env,
+        ...NOSTR_ENV,
+        GITHUB_TOKEN: "github-token",
+        IMAGES: bucket,
+        ...extra,
+      },
+    );
+  }
+
+  const TECH = article("技術", `本文。\n\n![図](image:${A})`);
+  const zennCalls = (fetchImpl: ReturnType<typeof stubGitHub>) =>
+    calls(fetchImpl).filter((call) => call.includes("/zenn-contents/"));
+
+  beforeEach(() => {
+    bucket.head.mockClear();
+  });
+
+  it("技術タグの記事は zenn-contents の master に articles/<slug>.md を書くコミットを作り、その SHA を zenn に返す", async () => {
+    const fetchImpl = stubGitHub();
+
+    const res = await publish(TECH);
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { zenn: unknown }).zenn).toEqual({
+      commit: ZENN_COMMIT,
+    });
+    const [tree] = bodiesOf(fetchImpl, ZENN_TREES);
+    expect(tree.base_tree).toBe(ZENN_TREE);
+    expect(tree.tree).toHaveLength(1);
+    const [file] = tree.tree;
+    expect(file).toMatchObject({
+      path: `articles/${SLUG}.md`,
+      mode: "100644",
+      type: "blob",
+    });
+    expect(file.content).toContain("published: true");
+    expect(file.content).toContain(`https://img.ikili.pro/${A}`);
+    expect(file.content).toContain(`https://ikili.pro/blog/${SLUG}`);
+    expect(file.content).not.toContain("image:");
+    expect(file.content).not.toContain("date:");
+    expect(bodyOf(fetchImpl, ZENN_COMMITS)).toEqual({
+      message: `content: ${SLUG} を Zenn に転載する`,
+      tree: ZENN_NEW_TREE,
+      parents: [ZENN_HEAD],
+    });
+    expect(bodyOf(fetchImpl, ZENN_REFS)).toEqual({
+      sha: ZENN_COMMIT,
+      force: false,
+    });
+  });
+
+  it("技術タグの無い記事は zenn-contents に要求を送らず、生の HTML もそのまま通す", async () => {
+    const fetchImpl = stubGitHub();
+
+    const res = await publish(article("日記", "<kbd>Ctrl</kbd> を押す。"));
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { zenn: unknown }).zenn).toBeNull();
+    expect(zennCalls(fetchImpl)).toEqual([]);
+  });
+
+  it("zenn-contents の木が変わらないときは commit: null の 200 を返し、ref を更新しない", async () => {
+    const fetchImpl = stubGitHub({
+      [ZENN_TREES]: () => json({ sha: ZENN_TREE }, { status: 201 }),
+    });
+
+    const res = await publish(TECH);
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { zenn: unknown }).zenn).toEqual({
+      commit: null,
+    });
+    expect(zennCalls(fetchImpl)).toEqual([
+      ZENN_READ,
+      `GET ${ZENN_GIT}/commits/${ZENN_HEAD}`,
+      ZENN_TREES,
+    ]);
+  });
+
+  it.each([
+    ["ref の読み出し", ZENN_READ],
+    ["親のコミットの読み出し", `GET ${ZENN_GIT}/commits/${ZENN_HEAD}`],
+    ["tree の作成", ZENN_TREES],
+    ["コミットの作成", ZENN_COMMITS],
+    ["ref の更新", ZENN_REFS],
+  ])(
+    "zenn-contents の%sが失敗すると 502 と upstream_error、step: zenn を返し、段 6 を行わない",
+    async (_label, key) => {
+      const fetchImpl = stubGitHub({
+        [key]: () => new Response("x", { status: 500 }),
+      });
+
+      const res = await publish(TECH);
+
+      expect(res.status).toBe(502);
+      const { error } = (await res.json()) as {
+        error: { code: string; step: string };
+      };
+      expect(error.code).toBe("upstream_error");
+      expect(error.step).toBe("zenn");
+      expect(calls(fetchImpl)).not.toContain(`GET ${RECORD_AT_COMMIT}`);
+      expect(
+        calls(fetchImpl).filter((call) => call === MAIN_READ),
+      ).toHaveLength(1);
+    },
+  );
+
+  it("zenn-contents の master が動いた（ref の更新が 422）ときは 409 と conflict、step: zenn を返す", async () => {
+    stubGitHub({
+      [ZENN_REFS]: () => new Response("x", { status: 422 }),
+    });
+
+    const res = await publish(TECH);
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "conflict",
+        message: `refs/heads/master on GitHub is no longer ${ZENN_HEAD}; another publish moved it.`,
+        step: "zenn",
+      },
+    });
+  });
+
+  it("段 5 は段 3 の後で段 6 の前に行い、段 5 で失敗しても記事のファイルは main に書いてある", async () => {
+    const fetchImpl = stubGitHub({
+      [ZENN_TREES]: () => new Response("x", { status: 500 }),
+    });
+
+    await publish(TECH);
+
+    const all = calls(fetchImpl);
+    expect(all.filter((call) => call === `POST ${GIT}/commits`)).toHaveLength(
+      1,
+    );
+    expect(all.at(-1)).toBe(ZENN_TREES);
+  });
+
+  it("Zenn で表示できない HTML のある技術記事は 422 と invalid_markdown、step: zenn を返し、R2 も GitHub も呼ばない", async () => {
+    const fetchImpl = stubGitHub();
+
+    const res = await publish(
+      article("技術", `<kbd>Ctrl</kbd>\n\n![図](image:${A})`),
+    );
+
+    expect(res.status).toBe(422);
+    const { error } = (await res.json()) as {
+      error: { code: string; message: string; step: string };
+    };
+    expect(error.code).toBe("invalid_markdown");
+    expect(error.step).toBe("zenn");
+    expect(error.message).toContain("The body has HTML that Zenn cannot show");
+    expect(bucket.head).not.toHaveBeenCalled();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("GITHUB_API_URL があれば zenn-contents への要求も同じ基底 URL に送る", async () => {
+    const base = "https://github.example";
+    const inner = stubGitHub();
+    const urls: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>(async (input, init) => {
+        const url = String(input);
+        urls.push(url);
+        return inner(url.replace(base, "https://api.github.com"), init);
+      }),
+    );
+
+    const res = await publish(TECH, { GITHUB_API_URL: base });
+
+    expect(res.status).toBe(200);
+    expect(urls.every((url) => url.startsWith(`${base}/`))).toBe(true);
+    expect(urls.filter((url) => url.includes("/zenn-contents/"))).toHaveLength(
+      5,
+    );
+  });
+
+  it("段 5 は段 4 の投稿の後に行い、段 4 で失敗すると zenn-contents に要求を送らない", async () => {
+    const posted = vi.fn();
+    nostr.onPost = posted;
+    const fetchImpl = stubGitHub();
+
+    await publish(TECH);
+
+    const zennRead =
+      fetchImpl.mock.invocationCallOrder[calls(fetchImpl).indexOf(ZENN_READ)];
+    expect(posted).toHaveBeenCalled();
+    expect(posted.mock.invocationCallOrder[0]).toBeLessThan(zennRead);
+
+    const failed = stubGitHub();
+    nostr.signError = "denied";
+
+    const res = await publish(TECH);
+
+    expect(res.status).toBe(502);
+    expect(zennCalls(failed)).toEqual([]);
   });
 });
