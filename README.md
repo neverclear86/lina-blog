@@ -444,8 +444,10 @@ must then also answer the Git database API (`git/ref`, `git/commits`, `git/trees
 `git/refs`), which `python3 -m http.server` cannot.
 `DELETE /articles/<slug>` reads the published record with `GITHUB_TOKEN`, posts a deletion
 request (kind 5) signed by the bunker of `NOSTR_BUNKER_URL`, deletes the images that only this
-article uses from that bucket, and commits the removal to `main`; with `.dev.vars.example` it
-ends with 502 (`step: "nostr"`) after reading the record.
+article uses from that bucket, and commits the removal to `main`. With `.dev.vars.example`
+alone GitHub answers 401 (`step: "record"`); with a mock at `GITHUB_API_URL` that also serves
+`repos/neverclear86/lina-blog/git/ref/heads/main`, it ends with 502 (`step: "nostr"`) after
+reading the record.
 
 Run Lighthouse CI locally with `LINA_DEV_PAGES=1 bun run build` and then `bun run lighthouse`,
 which starts `astro preview` itself (on port 4321, or on `LHCI_PORT`) and keeps the reports in
