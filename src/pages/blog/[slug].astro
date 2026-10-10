@@ -149,10 +149,9 @@ const nostrUrl = isNostrPublished(slug, nostrPublishedSlugs)
       mirror
     </dt>
     <dd>
-      <a href={nostrUrl}>
-        <span lang="en">nostr</span>
-        <span aria-hidden="true"> ↗</span>
-        <span class="sr-only">{translate("ja", "works.external")}</span>
+      <a href={nostrUrl} lang="en">
+        nostr<span aria-hidden="true"> ↗</span>
+        <span class="sr-only"> {translate("ja", "works.external")}</span>
       </a>
     </dd>
   </div>
