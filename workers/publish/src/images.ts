@@ -25,7 +25,7 @@ export type StoredImage = {
 };
 
 /**
- * The part of the R2 bucket binding that the image routes use. Only these methods are typed
+ * The part of the R2 bucket binding that the publish Worker uses. Only these methods are typed
  * here because the repository has no `@cloudflare/workers-types`.
  */
 export type ImageBucket = {

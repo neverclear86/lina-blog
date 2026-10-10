@@ -163,7 +163,7 @@ bun create astro@latest -- --template basics
 │       │   ├── errors.ts            # Error body shared by every error response
 │       │   ├── github-commit.ts     # Writes files to main on GitHub in one commit (Git Data API)
 │       │   ├── image-refs.ts        # Rewrites image:<name> references to img.ikili.pro URLs
-│       │   ├── images.ts            # Image names, R2 lookups and uploads for /images/{name}
+│       │   ├── images.ts            # Image names, R2 lookups (/images/{name}, PUT /articles/{slug}) and uploads (PUT /images/{name})
 │       │   ├── nip46-message.ts     # Builds NIP-46 requests and reads responses (kind 24133, NIP-44) for the remote signer
 │       │   ├── nip46-signer.ts      # Asks the remote signer to sign an event over the bunker's relay (NIP-46)
 │       │   ├── nostr-relays.ts      # Reads write relays (kind 10002) and sends events to relays
@@ -426,6 +426,8 @@ directory with `python3 -m http.server <port>`: the list is empty until the dire
 `repos/neverclear86/lina-blog/contents/src/content/published.json`.
 `HEAD` and `PUT /images/<sha256>.<ext>` use a local R2 bucket that `wrangler dev` keeps in
 `workers/publish/.wrangler/state`.
+`PUT /articles/<slug>` checks the article, looks up its `image:` references in that bucket and
+answers with the rewritten `markdown`; it does not commit or post anything.
 
 Run Lighthouse CI locally with `LINA_DEV_PAGES=1 bun run build` and then `bun run lighthouse`,
 which starts `astro preview` itself (on port 4321, or on `LHCI_PORT`) and keeps the reports in

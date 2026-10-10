@@ -1,7 +1,10 @@
 import { Hono } from "hono";
+import { parseArticleMarkdown } from "./article-markdown";
 import { requireBearerToken } from "./auth";
+import { contentHash } from "./content-hash";
 import type { PublishEnv } from "./env";
 import { errorBody } from "./errors";
+import { rewriteImageRefs } from "./image-refs";
 import { headImage, imageUrl, parseImageName, putImage } from "./images";
 import { listPublishedArticles } from "./published-record";
 
@@ -92,6 +95,73 @@ app.put("/images/:name", async (c) => {
     { name: image.name, url: imageUrl(image.name) },
     result.created ? 201 : 200,
   );
+});
+
+// Base of an article's public URL, the `url` of the response in docs/publish-api.md.
+const ARTICLE_BASE_URL = "https://ikili.pro/blog";
+
+// Publishes an article (docs/publish-api.md) by running steps 0 to 2: the request, the
+// frontmatter and the image references are checked, each referenced image is looked up in R2 in
+// turn, and the references are rewritten. No commit or Nostr event is made, so the response has
+// `commit` and `nostr` set to null and carries the rewritten markdown.
+app.put("/articles/:slug", async (c) => {
+  let body: unknown;
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json(errorBody("invalid_request", "The body must be JSON."), 400);
+  }
+  const markdown =
+    typeof body === "object" && body !== null && "markdown" in body
+      ? body.markdown
+      : undefined;
+  if (typeof markdown !== "string") {
+    return c.json(
+      errorBody("invalid_request", 'The body must be {"markdown": string}.'),
+      400,
+    );
+  }
+
+  const slug = c.req.param("slug");
+  const article = parseArticleMarkdown(markdown, slug);
+  if (!article.ok) {
+    return c.json(errorBody(article.code, article.message), 422);
+  }
+  const rewritten = rewriteImageRefs(markdown);
+  if (!rewritten.ok) {
+    return c.json(errorBody(rewritten.code, rewritten.message), 422);
+  }
+
+  const missing: string[] = [];
+  for (const name of rewritten.names) {
+    const result = await headImage(c.env.IMAGES, name);
+    if (!result.ok) {
+      return c.json(errorBody("upstream_error", result.message, "images"), 502);
+    }
+    if (result.image === null) {
+      missing.push(name);
+    }
+  }
+  if (missing.length > 0) {
+    return c.json(
+      errorBody(
+        "missing_image",
+        `Images are not stored: ${missing.join(", ")}.`,
+        "images",
+      ),
+      422,
+    );
+  }
+
+  return c.json({
+    slug,
+    url: `${ARTICLE_BASE_URL}/${slug}`,
+    hash: await contentHash(markdown),
+    commit: null,
+    nostr: null,
+    zenn: article.frontmatter.tags.includes("技術") ? { commit: null } : null,
+    markdown: rewritten.markdown,
+  });
 });
 
 export default app;

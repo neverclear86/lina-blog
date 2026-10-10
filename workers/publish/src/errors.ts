@@ -6,12 +6,13 @@ export type ErrorCode =
   | "invalid_markdown"
   | "invalid_frontmatter"
   | "slug_mismatch"
+  | "missing_image"
   | "too_many_images"
   | "upstream_error"
   | "misconfigured";
 
 /** Step of the processing in which a request failed, as listed in `docs/publish-api.md`. */
-export type ErrorStep = "list";
+export type ErrorStep = "images" | "list";
 
 /** Body of every error response of the publish Worker. */
 export type ErrorBody = {
