@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  articleBody,
   DATE_LINE_MESSAGE,
   insertFrontmatterDate,
   parseArticleMarkdown,
@@ -146,5 +147,15 @@ describe("insertFrontmatterDate", () => {
 
   it("frontmatter で始まらない markdown には null を返す", () => {
     expect(insertFrontmatterDate(BODY, "2026-09-28T12:34:56Z")).toBeNull();
+  });
+});
+
+describe("articleBody", () => {
+  it("frontmatter の閉じの --- の後を返し、本文の --- で区切らない", () => {
+    expect(articleBody(article(FRONTMATTER))).toBe(BODY);
+  });
+
+  it("frontmatter が無ければそのまま返す", () => {
+    expect(articleBody(BODY)).toBe(BODY);
   });
 });

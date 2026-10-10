@@ -126,8 +126,8 @@ R2 から画像の有無を読めないときは、502 `upstream_error`（`step:
 | `nostr.eventId` | kind 30023 のイベント ID（16 進 64 文字） |
 | `zenn` | Zenn への転載の対象外なら `null`。対象なら `{"commit": "<SHA>" \| null}`（`null` はコミットを作らなかったとき） |
 
-段 4 と段 5 は、まだ実装していない（段 4 は #51、段 5 は #68 で足す）。
-それまでの Worker は段 3 の直後に段 6 を行い、`nostr` を `null`、`zenn` を転載の対象（「技術」タグの記事）なら `{"commit": null}`、対象外なら `null` にして 200 を返す。
+段 5 は、まだ実装していない（#68 で足す）。
+それまでの Worker は段 4 の直後に段 6 を行い、`zenn` を転載の対象（「技術」タグの記事）なら `{"commit": null}`、対象外なら `null` にして 200 を返す。
 
 ## 内容のハッシュ
 
@@ -151,7 +151,7 @@ Worker は受け取った `markdown` から計算する。
 - 値の無い任意の項目は書かない
 
 Worker は正規化しない。
-`\r` か BOM を含む `markdown` は、422 `invalid_markdown` で拒む。
+`\r` か BOM を含む `markdown` は、422 `invalid_markdown` で拒む。Nostr のイベントを包む NIP-46 の要求が 65535 バイトを超える記事も、段 3 の前に 422 `invalid_markdown` で拒む（本文の改行は 3 バイト、`"` と `\` は 4 バイトに数える）。
 `updated` だけが変わった記事は、内容のハッシュが変わらないので再送されない。
 画像の参照はハッシュを含むので、画像の中身が変わると参照の文字列が変わり、内容のハッシュも変わる。
 
@@ -199,7 +199,7 @@ Vault で `published: true` の記事なら再送し、`published: false` の記
 | --- | --- | --- |
 | 0 | 要求を検証する（認証、`markdown`、frontmatter、画像の参照の数と形） | 副作用が無い |
 | 1 | 参照した画像が R2 に有ることを確かめる | 副作用が無い |
-| 2 | 本文の `image:` の参照を `https://img.ikili.pro/<name>` に差し替える | 副作用が無い |
+| 2 | 本文の `image:` の参照を `https://img.ikili.pro/<name>` に差し替える。差し替えた記事の Nostr のイベントが 1 つの NIP-46 要求に収まることを確かめる | 副作用が無い |
 | 3 | 記事のファイルと、公開の記録の項目（`hash` は `null`。完了した記事を同じ内容で送り直したときは今の値）を 1 つのコミットで書く。記事の `date` は公開の記録の `date` を使い、無ければ現在時刻（UTC、秒まで）を入れる | 内容が同じならコミットを作らない |
 | 4 | Nostr に kind 30023 のイベントを投稿する | 同じ `d` タグのイベントで置き換わる。`published_at` は公開の記録の `date` を使う |
 | 5 | Zenn に転載する（「技術」タグの記事だけ） | 内容が同じならコミットを作らない |
@@ -217,6 +217,14 @@ Vault で `published: true` の記事なら再送し、`published: false` の記
 新しい tree が親の tree と同じときはコミットを作らず、応答の `commit` は `null` になる。
 `main` が親から動いていて早送りにならないときは 409 `conflict`、GitHub に届かないとき、GitHub がほかの失敗を返したとき、公開の記録の形が違うときは 502 `upstream_error` を返し、どちらも `step` は `commit` である。
 Worker に GitHub のトークンが無いときは、GitHub を呼ぶ前に 500 `misconfigured` を返す。
+
+段 4 は、公開の記録の `date` を `published_at` にした kind 30023 のイベントをバンカー（NIP-46）に署名させる。
+次に、署名したイベントの公開鍵の kind 10002 の write リレーを、`NOSTR_INDEX_RELAYS`（カンマ区切り。無ければ既定の 3 本）の先頭の 5 本から読み、先頭の 5 本までに投稿する。
+1 本でも受理すれば成功で、`nostr.eventId` に署名済みイベントの ID を入れる。
+署名の失敗、write リレーが見つからない、どのリレーも受理しないときは、502 `upstream_error`（`step: "nostr"`）を返す。
+`NOSTR_CLIENT_KEY` と `NOSTR_BUNKER_URL` が無いか形が違うときは、段 3 より前に 500 `misconfigured` を返す。
+段 4 で失敗した記事は、公開の記録の `hash` が `null` のまま（完了した記事を同じ内容で送り直したときは、今の値のまま）である。
+再送すると段 3 からやり直し、段 4 が同じ `d` タグのイベントを投稿する。
 
 段 6 は、`refs/heads/main` の SHA を読み直し、その SHA で公開の記録と親の tree を読み、その slug の項目の `hash` を内容のハッシュにした公開の記録だけを入れた tree と、その SHA を親にしたコミット（メッセージは `content: <slug> の公開を記録する`）を作り、`main` を早送りだけで進める。
 項目の `hash` がすでに内容のハッシュのときは、コミットを作らない。
@@ -254,13 +262,13 @@ Worker に GitHub のトークンが無いときは、GitHub を呼ぶ前に 500
 | 404 | `not_found` | 無いパス（画像の `HEAD` は本文無しの 404） | しない |
 | 409 | `conflict` | GitHub の先頭が並行した公開で動いた | する |
 | 422 | `hash_mismatch` | 画像の中身がパスのハッシュと違う | しない |
-| 422 | `invalid_markdown` | `\r` か BOM を含む、`image:` の参照の名前の形が違う、`image:` を `](image:<name>)` 以外の形で書いた | しない |
+| 422 | `invalid_markdown` | `\r` か BOM を含む、Nostr のイベントが 1 つの NIP-46 要求（65535 バイト）に収まらない、`image:` の参照の名前の形が違う、`image:` を `](image:<name>)` 以外の形で書いた | しない |
 | 422 | `invalid_frontmatter` | frontmatter が無い、YAML のマッピングとして読めない、スキーマに合わない、`date` が有る、末尾に `date` の行を足すと YAML として読めない | しない |
 | 422 | `slug_mismatch` | frontmatter の `slug` がパスと違う | しない |
 | 422 | `missing_image` | 参照した画像が R2 に無い | 画像を置いてから |
 | 422 | `too_many_images` | `image:` の参照が 21 種以上 | しない |
 | 502 | `upstream_error` | R2、GitHub、Nostr のリレーやバンカーが失敗した | する |
-| 500 | `misconfigured` | Worker に共有シークレットか GitHub のトークンが設定されていない | しない |
+| 500 | `misconfigured` | Worker に共有シークレット、GitHub のトークン、Nostr のクライアント鍵、バンカーの URL が設定されていないか、後ろの 2 つの形が違う | しない |
 | 500 | `internal_error` | Worker の想定外の失敗 | する |
 
 `missing_image` の `message` には、無かった画像の名前を並べる。
@@ -281,4 +289,5 @@ Worker に GitHub のトークンが無いときは、GitHub を呼ぶ前に 500
 - 内容のハッシュは、数十 KB の `markdown` の文字列だけから計算する
 - 一覧は、公開の記録を 1 回読み出して作る
 - 1 記事の `image:` の参照は 20 種までとし、段 1 の R2 の確認を 20 回以内にする
-- GitHub、Nostr、Zenn への要求は、合わせて 30 回以内に各段の実装（#50、#51、#68）で収める
+- GitHub、Nostr、Zenn への要求は、合わせて 30 回以内に収める。GitHub は段 3 と段 6 で 12 回、Nostr は WebSocket の接続が最大 11 本（バンカー 1、リレーの一覧の読み出し 5、投稿 5）で、接続も数える側に倒すと Zenn（#68）に使えるのは残りの 7 回である
+- Nostr への接続は順に開く。バンカーの署名が終わってからリレーの一覧を読み、読み終えてから投稿する。各段は接続を閉じてから次の段を始めるので、同時に開く接続は 5 本までで、同時接続の 6 に収まる
