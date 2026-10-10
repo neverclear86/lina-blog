@@ -194,6 +194,57 @@ export function withPublishedEntry(
 }
 
 /**
+ * Returns a copy of `record` without the entry of `slug`. The given record is not changed, and
+ * a `slug` that has no entry gives a copy of the whole record.
+ *
+ * @param record The published record to start from.
+ * @param slug The slug of the article to leave out.
+ * @returns The new record.
+ */
+export function withoutPublishedEntry(
+  record: PublishedRecord,
+  slug: string,
+): PublishedRecord {
+  return {
+    articles: Object.fromEntries(
+      Object.entries(record.articles).filter(([key]) => key !== slug),
+    ),
+  };
+}
+
+/**
+ * Lists the images that only the article `slug` refers to, that is, the images of its entry
+ * that no other entry of `record` has in its `images`.
+ *
+ * What refers to an image is read from the `images` of the entries, not from the text of the
+ * articles on GitHub, so that this needs no request. Every other entry counts, also one whose
+ * `hash` is `null` (its publication stopped partway), because its article file was committed
+ * to `main` in the same commit as its entry. An article whose images are already in R2 but
+ * whose entry is not written yet is not seen, so `record` should be the latest one on `main`.
+ * The result is read from `record` as given: once the entry of `slug` is gone, nothing is
+ * left to read.
+ *
+ * @param record The published record.
+ * @param slug The slug of the article.
+ * @returns The names in the order of the entry's `images`, each once. It is empty when
+ *   `record` has no entry of `slug`; the caller tells that case apart with `Object.hasOwn`.
+ */
+export function exclusiveImages(
+  record: PublishedRecord,
+  slug: string,
+): string[] {
+  if (!Object.hasOwn(record.articles, slug)) return [];
+  const shared = new Set<string>();
+  for (const [key, { images }] of Object.entries(record.articles)) {
+    if (key === slug) continue;
+    for (const name of images) shared.add(name);
+  }
+  return [...new Set(record.articles[slug].images)].filter(
+    (name) => !shared.has(name),
+  );
+}
+
+/**
  * Writes the published record in the form of docs/publish-api.md: slugs in ascending order of
  * UTF-16 code units, the fields of each entry in the order `hash`, `date`, `images`, and
  * `JSON.stringify(value, null, 2)` followed by one newline.

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  deleteImages,
   type ImageBucket,
   imageUrl,
   parseImageName,
@@ -31,11 +32,12 @@ async function sha256Of(text: string): Promise<string> {
     .join("");
 }
 
-/** A bucket stub whose `head` answers `existing` and whose `put` succeeds. */
+/** A bucket stub whose `head` answers `existing` and whose `put` and `delete` succeed. */
 function bucketWith(existing: StoredImage | null) {
   return {
     head: vi.fn<ImageBucket["head"]>(async () => existing),
     put: vi.fn<ImageBucket["put"]>(async () => ({})),
+    delete: vi.fn<ImageBucket["delete"]>(async () => {}),
   };
 }
 
@@ -163,5 +165,42 @@ describe("putImage", () => {
       message: `Could not look up ${HASH}.png in R2.`,
     });
     expect(bucket.put).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteImages", () => {
+  const NAMES = [`${HASH}.png`, `${"b".repeat(64)}.webp`];
+
+  it("渡した名前をまとめて 1 回の delete で消し、ok を返す", async () => {
+    const bucket = bucketWith(null);
+
+    const result = await deleteImages(bucket, NAMES);
+
+    expect(result).toEqual({ ok: true });
+    expect(bucket.delete).toHaveBeenCalledTimes(1);
+    expect(bucket.delete).toHaveBeenCalledWith(NAMES);
+    expect(bucket.head).not.toHaveBeenCalled();
+  });
+
+  it("名前が空なら R2 を呼ばず ok を返す", async () => {
+    const bucket = bucketWith(null);
+
+    const result = await deleteImages(bucket, []);
+
+    expect(result).toEqual({ ok: true });
+    expect(bucket.delete).not.toHaveBeenCalled();
+  });
+
+  it("R2 の delete が失敗すると upstream_error を返し、例外を投げない", async () => {
+    const bucket = bucketWith(null);
+    bucket.delete.mockRejectedValue(new Error("delete: Internal error"));
+
+    const result = await deleteImages(bucket, NAMES);
+
+    expect(result).toEqual({
+      ok: false,
+      code: "upstream_error",
+      message: `Could not delete ${NAMES.join(", ")} from R2.`,
+    });
   });
 });

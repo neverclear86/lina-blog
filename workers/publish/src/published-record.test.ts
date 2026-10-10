@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  exclusiveImages,
   listPublishedArticles,
   type PublishedEntry,
   type PublishedRecord,
   readPublishedRecord,
   serializePublishedRecord,
+  withoutPublishedEntry,
   withPublishedEntry,
 } from "./published-record";
 
@@ -15,6 +17,9 @@ const HASH_A = "a".repeat(64);
 const HASH_B = "0123456789abcdef".repeat(4);
 const DATE = "2026-09-28T12:34:56Z";
 const IMAGE = `${HASH_B}.png`;
+const IMAGE_X = `${"1".repeat(64)}.webp`;
+const IMAGE_Y = `${"2".repeat(64)}.jpg`;
+const IMAGE_Z = `${"3".repeat(64)}.png`;
 const SHA = "0123456789abcdef0123456789abcdef01234567";
 const BASE_URL =
   "https://api.github.com/repos/neverclear86/lina-blog/contents/src/content/published.json";
@@ -307,6 +312,93 @@ describe("withPublishedEntry", () => {
     const result = withPublishedEntry({ articles: {} }, "__proto__", entry());
 
     expect(Object.hasOwn(result.articles, "__proto__")).toBe(true);
+  });
+});
+
+describe("withoutPublishedEntry", () => {
+  const record: PublishedRecord = {
+    articles: { a: entry(), b: entry({ hash: null }) },
+  };
+
+  it("指定した slug の項目を除き、ほかの項目を残す", () => {
+    expect(withoutPublishedEntry(record, "a")).toEqual({
+      articles: { b: entry({ hash: null }) },
+    });
+  });
+
+  it("渡した記録を変えない", () => {
+    withoutPublishedEntry(record, "a");
+
+    expect(Object.keys(record.articles)).toEqual(["a", "b"]);
+  });
+
+  it("記録に無い slug には、項目をすべて残した写しを返す", () => {
+    const result = withoutPublishedEntry(record, "missing");
+
+    expect(result).toEqual(record);
+    expect(result).not.toBe(record);
+  });
+
+  it("__proto__ の slug の項目も、ほかの項目と同じに残し、除く", () => {
+    const withProto = JSON.parse(
+      `{"articles":{"__proto__":{"hash":null,"date":"${DATE}","images":[]},"b":{"hash":null,"date":"${DATE}","images":[]}}}`,
+    ) as PublishedRecord;
+
+    const withoutB = withoutPublishedEntry(withProto, "b");
+    const withoutProto = withoutPublishedEntry(withProto, "__proto__");
+
+    expect(Object.hasOwn(withoutB.articles, "__proto__")).toBe(true);
+    expect(Object.hasOwn(withoutProto.articles, "__proto__")).toBe(false);
+    expect(Object.keys(withoutProto.articles)).toEqual(["b"]);
+  });
+});
+
+describe("exclusiveImages", () => {
+  const record: PublishedRecord = {
+    articles: {
+      a: entry({ images: [IMAGE_X, IMAGE_Y, IMAGE] }),
+      b: entry({ images: [IMAGE_Y] }),
+      c: entry({ images: [IMAGE, IMAGE_Z] }),
+    },
+  };
+
+  it("他の記事の images に無い画像だけを、項目の images の順に返す", () => {
+    const ordered: PublishedRecord = {
+      articles: {
+        a: entry({ images: [IMAGE_Y, IMAGE_X, IMAGE_Z, IMAGE] }),
+        b: entry({ images: [IMAGE] }),
+      },
+    };
+
+    expect(exclusiveImages(ordered, "a")).toEqual([IMAGE_Y, IMAGE_X, IMAGE_Z]);
+    expect(exclusiveImages(record, "a")).toEqual([IMAGE_X]);
+  });
+
+  it("すべての画像を他の記事も参照していれば、空の配列を返す", () => {
+    expect(exclusiveImages(record, "b")).toEqual([]);
+  });
+
+  it("hash が null の記事の images も参照として数える", () => {
+    const partway: PublishedRecord = {
+      articles: {
+        a: entry({ images: [IMAGE_X, IMAGE_Y] }),
+        b: entry({ hash: null, images: [IMAGE_Y] }),
+      },
+    };
+
+    expect(exclusiveImages(partway, "a")).toEqual([IMAGE_X]);
+  });
+
+  it("項目の images が同じ名前を重ねていても、1 つにして返す", () => {
+    const repeated: PublishedRecord = {
+      articles: { a: entry({ images: [IMAGE_X, IMAGE_Y, IMAGE_X] }) },
+    };
+
+    expect(exclusiveImages(repeated, "a")).toEqual([IMAGE_X, IMAGE_Y]);
+  });
+
+  it("記録に項目の無い slug には空の配列を返す", () => {
+    expect(exclusiveImages(record, "missing")).toEqual([]);
   });
 });
 

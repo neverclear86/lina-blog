@@ -38,6 +38,7 @@ export type ImageBucket = {
       httpMetadata: { contentType: string; cacheControl: string };
     },
   ): Promise<unknown>;
+  delete(keys: string[]): Promise<unknown>;
 };
 
 /** Result of {@link headImage}. `image` is `null` when the bucket has no such key. */
@@ -49,6 +50,11 @@ export type HeadImageResult =
 export type PutImageResult =
   | { ok: true; created: boolean }
   | { ok: false; code: "hash_mismatch" | "upstream_error"; message: string };
+
+/** Result of {@link deleteImages}. */
+export type DeleteImagesResult =
+  | { ok: true }
+  | { ok: false; code: "upstream_error"; message: string };
 
 /**
  * Checks an image name of the publish Worker: `<sha256>.<ext>`, where `<sha256>` is 64
@@ -154,4 +160,33 @@ export async function putImage(
     };
   }
   return { ok: true, created: true };
+}
+
+/**
+ * Deletes images from the bucket in one R2 call. It does not look the images up first, and it
+ * does not call R2 when `names` is empty. R2 deletes at most 1000 keys per call, and an
+ * article refers to at most 20 images (docs/publish-api.md).
+ *
+ * @param bucket The public image bucket.
+ * @param names The keys, which are the image names themselves.
+ * @returns Whether the delete call succeeded, or `upstream_error` with a message when R2
+ *   fails. It never throws.
+ */
+export async function deleteImages(
+  bucket: ImageBucket,
+  names: string[],
+): Promise<DeleteImagesResult> {
+  if (names.length === 0) {
+    return { ok: true };
+  }
+  try {
+    await bucket.delete(names);
+  } catch {
+    return {
+      ok: false,
+      code: "upstream_error",
+      message: `Could not delete ${names.join(", ")} from R2.`,
+    };
+  }
+  return { ok: true };
 }
