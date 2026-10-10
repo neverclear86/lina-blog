@@ -6,6 +6,7 @@ export type ErrorCode =
   | "invalid_markdown"
   | "invalid_frontmatter"
   | "slug_mismatch"
+  | "too_many_images"
   | "upstream_error"
   | "misconfigured";
 

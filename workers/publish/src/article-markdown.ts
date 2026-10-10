@@ -13,7 +13,7 @@ const submittedSchema = blogSchema.omit({ date: true });
 // The frontmatter is the lines between a first line `---` and the next line `---`. A line that
 // starts with `---` or `+++` before that one fails the match, because Astro ends a frontmatter
 // at such a line and would read the post differently.
-const FRONTMATTER = /^---\n((?:(?!---|\+\+\+)[^\n]*\n)*)---\n/;
+export const FRONTMATTER = /^---\n((?:(?!---|\+\+\+)[^\n]*\n)*)---\n/;
 
 /** Frontmatter of an article after {@link parseArticleMarkdown} checks it, without `date`. */
 export type SubmittedFrontmatter = z.output<typeof submittedSchema>;

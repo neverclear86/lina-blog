@@ -162,6 +162,7 @@ bun create astro@latest -- --template basics
 │       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL, NOSTR_CLIENT_KEY, NOSTR_BUNKER_URL, IMAGES)
 │       │   ├── errors.ts            # Error body shared by every error response
 │       │   ├── github-commit.ts     # Writes files to main on GitHub in one commit (Git Data API)
+│       │   ├── image-refs.ts        # Rewrites image:<name> references to img.ikili.pro URLs
 │       │   ├── images.ts            # Image names, R2 lookups and uploads for /images/{name}
 │       │   ├── nip46-message.ts     # Builds NIP-46 requests and reads responses (kind 24133, NIP-44) for the remote signer
 │       │   ├── nip46-signer.ts      # Asks the remote signer to sign an event over the bunker's relay (NIP-46)
