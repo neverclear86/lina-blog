@@ -84,6 +84,7 @@ Worker は、サイトのビルド（Astro）と同じ `js-yaml` で読む。
 frontmatter に `date` が有るときは、422 `invalid_frontmatter` で拒む。
 frontmatter が無いとき、YAML のマッピングとして読めないとき、スキーマに合わないときも、同じ 422 `invalid_frontmatter` で拒む（検証は #49）。
 frontmatter の `slug` がパスの `{slug}` と違うときは、422 `slug_mismatch` で拒む。
+パスの `{slug}` の形は別に検査せず、slug の形でないパスも frontmatter の `slug` と違うので 422 `slug_mismatch` になる。
 
 本文の画像は `![代替テキスト](image:<sha256>.<ext>)` の形で参照する。
 参照先の画像は、先に `PUT /images/{name}` で置いておく。
@@ -96,7 +97,8 @@ Worker は、リンク先が `](image:<name>)` の形の参照（画像と、`[�
 `image:` の参照が 21 種以上の記事は、422 `too_many_images` で拒む。
 種の数は、同じ名前を 1 種とし、形の違う名前も含めて数える。
 名前が「## 画像のアップロード」の `{name}` の形でない参照（`"title"` を付けたものを含む）は、422 `invalid_markdown` で拒む。
-参照した画像が R2 に無いときは、422 `missing_image` で拒む。
+参照した画像が R2 に無いときは、422 `missing_image`（`step: "images"`）で拒む。
+R2 から画像の有無を読めないときは、502 `upstream_error`（`step: "images"`）を返す。
 
 成功したときは 200 を返す。
 応答の本文の例を次に示す。
@@ -122,6 +124,11 @@ Worker は、リンク先が `](image:<name>)` の形の参照（画像と、`[�
 | `commit` | 段 3 で作ったコミットの SHA。作らなかったときは `null` |
 | `nostr.eventId` | kind 30023 のイベント ID（16 進 64 文字） |
 | `zenn` | Zenn への転載の対象外なら `null`。対象なら `{"commit": "<SHA>" \| null}`（`null` はコミットを作らなかったとき） |
+
+段 3 以降は、まだ実装していない（#50 などで足す）。
+それまでの Worker は段 2 までを行い、`commit` と `nostr` を `null`、`zenn` を転載の対象（「技術」タグの記事）なら `{"commit": null}`、対象外なら `null` にして 200 を返す。
+応答には表の項目のほかに、段 2 で差し替えた `markdown`（`date` を含まない）を入れる。
+これは段 3 のコミットが入るまで差し替えの結果を確かめるためのもので、同期スクリプトは読まない。
 
 ## 内容のハッシュ
 
@@ -227,7 +234,7 @@ GitHub から公開の記録を読めないとき、または公開の記録の�
 
 | 状態 | `code` | 起きるとき | 再送 |
 | --- | --- | --- | --- |
-| 400 | `invalid_request` | JSON やパスの形が違う、項目が無い、画像の拡張子や `Content-Type` が違う、画像の `Content-Length` が無い | しない |
+| 400 | `invalid_request` | JSON や画像の名前（パス）の形が違う、項目が無い、画像の拡張子や `Content-Type` が違う、画像の `Content-Length` が無い | しない |
 | 401 | `unauthorized` | 認証が無い、形式か値が違う | しない |
 | 404 | `not_found` | 無いパス（画像の `HEAD` は本文無しの 404） | しない |
 | 409 | `conflict` | GitHub の先頭が並行した公開で動いた | する |

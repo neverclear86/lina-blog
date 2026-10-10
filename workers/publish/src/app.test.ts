@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { experimental_readRawConfig } from "wrangler";
 import app from "./app";
+import { contentHash } from "./content-hash";
 import type { ImageBucket, StoredImage } from "./images";
 
 const env = { PUBLISH_TOKEN: "test-token" };
@@ -503,5 +504,219 @@ describe("images", () => {
     expect(rawConfig.r2_buckets).toEqual([
       { binding: "IMAGES", bucket_name: "lina-blog-images" },
     ]);
+  });
+});
+
+describe("PUT /articles/{slug}", () => {
+  const AUTHORIZATION = "Bearer test-token";
+  const SLUG = "hello-ikili-pro";
+  const A = `${"a".repeat(64)}.png`;
+  const B = `${"b".repeat(64)}.jpg`;
+  const C = `${"c".repeat(64)}.webp`;
+  const IMG = "https://img.ikili.pro";
+
+  function article(names: string[], tags = "  - 技術", slug = SLUG): string {
+    const images = names.map((name) => `![図](image:${name})\n`).join("");
+    return `---\ntitle: 記事の題\nslug: ${slug}\nemoji: 📝\ntags:\n${tags}\ndescription: 記事の説明\n---\n\n本文。\n\n${images}`;
+  }
+
+  function bucketWith(stored: string[]) {
+    const head = vi.fn<ImageBucket["head"]>(async (key) =>
+      stored.includes(key)
+        ? { httpEtag: '"etag"', writeHttpMetadata: vi.fn() }
+        : null,
+    );
+    return { head, put: vi.fn() };
+  }
+
+  function putArticle(
+    body: string,
+    bucket: ReturnType<typeof bucketWith>,
+    path = `/articles/${SLUG}`,
+  ) {
+    return app.request(
+      path,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: AUTHORIZATION,
+          "Content-Type": "application/json",
+        },
+        body,
+      },
+      { ...env, IMAGES: bucket },
+    );
+  }
+
+  const send = (markdown: string) => JSON.stringify({ markdown });
+
+  it("認証の無い記事の PUT は 401 を返し、R2 を呼ばない", async () => {
+    const bucket = bucketWith([A]);
+
+    const res = await app.request(
+      `/articles/${SLUG}`,
+      { method: "PUT", body: send(article([A])) },
+      { ...env, IMAGES: bucket },
+    );
+
+    expect(res.status).toBe(401);
+    expect(bucket.head).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["JSON でない", "not json", "The body must be JSON."],
+    ["markdown の無い", "{}", 'The body must be {"markdown": string}.'],
+    [
+      "markdown が文字列でない",
+      '{"markdown":1}',
+      'The body must be {"markdown": string}.',
+    ],
+    ["null の", "null", 'The body must be {"markdown": string}.'],
+  ])(
+    "%s本文は 400 と invalid_request を返す",
+    async (_label, body, message) => {
+      const bucket = bucketWith([]);
+
+      const res = await putArticle(body, bucket);
+
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({
+        error: { code: "invalid_request", message },
+      });
+      expect(bucket.head).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    [
+      "CR を含む",
+      article([]).replace("本文。", "本文。\r"),
+      "invalid_markdown",
+      SLUG,
+    ],
+    [
+      "date のある",
+      article([]).replace("slug:", "date: 2026-09-28T00:00:00Z\nslug:"),
+      "invalid_frontmatter",
+      SLUG,
+    ],
+    [
+      "slug がパスと違う",
+      article([], "  - 技術", "other-article-slug"),
+      "slug_mismatch",
+      SLUG,
+    ],
+    ["参照の名前が違う", article(["A.png"]), "invalid_markdown", SLUG],
+    [
+      "参照が 21 種の",
+      article(
+        Array.from(
+          { length: 21 },
+          (_, i) => `${String(i).padStart(64, "0")}.png`,
+        ),
+      ),
+      "too_many_images",
+      SLUG,
+    ],
+    [
+      "パスが slug の形でない",
+      article([], "  - 技術"),
+      "slug_mismatch",
+      "Hello",
+    ],
+  ])(
+    "%s記事は 422 とそのコードを返し、R2 を呼ばない",
+    async (_label, markdown, code, pathSlug) => {
+      const bucket = bucketWith([]);
+
+      const res = await putArticle(
+        send(markdown),
+        bucket,
+        `/articles/${pathSlug}`,
+      );
+
+      expect(res.status).toBe(422);
+      const body = (await res.json()) as {
+        error: { code: string; step?: string };
+      };
+      expect(body.error.code).toBe(code);
+      expect(body.error.step).toBeUndefined();
+      expect(bucket.head).not.toHaveBeenCalled();
+    },
+  );
+
+  it("frontmatter と画像の参照の両方が誤った記事は frontmatter のコードを返す", async () => {
+    const bucket = bucketWith([]);
+
+    const res = await putArticle(
+      send(article(["A.png"], "  - 技術", "other-article-slug")),
+      bucket,
+    );
+
+    expect(res.status).toBe(422);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+      "slug_mismatch",
+    );
+  });
+
+  it("R2 に無い画像は 422 と missing_image、step: images を返し、無い名前を message に並べる", async () => {
+    const bucket = bucketWith([A]);
+
+    const res = await putArticle(send(article([B, A, C])), bucket);
+
+    expect(res.status).toBe(422);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "missing_image",
+        message: `Images are not stored: ${B}, ${C}.`,
+        step: "images",
+      },
+    });
+  });
+
+  it("R2 が失敗すると 502 と upstream_error、step: images を返す", async () => {
+    const bucket = bucketWith([A]);
+    bucket.head.mockRejectedValue(new Error("head: Internal error"));
+
+    const res = await putArticle(send(article([A])), bucket);
+
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "upstream_error",
+        message: `Could not look up ${A} in R2.`,
+        step: "images",
+      },
+    });
+  });
+
+  it("画像が揃った記事は 200 と、差し替えた markdown と段 3 以降の null を返す", async () => {
+    const bucket = bucketWith([A, B]);
+    const markdown = article([A, B]);
+
+    const res = await putArticle(send(markdown), bucket);
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      slug: SLUG,
+      url: `https://ikili.pro/blog/${SLUG}`,
+      hash: await contentHash(markdown),
+      commit: null,
+      nostr: null,
+      zenn: { commit: null },
+      markdown: markdown
+        .replace(`image:${A}`, `${IMG}/${A}`)
+        .replace(`image:${B}`, `${IMG}/${B}`),
+    });
+    expect(bucket.head.mock.calls).toEqual([[A], [B]]);
+  });
+
+  it("技術タグの無い記事は zenn に null を返す", async () => {
+    const bucket = bucketWith([]);
+
+    const res = await putArticle(send(article([], "  - 日記")), bucket);
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { zenn: unknown }).zenn).toBeNull();
   });
 });
