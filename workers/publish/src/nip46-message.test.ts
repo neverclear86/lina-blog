@@ -4,6 +4,7 @@ import { hexToBytes } from "nostr-tools/utils";
 import { describe, expect, it } from "vitest";
 import {
   buildNip46Request,
+  fitsNip46Request,
   type Nip46Session,
   openNip46Session,
   readNip46Response,
@@ -151,6 +152,22 @@ describe("buildNip46Request", () => {
       ok: false,
       message: "Request is 65536 bytes; NIP-44 allows 65535",
     });
+  });
+});
+
+describe("fitsNip46Request", () => {
+  it("JSON が 65535 バイトちょうどなら真、1 バイト超えたら偽を返す", () => {
+    const base = new TextEncoder().encode(
+      JSON.stringify({ id: "7", method: "sign_event", params: [""] }),
+    ).length;
+    const of = (length: number) => ({
+      id: "7",
+      method: "sign_event",
+      params: ["x".repeat(length)],
+    });
+
+    expect(fitsNip46Request(of(65535 - base))).toBe(true);
+    expect(fitsNip46Request(of(65536 - base))).toBe(false);
   });
 });
 

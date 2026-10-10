@@ -1,5 +1,7 @@
 import { Hono } from "hono";
+import { buildArticleEvent } from "./article-event";
 import {
+  articleBody,
   DATE_LINE_MESSAGE,
   insertFrontmatterDate,
   parseArticleMarkdown,
@@ -11,6 +13,11 @@ import { errorBody } from "./errors";
 import { commitFiles, getMainHead } from "./github-commit";
 import { rewriteImageRefs } from "./image-refs";
 import { headImage, imageUrl, parseImageName, putImage } from "./images";
+import {
+  fitsBunkerRequest,
+  publishToNostr,
+  readNostrConfig,
+} from "./nostr-publish";
 import {
   listPublishedArticles,
   readPublishedRecord,
@@ -113,11 +120,11 @@ const ARTICLE_BASE_URL = "https://ikili.pro/blog";
 // Path of the published record in this repository (docs/publish-api.md).
 const PUBLISHED_RECORD_PATH = "src/content/published.json";
 
-// Publishes an article (docs/publish-api.md) by running steps 0 to 3 and 6: the request, the
+// Publishes an article (docs/publish-api.md) by running steps 0 to 4 and 6: the request, the
 // frontmatter and the image references are checked, each referenced image is looked up in R2 in
 // turn, the references are rewritten, the article file and its entry of the published record
-// are written to main in one commit, and the entry's hash is then set to the content hash on
-// main. No Nostr event is made, so `nostr` is null.
+// are written to main in one commit, the article's Nostr event is signed through the bunker and
+// posted to the author's write relays, and the entry's hash is then set to the content hash.
 app.put("/articles/:slug", async (c) => {
   let body: unknown;
   try {
@@ -171,6 +178,29 @@ app.put("/articles/:slug", async (c) => {
   if (!token) {
     return c.json(errorBody("misconfigured", "GITHUB_TOKEN is not set."), 500);
   }
+  const nostr = readNostrConfig(c.env);
+  if (!nostr.ok) {
+    return c.json(errorBody("misconfigured", nostr.message), 500);
+  }
+  const { frontmatter } = article;
+  if (
+    !fitsBunkerRequest(
+      buildArticleEvent({
+        frontmatter,
+        body: articleBody(rewritten.markdown),
+        publishedDate: new Date().toISOString(),
+        now: new Date(),
+      }),
+    )
+  ) {
+    return c.json(
+      errorBody(
+        "invalid_markdown",
+        "The article is too long for one NIP-46 sign_event request (65535 bytes).",
+      ),
+      422,
+    );
+  }
   const apiUrl = c.env.GITHUB_API_URL;
   const head = await getMainHead({ token, apiUrl });
   if (!head.ok) {
@@ -217,6 +247,23 @@ app.put("/articles/:slug", async (c) => {
       errorBody(committed.code, committed.message, "commit"),
       committed.code === "conflict" ? 409 : 502,
     );
+  }
+
+  // Step 4: posts the article's event, whose published_at is the date of the published record,
+  // so that publishing again replaces the event with the same d tag.
+  const now = new Date();
+  const posted = await publishToNostr(
+    buildArticleEvent({
+      frontmatter,
+      body: articleBody(rewritten.markdown),
+      publishedDate: date,
+      now,
+    }),
+    nostr.config,
+    now,
+  );
+  if (!posted.ok) {
+    return c.json(errorBody("upstream_error", posted.message, "nostr"), 502);
   }
 
   // Step 6: sets the entry's hash to the content hash on top of main as it is now, which marks
@@ -275,7 +322,7 @@ app.put("/articles/:slug", async (c) => {
     url: `${ARTICLE_BASE_URL}/${slug}`,
     hash,
     commit: committed.commit,
-    nostr: null,
+    nostr: { eventId: posted.eventId },
     zenn: article.frontmatter.tags.includes("技術") ? { commit: null } : null,
   });
 });

@@ -202,3 +202,16 @@ function acceptsDateLine(yaml: string, date = SAMPLE_DATE): boolean {
     return false;
   }
 }
+
+/**
+ * Returns the body of an article's markdown: the text after the closing `---` line of the
+ * frontmatter, found as {@link parseArticleMarkdown} finds it.
+ *
+ * @param markdown The markdown of an article, frontmatter included.
+ * @returns The text after the frontmatter, or `markdown` as it is when it does not start with
+ *   a frontmatter.
+ */
+export function articleBody(markdown: string): string {
+  const match = FRONTMATTER.exec(markdown);
+  return match === null ? markdown : markdown.slice(match[0].length);
+}

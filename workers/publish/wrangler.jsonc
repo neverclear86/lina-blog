@@ -4,6 +4,8 @@
   // PUBLISH_TOKEN, GITHUB_TOKEN, NOSTR_CLIENT_KEY and NOSTR_BUNKER_URL are secrets:
   // `wrangler secret put` in production, `.dev.vars` locally. GITHUB_API_URL is only for
   // pointing `wrangler dev` at a local mock.
+  // NOSTR_INDEX_RELAYS (optional, comma-separated relay URLs, the first 5 are used) can be
+  // added under "vars" to choose where the relay list is read from; nostr-relays.ts has defaults.
   "name": "lina-blog-publish",
   "main": "src/app.ts",
   "compatibility_date": "2026-09-25",

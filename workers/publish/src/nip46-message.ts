@@ -103,6 +103,26 @@ export function openNip46Session(
   }
 }
 
+/** The JSON of a request, as the bunker decrypts it. */
+function requestPlaintext(request: Nip46Request): string {
+  return JSON.stringify({
+    id: request.id,
+    method: request.method,
+    params: request.params,
+  });
+}
+
+/**
+ * Tells whether a request fits in one NIP-46 request: whether its JSON is at most 65535 bytes,
+ * the limit that {@link buildNip46Request} fails beyond.
+ */
+export function fitsNip46Request(request: Nip46Request): boolean {
+  return (
+    new TextEncoder().encode(requestPlaintext(request)).length <=
+    MAX_PLAINTEXT_BYTES
+  );
+}
+
 /**
  * Builds the kind 24133 event that carries a NIP-46 request: the request as JSON, encrypted
  * with NIP-44, in `content`; one `p` tag with the signer's public key; signed with the client
@@ -122,11 +142,7 @@ export function buildNip46Request(
   request: Nip46Request,
   now: Date,
 ): Nip46Result<{ event: NostrEvent }> {
-  const plaintext = JSON.stringify({
-    id: request.id,
-    method: request.method,
-    params: request.params,
-  });
+  const plaintext = requestPlaintext(request);
   const bytes = new TextEncoder().encode(plaintext).length;
   if (bytes > MAX_PLAINTEXT_BYTES) {
     return fail(

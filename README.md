@@ -159,13 +159,15 @@ bun create astro@latest -- --template basics
 │       │   ├── auth.ts              # Bearer auth with a constant-time comparison
 │       │   ├── bunker-url.ts        # Parses the bunker URL (NIP-46) of nostr-no-su
 │       │   ├── content-hash.ts      # Content hash of an article (SHA-256 of its markdown)
-│       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL, NOSTR_CLIENT_KEY, NOSTR_BUNKER_URL, IMAGES)
+│       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL, NOSTR_CLIENT_KEY, NOSTR_BUNKER_URL, NOSTR_INDEX_RELAYS, IMAGES)
 │       │   ├── errors.ts            # Error body shared by every error response
+│       │   ├── fake-nostr.ts        # Test double for WebSocket: a bunker and relays (used by tests only)
 │       │   ├── github-commit.ts     # Writes files to main on GitHub in one commit (Git Data API)
 │       │   ├── image-refs.ts        # Rewrites image:<name> references to img.ikili.pro URLs
 │       │   ├── images.ts            # Image names, R2 lookups (/images/{name}, PUT /articles/{slug}) and uploads (PUT /images/{name})
 │       │   ├── nip46-message.ts     # Builds NIP-46 requests and reads responses (kind 24133, NIP-44) for the remote signer
 │       │   ├── nip46-signer.ts      # Asks the remote signer to sign an event over the bunker's relay (NIP-46)
+│       │   ├── nostr-publish.ts     # Reads the Nostr settings and posts an article's event: sign through the bunker, then send to the write relays
 │       │   ├── nostr-relays.ts      # Reads write relays (kind 10002) and sends events to relays
 │       │   └── published-record.ts  # Reads, updates and writes src/content/published.json (GET /articles)
 │       ├── .dev.vars.example
@@ -427,10 +429,12 @@ directory with `python3 -m http.server <port>`: the list is empty until the dire
 `repos/neverclear86/lina-blog/contents/src/content/published.json`.
 `HEAD` and `PUT /images/<sha256>.<ext>` use a local R2 bucket that `wrangler dev` keeps in
 `workers/publish/.wrangler/state`.
-`PUT /articles/<slug>` checks the article, looks up its `image:` references in that bucket and
-commits the article and `src/content/published.json` to `main` with `GITHUB_TOKEN`; it posts
-nothing to Nostr. A mock at `GITHUB_API_URL` must then also answer the Git database API
-(`git/ref`, `git/commits`, `git/trees`, `git/refs`), which `python3 -m http.server` cannot.
+`PUT /articles/<slug>` checks the article, looks up its `image:` references in that bucket,
+commits the article and `src/content/published.json` to `main` with `GITHUB_TOKEN`, and posts
+its Nostr event signed by the bunker of `NOSTR_BUNKER_URL`; with `.dev.vars.example` no bunker
+answers, so it ends with 502 (`step: "nostr"`) after the commit. A mock at `GITHUB_API_URL`
+must then also answer the Git database API (`git/ref`, `git/commits`, `git/trees`,
+`git/refs`), which `python3 -m http.server` cannot.
 
 Run Lighthouse CI locally with `LINA_DEV_PAGES=1 bun run build` and then `bun run lighthouse`,
 which starts `astro preview` itself (on port 4321, or on `LHCI_PORT`) and keeps the reports in

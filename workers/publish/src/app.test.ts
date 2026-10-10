@@ -3,9 +3,22 @@ import { experimental_readRawConfig } from "wrangler";
 import app from "./app";
 import { DATE_LINE_MESSAGE } from "./article-markdown";
 import { contentHash } from "./content-hash";
+import {
+  BUNKER_URL,
+  CLIENT_KEY,
+  FakeNostrSocket,
+  nostr,
+  WRITE_RELAYS,
+} from "./fake-nostr";
 import type { ImageBucket, StoredImage } from "./images";
 
 const env = { PUBLISH_TOKEN: "test-token" };
+
+// The Nostr settings of the Worker, for the bunker that fake-nostr.ts plays.
+const NOSTR_ENV = {
+  NOSTR_CLIENT_KEY: CLIENT_KEY,
+  NOSTR_BUNKER_URL: BUNKER_URL,
+};
 
 function withAuthorization(value: string): RequestInit {
   return { headers: { Authorization: value } };
@@ -598,6 +611,11 @@ const bodiesOf = (fetchImpl: ReturnType<typeof stubGitHub>, key: string) =>
     .filter(([url, init]) => `${init?.method ?? "GET"} ${url}` === key)
     .map(([, init]) => JSON.parse(String(init?.body)));
 
+beforeEach(() => {
+  nostr.reset();
+  vi.stubGlobal("WebSocket", FakeNostrSocket);
+});
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.useRealTimers();
@@ -639,7 +657,7 @@ describe("PUT /articles/{slug}", () => {
         },
         body,
       },
-      { ...env, GITHUB_TOKEN: "github-token", IMAGES: bucket },
+      { ...env, ...NOSTR_ENV, GITHUB_TOKEN: "github-token", IMAGES: bucket },
     );
   }
 
@@ -798,7 +816,7 @@ describe("PUT /articles/{slug}", () => {
       url: `https://ikili.pro/blog/${SLUG}`,
       hash: await contentHash(markdown),
       commit: COMMIT,
-      nostr: null,
+      nostr: { eventId: nostr.posted[0].event.id },
       zenn: { commit: null },
     });
     expect(bucket.head.mock.calls).toEqual([[A], [B]]);
@@ -866,6 +884,7 @@ describe("PUT /articles/{slug} のコミット", () => {
   function publish(
     githubToken: string | null = "github-token",
     markdown = MARKDOWN,
+    nostrEnv: Record<string, string> = NOSTR_ENV,
   ) {
     return app.request(
       `/articles/${SLUG}`,
@@ -877,7 +896,12 @@ describe("PUT /articles/{slug} のコミット", () => {
         },
         body: JSON.stringify({ markdown }),
       },
-      { ...env, GITHUB_TOKEN: githubToken ?? undefined, IMAGES: bucket },
+      {
+        ...env,
+        ...nostrEnv,
+        GITHUB_TOKEN: githubToken ?? undefined,
+        IMAGES: bucket,
+      },
     );
   }
 
@@ -892,7 +916,7 @@ describe("PUT /articles/{slug} のコミット", () => {
       url: `https://ikili.pro/blog/${SLUG}`,
       hash: await contentHash(MARKDOWN),
       commit: COMMIT,
-      nostr: null,
+      nostr: { eventId: nostr.posted[0].event.id },
       zenn: { commit: null },
     });
     expect(bodyOf(fetchImpl, TREES)).toEqual({
@@ -1251,4 +1275,211 @@ describe("PUT /articles/{slug} のコミット", () => {
     expect(res.status).toBe(422);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
+});
+
+describe("PUT /articles/{slug} の Nostr への投稿", () => {
+  const SLUG = "hello-ikili-pro";
+  const A = `${"a".repeat(64)}.png`;
+  const B = `${"b".repeat(64)}.jpg`;
+  const NOW = "2026-09-28T12:34:56Z";
+  const OLD_DATE = "2026-01-02T03:04:05Z";
+  const REFS = `PATCH ${GIT}/refs/heads/main`;
+  const COMMITS = `POST ${GIT}/commits`;
+  const seconds = (date: string) => String(Date.parse(date) / 1000);
+  const MARKDOWN = [
+    "---",
+    "title: 記事の題",
+    `slug: ${SLUG}`,
+    "emoji: 📝",
+    "tags:",
+    "  - 技術",
+    "description: 記事の説明",
+    "---",
+    "",
+    "本文。",
+    "",
+    `![図](image:${B})`,
+    `![図](image:${A})`,
+    "",
+  ].join("\n");
+  // The body that the event carries: the text after the frontmatter, the references replaced.
+  const BODY = MARKDOWN.replaceAll("image:", "https://img.ikili.pro/").split(
+    "\n---\n",
+  )[1];
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-28T12:34:56.789Z"));
+  });
+
+  const bucket = {
+    head: vi.fn<ImageBucket["head"]>(async () => ({
+      httpEtag: '"etag"',
+      writeHttpMetadata: vi.fn(),
+    })),
+    put: vi.fn(),
+  };
+
+  function publish(
+    markdown = MARKDOWN,
+    nostrEnv: {
+      NOSTR_CLIENT_KEY?: string;
+      NOSTR_BUNKER_URL?: string;
+    } = NOSTR_ENV,
+  ) {
+    return app.request(
+      `/articles/${SLUG}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: "Bearer test-token",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ markdown }),
+      },
+      {
+        ...env,
+        ...nostrEnv,
+        GITHUB_TOKEN: "github-token",
+        IMAGES: bucket,
+      },
+    );
+  }
+
+  it("段 4 は公開の記録の date を published_at にして署名し、write リレーに投稿して eventId を返す", async () => {
+    stubGitHub({
+      [`GET ${RECORD}`]: () =>
+        json({
+          articles: { [SLUG]: { hash: null, date: OLD_DATE, images: [B, A] } },
+        }),
+    });
+
+    const res = await publish();
+
+    expect(res.status).toBe(200);
+    expect(nostr.posted.map((post) => post.relay)).toEqual(WRITE_RELAYS);
+    const { event } = nostr.posted[0];
+    expect(event.tags).toEqual([
+      ["d", SLUG],
+      ["title", "記事の題"],
+      ["published_at", seconds(OLD_DATE)],
+      ["summary", "記事の説明"],
+      ["t", "技術"],
+    ]);
+    expect(event.created_at).toBe(
+      Math.floor(Date.parse("2026-09-28T12:34:56.789Z") / 1000),
+    );
+    expect(event.content).toBe(BODY);
+    expect(((await res.json()) as { nostr: unknown }).nostr).toEqual({
+      eventId: event.id,
+    });
+  });
+
+  it("記録に記事が無い最初の公開は published_at が段 3 で決めた date になる", async () => {
+    stubGitHub();
+
+    await publish();
+
+    expect(nostr.posted[0].event.tags).toContainEqual([
+      "published_at",
+      seconds(NOW),
+    ]);
+  });
+
+  it("段 4 は段 3 のコミットの後、段 6 の読み直しの前に行う", async () => {
+    const fetchImpl = stubGitHub();
+    const posted = vi.fn();
+    nostr.onPost = posted;
+
+    await publish();
+
+    const all = calls(fetchImpl);
+    const ref = fetchImpl.mock.invocationCallOrder[all.indexOf(REFS)];
+    const reread =
+      fetchImpl.mock.invocationCallOrder[
+        all.indexOf(`GET ${GIT}/ref/heads/main`, 1)
+      ];
+    expect(posted).toHaveBeenCalled();
+    expect(posted.mock.invocationCallOrder[0]).toBeGreaterThan(ref);
+    expect(posted.mock.invocationCallOrder[0]).toBeLessThan(reread);
+  });
+
+  it("署名できなければ 502 と upstream_error、step: nostr を返し、段 6 のコミットを作らない", async () => {
+    const fetchImpl = stubGitHub();
+    nostr.signError = "denied";
+
+    const res = await publish();
+
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "upstream_error",
+        message: "Signing failed: sign_event: denied",
+        step: "nostr",
+      },
+    });
+    expect(calls(fetchImpl).filter((call) => call === COMMITS)).toHaveLength(1);
+    expect(nostr.posted).toEqual([]);
+  });
+
+  it("どのリレーも受理しなければ 502 と upstream_error、step: nostr を返す", async () => {
+    stubGitHub();
+    nostr.accepts = { [WRITE_RELAYS[0]]: false, [WRITE_RELAYS[1]]: false };
+
+    const res = await publish();
+
+    expect(res.status).toBe(502);
+    const { error } = (await res.json()) as {
+      error: { code: string; message: string; step: string };
+    };
+    expect(error.code).toBe("upstream_error");
+    expect(error.step).toBe("nostr");
+    expect(error.message).toContain("No relay accepted the event.");
+  });
+
+  it("NIP-46 の要求に収まらない長い記事は段 3 の前に 422 と invalid_markdown を返し、GitHub を呼ばない", async () => {
+    const fetchImpl = stubGitHub();
+
+    const res = await publish(`${MARKDOWN}${'"'.repeat(20_000)}\n`);
+
+    expect(res.status).toBe(422);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "invalid_markdown",
+        message:
+          "The article is too long for one NIP-46 sign_event request (65535 bytes).",
+      },
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(nostr.urls).toEqual([]);
+  });
+
+  it.each([
+    {
+      name: "クライアント鍵が無い",
+      nostrEnv: { NOSTR_BUNKER_URL: BUNKER_URL },
+    },
+    { name: "bunker URL が無い", nostrEnv: { NOSTR_CLIENT_KEY: CLIENT_KEY } },
+    {
+      name: "bunker URL の形が違う",
+      nostrEnv: {
+        NOSTR_CLIENT_KEY: CLIENT_KEY,
+        NOSTR_BUNKER_URL: "bunker://x",
+      },
+    },
+  ])(
+    "$name なら段 3 の前に 500 と misconfigured を返し、GitHub を呼ばない",
+    async ({ nostrEnv }) => {
+      const fetchImpl = stubGitHub();
+
+      const res = await publish(MARKDOWN, nostrEnv);
+
+      expect(res.status).toBe(500);
+      expect(
+        ((await res.json()) as { error: { code: string } }).error.code,
+      ).toBe("misconfigured");
+      expect(fetchImpl).not.toHaveBeenCalled();
+      expect(nostr.urls).toEqual([]);
+    },
+  );
 });
