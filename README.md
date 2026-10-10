@@ -152,8 +152,9 @@ bun create astro@latest -- --template basics
 │       │   ├── article-event.ts     # Builds the unsigned kind 30023 (NIP-23) event of an article
 │       │   ├── article-markdown.ts  # Splits an article's markdown and checks its frontmatter (blog-schema.ts without date)
 │       │   ├── auth.ts              # Bearer auth with a constant-time comparison
+│       │   ├── bunker-url.ts        # Parses the bunker URL (NIP-46) of nostr-no-su
 │       │   ├── content-hash.ts      # Content hash of an article (SHA-256 of its markdown)
-│       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL, IMAGES)
+│       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL, NOSTR_CLIENT_KEY, NOSTR_BUNKER_URL, IMAGES)
 │       │   ├── errors.ts            # Error body shared by every error response
 │       │   ├── github-commit.ts     # Writes files to main on GitHub in one commit (Git Data API)
 │       │   ├── images.ts            # Image names, R2 lookups and uploads for /images/{name}
@@ -386,10 +387,15 @@ Both deploy workflows need the same two repository secrets:
    gh secret set CLOUDFLARE_ACCOUNT_ID
    ```
 
-The publish Worker also needs two secrets on Cloudflare, each set once: its shared secret
-(`bunx wrangler secret put PUBLISH_TOKEN -c workers/publish/wrangler.jsonc`) and a GitHub token
+The publish Worker also needs four secrets on Cloudflare, each set once: its shared secret
+(`bunx wrangler secret put PUBLISH_TOKEN -c workers/publish/wrangler.jsonc`), a GitHub token
 with read access to this repository's contents
-(`bunx wrangler secret put GITHUB_TOKEN -c workers/publish/wrangler.jsonc`).
+(`bunx wrangler secret put GITHUB_TOKEN -c workers/publish/wrangler.jsonc`), the private key
+(64 hex digits) of its NIP-46 client
+(`bunx wrangler secret put NOSTR_CLIENT_KEY -c workers/publish/wrangler.jsonc`), and the bunker
+URL issued by nostr-no-su, `bunker://<pubkey>?relay=...&secret=...`, which contains a secret and
+is never committed
+(`bunx wrangler secret put NOSTR_BUNKER_URL -c workers/publish/wrangler.jsonc`).
 
 It also stores images in the R2 bucket `lina-blog-images`, created once with
 `bunx wrangler r2 bucket create lina-blog-images`. Connect `img.ikili.pro` to the bucket as a

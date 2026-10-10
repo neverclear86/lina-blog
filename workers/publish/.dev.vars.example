@@ -2,3 +2,7 @@
 PUBLISH_TOKEN=local-dev-token
 # GET /articles sends it to GitHub. To read from a local mock instead, add GITHUB_API_URL.
 GITHUB_TOKEN=local-dev-github-token
+# NIP-46: the client key (64 hex digits) and the bunker URL from nostr-no-su. These are
+# placeholders; nothing here reaches a real bunker, and the relay is a local one.
+NOSTR_CLIENT_KEY=0000000000000000000000000000000000000000000000000000000000000001
+NOSTR_BUNKER_URL=bunker://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab?relay=ws://127.0.0.1:7777&secret=local-dev-bunker-secret
