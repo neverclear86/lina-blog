@@ -2,6 +2,7 @@
 export type ErrorCode =
   | "invalid_request"
   | "unauthorized"
+  | "conflict"
   | "hash_mismatch"
   | "invalid_markdown"
   | "invalid_frontmatter"
@@ -12,7 +13,7 @@ export type ErrorCode =
   | "misconfigured";
 
 /** Step of the processing in which a request failed, as listed in `docs/publish-api.md`. */
-export type ErrorStep = "images" | "list";
+export type ErrorStep = "images" | "commit" | "list";
 
 /** Body of every error response of the publish Worker. */
 export type ErrorBody = {

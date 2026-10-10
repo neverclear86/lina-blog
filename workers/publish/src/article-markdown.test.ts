@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parseArticleMarkdown } from "./article-markdown";
+import {
+  insertFrontmatterDate,
+  parseArticleMarkdown,
+} from "./article-markdown";
 
 const SLUG = "hello-ikili-pro";
 
@@ -103,5 +106,17 @@ describe("parseArticleMarkdown", () => {
     expect(
       parseArticleMarkdown(article(FRONTMATTER), "other-slug-0001"),
     ).toMatchObject({ ok: false, code: "slug_mismatch" });
+  });
+});
+
+describe("insertFrontmatterDate", () => {
+  it("date の行を frontmatter の閉じの --- の直前に挿入し、ほかの行を変えない", () => {
+    expect(
+      insertFrontmatterDate(article(FRONTMATTER), "2026-09-28T12:34:56Z"),
+    ).toBe(`---\n${FRONTMATTER}\ndate: 2026-09-28T12:34:56Z\n---\n${BODY}`);
+  });
+
+  it("frontmatter で始まらない markdown には null を返す", () => {
+    expect(insertFrontmatterDate(BODY, "2026-09-28T12:34:56Z")).toBeNull();
   });
 });

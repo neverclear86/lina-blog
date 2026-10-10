@@ -133,3 +133,26 @@ export function parseArticleMarkdown(
     body: markdown.slice(match[0].length),
   };
 }
+
+/**
+ * Inserts a `date: <date>` line just before the closing `---` line of the frontmatter of
+ * `markdown`, found as {@link parseArticleMarkdown} finds it, and keeps every other line as is.
+ * The value is written without quotes, so `js-yaml` reads a date-time such as
+ * `2026-09-28T12:34:56Z` as a Date, which the `date` of `blogSchema` accepts.
+ *
+ * @param markdown The markdown of an article, frontmatter included, without `date`.
+ * @param date The value of `date`.
+ * @returns The markdown with the line inserted, or `null` when it does not start with a
+ *   frontmatter.
+ */
+export function insertFrontmatterDate(
+  markdown: string,
+  date: string,
+): string | null {
+  const match = FRONTMATTER.exec(markdown);
+  if (match === null) {
+    return null;
+  }
+  const closing = match[0].length - "---\n".length;
+  return `${markdown.slice(0, closing)}date: ${date}\n${markdown.slice(closing)}`;
+}
