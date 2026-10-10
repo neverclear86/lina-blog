@@ -182,7 +182,7 @@ bun create astro@latest -- --template basics
 │       └── wrangler.jsonc
 ├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin, sitemap, OGP image writer; pages are prerendered by default
 ├── biome.json
-├── lighthouserc.cjs      # Lighthouse CI: the four pages, three runs, warn assertions (bun run lighthouse)
+├── lighthouserc.cjs      # Lighthouse CI: the four pages, three runs, Performance targets (bun run lighthouse)
 ├── wrangler.jsonc
 └── package.json
 ```
@@ -419,10 +419,13 @@ GitHub Actions runs four workflows:
 
 - `.github/workflows/ci.yml` runs on every pull request: `biome ci`, `astro check`, `bun run test` and `bun run build`.
 - `.github/workflows/lighthouse.yml` runs on every pull request: it builds the site with
-  `LINA_DEV_PAGES=1`, measures `/ja/`, `/en/`, `/blog/` and `/blog/dev-preview-sample/` with
-  Lighthouse CI as mobile (three runs each, set in `lighthouserc.cjs`) and writes the scores of
-  Performance, Accessibility, Best Practices and SEO to the job summary (Actions > the run >
-  Summary). A score under 95 only makes a warning in the log; the job does not fail for it.
+  `LINA_DEV_PAGES=1`, measures `/ja/`, `/en/`, `/blog/` and `/blog/dev-preview-sample/` served
+  by `wrangler dev` with Lighthouse CI as mobile (three runs each, set in `lighthouserc.cjs`) and
+  writes the scores of Performance, Accessibility, Best Practices and SEO to the job summary
+  (Actions > the run > Summary). A Performance score under the page's target in
+  `lighthouserc.cjs` fails the job: the target of `/blog/` is 95 and those of `/ja/`, `/en/` and
+  `/blog/dev-preview-sample/` are lower. A score of another category under 95 only makes a
+  warning in the log.
 - `.github/workflows/deploy.yml` builds the site and runs `wrangler deploy`. For now it only runs when started manually (Actions > Deploy > Run workflow); it will run on every push to `main` once the site is ready to go public. A running deploy always finishes; if several runs are queued meanwhile, only the latest waiting run is kept.
 - `.github/workflows/deploy-publish.yml` runs `wrangler deploy` for the publish Worker in
   `workers/publish/`. Like the site deploy, it only runs when started manually for now (Actions >
@@ -453,8 +456,9 @@ alone GitHub answers 401 (`step: "record"`); with a mock at `GITHUB_API_URL` tha
 reading the record.
 
 Run Lighthouse CI locally with `LINA_DEV_PAGES=1 bun run build` and then `bun run lighthouse`,
-which starts `astro preview` itself (on port 4321, or on `LHCI_PORT`) and keeps the reports in
-`.lighthouseci/`, which git ignores. Set `CHROME_PATH` if Chrome is not found.
+which starts `wrangler dev` itself (on port 4321, or on `LHCI_PORT`; the inspector uses the next
+port) and keeps the reports in `.lighthouseci/`, which git ignores. Set `CHROME_PATH` if Chrome
+is not found.
 `bun scripts/lighthouse/report.ts` prints the table that the workflow writes to the job summary.
 
 Both deploy workflows need the same two repository secrets:
