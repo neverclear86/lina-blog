@@ -86,6 +86,7 @@ tier は判定が決める。`none`（追加 100 行未満・3 ファイル以�
 - **`/` と Worker**: 静的なファイルに当たるリクエストは、アダプタの既定の入口が `src/fetch.ts` の Hono に渡す前に返す。`/` を Hono で扱う issue（#18 の言語の振り分け、#43 の curl 応答）は、`/` を prerender のページにしない（`src/pages/index.astro` を消すか `prerender = false` にする）か、`src/worker.ts` を入口にして `@astrojs/cloudflare/hono` の `cf()` を Hono の `/` の後に置くかを、プランで決める
 - **渡さない issue**: Epic（`epic` ラベル、#1〜#10 と #242）と `要決定` ラベルの issue はワークフローに渡さない。決定はユーザーが行う。blocked by に開いた `要決定` の issue があるときは、段階 0 の「事前に聞く論点」に入れる。#8（Obsidian プラグイン）は別のリポジトリで扱う
 - **デザインの写し**: `design/` は Design キャンバスの写しで、git の管理外（`.gitignore`）である。ユーザーの作業ツリーにだけあり、ワークフローの作業ツリーには無い。キャンバスを直したら、ユーザーが写しを取り直す
+- **`/tmp` の inode**: 実行の前後に `df -i /tmp` を見て、Node のコンパイルキャッシュ `/tmp/node-compile-cache` を `rm -rf` で消す（並列の実行では作業ツリー 1 つで約 3.9 万 inode、このキャッシュが 8〜28 万 inode を使い、`/tmp` の inode が 75% に達した）
 <!-- /ADAPT:rules -->
 
 ## 学びの表の候補
@@ -127,7 +128,7 @@ mkdir -p <scratchpad>/plans <scratchpad>/runs
 - **base**: `origin/main` の先頭。全 issue で同じ
 - **repoDir**: ユーザーの作業ツリー（このリポジトリの clone）の絶対パス
 - **issues**: issue ごとに `n`、`branch`（`feat/…`、`fix/…`、`docs/…`、`chore/…` の形で英語）、UI を変えるなら `ui: true`、依存があれば `after: [n]`、issue コメントで決まった事項や補足があれば `note`
-- **依存と blocked by**: `blockedBy.nodes` のうち `state` が `OPEN` の issue は依存である（`url` が別のリポジトリのものは `after` に書けないので、ユーザーに伝えるだけにする）。この実行の `issues` にあれば `after` に入れる。実行に無ければ、その issue も含めるか、依存を外して進めるか（すでに変更が土台にある、など）を「事前に聞く論点」に入れる（聞かずに起動すると `blocked`（stage `deps`）で返る）。逆に、`after` に書いたのに `blockedBy` に無い組は、起動の前に `gh issue edit <n> -R neverclear86/lina-blog --add-blocked-by <m>`（複数はカンマ区切り）で足す。他のコマンドと連結せず、1 回の Bash 呼び出しに 1 つだけ置く
+- **依存と blocked by**: `blockedBy.nodes` のうち `state` が `OPEN` の issue は依存である（`url` が別のリポジトリのものは `after` に書けないので、ユーザーに伝えるだけにする）。この実行の `issues` にあれば `after` に入れる。実行に無ければ、その issue も含めるか、依存を外して進めるか（すでに変更が土台にある、など）を「事前に聞く論点」に入れる（聞かずに起動すると `blocked`（stage `deps`）で返る）。逆に、`after` に書いたのに `blockedBy` に無い組は、起動の前に `gh issue edit <n> -R neverclear86/lina-blog --add-blocked-by <m>`（複数はカンマ区切り）で足す。他のコマンドと連結せず、1 回の Bash 呼び出しに 1 つだけ置く。`blockedBy` の開いた issue が分割の親（サブ issue を持ち、サブ issue がすべて閉じるまで開いたまま）なら、親でなく、そのサブ issue のうち開いているものを依存に読み替えて `after` に入れ、同じ `gh issue edit` で GitHub の blocked by にもそのサブ issue を足す
 - **portBase**: issue ごとに 10 個ずつ使う空きポートの先頭。`portBase + i*10` から `+9` までが issue i の分（実装が +0〜+4、レビューが +5〜+9。用途は issue-implementer の定義の「環境」）。ユーザーが使っているポート（`.claude/issue-workflow.local.env` の `USER_PORTS` と、上の `ss` で見た使用中のポート）と重ならない範囲を選ぶ
 - **trailers**: このセッションの system-reminder にある `Co-Authored-By` 行、`Claude-Session` 行、Claude-Session の URL
 - **window**: 同時に進める件数。既定 4
