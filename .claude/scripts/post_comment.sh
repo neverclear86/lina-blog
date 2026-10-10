@@ -9,7 +9,10 @@
 # 見出し。`fix` は「レビュー（ラウンド R）の指摘への対応」「レビューの条件への対応」
 # 「最終確認の指摘への対応」の 3 形）でなければならない。引数の検査（kind、round、verdict、
 # head、本文ファイル）と見出しの検査で 1 つでも外れると、何も投稿せず終了コード 1 で終わる。
-# GitHub には issue または PR へのコメント投稿だけを行う。
+# PR への `fix` はさらに、見出しの括弧の SHA が投稿先の PR のコミットの前方一致であることと、同じ head
+# かつ同じ見出しの `fix` のコメントがまだ無いことを `gh pr view` で確かめ、外れると同じく終了コード 1 で
+# 終わる（gh が PR を引けないときは警告を出して通す）。
+# GitHub には issue または PR へのコメント投稿と、PR の読み取りだけを行う。
 #
 # 使い方: sh .claude/scripts/post_comment.sh <issue|pr> <番号> <kind> <round> <verdict> <head> <本文ファイル>
 set -eu
@@ -78,6 +81,25 @@ case "$kind" in
 esac
 first=$(grep -m 1 -v '^[[:space:]]*$' "$body" || true)
 printf '%s\n' "$first" | grep -Eq "^$heading" || { echo "body file must start with the heading for kind=$kind (got: $first)" >&2; exit 1; }
+
+# PR への kind=fix は、投稿先の PR と突き合わせる（別の PR の本文の取り違えと、同じ対応の二重投稿を止める）。
+# 見出しの括弧の SHA が PR のコミットのどれかの前方一致であること、同じ head かつ同じ見出しの kind=fix の
+# コメントがまだ無いことを見る。gh が PR を引けないとき（オフラインなど）は警告を出して通す。
+if [ "$target" = pr ] && [ "$kind" = fix ]; then
+  if pr_json=$(gh pr view "$number" -R "$repo" --json commits,comments 2>/dev/null); then
+    heading_sha=$(printf '%s\n' "$first" | sed -n 's/^.*（\([0-9a-f]*\)）$/\1/p')
+    found=0
+    for oid in $(printf '%s' "$pr_json" | jq -r '.commits[].oid'); do
+      case "$oid" in "$heading_sha"*) found=1; break ;; esac
+    done
+    [ "$found" -eq 1 ] || { echo "heading SHA ($heading_sha) is not a commit of PR #$number" >&2; exit 1; }
+    dup=$(printf '%s' "$pr_json" | jq -r --arg m "<!-- $marker kind=fix " --arg h " head=$sha -->" --arg first "$first" \
+      '[.comments[].body | split("\n") | map(select(test("^[[:space:]]*$") | not)) | select(length >= 2 and (.[0] | startswith($m) and endswith($h)) and .[1] == $first)] | length')
+    [ "$dup" -eq 0 ] || { echo "PR #$number already has a kind=fix comment with head=$sha and the same heading" >&2; exit 1; }
+  else
+    echo "warning: could not read PR #$number with gh; skipping the head and duplicate checks" >&2
+  fi
+fi
 
 tmp=$(mktemp)
 trap 'rm -f "$tmp"' EXIT
