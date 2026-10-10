@@ -165,12 +165,12 @@ bun create astro@latest -- --template basics
 │       │   ├── fake-nostr.ts        # Test double for WebSocket: a bunker and relays (used by tests only)
 │       │   ├── github-commit.ts     # Writes files to main on GitHub in one commit (Git Data API)
 │       │   ├── image-refs.ts        # Rewrites image:<name> references to img.ikili.pro URLs
-│       │   ├── images.ts            # Image names, R2 lookups (/images/{name}, PUT /articles/{slug}) and uploads (PUT /images/{name})
+│       │   ├── images.ts            # Image names, R2 lookups (/images/{name}, PUT /articles/{slug}), uploads (PUT /images/{name}) and deletes
 │       │   ├── nip46-message.ts     # Builds NIP-46 requests and reads responses (kind 24133, NIP-44) for the remote signer
 │       │   ├── nip46-signer.ts      # Asks the remote signer to sign an event over the bunker's relay (NIP-46)
 │       │   ├── nostr-publish.ts     # Reads the Nostr settings and posts an article's event: sign through the bunker, then send to the write relays
 │       │   ├── nostr-relays.ts      # Reads write relays (kind 10002) and sends events to relays
-│       │   └── published-record.ts  # Reads, updates and writes src/content/published.json (GET /articles)
+│       │   └── published-record.ts  # Reads, updates and writes src/content/published.json (GET /articles); images only one article uses
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
 ├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin, sitemap, OGP image writer; pages are prerendered by default
