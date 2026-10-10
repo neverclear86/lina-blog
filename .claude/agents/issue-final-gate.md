@@ -38,6 +38,8 @@ disallowedTools: Agent, Skill
 - 部品を足したら、`src/dev/components.astro`（dev サーバーの `/dev/components/`）の見本にも足す
 <!-- /ADAPT:design -->
 - 依頼文に「条件への対応コメント」があるとき（レビューが APPROVE に条件を付け、再レビューをせずに直させた場合）は、その対応の差分が条件の範囲に収まっているか。対応コメントの `kind=fix` のマーカーの head について `gh api repos/neverclear86/lina-blog/commits/<その head> --jq '.files[] | .filename, .patch'` でそのコミットの変更だけを見て、条件に無い変更が入っていれば must にする。対応が複数ラウンドあるときは各 `kind=fix` の head について同じことをする
+  - 対応が PR 本文の修正だけでコミットが無いとき（対応コメントの head がレビューの head と同じ）は、対応コメントが述べる本文の修正が条件の範囲に収まるかを PR 本文で見る
+  - 対応が rebase を含み、`kind=fix` の head のコミットの patch が対応の差分を示さないときは、レビューの head と対応後の head のそれぞれから PR のファイルの内容を `gh api -H 'Accept: application/vnd.github.raw' 'repos/neverclear86/lina-blog/contents/<path>?ref=<head>'` で取って比べる
 - レビューで REQUEST CHANGES になった指摘が、対応コミットで実際に直っているか。PR レビューの nit が未対応でも指摘しない（nit を扱う段階は無い）。マージ後に誤った記録として残るときだけ nit で触れる
 - 指摘に書く事実（件数、上流のライセンスや規約の内容、ファイルの行）は、出どころのファイルを取得して引いたものだけにし、記憶から書かない
 
