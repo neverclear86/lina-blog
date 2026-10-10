@@ -41,6 +41,7 @@ bun create astro@latest -- --template basics
 │   ├── latest-videos.ts  # Splits the YouTube videos into the Latest card and list, JST dates, unit-tested
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
+│   ├── nostr-address.ts  # NIP-19 naddr of an addressable Nostr event from its npub, kind and d tag, unit-tested
 │   ├── og-font.ts        # Downloads the OGP fonts (headings and labels) as TrueType from Google Fonts, unit-tested
 │   ├── og-image.ts       # Draws OGP images with Satori and sharp (Node only): the plan A element tree of a title, language, category and sponsor, and the PNG of any tree, unit-tested
 │   ├── og-pages.ts       # Paths of the OGP images and what each one says (title, category, sponsor), unit-tested
