@@ -155,7 +155,7 @@ bun create astro@latest -- --template basics
 │       ├── src/
 │       │   ├── app.ts               # Hono app and Worker entry; every route needs the shared secret
 │       │   ├── article-event.ts     # Builds the unsigned kind 30023 (NIP-23) event of an article
-│       │   ├── article-markdown.ts  # Splits an article's markdown and checks its frontmatter (blog-schema.ts without date)
+│       │   ├── article-markdown.ts  # Splits an article's markdown, checks its frontmatter (blog-schema.ts without date), inserts date
 │       │   ├── auth.ts              # Bearer auth with a constant-time comparison
 │       │   ├── bunker-url.ts        # Parses the bunker URL (NIP-46) of nostr-no-su
 │       │   ├── content-hash.ts      # Content hash of an article (SHA-256 of its markdown)
@@ -427,7 +427,9 @@ directory with `python3 -m http.server <port>`: the list is empty until the dire
 `HEAD` and `PUT /images/<sha256>.<ext>` use a local R2 bucket that `wrangler dev` keeps in
 `workers/publish/.wrangler/state`.
 `PUT /articles/<slug>` checks the article, looks up its `image:` references in that bucket and
-answers with the rewritten `markdown`; it does not commit or post anything.
+commits the article and `src/content/published.json` to `main` with `GITHUB_TOKEN`; it posts
+nothing to Nostr. A mock at `GITHUB_API_URL` must then also answer the Git database API
+(`git/ref`, `git/commits`, `git/trees`, `git/refs`), which `python3 -m http.server` cannot.
 
 Run Lighthouse CI locally with `LINA_DEV_PAGES=1 bun run build` and then `bun run lighthouse`,
 which starts `astro preview` itself (on port 4321, or on `LHCI_PORT`) and keeps the reports in
@@ -447,7 +449,7 @@ Both deploy workflows need the same two repository secrets:
 
 The publish Worker also needs four secrets on Cloudflare, each set once: its shared secret
 (`bunx wrangler secret put PUBLISH_TOKEN -c workers/publish/wrangler.jsonc`), a GitHub token
-with read access to this repository's contents
+with read and write access to this repository's contents (fine-grained: "Contents: Read and write")
 (`bunx wrangler secret put GITHUB_TOKEN -c workers/publish/wrangler.jsonc`), the private key
 (64 hex digits) of its NIP-46 client
 (`bunx wrangler secret put NOSTR_CLIENT_KEY -c workers/publish/wrangler.jsonc`), and the bunker

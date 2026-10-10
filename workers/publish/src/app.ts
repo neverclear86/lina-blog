@@ -1,12 +1,22 @@
 import { Hono } from "hono";
-import { parseArticleMarkdown } from "./article-markdown";
+import {
+  DATE_LINE_MESSAGE,
+  insertFrontmatterDate,
+  parseArticleMarkdown,
+} from "./article-markdown";
 import { requireBearerToken } from "./auth";
 import { contentHash } from "./content-hash";
 import type { PublishEnv } from "./env";
 import { errorBody } from "./errors";
+import { commitFiles, getMainHead } from "./github-commit";
 import { rewriteImageRefs } from "./image-refs";
 import { headImage, imageUrl, parseImageName, putImage } from "./images";
-import { listPublishedArticles } from "./published-record";
+import {
+  listPublishedArticles,
+  readPublishedRecord,
+  serializePublishedRecord,
+  withPublishedEntry,
+} from "./published-record";
 
 /**
  * Hono app of the publish Worker, and the Worker entry (`main` in `wrangler.jsonc`).
@@ -100,10 +110,10 @@ app.put("/images/:name", async (c) => {
 // Base of an article's public URL, the `url` of the response in docs/publish-api.md.
 const ARTICLE_BASE_URL = "https://ikili.pro/blog";
 
-// Publishes an article (docs/publish-api.md) by running steps 0 to 2: the request, the
+// Publishes an article (docs/publish-api.md) by running steps 0 to 3: the request, the
 // frontmatter and the image references are checked, each referenced image is looked up in R2 in
-// turn, and the references are rewritten. No commit or Nostr event is made, so the response has
-// `commit` and `nostr` set to null and carries the rewritten markdown.
+// turn, the references are rewritten, and the article file and its entry of the published record
+// are written to main in one commit. No Nostr event is made, so `nostr` is null.
 app.put("/articles/:slug", async (c) => {
   let body: unknown;
   try {
@@ -153,14 +163,59 @@ app.put("/articles/:slug", async (c) => {
     );
   }
 
+  const token = c.env.GITHUB_TOKEN;
+  if (!token) {
+    return c.json(errorBody("misconfigured", "GITHUB_TOKEN is not set."), 500);
+  }
+  const apiUrl = c.env.GITHUB_API_URL;
+  const head = await getMainHead({ token, apiUrl });
+  if (!head.ok) {
+    return c.json(errorBody("upstream_error", head.message, "commit"), 502);
+  }
+  const current = await readPublishedRecord({ token, apiUrl, ref: head.sha });
+  if (!current.ok) {
+    return c.json(errorBody("upstream_error", current.message, "commit"), 502);
+  }
+  const date = Object.hasOwn(current.record.articles, slug)
+    ? current.record.articles[slug].date
+    : `${new Date().toISOString().slice(0, 19)}Z`;
+  const articleFile = insertFrontmatterDate(rewritten.markdown, date);
+  if (articleFile === null) {
+    return c.json(errorBody("invalid_frontmatter", DATE_LINE_MESSAGE), 422);
+  }
+  const committed = await commitFiles({
+    token,
+    apiUrl,
+    message: `content: ${slug} を公開する`,
+    parent: head.sha,
+    files: [
+      { path: `src/content/blog/${slug}.md`, content: articleFile },
+      {
+        path: "src/content/published.json",
+        content: serializePublishedRecord(
+          withPublishedEntry(current.record, slug, {
+            hash: null,
+            date,
+            images: rewritten.names,
+          }),
+        ),
+      },
+    ],
+  });
+  if (!committed.ok) {
+    return c.json(
+      errorBody(committed.code, committed.message, "commit"),
+      committed.code === "conflict" ? 409 : 502,
+    );
+  }
+
   return c.json({
     slug,
     url: `${ARTICLE_BASE_URL}/${slug}`,
     hash: await contentHash(markdown),
-    commit: null,
+    commit: committed.commit,
     nostr: null,
     zenn: article.frontmatter.tags.includes("技術") ? { commit: null } : null,
-    markdown: rewritten.markdown,
   });
 });
 

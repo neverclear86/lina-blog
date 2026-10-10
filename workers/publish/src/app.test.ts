@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { experimental_readRawConfig } from "wrangler";
 import app from "./app";
+import { DATE_LINE_MESSAGE } from "./article-markdown";
 import { contentHash } from "./content-hash";
 import type { ImageBucket, StoredImage } from "./images";
 
@@ -507,13 +508,64 @@ describe("images", () => {
   });
 });
 
+const HEAD = "1".repeat(40);
+const TREE = "2".repeat(40);
+const NEW_TREE = "3".repeat(40);
+const COMMIT = "4".repeat(40);
+const GIT = "https://api.github.com/repos/neverclear86/lina-blog/git";
+const RECORD = `https://api.github.com/repos/neverclear86/lina-blog/contents/src/content/published.json?ref=${HEAD}`;
+
+const json = (body: unknown, init?: ResponseInit) =>
+  new Response(JSON.stringify(body), init);
+
+/**
+ * Replaces the global `fetch` with a stub that answers by `"<METHOD> <URL>"`. The default
+ * answers are those of a successful publish on top of `HEAD`, whose published record does not
+ * exist; `overrides` replaces the answer of a key. A key it does not know is answered 599.
+ */
+const stubGitHub = (
+  overrides: Record<string, () => Response | Promise<Response>> = {},
+) => {
+  const answers: Record<string, () => Response | Promise<Response>> = {
+    [`GET ${GIT}/ref/heads/main`]: () => json({ object: { sha: HEAD } }),
+    [`GET ${RECORD}`]: () => new Response("Not Found", { status: 404 }),
+    [`GET ${GIT}/commits/${HEAD}`]: () => json({ tree: { sha: TREE } }),
+    [`POST ${GIT}/trees`]: () => json({ sha: NEW_TREE }, { status: 201 }),
+    [`POST ${GIT}/commits`]: () => json({ sha: COMMIT }, { status: 201 }),
+    [`PATCH ${GIT}/refs/heads/main`]: () => json({ ref: "refs/heads/main" }),
+    ...overrides,
+  };
+  const fetchImpl = vi.fn<typeof fetch>(async (input, init) => {
+    const key = `${init?.method ?? "GET"} ${String(input)}`;
+    return answers[key]?.() ?? new Response("unknown", { status: 599 });
+  });
+  vi.stubGlobal("fetch", fetchImpl);
+  return fetchImpl;
+};
+
+/** The calls of a stub as `"<METHOD> <URL>"`, in order. */
+const calls = (fetchImpl: ReturnType<typeof stubGitHub>) =>
+  fetchImpl.mock.calls.map(([url, init]) => `${init?.method ?? "GET"} ${url}`);
+
+/** The JSON body of the first call of `fetchImpl` that is `"<METHOD> <URL>"`. */
+const bodyOf = (fetchImpl: ReturnType<typeof stubGitHub>, key: string) => {
+  const call = fetchImpl.mock.calls.find(
+    ([url, init]) => `${init?.method ?? "GET"} ${url}` === key,
+  );
+  return JSON.parse(String(call?.[1]?.body));
+};
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
+
 describe("PUT /articles/{slug}", () => {
   const AUTHORIZATION = "Bearer test-token";
   const SLUG = "hello-ikili-pro";
   const A = `${"a".repeat(64)}.png`;
   const B = `${"b".repeat(64)}.jpg`;
   const C = `${"c".repeat(64)}.webp`;
-  const IMG = "https://img.ikili.pro";
 
   function article(names: string[], tags = "  - 技術", slug = SLUG): string {
     const images = names.map((name) => `![図](image:${name})\n`).join("");
@@ -544,7 +596,7 @@ describe("PUT /articles/{slug}", () => {
         },
         body,
       },
-      { ...env, IMAGES: bucket },
+      { ...env, GITHUB_TOKEN: "github-token", IMAGES: bucket },
     );
   }
 
@@ -690,7 +742,8 @@ describe("PUT /articles/{slug}", () => {
     });
   });
 
-  it("画像が揃った記事は 200 と、差し替えた markdown と段 3 以降の null を返す", async () => {
+  it("画像が揃った記事は 200 と、コミットの SHA と段 4 以降の null を返す", async () => {
+    stubGitHub();
     const bucket = bucketWith([A, B]);
     const markdown = article([A, B]);
 
@@ -701,22 +754,266 @@ describe("PUT /articles/{slug}", () => {
       slug: SLUG,
       url: `https://ikili.pro/blog/${SLUG}`,
       hash: await contentHash(markdown),
-      commit: null,
+      commit: COMMIT,
       nostr: null,
       zenn: { commit: null },
-      markdown: markdown
-        .replace(`image:${A}`, `${IMG}/${A}`)
-        .replace(`image:${B}`, `${IMG}/${B}`),
     });
     expect(bucket.head.mock.calls).toEqual([[A], [B]]);
   });
 
   it("技術タグの無い記事は zenn に null を返す", async () => {
+    stubGitHub();
     const bucket = bucketWith([]);
 
     const res = await putArticle(send(article([], "  - 日記")), bucket);
 
     expect(res.status).toBe(200);
     expect(((await res.json()) as { zenn: unknown }).zenn).toBeNull();
+  });
+});
+
+describe("PUT /articles/{slug} のコミット", () => {
+  const SLUG = "hello-ikili-pro";
+  const A = `${"a".repeat(64)}.png`;
+  const B = `${"b".repeat(64)}.jpg`;
+  const IMG = "https://img.ikili.pro";
+  const NOW = "2026-09-28T12:34:56Z";
+  const TREES = `POST ${GIT}/trees`;
+  const COMMITS = `POST ${GIT}/commits`;
+  const REFS = `PATCH ${GIT}/refs/heads/main`;
+  const MARKDOWN = [
+    "---",
+    "title: 記事の題",
+    `slug: ${SLUG}`,
+    "emoji: 📝",
+    "tags:",
+    "  - 技術",
+    "description: 記事の説明",
+    "---",
+    "",
+    "本文。",
+    "",
+    `![図](image:${B})`,
+    `![図](image:${A})`,
+    `![図](image:${B})`,
+    "",
+  ].join("\n");
+  // The article that the Worker commits: the references replaced, `date` before the closing `---`.
+  const committedArticle = (date: string) =>
+    MARKDOWN.replaceAll("image:", `${IMG}/`).replace(
+      "description: 記事の説明\n---\n",
+      `description: 記事の説明\ndate: ${date}\n---\n`,
+    );
+  const OLD_DATE = "2026-01-02T03:04:05Z";
+  const OLD_HASH = "d".repeat(64);
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-28T12:34:56.789Z"));
+  });
+
+  const bucket = {
+    head: vi.fn<ImageBucket["head"]>(async () => ({
+      httpEtag: '"etag"',
+      writeHttpMetadata: vi.fn(),
+    })),
+    put: vi.fn(),
+  };
+
+  function publish(
+    githubToken: string | null = "github-token",
+    markdown = MARKDOWN,
+  ) {
+    return app.request(
+      `/articles/${SLUG}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: "Bearer test-token",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ markdown }),
+      },
+      { ...env, GITHUB_TOKEN: githubToken ?? undefined, IMAGES: bucket },
+    );
+  }
+
+  it("公開の記録に無い記事は、現在時刻を date にした記事のファイルと公開の記録の項目を 1 つのコミットで書き、その SHA を返す", async () => {
+    const fetchImpl = stubGitHub();
+
+    const res = await publish();
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      slug: SLUG,
+      url: `https://ikili.pro/blog/${SLUG}`,
+      hash: await contentHash(MARKDOWN),
+      commit: COMMIT,
+      nostr: null,
+      zenn: { commit: null },
+    });
+    expect(bodyOf(fetchImpl, TREES)).toEqual({
+      base_tree: TREE,
+      tree: [
+        {
+          path: `src/content/blog/${SLUG}.md`,
+          mode: "100644",
+          type: "blob",
+          content: committedArticle(NOW),
+        },
+        {
+          path: "src/content/published.json",
+          mode: "100644",
+          type: "blob",
+          content: `${JSON.stringify(
+            { articles: { [SLUG]: { hash: null, date: NOW, images: [B, A] } } },
+            null,
+            2,
+          )}\n`,
+        },
+      ],
+    });
+    expect(bodyOf(fetchImpl, COMMITS)).toEqual({
+      message: `content: ${SLUG} を公開する`,
+      tree: NEW_TREE,
+      parents: [HEAD],
+    });
+    expect(bodyOf(fetchImpl, REFS)).toEqual({ sha: COMMIT, force: false });
+  });
+
+  it("main の先頭の SHA で公開の記録を読み、同じ SHA を親にする（ref は 1 回だけ読む）", async () => {
+    const fetchImpl = stubGitHub();
+
+    await publish();
+
+    expect(calls(fetchImpl)).toEqual([
+      `GET ${GIT}/ref/heads/main`,
+      `GET ${RECORD}`,
+      `GET ${GIT}/commits/${HEAD}`,
+      TREES,
+      COMMITS,
+      REFS,
+    ]);
+    expect(bodyOf(fetchImpl, COMMITS).parents).toEqual([HEAD]);
+  });
+
+  it("公開の記録にある記事はその date を使い、hash を null にして、ほかの記事の項目を残す", async () => {
+    const other = { hash: null, date: "2026-02-03T04:05:06Z", images: [] };
+    const fetchImpl = stubGitHub({
+      [`GET ${RECORD}`]: () =>
+        json({
+          articles: {
+            [SLUG]: { hash: OLD_HASH, date: OLD_DATE, images: [A] },
+            "other-article": other,
+          },
+        }),
+    });
+
+    const res = await publish();
+
+    expect(res.status).toBe(200);
+    const { tree } = bodyOf(fetchImpl, TREES);
+    expect(tree[0].content).toBe(committedArticle(OLD_DATE));
+    expect(JSON.parse(tree[1].content)).toEqual({
+      articles: {
+        [SLUG]: { hash: null, date: OLD_DATE, images: [B, A] },
+        "other-article": other,
+      },
+    });
+  });
+
+  it("新しい tree が親の tree と同じときは commit: null の 200 を返し、ref を更新しない", async () => {
+    const fetchImpl = stubGitHub({
+      [TREES]: () => json({ sha: TREE }, { status: 201 }),
+    });
+
+    const res = await publish();
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { commit: unknown }).commit).toBeNull();
+    expect(calls(fetchImpl)).not.toContain(COMMITS);
+    expect(calls(fetchImpl)).not.toContain(REFS);
+  });
+
+  it("main が並行した公開で動いた（ref の更新が 422）ときは 409 と conflict、step: commit を返す", async () => {
+    stubGitHub({
+      [REFS]: () =>
+        new Response("Update is not a fast forward", { status: 422 }),
+    });
+
+    const res = await publish();
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "conflict",
+        message: `refs/heads/main on GitHub is no longer ${HEAD}; another publish moved it.`,
+        step: "commit",
+      },
+    });
+  });
+
+  it.each([
+    [
+      "ref の読み出し",
+      `GET ${GIT}/ref/heads/main`,
+      () => new Response("x", { status: 500 }),
+    ],
+    [
+      "公開の記録の読み出し",
+      `GET ${RECORD}`,
+      () => new Response("x", { status: 500 }),
+    ],
+    ["形の違う公開の記録", `GET ${RECORD}`, () => json({})],
+    ["tree の作成", TREES, () => new Response("x", { status: 500 })],
+  ])(
+    "%sが失敗すると 502 と upstream_error、step: commit を返す",
+    async (_label, key, answer) => {
+      stubGitHub({ [key]: answer });
+
+      const res = await publish();
+
+      expect(res.status).toBe(502);
+      expect(await res.json()).toMatchObject({
+        error: { code: "upstream_error", step: "commit" },
+      });
+    },
+  );
+
+  it("GITHUB_TOKEN が未設定なら 500 と misconfigured を返し、GitHub を呼ばない", async () => {
+    const fetchImpl = stubGitHub();
+
+    const res = await publish(null);
+
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({
+      error: { code: "misconfigured", message: "GITHUB_TOKEN is not set." },
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("frontmatter が ... の行で終わる記事は 422 と invalid_frontmatter を返し、GitHub を呼ばない", async () => {
+    const fetchImpl = stubGitHub();
+
+    const res = await publish(
+      "github-token",
+      MARKDOWN.replace("説明\n---\n", "説明\n...\n---\n"),
+    );
+
+    expect(res.status).toBe(422);
+    expect(await res.json()).toEqual({
+      error: { code: "invalid_frontmatter", message: DATE_LINE_MESSAGE },
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("R2 に無い画像があるときは GitHub を呼ばない", async () => {
+    const fetchImpl = stubGitHub();
+    bucket.head.mockResolvedValueOnce(null);
+
+    const res = await publish();
+
+    expect(res.status).toBe(422);
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 });

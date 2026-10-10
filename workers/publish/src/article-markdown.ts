@@ -15,6 +15,13 @@ const submittedSchema = blogSchema.omit({ date: true });
 // at such a line and would read the post differently.
 export const FRONTMATTER = /^---\n((?:(?!---|\+\+\+)[^\n]*\n)*)---\n/;
 
+/**
+ * Message of the `invalid_frontmatter` failure for a frontmatter that is no longer valid YAML
+ * once the `date` line is added at its end.
+ */
+export const DATE_LINE_MESSAGE =
+  "Frontmatter must stay valid YAML when the publish Worker adds a date line at its end; do not end it with ... or write the mapping indented or in flow style.";
+
 /** Frontmatter of an article after {@link parseArticleMarkdown} checks it, without `date`. */
 export type SubmittedFrontmatter = z.output<typeof submittedSchema>;
 
@@ -40,12 +47,14 @@ export type ParseArticleResult =
  * - `invalid_markdown` when the markdown contains CR or a BOM (U+FEFF) anywhere; the sender
  *   normalizes it and the Worker does not.
  * - `invalid_frontmatter` when the markdown does not start with a frontmatter between `---`
- *   lines, the frontmatter is not valid YAML or not a mapping, it has `date`, or it does not
- *   match `blogSchema` without `date`.
+ *   lines, the frontmatter is not valid YAML or not a mapping, it has `date`, it is no longer
+ *   valid YAML once a `date` line is added at its end (it ends with `...`, or its mapping is
+ *   indented or in flow style), or it does not match `blogSchema` without `date`.
  * - `slug_mismatch` when the frontmatter's `slug` differs from `slug`.
  *
  * The frontmatter is read with `js-yaml`'s `load`, as Astro reads the frontmatter of a post,
- * so a frontmatter that passes here is read the same way by `astro build`.
+ * so a frontmatter that passes here is read the same way by `astro build`, and so is the
+ * frontmatter that {@link insertFrontmatterDate} makes from it.
  *
  * @param markdown The markdown of the article, frontmatter included.
  * @param slug The slug that the frontmatter's `slug` must equal.
@@ -103,6 +112,14 @@ export function parseArticleMarkdown(
     };
   }
 
+  if (!acceptsDateLine(match[1])) {
+    return {
+      ok: false,
+      code: "invalid_frontmatter",
+      message: DATE_LINE_MESSAGE,
+    };
+  }
+
   const result = submittedSchema.safeParse(data);
   if (!result.success) {
     const issues = result.error.issues
@@ -132,4 +149,56 @@ export function parseArticleMarkdown(
     frontmatter: result.data,
     body: markdown.slice(match[0].length),
   };
+}
+
+/**
+ * Inserts a `date: <date>` line just before the closing `---` line of the frontmatter of
+ * `markdown`, found as {@link parseArticleMarkdown} finds it, and keeps every other line as is.
+ * The value is written without quotes, so `js-yaml` reads a date-time such as
+ * `2026-09-28T12:34:56Z` as a Date, which the `date` of `blogSchema` accepts.
+ * The frontmatter with the line is loaded with `js-yaml` first, so `astro build` can read it.
+ *
+ * @param markdown The markdown of an article, frontmatter included, without `date`.
+ * @param date The value of `date`.
+ * @returns The markdown with the line inserted, or `null` when it does not start with a
+ *   frontmatter or its frontmatter is not valid YAML with the line.
+ */
+export function insertFrontmatterDate(
+  markdown: string,
+  date: string,
+): string | null {
+  const match = FRONTMATTER.exec(markdown);
+  if (match === null || !acceptsDateLine(match[1], date)) {
+    return null;
+  }
+  const closing = match[0].length - "---\n".length;
+  return `${markdown.slice(0, closing)}${dateLine(date)}${markdown.slice(closing)}`;
+}
+
+// A value of the form that the publish Worker writes as `date`, used to check a frontmatter
+// before the actual value is known.
+const SAMPLE_DATE = "2000-01-01T00:00:00Z";
+
+/** The line that {@link insertFrontmatterDate} adds to a frontmatter for `date`. */
+function dateLine(date: string): string {
+  return `date: ${date}\n`;
+}
+
+/**
+ * Tells whether `yaml`, the text between the `---` lines of a frontmatter, still loads with
+ * `js-yaml` once the `date` line is added at its end. It does not when `yaml` ends with the
+ * document end `...` or its mapping is indented or in flow style. A `date` line after a mapping
+ * that starts at the first column becomes a key of that mapping, so loading is the whole check.
+ *
+ * @param yaml The frontmatter without its `---` lines.
+ * @param date The value of `date`; a sample of its form when the value is not known yet.
+ * @returns Whether the frontmatter with the line loads. It never throws.
+ */
+function acceptsDateLine(yaml: string, date = SAMPLE_DATE): boolean {
+  try {
+    load(`${yaml}${dateLine(date)}`);
+    return true;
+  } catch {
+    return false;
+  }
 }
