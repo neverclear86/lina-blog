@@ -37,3 +37,6 @@ pnpm-debug.log*
 
 # デザインの写し（Design キャンバスの写しとブランドキット。手元でだけ管理する）
 /design/
+
+# Lighthouse CI reports
+.lighthouseci/

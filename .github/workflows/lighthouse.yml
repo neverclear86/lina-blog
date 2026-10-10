@@ -1,0 +1,26 @@
+name: Lighthouse
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+        env:
+          LINA_DEV_PAGES: "1"
+      - run: bun run lighthouse
+      - name: Write the scores to the job summary
+        if: ${{ !cancelled() && hashFiles('.lighthouseci/manifest.json') != '' }}
+        run: bun scripts/lighthouse/report.ts >> "$GITHUB_STEP_SUMMARY"
