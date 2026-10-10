@@ -1,6 +1,6 @@
 import { decode, npubEncode, nsecEncode } from "nostr-tools/nip19";
 import { describe, expect, it } from "vitest";
-import { buildNaddr } from "./nostr-address";
+import { buildNaddr, nostrArticleUrl } from "./nostr-address";
 
 /** The same string as the Nostr npub of `src/profile-links.ts`. */
 const OFFICIAL_NPUB =
@@ -123,5 +123,19 @@ describe("buildNaddr", () => {
     }
     expect(message).not.toBe("");
     expect(message).not.toContain(nsec);
+  });
+});
+
+describe("nostrArticleUrl", () => {
+  it("公式の npub と slug から、kind 30023 の naddr を開く njump の URL を返す", () => {
+    expect(
+      nostrArticleUrl({ npub: OFFICIAL_NPUB, slug: "sample-article-001" }),
+    ).toBe(`https://njump.me/${OFFICIAL_NADDR}`);
+  });
+
+  it("不正な npub では buildNaddr と同じ RangeError を投げる", () => {
+    expect(() =>
+      nostrArticleUrl({ npub: `nostr:${OFFICIAL_NPUB}`, slug: "banana" }),
+    ).toThrow(new RangeError("Invalid npub"));
   });
 });

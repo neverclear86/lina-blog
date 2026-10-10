@@ -86,3 +86,28 @@ function decodeNpub(npub: string): Uint8Array {
   }
   throw new RangeError("Invalid npub");
 }
+
+/** Kind of a long-form article (NIP-23). */
+const LONG_FORM_KIND = 30023;
+
+/**
+ * Returns the address on njump, a web gateway of Nostr, of the kind 30023 (NIP-23) article of a
+ * blog post: `https://njump.me/<naddr>`. The `naddr` ({@link buildNaddr}) has the `d` tag of the
+ * article, which is the slug of the post.
+ *
+ * @param options.npub The public key of the author in bech32 (`npub1…`).
+ * @param options.slug The slug of the post.
+ * @returns The URL of the article on njump.
+ * @throws RangeError The errors of {@link buildNaddr}.
+ */
+export function nostrArticleUrl(options: {
+  npub: string;
+  slug: string;
+}): string {
+  const naddr = buildNaddr({
+    npub: options.npub,
+    kind: LONG_FORM_KIND,
+    identifier: options.slug,
+  });
+  return `https://njump.me/${naddr}`;
+}
