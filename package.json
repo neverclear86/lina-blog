@@ -26,6 +26,7 @@
     "@astrojs/markdown-satteri": "^0.4.2",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
+    "@scure/base": "^2.0.0",
     "astro": "^7.3.5",
     "fast-xml-parser": "^5.11.1",
     "hono": "^4.13.9",
