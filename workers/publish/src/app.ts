@@ -33,6 +33,7 @@ import {
   withoutPublishedEntry,
   withPublishedEntry,
 } from "./published-record";
+import { isZennTarget } from "./zenn-article";
 
 /**
  * Hono app of the publish Worker, and the Worker entry (`main` in `wrangler.jsonc`).
@@ -332,7 +333,7 @@ app.put("/articles/:slug", async (c) => {
     hash,
     commit: committed.commit,
     nostr: { eventId: posted.eventId },
-    zenn: article.frontmatter.tags.includes("技術") ? { commit: null } : null,
+    zenn: isZennTarget(article.frontmatter.tags) ? { commit: null } : null,
   });
 });
 

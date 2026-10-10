@@ -174,7 +174,8 @@ bun create astro@latest -- --template basics
 │       │   ├── nostr-publish.ts     # Reads the Nostr settings and posts an article's event: sign through the bunker, then send to the write relays
 │       │   ├── nostr-relays.ts      # Reads write relays (kind 10002) and sends events to relays
 │       │   ├── nostr-withdraw.ts    # Asks Nostr to delete an article's event (NIP-09): public key, signature, relays
-│       │   └── published-record.ts  # Reads, updates and writes src/content/published.json (GET /articles); images only one article uses
+│       │   ├── published-record.ts  # Reads, updates and writes src/content/published.json (GET /articles); images only one article uses
+│       │   └── zenn-article.ts      # Builds a Zenn article file (articles/<slug>.md) and picks the articles that go to Zenn
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
 ├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin, sitemap, OGP image writer; pages are prerendered by default
