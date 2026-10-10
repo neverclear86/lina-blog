@@ -12,16 +12,25 @@ import type { PublishEnv } from "./env";
 import { errorBody } from "./errors";
 import { commitFiles, getMainHead } from "./github-commit";
 import { rewriteImageRefs } from "./image-refs";
-import { headImage, imageUrl, parseImageName, putImage } from "./images";
+import {
+  deleteImages,
+  headImage,
+  imageUrl,
+  parseImageName,
+  putImage,
+} from "./images";
 import {
   fitsBunkerRequest,
   publishToNostr,
   readNostrConfig,
 } from "./nostr-publish";
+import { requestNostrDeletion } from "./nostr-withdraw";
 import {
+  exclusiveImages,
   listPublishedArticles,
   readPublishedRecord,
   serializePublishedRecord,
+  withoutPublishedEntry,
   withPublishedEntry,
 } from "./published-record";
 
@@ -324,6 +333,110 @@ app.put("/articles/:slug", async (c) => {
     commit: committed.commit,
     nostr: { eventId: posted.eventId },
     zenn: article.frontmatter.tags.includes("技術") ? { commit: null } : null,
+  });
+});
+
+// Withdraws an article (docs/publish-api.md): reads the published record, asks Nostr to delete
+// the article's event, deletes the images that no other article refers to, and deletes the
+// article file and its entry of the published record from main in one commit.
+app.delete("/articles/:slug", async (c) => {
+  const token = c.env.GITHUB_TOKEN;
+  if (!token) {
+    return c.json(errorBody("misconfigured", "GITHUB_TOKEN is not set."), 500);
+  }
+  const nostrConfig = readNostrConfig(c.env);
+  if (!nostrConfig.ok) {
+    return c.json(errorBody("misconfigured", nostrConfig.message), 500);
+  }
+  const slug = c.req.param("slug");
+  const apiUrl = c.env.GITHUB_API_URL;
+
+  // Step 1: reads the record on main as it is now; the images to delete come from it.
+  const head = await getMainHead({ token, apiUrl });
+  if (!head.ok) {
+    return c.json(errorBody("upstream_error", head.message, "record"), 502);
+  }
+  const current = await readPublishedRecord({ token, apiUrl, ref: head.sha });
+  if (!current.ok) {
+    return c.json(errorBody("upstream_error", current.message, "record"), 502);
+  }
+  if (!Object.hasOwn(current.record.articles, slug)) {
+    return c.json(
+      errorBody("not_found", `The published record has no article ${slug}.`),
+      404,
+    );
+  }
+
+  // Step 2: asks Nostr to delete the article's event.
+  const nostr = await requestNostrDeletion(
+    slug,
+    nostrConfig.config,
+    new Date(),
+  );
+  if (!nostr.ok) {
+    return c.json(errorBody("upstream_error", nostr.message, "nostr"), 502);
+  }
+
+  // Step 3: deletes the images that no other article refers to.
+  const images = exclusiveImages(current.record, slug);
+  const deleted = await deleteImages(c.env.IMAGES, images);
+  if (!deleted.ok) {
+    return c.json(errorBody(deleted.code, deleted.message, "images"), 502);
+  }
+
+  // Step 4: removes the article file and its entry on top of main as it is now.
+  const latestHead = await getMainHead({ token, apiUrl });
+  if (!latestHead.ok) {
+    return c.json(
+      errorBody("upstream_error", latestHead.message, "commit"),
+      502,
+    );
+  }
+  const latest = await readPublishedRecord({
+    token,
+    apiUrl,
+    ref: latestHead.sha,
+  });
+  if (!latest.ok) {
+    return c.json(errorBody("upstream_error", latest.message, "commit"), 502);
+  }
+  if (!Object.hasOwn(latest.record.articles, slug)) {
+    return c.json(
+      errorBody(
+        "conflict",
+        `${PUBLISHED_RECORD_PATH} on main has no entry for ${slug}; another call has withdrawn it.`,
+        "commit",
+      ),
+      409,
+    );
+  }
+  const committed = await commitFiles({
+    token,
+    apiUrl,
+    message: `content: ${slug} を取り下げる`,
+    parent: latestHead.sha,
+    files: [
+      {
+        path: PUBLISHED_RECORD_PATH,
+        content: serializePublishedRecord(
+          withoutPublishedEntry(latest.record, slug),
+        ),
+      },
+    ],
+    deletes: [`src/content/blog/${slug}.md`],
+  });
+  if (!committed.ok) {
+    return c.json(
+      errorBody(committed.code, committed.message, "commit"),
+      committed.code === "conflict" ? 409 : 502,
+    );
+  }
+
+  return c.json({
+    slug,
+    commit: committed.commit,
+    nostr: { eventId: nostr.eventId },
+    images,
   });
 });
 

@@ -9,7 +9,12 @@ import {
 import { hexToBytes } from "nostr-tools/utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { openNip46Session } from "./nip46-message";
-import { type SignResult, signEventWithBunker } from "./nip46-signer";
+import {
+  getBunkerPublicKey,
+  type PublicKeyResult,
+  type SignResult,
+  signEventWithBunker,
+} from "./nip46-signer";
 
 type SocketHandler = (request: unknown[], socket: FakeRelaySocket) => void;
 
@@ -98,6 +103,7 @@ const CLIENT_PUBKEY = getPublicKey(hexToBytes(CLIENT_KEY));
 const NOW = new Date(1_700_000_000_999);
 const RELAY = "wss://bunker.example";
 const SECRET = "s3cret";
+const PERMS = "sign_event:30023,sign_event:5";
 
 const DRAFT: EventTemplate = {
   kind: 30023,
@@ -116,6 +122,8 @@ type Signing = (
 type BunkerOptions = {
   /** Whether the client is already known, so that it needs no `connect`. */
   known?: boolean;
+  /** What `get_public_key` answers; the signer's own key when it is not given. */
+  publicKey?: string;
   secret?: string;
   signing?: Signing;
   /** The relay refuses every request with `OK false` and this reason. */
@@ -179,7 +187,7 @@ function startBunker(options: BunkerOptions = {}): { requests: Request[] } {
     } else if (!known) {
       answer = { error: "unauthorized: send connect first" };
     } else if (request.method === "get_public_key") {
-      answer = { result: SIGNER_PUBKEY };
+      answer = { result: options.publicKey ?? SIGNER_PUBKEY };
     } else {
       answer = signing(JSON.parse(request.params[0]));
     }
@@ -215,8 +223,23 @@ function sign(
     session: opened.session,
     relays: options.relays ?? [RELAY],
     secret: "secret" in options ? options.secret : SECRET,
+    perms: PERMS,
     now: NOW,
     timeoutMs: options.timeoutMs,
+  });
+}
+
+function publicKey(
+  options: { perms?: string; relays?: string[] } = {},
+): Promise<PublicKeyResult> {
+  const opened = openNip46Session(CLIENT_KEY, SIGNER_PUBKEY);
+  if (!opened.ok) throw new Error(opened.message);
+  return getBunkerPublicKey({
+    session: opened.session,
+    relays: options.relays ?? [RELAY],
+    secret: SECRET,
+    perms: options.perms ?? PERMS,
+    now: NOW,
   });
 }
 
@@ -263,11 +286,7 @@ describe("signEventWithBunker", () => {
       "get_public_key",
       "sign_event",
     ]);
-    expect(bunker.requests[1].params).toEqual([
-      SIGNER_PUBKEY,
-      SECRET,
-      "sign_event:30023",
-    ]);
+    expect(bunker.requests[1].params).toEqual([SIGNER_PUBKEY, SECRET, PERMS]);
   });
 
   it("bunker URL に secret が無いときは connect の secret を空文字にする", async () => {
@@ -453,5 +472,62 @@ describe("signEventWithBunker", () => {
     const ids = bunker.requests.map((request) => request.id);
     expect(ids).toHaveLength(4);
     expect(new Set(ids).size).toBe(4);
+  });
+});
+
+describe("getBunkerPublicKey", () => {
+  it("知られた client には get_public_key だけを送り、公開鍵を返す", async () => {
+    const bunker = startBunker({ publicKey: "ab".repeat(32) });
+    expect(await publicKey()).toEqual({ ok: true, pubkey: "ab".repeat(32) });
+    expect(methods(bunker)).toEqual(["get_public_key"]);
+    expect(FakeRelaySocket.openCount).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("unauthorized なら渡した権限で connect を送り、get_public_key をやり直す", async () => {
+    const bunker = startBunker({ known: false, secret: SECRET });
+    expect(await publicKey({ perms: "sign_event:5" })).toEqual({
+      ok: true,
+      pubkey: SIGNER_PUBKEY,
+    });
+    expect(methods(bunker)).toEqual([
+      "get_public_key",
+      "connect",
+      "get_public_key",
+    ]);
+    expect(bunker.requests[1].params).toEqual([
+      SIGNER_PUBKEY,
+      SECRET,
+      "sign_event:5",
+    ]);
+  });
+
+  it("connect を断られたら失敗にする", async () => {
+    const bunker = startBunker({ known: false, secret: "another" });
+    expect(await publicKey()).toEqual({
+      ok: false,
+      message: "connect: invalid secret",
+    });
+    expect(methods(bunker)).toEqual(["get_public_key", "connect"]);
+    expect(FakeRelaySocket.openCount).toBe(0);
+  });
+
+  it("公開鍵の形でない応答は失敗にする", async () => {
+    startBunker({ publicKey: "not-a-key" });
+    expect(await publicKey()).toEqual({
+      ok: false,
+      message: "get_public_key: The result is not a public key",
+    });
+    expect(FakeRelaySocket.openCount).toBe(0);
+  });
+
+  it("リレーにつながらなければ、要求を送らずに失敗にする", async () => {
+    const bunker = startBunker();
+    expect(await publicKey({ relays: ["wss://broken.example"] })).toEqual({
+      ok: false,
+      message: "Connection failed.",
+    });
+    expect(methods(bunker)).toEqual([]);
+    expect(FakeRelaySocket.openCount).toBe(0);
   });
 });

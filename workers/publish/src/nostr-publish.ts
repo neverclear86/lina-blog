@@ -1,9 +1,11 @@
 /**
- * Step 4 of publishing an article: reading the Nostr settings of the Worker, checking that an
- * article's event fits one request to the bunker, and posting the kind 30023 event of an
- * article. The event is signed by the remote signer of the bunker URL (NIP-46) and sent to the
- * write relays in the author's relay list (kind 10002). No function here throws.
+ * Posting to Nostr from the Worker: reading the Nostr settings, checking that an article's
+ * event fits one request to the bunker, posting the kind 30023 event of an article (step 4
+ * of publishing), and sending a signed event to the author's write relays. The bunker URL's
+ * remote signer (NIP-46) signs, and the write relays are in the author's relay list (kind
+ * 10002). No function here throws.
  */
+import type { NostrEvent } from "nostr-tools/pure";
 import type { ArticleEventTemplate } from "./article-event";
 import { parseBunkerUrl } from "./bunker-url";
 import {
@@ -29,7 +31,14 @@ export const NOSTR_MAX_RELAYS = 5;
 /** Longest relay message kept in the message of a failure, in characters. */
 const MAX_RELAY_MESSAGE = 100;
 
-/** What {@link publishToNostr} needs, made from the secrets by {@link readNostrConfig}. */
+/**
+ * Permissions that the Worker asks the bunker for in `connect`: signing articles (kind 30023)
+ * and deletion requests (kind 5). A signer keeps the permissions of a client's first `connect`
+ * and does not change them on a later one, so every path asks for both.
+ */
+export const NOSTR_SIGN_PERMISSIONS = "sign_event:30023,sign_event:5";
+
+/** What posting to Nostr needs, made from the secrets by {@link readNostrConfig}. */
 export type NostrConfig = {
   session: Nip46Session;
   bunkerRelays: string[];
@@ -42,7 +51,7 @@ export type NostrConfigResult =
   | { ok: true; config: NostrConfig }
   | { ok: false; message: string };
 
-/** Result of {@link publishToNostr}. `message` explains a failure for the error body. */
+/** Result of posting to Nostr. `message` explains a failure for the error body. */
 export type NostrPublishResult =
   | { ok: true; eventId: string }
   | { ok: false; message: string };
@@ -100,9 +109,9 @@ export function fitsBunkerRequest(template: ArticleEventTemplate): boolean {
 /**
  * Signs an article's event through the bunker and posts it to the author's write relays.
  *
- * One after another, the bunker signs (`get_public_key` tells the author's key, which may
- * differ from the remote signer's), the relay list of that key is read, and the event is sent
- * to its first {@link NOSTR_MAX_RELAYS} write relays. One relay accepting it is a success.
+ * The steps run one after another, so that the connections are never open together: the
+ * bunker signs (and `get_public_key` tells the author's public key, which may differ from the
+ * remote signer's), and the signed event goes to {@link postSignedEvent}.
  *
  * @param template The event before signing.
  * @param config From {@link readNostrConfig}.
@@ -118,12 +127,28 @@ export async function publishToNostr(
     session: config.session,
     relays: config.bunkerRelays,
     secret: config.secret,
+    perms: NOSTR_SIGN_PERMISSIONS,
     now,
   });
   if (!signed.ok) {
     return { ok: false, message: `Signing failed: ${signed.message}` };
   }
-  const { event } = signed;
+  return postSignedEvent(signed.event, config);
+}
+
+/**
+ * Sends a signed event to the write relays in the author's relay list: the relay list of
+ * `event.pubkey` is read, and the event is sent to its first {@link NOSTR_MAX_RELAYS} write
+ * relays. One relay accepting it is a success.
+ *
+ * @param event The signed event.
+ * @param config From {@link readNostrConfig}.
+ * @returns The ID of the event, or a failure of one of the steps.
+ */
+export async function postSignedEvent(
+  event: NostrEvent,
+  config: NostrConfig,
+): Promise<NostrPublishResult> {
   const listed = await fetchWriteRelays(event.pubkey, config.indexRelays);
   if (!listed.ok) return listed;
   if (listed.relays.length === 0) {

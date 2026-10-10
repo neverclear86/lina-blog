@@ -139,6 +139,17 @@ describe("publishToNostr", () => {
     expect(nostr.open).toBe(0);
   });
 
+  it("署名者が知らない client なら、公開と取り下げの両方の署名の権限で connect を送る", async () => {
+    nostr.known = false;
+
+    const result = await publishToNostr(TEMPLATE, configOf(), NOW);
+
+    expect(result.ok).toBe(true);
+    expect(nostr.connects).toEqual([
+      [SIGNER_PUBKEY, "s3cret", "sign_event:30023,sign_event:5"],
+    ]);
+  });
+
   it("write リレーが NOSTR_MAX_RELAYS を超えても先頭のその本数にだけ送り、同時接続は 6 以下", async () => {
     nostr.writeRelays = Array.from(
       { length: NOSTR_MAX_RELAYS + 3 },

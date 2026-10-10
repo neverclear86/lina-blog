@@ -1,8 +1,9 @@
 /**
- * Asking the remote signer of a bunker URL (NIP-46) to sign an event: one WebSocket connection
- * to its relay, over which the requests built by `nip46-message.ts` go out and the responses
- * come back. The connection is closed when the signed event is returned, when anything fails,
- * and when the time limit runs out, and no function here throws.
+ * Asking the remote signer of a bunker URL (NIP-46) for the user's public key or to sign an
+ * event: each ask uses one WebSocket connection to its relay, over which the requests built by
+ * `nip46-message.ts` go out and the responses come back. The connection is closed when the
+ * result is returned, when anything fails, and when the time limit runs out, and no function
+ * here throws.
  */
 import {
   type EventTemplate,
@@ -21,6 +22,8 @@ import {
 const DEFAULT_TIMEOUT_MS = 10_000;
 
 const SUBSCRIPTION_ID = "nip46";
+
+const PUBKEY_PATTERN = /^[0-9a-f]{64}$/;
 
 /** Key of the wait for the connection to open (a request `id` is never empty). */
 const OPENING = "";
@@ -47,8 +50,8 @@ type Link = {
  * signer's responses to the client, then asks `get_public_key` for the user's public key and
  * `sign_event` for the signature. When the signer answers `get_public_key` with an error that
  * starts with `unauthorized`, it does not know this client yet: sends `connect` with the secret
- * and the permission to sign this kind, and asks `get_public_key` again. A client that the
- * signer already knows is never sent `connect`.
+ * and `options.perms`, and asks `get_public_key` again. A client that the signer already knows
+ * is never sent `connect`.
  *
  * A response that is not from the signer, is not valid, or answers another request is skipped.
  * A failure is returned when the connection or the relay fails, the signer answers with an
@@ -60,6 +63,8 @@ type Link = {
  * @param options.session From `openNip46Session`; it holds the signer's public key.
  * @param options.relays Relay URLs of the bunker URL, at least one. Only the first is used.
  * @param options.secret `secret` of the bunker URL, or `undefined` when it has none.
+ * @param options.perms The permissions that `connect` asks for, such as `sign_event:30023`. A
+ *   signer keeps the permissions of a client's first `connect`.
  * @param options.now The time the requests are created, within 10 minutes past and 60 seconds
  *   ahead of the signer's clock.
  * @param options.timeoutMs Time limit of the whole signing.
@@ -71,11 +76,12 @@ export async function signEventWithBunker(
     session: Nip46Session;
     relays: string[];
     secret: string | undefined;
+    perms: string;
     now: Date;
     timeoutMs?: number;
   },
 ): Promise<SignResult> {
-  const { session, relays, secret, now } = options;
+  const { session, relays, secret, perms, now } = options;
   const link = openLink(
     relays[0],
     session,
@@ -83,8 +89,50 @@ export async function signEventWithBunker(
     options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
   );
   try {
-    const result = await signOver(link, template, session, secret);
+    const result = await signOver(link, template, session, secret, perms);
     return result.ok ? result : fail(result.message);
+  } finally {
+    link.close();
+  }
+}
+
+/** Result of {@link getBunkerPublicKey}. `message` explains a failure for the error body. */
+export type PublicKeyResult = Nip46Result<{ pubkey: string }>;
+
+/**
+ * Asks the remote signer of the bunker URL for the user's public key, over one connection to
+ * the first relay, as {@link signEventWithBunker} does before it signs: `connect` for `perms`
+ * is sent only when the signer does not know the client. The key is the one `sign_event`
+ * signs with, and it can differ from the signer's own key in the bunker URL.
+ *
+ * @param options The same as those of {@link signEventWithBunker}.
+ * @returns The public key in 64 lowercase hex digits, or a failure as in
+ *   {@link signEventWithBunker}, also when the answer is not a public key.
+ */
+export async function getBunkerPublicKey(options: {
+  session: Nip46Session;
+  relays: string[];
+  secret: string | undefined;
+  perms: string;
+  now: Date;
+  timeoutMs?: number;
+}): Promise<PublicKeyResult> {
+  const { session, relays, secret, perms, now } = options;
+  const link = openLink(
+    relays[0],
+    session,
+    now,
+    options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+  );
+  try {
+    const opened = await link.opened;
+    if (!opened.ok) return fail(opened.message);
+    const pubkey = await readPublicKey(link, session, secret, perms);
+    if (!pubkey.ok) return fail(pubkey.message);
+    if (!PUBKEY_PATTERN.test(pubkey.result)) {
+      return fail("get_public_key: The result is not a public key");
+    }
+    return { ok: true, pubkey: pubkey.result };
   } finally {
     link.close();
   }
@@ -96,23 +144,37 @@ async function signOver(
   template: EventTemplate,
   session: Nip46Session,
   secret: string | undefined,
+  perms: string,
 ): Promise<SignResult> {
   const opened = await link.opened;
   if (!opened.ok) return opened;
-  let pubkey = await link.call("get_public_key", []);
-  if (!pubkey.ok && pubkey.bunkerError?.startsWith("unauthorized")) {
-    const connected = await link.call("connect", [
-      session.signerPubkey,
-      secret ?? "",
-      `sign_event:${template.kind}`,
-    ]);
-    if (!connected.ok) return connected;
-    pubkey = await link.call("get_public_key", []);
-  }
+  const pubkey = await readPublicKey(link, session, secret, perms);
   if (!pubkey.ok) return pubkey;
   const signed = await link.call("sign_event", [JSON.stringify(template)]);
   if (!signed.ok) return signed;
   return readSignedEvent(signed.result, pubkey.result);
+}
+
+/**
+ * Asks `get_public_key`. When the signer answers with an error that starts with
+ * `unauthorized`, it sends `connect` with the secret and `perms`, and asks `get_public_key`
+ * again.
+ */
+async function readPublicKey(
+  link: Link,
+  session: Nip46Session,
+  secret: string | undefined,
+  perms: string,
+): Promise<Reply> {
+  const first = await link.call("get_public_key", []);
+  if (first.ok || !first.bunkerError?.startsWith("unauthorized")) return first;
+  const connected = await link.call("connect", [
+    session.signerPubkey,
+    secret ?? "",
+    perms,
+  ]);
+  if (!connected.ok) return connected;
+  return link.call("get_public_key", []);
 }
 
 /** Checks the `result` of `sign_event`: a valid event of `pubkey`. */

@@ -4,8 +4,9 @@
  * `vi.stubGlobal("WebSocket", FakeNostrSocket)`, call `nostr.reset()` before each test, and
  * read what happened from {@link nostr}. The Worker never imports this file.
  *
- * The relay {@link BUNKER_RELAY} is the bunker's: it answers `get_public_key` with the author's
- * key and signs `sign_event` with it, so the author's key differs from the remote signer's.
+ * The relay {@link BUNKER_RELAY} is the bunker's: it answers `connect`, and `get_public_key`
+ * with the author's key, and signs `sign_event` with it, so the author's key differs from the
+ * remote signer's.
  * Every other relay answers a `REQ` of kind 10002 with the author's relay list and an `EVENT`
  * with `OK`.
  */
@@ -47,6 +48,12 @@ class NostrState {
   okMessages: Record<string, string> = {};
   /** The bunker answers `sign_event` with this error. */
   signError: string | undefined;
+  /** Error that the bunker answers `get_public_key` with, instead of the author's key. */
+  publicKeyError: string | undefined;
+  /** Whether the bunker knows the client; when not, it answers `unauthorized` until `connect`. */
+  known = true;
+  /** `params` of each `connect` that the bunker received. */
+  connects: string[][] = [];
   /** URLs of the sockets in the order they were opened. */
   urls: string[] = [];
   /** The `REQ` filters that the relays were asked with, by URL. */
@@ -67,6 +74,9 @@ class NostrState {
     this.accepts = {};
     this.okMessages = {};
     this.signError = undefined;
+    this.publicKeyError = undefined;
+    this.known = true;
+    this.connects = [];
     this.urls = [];
     this.queries = [];
     this.posted = [];
@@ -162,8 +172,17 @@ export class FakeNostrSocket extends EventTarget {
     };
     nostr.methods.push(call.method);
     let body: { result?: string; error?: string };
-    if (call.method === "get_public_key") {
-      body = { result: AUTHOR_PUBKEY };
+    if (call.method === "connect") {
+      nostr.connects.push(call.params);
+      nostr.known = true;
+      body = { result: "ack" };
+    } else if (!nostr.known) {
+      body = { error: "unauthorized: send connect first" };
+    } else if (call.method === "get_public_key") {
+      body =
+        nostr.publicKeyError === undefined
+          ? { result: AUTHOR_PUBKEY }
+          : { error: nostr.publicKeyError };
     } else if (nostr.signError !== undefined) {
       body = { error: nostr.signError };
     } else {
