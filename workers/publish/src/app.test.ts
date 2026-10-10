@@ -512,32 +512,69 @@ const HEAD = "1".repeat(40);
 const TREE = "2".repeat(40);
 const NEW_TREE = "3".repeat(40);
 const COMMIT = "4".repeat(40);
+const RECORD_TREE = "5".repeat(40);
+const RECORD_COMMIT = "6".repeat(40);
 const GIT = "https://api.github.com/repos/neverclear86/lina-blog/git";
-const RECORD = `https://api.github.com/repos/neverclear86/lina-blog/contents/src/content/published.json?ref=${HEAD}`;
+const RECORD_URL =
+  "https://api.github.com/repos/neverclear86/lina-blog/contents/src/content/published.json";
+const RECORD = `${RECORD_URL}?ref=${HEAD}`;
+// The published record that step 6 reads, on top of the commit that step 3 made.
+const RECORD_AT_COMMIT = `${RECORD_URL}?ref=${COMMIT}`;
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), init);
 
+type Answer = () => Response | Promise<Response>;
+
 /**
  * Replaces the global `fetch` with a stub that answers by `"<METHOD> <URL>"`. The default
- * answers are those of a successful publish on top of `HEAD`, whose published record does not
- * exist; `overrides` replaces the answer of a key. A key it does not know is answered 599.
+ * answers are those of a successful publish: step 3 on top of `HEAD`, whose published record
+ * does not exist, and step 6 on top of `COMMIT`, whose published record has the article with a
+ * null hash. `overrides` replaces the answer of a key; an array answers the n-th call of the
+ * key with its n-th element and the calls after its end with its last element. A key it does
+ * not know is answered 599.
  */
-const stubGitHub = (
-  overrides: Record<string, () => Response | Promise<Response>> = {},
-) => {
-  const answers: Record<string, () => Response | Promise<Response>> = {
-    [`GET ${GIT}/ref/heads/main`]: () => json({ object: { sha: HEAD } }),
+const stubGitHub = (overrides: Record<string, Answer | Answer[]> = {}) => {
+  const ref =
+    (sha: string): Answer =>
+    () =>
+      json({ object: { sha } });
+  const answers: Record<string, Answer | Answer[]> = {
+    [`GET ${GIT}/ref/heads/main`]: [ref(HEAD), ref(COMMIT)],
     [`GET ${RECORD}`]: () => new Response("Not Found", { status: 404 }),
+    [`GET ${RECORD_AT_COMMIT}`]: () =>
+      json({
+        articles: {
+          "hello-ikili-pro": {
+            hash: null,
+            date: "2026-09-28T12:34:56Z",
+            images: [`${"b".repeat(64)}.jpg`, `${"a".repeat(64)}.png`],
+          },
+        },
+      }),
     [`GET ${GIT}/commits/${HEAD}`]: () => json({ tree: { sha: TREE } }),
-    [`POST ${GIT}/trees`]: () => json({ sha: NEW_TREE }, { status: 201 }),
-    [`POST ${GIT}/commits`]: () => json({ sha: COMMIT }, { status: 201 }),
+    [`GET ${GIT}/commits/${COMMIT}`]: () => json({ tree: { sha: NEW_TREE } }),
+    [`POST ${GIT}/trees`]: [
+      () => json({ sha: NEW_TREE }, { status: 201 }),
+      () => json({ sha: RECORD_TREE }, { status: 201 }),
+    ],
+    [`POST ${GIT}/commits`]: [
+      () => json({ sha: COMMIT }, { status: 201 }),
+      () => json({ sha: RECORD_COMMIT }, { status: 201 }),
+    ],
     [`PATCH ${GIT}/refs/heads/main`]: () => json({ ref: "refs/heads/main" }),
     ...overrides,
   };
+  const counts: Record<string, number> = {};
   const fetchImpl = vi.fn<typeof fetch>(async (input, init) => {
     const key = `${init?.method ?? "GET"} ${String(input)}`;
-    return answers[key]?.() ?? new Response("unknown", { status: 599 });
+    const answer = answers[key];
+    const n = counts[key] ?? 0;
+    counts[key] = n + 1;
+    const fn = Array.isArray(answer)
+      ? answer[Math.min(n, answer.length - 1)]
+      : answer;
+    return fn?.() ?? new Response("unknown", { status: 599 });
   });
   vi.stubGlobal("fetch", fetchImpl);
   return fetchImpl;
@@ -554,6 +591,12 @@ const bodyOf = (fetchImpl: ReturnType<typeof stubGitHub>, key: string) => {
   );
   return JSON.parse(String(call?.[1]?.body));
 };
+
+/** The JSON bodies of every call of `fetchImpl` that is `"<METHOD> <URL>"`, in order. */
+const bodiesOf = (fetchImpl: ReturnType<typeof stubGitHub>, key: string) =>
+  fetchImpl.mock.calls
+    .filter(([url, init]) => `${init?.method ?? "GET"} ${url}` === key)
+    .map(([, init]) => JSON.parse(String(init?.body)));
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -881,7 +924,7 @@ describe("PUT /articles/{slug} のコミット", () => {
     expect(bodyOf(fetchImpl, REFS)).toEqual({ sha: COMMIT, force: false });
   });
 
-  it("main の先頭の SHA で公開の記録を読み、同じ SHA を親にする（ref は 1 回だけ読む）", async () => {
+  it("段 3 と段 6 はそれぞれ main の先頭の SHA で公開の記録を読み、同じ SHA を親にする", async () => {
     const fetchImpl = stubGitHub();
 
     await publish();
@@ -893,8 +936,74 @@ describe("PUT /articles/{slug} のコミット", () => {
       TREES,
       COMMITS,
       REFS,
+      `GET ${GIT}/ref/heads/main`,
+      `GET ${RECORD_AT_COMMIT}`,
+      `GET ${GIT}/commits/${COMMIT}`,
+      TREES,
+      COMMITS,
+      REFS,
     ]);
-    expect(bodyOf(fetchImpl, COMMITS).parents).toEqual([HEAD]);
+    expect(bodiesOf(fetchImpl, COMMITS).map((b) => b.parents)).toEqual([
+      [HEAD],
+      [COMMIT],
+    ]);
+  });
+
+  it("段 3 の後に、公開の記録の hash を内容のハッシュにした記録だけを段 3 のコミットを親にして書く", async () => {
+    const fetchImpl = stubGitHub();
+
+    const res = await publish();
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { commit: unknown }).commit).toBe(COMMIT);
+    expect(bodiesOf(fetchImpl, TREES)[1]).toEqual({
+      base_tree: NEW_TREE,
+      tree: [
+        {
+          path: "src/content/published.json",
+          mode: "100644",
+          type: "blob",
+          content: `${JSON.stringify(
+            {
+              articles: {
+                [SLUG]: {
+                  hash: await contentHash(MARKDOWN),
+                  date: NOW,
+                  images: [B, A],
+                },
+              },
+            },
+            null,
+            2,
+          )}\n`,
+        },
+      ],
+    });
+    expect(bodiesOf(fetchImpl, COMMITS)[1]).toEqual({
+      message: `content: ${SLUG} の公開を記録する`,
+      tree: RECORD_TREE,
+      parents: [COMMIT],
+    });
+    expect(bodiesOf(fetchImpl, REFS)[1]).toEqual({
+      sha: RECORD_COMMIT,
+      force: false,
+    });
+  });
+
+  it("公開の記録の hash がすでに内容のハッシュなら段 6 のコミットを作らない", async () => {
+    const hash = await contentHash(MARKDOWN);
+    const fetchImpl = stubGitHub({
+      [`GET ${RECORD_AT_COMMIT}`]: () =>
+        json({ articles: { [SLUG]: { hash, date: NOW, images: [B, A] } } }),
+    });
+
+    const res = await publish();
+
+    expect(res.status).toBe(200);
+    expect(calls(fetchImpl).slice(6)).toEqual([
+      `GET ${GIT}/ref/heads/main`,
+      `GET ${RECORD_AT_COMMIT}`,
+    ]);
   });
 
   it("公開の記録にある記事はその date を使い、hash を null にして、ほかの記事の項目を残す", async () => {
@@ -924,6 +1033,11 @@ describe("PUT /articles/{slug} のコミット", () => {
 
   it("新しい tree が親の tree と同じときは commit: null の 200 を返し、ref を更新しない", async () => {
     const fetchImpl = stubGitHub({
+      [`GET ${GIT}/ref/heads/main`]: () => json({ object: { sha: HEAD } }),
+      [`GET ${RECORD}`]: () =>
+        json({
+          articles: { [SLUG]: { hash: null, date: NOW, images: [B, A] } },
+        }),
       [TREES]: () => json({ sha: TREE }, { status: 201 }),
     });
 
@@ -951,6 +1065,127 @@ describe("PUT /articles/{slug} のコミット", () => {
         step: "commit",
       },
     });
+  });
+
+  it("段 6 で main が並行した公開で動いた（ref の更新が 422）ときは 409 と conflict、step: record を返し、記録の hash は null のままである", async () => {
+    const fetchImpl = stubGitHub({
+      [REFS]: [
+        () => json({ ref: "refs/heads/main" }),
+        () => new Response("Update is not a fast forward", { status: 422 }),
+      ],
+    });
+
+    const res = await publish();
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "conflict",
+        message: `refs/heads/main on GitHub is no longer ${COMMIT}; another publish moved it.`,
+        step: "record",
+      },
+    });
+    const written = JSON.parse(bodiesOf(fetchImpl, TREES)[0].tree[1].content);
+    expect(written.articles[SLUG].hash).toBeNull();
+  });
+
+  it("段 3 の後に公開の記録から記事の項目が消えていたときは 409 と conflict、step: record を返し、コミットを作らない", async () => {
+    const fetchImpl = stubGitHub({
+      [`GET ${RECORD_AT_COMMIT}`]: () => json({ articles: {} }),
+    });
+
+    const res = await publish();
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "conflict",
+        message: `src/content/published.json on main has no entry for ${SLUG} after step 3.`,
+        step: "record",
+      },
+    });
+    expect(calls(fetchImpl)).toHaveLength(8);
+  });
+
+  it.each([
+    [
+      "段 6 の ref の読み出し",
+      `GET ${GIT}/ref/heads/main`,
+      [
+        () => json({ object: { sha: HEAD } }),
+        () => new Response("x", { status: 500 }),
+      ],
+    ],
+    [
+      "段 6 の公開の記録の読み出し",
+      `GET ${RECORD_AT_COMMIT}`,
+      () => new Response("x", { status: 500 }),
+    ],
+    [
+      "段 6 の tree の作成",
+      TREES,
+      [
+        () => json({ sha: NEW_TREE }, { status: 201 }),
+        () => new Response("x", { status: 500 }),
+      ],
+    ],
+  ])(
+    "%sが失敗すると 502 と upstream_error、step: record を返す",
+    async (_label, key, answer) => {
+      stubGitHub({ [key]: answer });
+
+      const res = await publish();
+
+      expect(res.status).toBe(502);
+      expect(await res.json()).toMatchObject({
+        error: { code: "upstream_error", step: "record" },
+      });
+    },
+  );
+
+  it("段 6 で失敗した記事の再送は、段 3 でコミットを作らずに段 6 で hash を書く", async () => {
+    const fetchImpl = stubGitHub({
+      [`GET ${GIT}/ref/heads/main`]: () => json({ object: { sha: HEAD } }),
+      [`GET ${RECORD}`]: () =>
+        json({
+          articles: { [SLUG]: { hash: null, date: NOW, images: [B, A] } },
+        }),
+      [TREES]: [
+        () => json({ sha: TREE }, { status: 201 }),
+        () => json({ sha: RECORD_TREE }, { status: 201 }),
+      ],
+      [COMMITS]: () => json({ sha: RECORD_COMMIT }, { status: 201 }),
+    });
+
+    const res = await publish();
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { commit: unknown }).commit).toBeNull();
+    expect(bodiesOf(fetchImpl, COMMITS)).toEqual([
+      {
+        message: `content: ${SLUG} の公開を記録する`,
+        tree: RECORD_TREE,
+        parents: [HEAD],
+      },
+    ]);
+  });
+
+  it("完了した記事を同じ内容で送り直すと、段 3 は hash を残し、段 3 も段 6 もコミットを作らない", async () => {
+    const hash = await contentHash(MARKDOWN);
+    const fetchImpl = stubGitHub({
+      [`GET ${GIT}/ref/heads/main`]: () => json({ object: { sha: HEAD } }),
+      [`GET ${RECORD}`]: () =>
+        json({ articles: { [SLUG]: { hash, date: NOW, images: [B, A] } } }),
+      [TREES]: () => json({ sha: TREE }, { status: 201 }),
+    });
+
+    const res = await publish();
+
+    expect(res.status).toBe(200);
+    const written = JSON.parse(bodiesOf(fetchImpl, TREES)[0].tree[1].content);
+    expect(written.articles[SLUG].hash).toBe(hash);
+    expect(bodiesOf(fetchImpl, TREES)).toHaveLength(1);
+    expect(calls(fetchImpl)).not.toContain(COMMITS);
   });
 
   it.each([

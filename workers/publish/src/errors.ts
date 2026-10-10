@@ -13,7 +13,7 @@ export type ErrorCode =
   | "misconfigured";
 
 /** Step of the processing in which a request failed, as listed in `docs/publish-api.md`. */
-export type ErrorStep = "images" | "commit" | "list";
+export type ErrorStep = "images" | "commit" | "record" | "list";
 
 /** Body of every error response of the publish Worker. */
 export type ErrorBody = {
