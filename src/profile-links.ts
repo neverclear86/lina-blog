@@ -28,6 +28,14 @@ export interface ProfileLink {
 export const YOUTUBE_URL = "https://www.youtube.com/@LinaTsukusu";
 
 /**
+ * The public key of the Nostr account in bech32, which the Nostr profile below and the links to
+ * the posts on Nostr (`nostrArticleUrl` in `src/nostr-address.ts`) are built from. It is
+ * provisional, as the profile is.
+ */
+export const NOSTR_NPUB =
+  "npub1es86m387vusxe66jjp200eqkn3lcxsxudeg2g50zz0yjx5ggvt8sgctaxz";
+
+/**
  * Profiles on other services, in the order of the design's icon row (without RSS). X is
  * written "Twitter(自称X)" in Japanese and "Twitter (self-proclaimed X)" in English everywhere
  * except in its icon. The Nostr npub is provisional.
@@ -54,10 +62,9 @@ export const PROFILE_LINKS: readonly ProfileLink[] = [
   {
     id: "nostr",
     label: { ja: "Nostr", en: "Nostr" },
-    url: "https://nostter.app/npub1es86m387vusxe66jjp200eqkn3lcxsxudeg2g50zz0yjx5ggvt8sgctaxz",
+    url: `https://nostter.app/${NOSTR_NPUB}`,
     note: { ja: "近況", en: "Updates" },
-    shortForm:
-      "nostr:npub1es86m387vusxe66jjp200eqkn3lcxsxudeg2g50zz0yjx5ggvt8sgctaxz",
+    shortForm: `nostr:${NOSTR_NPUB}`,
   },
   {
     id: "zenn",
