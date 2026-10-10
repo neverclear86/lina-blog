@@ -110,10 +110,14 @@ app.put("/images/:name", async (c) => {
 // Base of an article's public URL, the `url` of the response in docs/publish-api.md.
 const ARTICLE_BASE_URL = "https://ikili.pro/blog";
 
-// Publishes an article (docs/publish-api.md) by running steps 0 to 3: the request, the
+// Path of the published record in this repository (docs/publish-api.md).
+const PUBLISHED_RECORD_PATH = "src/content/published.json";
+
+// Publishes an article (docs/publish-api.md) by running steps 0 to 3 and 6: the request, the
 // frontmatter and the image references are checked, each referenced image is looked up in R2 in
-// turn, the references are rewritten, and the article file and its entry of the published record
-// are written to main in one commit. No Nostr event is made, so `nostr` is null.
+// turn, the references are rewritten, the article file and its entry of the published record
+// are written to main in one commit, and the entry's hash is then set to the content hash on
+// main. No Nostr event is made, so `nostr` is null.
 app.put("/articles/:slug", async (c) => {
   let body: unknown;
   try {
@@ -176,6 +180,12 @@ app.put("/articles/:slug", async (c) => {
   if (!current.ok) {
     return c.json(errorBody("upstream_error", current.message, "commit"), 502);
   }
+  const hash = await contentHash(markdown);
+  // A done article sent again with the same content keeps its hash, so that neither step 3 nor
+  // step 6 makes a commit.
+  const kept =
+    Object.hasOwn(current.record.articles, slug) &&
+    current.record.articles[slug].hash === hash;
   const date = Object.hasOwn(current.record.articles, slug)
     ? current.record.articles[slug].date
     : `${new Date().toISOString().slice(0, 19)}Z`;
@@ -191,10 +201,10 @@ app.put("/articles/:slug", async (c) => {
     files: [
       { path: `src/content/blog/${slug}.md`, content: articleFile },
       {
-        path: "src/content/published.json",
+        path: PUBLISHED_RECORD_PATH,
         content: serializePublishedRecord(
           withPublishedEntry(current.record, slug, {
-            hash: null,
+            hash: kept ? hash : null,
             date,
             images: rewritten.names,
           }),
@@ -209,10 +219,61 @@ app.put("/articles/:slug", async (c) => {
     );
   }
 
+  // Step 6: sets the entry's hash to the content hash on top of main as it is now, which marks
+  // the article as done for GET /articles.
+  const recordHead = await getMainHead({ token, apiUrl });
+  if (!recordHead.ok) {
+    return c.json(
+      errorBody("upstream_error", recordHead.message, "record"),
+      502,
+    );
+  }
+  const latest = await readPublishedRecord({
+    token,
+    apiUrl,
+    ref: recordHead.sha,
+  });
+  if (!latest.ok) {
+    return c.json(errorBody("upstream_error", latest.message, "record"), 502);
+  }
+  if (!Object.hasOwn(latest.record.articles, slug)) {
+    return c.json(
+      errorBody(
+        "conflict",
+        `${PUBLISHED_RECORD_PATH} on main has no entry for ${slug} after step 3.`,
+        "record",
+      ),
+      409,
+    );
+  }
+  const entry = latest.record.articles[slug];
+  if (entry.hash !== hash) {
+    const recorded = await commitFiles({
+      token,
+      apiUrl,
+      message: `content: ${slug} の公開を記録する`,
+      parent: recordHead.sha,
+      files: [
+        {
+          path: PUBLISHED_RECORD_PATH,
+          content: serializePublishedRecord(
+            withPublishedEntry(latest.record, slug, { ...entry, hash }),
+          ),
+        },
+      ],
+    });
+    if (!recorded.ok) {
+      return c.json(
+        errorBody(recorded.code, recorded.message, "record"),
+        recorded.code === "conflict" ? 409 : 502,
+      );
+    }
+  }
+
   return c.json({
     slug,
     url: `${ARTICLE_BASE_URL}/${slug}`,
-    hash: await contentHash(markdown),
+    hash,
     commit: committed.commit,
     nostr: null,
     zenn: article.frontmatter.tags.includes("技術") ? { commit: null } : null,
