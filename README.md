@@ -123,6 +123,7 @@ bun create astro@latest -- --template basics
 │   │   ├── highlight.ts      # Shiki highlighting of code blocks with role classes, unit-tested
 │   │   ├── sample.md         # Sample article shown at /dev/markdown/
 │   │   ├── table-align.ts    # Sätteri hast plugin: table alignment as classes, unit-tested
+│   │   ├── youtube-id.ts     # YouTube video ID of a video URL, used by youtube.ts and workers/publish/src/zenn-syntax.ts
 │   │   └── youtube.ts        # Sätteri hast plugin: YouTube URL paragraphs as iframes, unit-tested
 │   ├── pages/
 │   │   ├── 404.astro     # /404.html: the 404 page, served for every path with no file
@@ -175,7 +176,8 @@ bun create astro@latest -- --template basics
 │       │   ├── nostr-relays.ts      # Reads write relays (kind 10002) and sends events to relays
 │       │   ├── nostr-withdraw.ts    # Asks Nostr to delete an article's event (NIP-09): public key, signature, relays
 │       │   ├── published-record.ts  # Reads, updates and writes src/content/published.json (GET /articles); images only one article uses
-│       │   └── zenn-article.ts      # Builds a Zenn article file (articles/<slug>.md) and picks the articles that go to Zenn
+│       │   ├── zenn-article.ts      # Builds a Zenn article file (articles/<slug>.md) and picks the articles that go to Zenn
+│       │   └── zenn-syntax.ts       # Converts an article body to the syntax of Zenn and rejects the HTML Zenn cannot show
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
 ├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin, sitemap, OGP image writer; pages are prerendered by default
