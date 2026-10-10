@@ -1,7 +1,9 @@
 /**
  * Resolution of the images an article embeds, for the sync script. Rewrites each image reference
  * of the body to `image:<sha256>.<ext>` as `docs/publish-api.md` specifies and lists the images
- * to upload. Reads the Vault and never writes to it.
+ * to upload. Reads the Vault and never writes to it. The reading of the references and the
+ * Markdown they are rewritten to are exported, so that a step before can check the body as it
+ * will be rewritten.
  */
 import { createHash } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
@@ -58,8 +60,11 @@ export type ResolveImagesInput = {
   vaultFiles: readonly string[];
 };
 
-/** An image reference: its decoded target and the alt text to write. */
-type ImageRef = { target: string; alt: string };
+/**
+ * An image reference: its decoded target, the alt text to write, and the indices in the
+ * Markdown passed to `mapImages` where the reference as written starts and ends.
+ */
+type ImageRef = { target: string; alt: string; start: number; end: number };
 
 /**
  * The opening line of a fenced code block: up to 3 spaces, then 3 or more `` ` `` or `~`. A run
@@ -116,11 +121,11 @@ export async function listVaultFiles(vaultRoot: string): Promise<string[]> {
  * percent-decoded when it decodes. References whose target starts with `http:` or `https:` never
  * reach `replace`.
  */
-function mapImages(
+export function mapImages(
   markdown: string,
   replace: (ref: ImageRef) => string | null,
 ): string {
-  const rewrite = (text: string): string =>
+  const rewrite = (text: string, base: number): string =>
     text.replace(
       INLINE,
       (
@@ -129,7 +134,10 @@ function mapImages(
         embed: string | undefined,
         alt: string | undefined,
         rawTarget: string | undefined,
+        offset: number,
       ) => {
+        const start = base + offset;
+        const end = start + match.length;
         if (ticks !== undefined) return match;
         if (embed !== undefined) {
           const bar = embed.indexOf("|");
@@ -138,29 +146,35 @@ function mapImages(
           const altText = SIZE_LABEL.test(label)
             ? ""
             : label.replace(/[\\[\]]/g, "\\$&");
-          return replace({ target, alt: altText }) ?? match;
+          return replace({ target, alt: altText, start, end }) ?? match;
         }
         const raw = rawTarget ?? "";
         const unwrapped =
           raw.startsWith("<") && raw.endsWith(">") ? raw.slice(1, -1) : raw;
         if (/^https?:/i.test(unwrapped)) return match;
-        return replace({ target: decode(unwrapped), alt: alt ?? "" }) ?? match;
+        return (
+          replace({ target: decode(unwrapped), alt: alt ?? "", start, end }) ??
+          match
+        );
       },
     );
 
   const lines = markdown.match(/[^\n]*\n|[^\n]+$/g) ?? [];
   let out = "";
   let outside = "";
+  let lineStart = 0;
   let fence: { char: string; length: number } | null = null;
   for (const line of lines) {
     const content = line.replace(/\r?\n$/, "");
+    const thisStart = lineStart;
+    lineStart += line.length;
     if (fence === null) {
       const open = FENCE.exec(content);
       if (open === null) {
         outside += line;
         continue;
       }
-      out += rewrite(outside) + line;
+      out += rewrite(outside, thisStart - outside.length) + line;
       outside = "";
       fence = { char: open[1][0], length: open[1].length };
       continue;
@@ -175,7 +189,12 @@ function mapImages(
       fence = null;
     }
   }
-  return out + rewrite(outside);
+  return out + rewrite(outside, markdown.length - outside.length);
+}
+
+/** The Markdown that an image reference is rewritten to: `![alt](image:<name>)`. */
+export function imageMarkdown(alt: string, name: string): string {
+  return `![${alt}](image:${name})`;
 }
 
 /** Percent-decodes a target, or returns it as written when it does not decode. */
@@ -285,7 +304,7 @@ export async function resolveImages(
   const rewritten = mapImages(markdown, (ref) => {
     const { path } = resolved[index];
     index += 1;
-    return `![${ref.alt}](image:${names.get(path)})`;
+    return imageMarkdown(ref.alt, names.get(path) ?? "");
   });
   return { ok: true, markdown: rewritten, images };
 }
