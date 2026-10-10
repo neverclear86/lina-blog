@@ -155,7 +155,7 @@ bun create astro@latest -- --template basics
 │   └── publish/          # Publish Worker, separate from the site and deployed on its own
 │       ├── src/
 │       │   ├── app.ts               # Hono app and Worker entry; every route needs the shared secret
-│       │   ├── article-event.ts     # Builds the unsigned kind 30023 (NIP-23) event of an article
+│       │   ├── article-event.ts     # Builds the unsigned kind 30023 (NIP-23) event of an article and the kind 5 (NIP-09) deletion request for it
 │       │   ├── article-markdown.ts  # Splits an article's markdown, checks its frontmatter (blog-schema.ts without date), inserts date
 │       │   ├── auth.ts              # Bearer auth with a constant-time comparison
 │       │   ├── bunker-url.ts        # Parses the bunker URL (NIP-46) of nostr-no-su
