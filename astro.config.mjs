@@ -10,7 +10,7 @@ import sitemap from "@astrojs/sitemap";
 import { defineConfig, envField, fontProviders } from "astro/config";
 import { renderAnsiArt, renderPlainArt } from "./src/ansi-art.ts";
 import { decodeAnsiArtSource } from "./src/ansi-art-source.ts";
-import { devPages } from "./src/dev/dev-pages.ts";
+import { devPages, devPagesEnabled } from "./src/dev/dev-pages.ts";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
 import { tableFocusable, taskItemLabel } from "./src/markdown/a11y.ts";
 import { codeFilename } from "./src/markdown/code-filename.ts";
@@ -20,6 +20,7 @@ import { youtubeEmbed } from "./src/markdown/youtube.ts";
 import { loadOgFonts } from "./src/og-font.ts";
 import { renderOgImage } from "./src/og-image.ts";
 import { OG_IMAGES_LIST_PATH } from "./src/og-pages.ts";
+import { loadNostrPublishedSlugs } from "./src/published-articles-source.ts";
 import { isSitemapPage, withXDefault } from "./src/sitemap.ts";
 import { THEME_SCRIPT } from "./src/theme.ts";
 
@@ -86,6 +87,49 @@ function linaAnsiArt() {
         `export const ansiArt = ${JSON.stringify(renderAnsiArt(image))};`,
         `export const plainArt = ${JSON.stringify(renderPlainArt(image))};`,
       ].join("\n");
+    },
+  };
+}
+
+/** Virtual module with the slugs of the posts on Nostr, built by `linaPublishedSlugs()`. */
+const PUBLISHED_SLUGS_MODULE = "virtual:lina-published-slugs";
+
+/**
+ * Builds the slugs of the posts that are on Nostr (`loadNostrPublishedSlugs` in
+ * `src/published-articles-source.ts`) as the virtual module `virtual:lina-published-slugs`,
+ * which exports `nostrPublishedSlugs`, a `Set`.
+ *
+ * The pages are prerendered in workerd, so the published record is read here, in Node, as the
+ * text art is. It is read at the start of every build and of `astro dev`, whether or not a page
+ * imports the module, so a published record that does not have the form of docs/publish-api.md
+ * fails the build. The sample posts' record is read only when the sample posts are (`astro dev`,
+ * or `astro build` with `LINA_DEV_PAGES=1`; `devPagesEnabled`).
+ * @returns {import('vite').Plugin}
+ */
+function linaPublishedSlugs() {
+  const resolvedId = `\0${PUBLISHED_SLUGS_MODULE}`;
+  /** @type {import('vite').ResolvedConfig} */
+  let config;
+  /** @type {string[]} */
+  let slugs = [];
+  return {
+    name: "lina-published-slugs",
+    configResolved(resolved) {
+      config = resolved;
+    },
+    resolveId(id) {
+      if (id === PUBLISHED_SLUGS_MODULE) return resolvedId;
+    },
+    buildStart() {
+      const dev = devPagesEnabled(
+        config.isProduction ? "build" : "dev",
+        process.env,
+      );
+      slugs = [...loadNostrPublishedSlugs(dev)];
+    },
+    load(id) {
+      if (id !== resolvedId) return;
+      return `export const nostrPublishedSlugs = new Set(${JSON.stringify(slugs)});`;
     },
   };
 }
@@ -165,7 +209,7 @@ export default defineConfig({
     }),
     ogImages(),
   ],
-  vite: { plugins: [linaAnsiArt()] },
+  vite: { plugins: [linaAnsiArt(), linaPublishedSlugs()] },
   // Astro writes each page's Content Security Policy into a <meta> at the end of <head>, with the
   // hashes of the scripts and styles it bundles and `font-src 'self'`. `THEME_SCRIPT` is rendered
   // with `is:inline`, which Astro does not hash, so its hash is computed from the constant. No

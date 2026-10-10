@@ -41,12 +41,15 @@ bun create astro@latest -- --template basics
 │   ├── latest-videos.ts  # Splits the YouTube videos into the Latest card and list, JST dates, unit-tested
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
+│   ├── lina-published-slugs.d.ts # Types of virtual:lina-published-slugs, the slugs on Nostr built in astro.config.mjs
 │   ├── nostr-address.ts  # NIP-19 naddr of an addressable Nostr event from its npub, kind and d tag, unit-tested
 │   ├── og-font.ts        # Downloads the OGP fonts (headings and labels) as TrueType from Google Fonts, unit-tested
 │   ├── og-image.ts       # Draws OGP images with Satori and sharp (Node only): the plan A element tree of a title, language, category and sponsor, and the PNG of any tree, unit-tested
 │   ├── og-pages.ts       # Paths of the OGP images and what each one says (title, category, sponsor), unit-tested
 │   ├── page-meta.ts      # Description (default from ui.ts), Open Graph tags (with the OGP image) and Twitter card tags of a page, unit-tested
 │   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro, hero-account.ts and footer-links.ts
+│   ├── published-articles.ts # Which posts are on Nostr: parses the published record (src/content/published.json) and looks up a slug, unit-tested
+│   ├── published-articles-source.ts # Reads the published records from disk for virtual:lina-published-slugs (Node only), unit-tested
 │   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
 │   ├── sponsor-notice.ts # PR notice of a sponsored blog post: label, sentence and rel="sponsored" link, unit-tested
 │   ├── text-site.ts      # Builds the text version of the site for curl (80 columns), unit-tested
@@ -100,7 +103,7 @@ bun create astro@latest -- --template basics
 │   │   ├── Works.astro           # Works section of the top page (04 works): the heading and a WorkTile per work, from the works collection
 │   │   └── icons/                # Service icons for HeroAccount; sources and terms in icons/README.md
 │   ├── content/
-│   │   ├── blog-dev/     # Posts for checking how pages look; loaded by astro dev (or with LINA_DEV_PAGES=1)
+│   │   ├── blog-dev/     # Posts for checking how pages look, and published.json, their published record; loaded by astro dev (or with LINA_DEV_PAGES=1)
 │   │   └── works/        # Works, one YAML file per work (placeholder data), with placeholder.png
 │   ├── dev/
 │   │   ├── components.astro  # /dev/components/: samples of the plan A styles, components and avatar images
@@ -185,6 +188,8 @@ Pages are prerendered unless they export `prerender = false`. The Worker runs fi
 Pages that exist in every language go in `src/pages/[lang]/` and are generated once for each locale in `src/i18n/locales.ts` (`/ja/`, `/en/`); their UI strings come from `src/i18n/ui.ts`. Pages outside `[lang]/`, such as the Japanese-only blog under `/blog/`, have no language prefix. Astro's `i18n()` handler in `src/fetch.ts` is never reached, so `astro build` warns that the project does not call it; running it would answer 404 for those unprefixed paths. The layout links every page to the same path in the other locales (`src/i18n/paths.ts`); a page without a language prefix links to the other locale's top page. Every page also has a canonical link and hreflang alternates, as absolute URLs under `site` in `astro.config.mjs` (`canonicalUrl` and `alternateLinks` in `src/i18n/paths.ts`): a page under `[lang]/` lists itself in each locale and `x-default` pointing to `/`, and a page without a language prefix lists only itself, in Japanese.
 
 Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema. `astro build` leaves them out unless `LINA_DEV_PAGES=1` is set (see “CSS”); with it they reach `dist/` like other posts, in `/blog/`, the tag pages, their own pages `/blog/<slug>/`, the latest posts on the home page, `/rss.xml`, the text version and the OGP images `/og/blog/<slug>.png`, so that build is only for screenshots and is never deployed.
+
+Whether a post is on Nostr is decided at build time from `src/content/published.json`, the published record that the publishing Worker writes (`docs/publish-api.md`): a post is on Nostr when the record has an entry for its slug whose `hash` is not `null`. `astro.config.mjs` reads the record in Node and exports the slugs as the virtual module `virtual:lina-published-slugs`, which pages can import; `isNostrPublished` in `src/published-articles.ts` looks a slug up. A missing file means that no post is on Nostr, and a record in another form fails the build. The sample posts have their own record, `src/content/blog-dev/published.json`, read only when the sample posts are: `dev-preview-sample` is on Nostr, `dev-preview-newer` has an entry with `hash: null`, and the other sample posts have no entry. A change to a record is picked up by restarting `astro dev`.
 
 Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are highlighted at build time by `src/markdown/highlight.ts`, which gives tokens role classes such as `hl-keyword` instead of inline styles; `markdown.syntaxHighlight` is off so Astro's own Shiki does not run. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player. An accordion is written as raw HTML (`<details>` and `<summary>`), and how to write one is in `docs/markdown.md`. An `<aside class="note">` or `<aside class="warning">` written as raw HTML in an article is styled as a message box (`docs/markdown.md` shows how to write one). The checkbox of a task list item gets an `aria-label` with the text of the item, and every table gets `tabindex="0"` so that a table wider than the article can be scrolled with the keyboard (`src/markdown/a11y.ts`).
 
