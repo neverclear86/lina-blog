@@ -182,19 +182,27 @@ describe("SiteHeader の全幅", () => {
     expect(script).not.toContain("focusout");
     expect(script.match(/hidePopover\(\)/g)).toHaveLength(2);
   });
+
+  it("メニューのボタンの aria-expanded は、script が読み込み時と popover の toggle で更新する", () => {
+    expect(markup).not.toContain("aria-expanded");
+    expect(script).toMatch(/menu\?\.addEventListener\(\s*"toggle"/);
+    expect(script).toMatch(/setAttribute\(\s*"aria-expanded"/);
+    expect(script).toContain('menu?.matches(":popover-open")');
+    expect(script).toMatch(/^syncExpanded\(\);$/m);
+  });
 });
 
-describe("global.css の scroll-margin-top", () => {
-  it("section[id]、#blog、#main は幅によらずヘッダーの下 72px で止まる", () => {
+describe("global.css の scroll-padding", () => {
+  it("ページは幅によらず上 72px と下 8px を空けてスクロールし、要素の scroll-margin-top は持たない", () => {
     const css = source("styles/global.css");
     expect(
       rulesOf(withoutMedia(css)).map((r) => [r.selector, r.body]),
-    ).toContainEqual([
-      expect.stringContaining("section[id], #blog, #main"),
-      "scroll-margin-top: 72px;",
-    ]);
-    expect(css.match(/scroll-margin-top/g)).toHaveLength(1);
-    expect(withoutMedia(css)).toContain("scroll-margin-top: 72px");
+    ).toContainEqual(["html", "scroll-padding: 72px 0 8px;"]);
+    expect(css.match(/scroll-padding/g)).toHaveLength(1);
+    expect(css).not.toContain("scroll-margin");
+    expect(source("components/ArticleBody.astro")).not.toContain(
+      "scroll-margin",
+    );
   });
 });
 

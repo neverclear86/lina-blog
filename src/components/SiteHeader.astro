@@ -35,7 +35,8 @@
  * `--bg` under the header, with the items of the navigation as rows 48px high, the language
  * switch and the contact button. The button shows three bars, and a cross while the menu is
  * open. While the menu is open, the page behind it does not scroll. A script closes it when a
- * link in it is clicked and when the focus moves to an element of the page outside the header.
+ * link in it is clicked and when the focus moves to an element of the page outside the header,
+ * and sets `aria-expanded` of the menu button to whether the menu is open.
  */
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
@@ -489,6 +490,17 @@ for (const link of menu?.querySelectorAll("a") ?? []) {
     if (menu && "hidePopover" in menu) menu.hidePopover();
   });
 }
+
+// The menu button tells whether the menu is open: `aria-expanded` follows the popover. It is set
+// here, also at load, so that without script the browser keeps reporting the state itself.
+const toggle = document.querySelector(".menu-toggle");
+const syncExpanded = () =>
+  toggle?.setAttribute(
+    "aria-expanded",
+    String(menu?.matches(":popover-open") ?? false),
+  );
+menu?.addEventListener("toggle", syncExpanded);
+syncExpanded();
 
 // Focus that moves to the page leaves the open menu over it, so close the menu then. Focus that
 // leaves the document, such as to the address bar, keeps it open.
