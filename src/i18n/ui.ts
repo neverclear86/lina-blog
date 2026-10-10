@@ -154,12 +154,14 @@ const ja = {
   // "nav.label" names the <nav> of the site header and "nav.contact" is the text of its contact
   // button. The items of the navigation are in `src/components/site-nav.ts`. "nav.breadcrumb"
   // names the <nav> of the breadcrumb at the top of a page.
+  // "nav.skip" is the text of the skip link at the top of every page.
   "nav.about": "プロフィール",
   "nav.blog": "ブログ",
   "nav.breadcrumb": "パンくず",
   "nav.contact": "お問い合わせ",
   "nav.label": "メイン",
   "nav.latest": "さいきん",
+  "nav.skip": "本文へ移動",
   "nav.top": "トップ",
   "nav.works": "つくったもの",
   // The 404 page, which is in Japanese and shows the English message and link under the heading.
@@ -314,6 +316,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "nav.contact": "Contact",
     "nav.label": "Main",
     "nav.latest": "Latest",
+    "nav.skip": "Skip to main content",
     "nav.top": "Top",
     "nav.works": "Works",
     "notFound.back": "Back to top",

@@ -55,11 +55,21 @@ body {
 }
 
 /*
+ * `<main tabindex="-1">` takes the focus when the skip link is followed. It holds the whole
+ * page content and is not a control, so it draws no outline.
+ */
+main[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/*
  * The site header sticks to the top of the viewport and is 61px high (see `SiteHeader.astro`),
  * so a section that a link scrolls to stops 72px below the top, as `section[id],#blog` does in
- * `design/Main.dc.html`, and its heading stays below the header.
+ * `design/Main.dc.html`, and its heading stays below the header. `#main`, which the skip link
+ * jumps to, stops there too, so the top of the page content is not under the header.
  */
 section[id],
-#blog {
+#blog,
+#main {
   scroll-margin-top: 72px;
 }

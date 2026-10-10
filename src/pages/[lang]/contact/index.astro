@@ -30,7 +30,7 @@ const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
   title={t("contact.title")}
   description={t("contact.description")}
 >
-  <main>
+  <main id="main" tabindex="-1">
     <PageHead>
       <nav class="crumbs" aria-label={t("nav.breadcrumb")}>
         <a href={`/${lang}/`} aria-label={t("nav.top")}>~</a>

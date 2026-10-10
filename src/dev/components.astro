@@ -25,6 +25,7 @@ import PostRows from "../components/PostRows.astro";
 import ReadingProgress from "../components/ReadingProgress.astro";
 import SectionTitle from "../components/SectionTitle.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import SkipLink from "../components/SkipLink.astro";
 import SponsorNotice from "../components/SponsorNotice.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
 import WorkTile from "../components/WorkTile.astro";
@@ -188,7 +189,7 @@ const sampleVideos: YouTubeVideo[] = [
     document.documentElement.dataset.theme = theme;
   }
   </script>
-  <main class="page">
+  <main id="main" tabindex="-1" class="page">
     <h1>部品の確認</h1>
     <p><a href="?theme=light">ライト</a> / <a href="?theme=dark">ダーク</a></p>
 
@@ -441,6 +442,15 @@ const sampleVideos: YouTubeVideo[] = [
         title="サンプルの記事の題"
         url="https://ikili.pro/blog/sample/"
       />
+    </section>
+
+    <section id="skip-link">
+      <h2>スキップリンク</h2>
+      <p>最初の Tab で出る先頭のリンクの見本（<code>is-focus</code>）。</p>
+      <div class="skip-samples">
+        <div class="skip-sample"><SkipLink lang="ja" class="is-focus" /></div>
+        <div class="skip-sample"><SkipLink lang="en" class="is-focus" /></div>
+      </div>
     </section>
 
     <section id="theme-toggle">
@@ -804,6 +814,24 @@ const sampleVideos: YouTubeVideo[] = [
 </Layout>
 
 <style>
+/*
+ * A `transform` makes the box the containing block of the skip link, which is fixed to the
+ * viewport, so each sample shows its position (8px from the top, 16px from the left).
+ */
+.skip-sample {
+  position: relative;
+  height: 62px;
+  max-width: 320px;
+  transform: translate(0);
+  border: 1px dashed var(--line2);
+}
+
+/* The block of the samples. */
+.skip-samples {
+  display: grid;
+  gap: 16px;
+}
+
 /* The breadcrumb of the sample page head, with the current page in the text color. */
 .crumbs-sample {
   font-family: var(--font-mono);
