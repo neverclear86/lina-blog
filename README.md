@@ -170,9 +170,10 @@ bun create astro@latest -- --template basics
 │       │   ├── image-refs.ts        # Rewrites image:<name> references to img.ikili.pro URLs
 │       │   ├── images.ts            # Image names, R2 lookups (/images/{name}, PUT /articles/{slug}), uploads (PUT /images/{name}) and deletes
 │       │   ├── nip46-message.ts     # Builds NIP-46 requests and reads responses (kind 24133, NIP-44) for the remote signer
-│       │   ├── nip46-signer.ts      # Asks the remote signer to sign an event over the bunker's relay (NIP-46)
+│       │   ├── nip46-signer.ts      # Asks the remote signer for the user's public key or to sign an event over the bunker's relay (NIP-46)
 │       │   ├── nostr-publish.ts     # Reads the Nostr settings and posts an article's event: sign through the bunker, then send to the write relays
 │       │   ├── nostr-relays.ts      # Reads write relays (kind 10002) and sends events to relays
+│       │   ├── nostr-withdraw.ts    # Asks Nostr to delete an article's event (NIP-09): public key, signature, relays
 │       │   └── published-record.ts  # Reads, updates and writes src/content/published.json (GET /articles); images only one article uses
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
@@ -441,6 +442,10 @@ its Nostr event signed by the bunker of `NOSTR_BUNKER_URL`; with `.dev.vars.exam
 answers, so it ends with 502 (`step: "nostr"`) after the commit. A mock at `GITHUB_API_URL`
 must then also answer the Git database API (`git/ref`, `git/commits`, `git/trees`,
 `git/refs`), which `python3 -m http.server` cannot.
+`DELETE /articles/<slug>` reads the published record with `GITHUB_TOKEN`, posts a deletion
+request (kind 5) signed by the bunker of `NOSTR_BUNKER_URL`, deletes the images that only this
+article uses from that bucket, and commits the removal to `main`; with `.dev.vars.example` it
+ends with 502 (`step: "nostr"`) after reading the record.
 
 Run Lighthouse CI locally with `LINA_DEV_PAGES=1 bun run build` and then `bun run lighthouse`,
 which starts `astro preview` itself (on port 4321, or on `LHCI_PORT`) and keeps the reports in
