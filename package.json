@@ -17,7 +17,8 @@
     "check": "biome check",
     "test": "vitest run",
     "lighthouse": "lhci autorun",
-    "import:avatars": "bun scripts/avatars/import.ts"
+    "import:avatars": "bun scripts/avatars/import.ts",
+    "a11y": "bun scripts/a11y/run.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.3",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
     "@biomejs/biome": "^2.5.14",
     "@lhci/cli": "^0.15.1",
     "@types/js-yaml": "^4.0.9",

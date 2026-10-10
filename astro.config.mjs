@@ -12,6 +12,7 @@ import { renderAnsiArt, renderPlainArt } from "./src/ansi-art.ts";
 import { decodeAnsiArtSource } from "./src/ansi-art-source.ts";
 import { devPages } from "./src/dev/dev-pages.ts";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
+import { tableFocusable, taskItemLabel } from "./src/markdown/a11y.ts";
 import { codeFilename } from "./src/markdown/code-filename.ts";
 import { highlightCodeBlocks } from "./src/markdown/highlight.ts";
 import { tableAlignToClass } from "./src/markdown/table-align.ts";
@@ -132,7 +133,13 @@ export default defineConfig({
     // src/markdown/.
     processor: satteri({
       mdastPlugins: [codeFilename],
-      hastPlugins: [tableAlignToClass, youtubeEmbed, highlightCodeBlocks],
+      hastPlugins: [
+        tableAlignToClass,
+        taskItemLabel,
+        tableFocusable,
+        youtubeEmbed,
+        highlightCodeBlocks,
+      ],
     }),
     // Code blocks are highlighted by highlightCodeBlocks (src/markdown/highlight.ts). Astro's own
     // Shiki would run before it and add inline styles.

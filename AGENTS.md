@@ -14,6 +14,8 @@ astro dev --background
 
 部品の見本は dev サーバーの `/dev/components/`（`src/dev/components.astro`）で見る。部品を足したら見本もここに足す。`dist/` から撮るときは `LINA_DEV_PAGES=1 bun run build` で build する（README の「CSS」）。この build には表示確認用の記事（`src/content/blog-dev/`）も出るので、記事のある状態もこの `dist/` で撮る。
 
+画面のアクセシビリティの自動チェックは、`LINA_DEV_PAGES=1 bun run build` の後に `bun run a11y` で行う（axe と、axe が判定できない文字のコントラストの画素検査。README の「Commands」）。CI には載せていない。
+
 公開用 Worker（`workers/publish/`）は `bun run dev:publish`（`wrangler dev`）で立てる。シークレットは `workers/publish/.dev.vars.example` を `workers/publish/.dev.vars` に写して置く。`wrangler dev` は背景に回らないので、エージェントが立てるときは `timeout` と `--port` を付ける。
 
 ## ドキュメント
