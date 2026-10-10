@@ -4,6 +4,7 @@
  * links or embeds that would expose other notes of the Vault are reported as errors.
  */
 import { type MdastNode, markdownToMdast } from "satteri";
+import { imageMarkdown, mapImages } from "./images";
 
 /** URL of an article page without the slug. */
 const ARTICLE_URL_BASE = "https://ikili.pro/blog/";
@@ -45,8 +46,9 @@ export type ResolveLink = (name: string) => LinkTarget;
  * - `unclosed_comment`: a `%%` comment without the closing `%%`
  * - `backtick_in_link`: a `[[link]]` to an article with `published: true` that has a `` ` `` in it
  * - `link_out_of_code`: a `[[link]]` or a `![[embed]]` but an image that is not in code in the
- *   converted body
- * - `comment_out_of_code`: a `%%` that is not in code in the converted body
+ *   converted body with its image references rewritten
+ * - `comment_out_of_code`: a `%%` that is not in code in the converted body with its image
+ *   references rewritten
  */
 export type ObsidianErrorCode =
   | "not_article_link"
@@ -152,9 +154,42 @@ function noteName(content: string): string {
 }
 
 /**
+ * `markdown` with each image reference rewritten as `resolveImages` rewrites it, with a name of
+ * the same form in place of each image's. `from` maps each index of `markdown` to an index in
+ * the body, and the result's `from` does the same for `text`.
+ */
+function withImagesRewritten(
+  markdown: string,
+  from: number[],
+): { text: string; from: number[] } {
+  let text = "";
+  const rewrittenFrom: number[] = [];
+  let position = 0;
+  const keep = (end: number): void => {
+    text += markdown.slice(position, end);
+    for (let at = position; at < end; at += 1) {
+      rewrittenFrom.push(from[at]);
+    }
+  };
+  mapImages(markdown, (ref) => {
+    if (!isImage(ref.target)) return null;
+    const written = imageMarkdown(ref.alt, `${"0".repeat(64)}.png`);
+    keep(ref.start);
+    text += written;
+    for (let count = 0; count < written.length; count += 1) {
+      rewrittenFrom.push(from[ref.start]);
+    }
+    position = ref.end;
+    return null;
+  });
+  keep(markdown.length);
+  return { text, from: rewrittenFrom };
+}
+
+/**
  * Errors for the `%%` and for the `[[link]]` and `![[embed]]` other than an image embed that are
- * not in code in `markdown`, the converted body. `from` maps each index of `markdown` to the
- * index in `body` that it comes from.
+ * not in code in `markdown`, the converted body with its image references rewritten. `from`
+ * maps each index of `markdown` to the index in `body` that it comes from.
  */
 function outOfCode(
   markdown: string,
@@ -221,8 +256,9 @@ function outOfCode(
  *   code both in the body and in the body without its comments; otherwise it is converted
  *   or reported.
  * - When there is no other error, a `%%`, a link or an embed but an image that is not in code
- *   in the converted body, as when a converted link changes the cells of a table row, is an
- *   error.
+ *   in the converted body with its image references rewritten as `resolveImages` rewrites
+ *   them, as when a converted link or a rewritten image changes the cells of a table row, is
+ *   an error.
  *
  * Every error in the body is reported, except the last kind when there is another one, and
  * no converted body is returned when there is an error.
@@ -304,7 +340,8 @@ export function convertObsidianSyntax(
     });
   }
   if (errors.length === 0) {
-    errors.push(...outOfCode(markdown, from, body));
+    const rewritten = withImagesRewritten(markdown, from);
+    errors.push(...outOfCode(rewritten.text, rewritten.from, body));
   }
   return errors.length > 0 ? { ok: false, errors } : { ok: true, markdown };
 }

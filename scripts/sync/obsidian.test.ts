@@ -394,4 +394,34 @@ describe("convertObsidianSyntax", () => {
       markdown: `| [a](${url}) | \` |\n${tail}`,
     });
   });
+
+  it.each([
+    [
+      "画像の埋め込み",
+      "| ![[図.png|100]] | ` |\n| --- | --- | --- |\n| `[[私的なメモ]]` | b | c |\n",
+    ],
+    [
+      "Markdown の画像",
+      "| ![図](図|1.png) | ` |\n| --- | --- | --- |\n| `[[私的なメモ]]` | b | c |\n",
+    ],
+  ])(
+    "%sの書き換えで表のセルの数が変わり、コードの外に出るリンクをエラーにする",
+    (_name, body) => {
+      expect(convert(body)).toEqual({
+        ok: false,
+        errors: [
+          { code: "link_out_of_code", source: "[[私的なメモ]]", line: 3 },
+        ],
+      });
+    },
+  );
+
+  it("フェンスとコメントの後ろの画像の書き換えで、コードの外に出るリンクには本文の行を返す", () => {
+    const body =
+      "%%\n%%\n```\nx\n```\n| ![[図.png|100]] | ` |\n| --- | --- | --- |\n| `[[私的なメモ]]` | b | c |\n";
+    expect(convert(body)).toEqual({
+      ok: false,
+      errors: [{ code: "link_out_of_code", source: "[[私的なメモ]]", line: 8 }],
+    });
+  });
 });
