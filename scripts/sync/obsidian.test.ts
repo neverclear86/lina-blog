@@ -259,4 +259,139 @@ describe("convertObsidianSyntax", () => {
       markdown: `[a\\\\](${url})`,
     });
   });
+  it.each([
+    ["ATX 見出しの行", "# 見出し ` 記号\n[[私的なメモ]] と `x`\n", 2],
+    ["CRLF の ATX 見出しの行", "## a ` b\r\n[[私的なメモ]] `x`\r\n", 2],
+    ["表の行", "| a | ` b |\n| --- | --- |\n| [[私的なメモ]] | `x` |\n", 3],
+    [
+      "表の同じ行の別のセル",
+      "| ` a | [[私的なメモ]] | b ` |\n| --- | --- | --- |\n",
+      1,
+    ],
+    ["バックスラッシュの後ろ", "\\` [[私的なメモ]] `\n", 1],
+  ])(
+    "%sのバッククォートと後ろのバッククォートの間のリンクをエラーにする",
+    (_name, body, line) => {
+      expect(convert(body)).toEqual({
+        ok: false,
+        errors: [{ code: "not_article_link", source: "[[私的なメモ]]", line }],
+      });
+    },
+  );
+
+  it("コメントを消す前だけコードになる範囲のリンクもエラーにする", () => {
+    expect(convert("%%`%% [[私的なメモ]] `")).toEqual({
+      ok: false,
+      errors: [{ code: "not_article_link", source: "[[私的なメモ]]", line: 1 }],
+    });
+  });
+
+  it("コメントを消した後だけコードになる範囲のリンクもエラーにする", () => {
+    expect(convert("a `x %%\n\n%% [[私的なメモ]] y`")).toEqual({
+      ok: false,
+      errors: [{ code: "not_article_link", source: "[[私的なメモ]]", line: 3 }],
+    });
+  });
+
+  it("複数行のコメントの後ろのエラーには本文の行を返す", () => {
+    expect(convert("%%\n1\n2\n%%\n[[私的なメモ]]")).toEqual({
+      ok: false,
+      errors: [{ code: "not_article_link", source: "[[私的なメモ]]", line: 5 }],
+    });
+  });
+
+  it("バッククォートを含む公開中の記事へのリンクをエラーにする", () => {
+    expect(convert("[[公開中の記事#`]] [[私的なメモ]] `x`")).toEqual({
+      ok: false,
+      errors: [
+        { code: "backtick_in_link", source: "[[公開中の記事#`]]", line: 1 },
+      ],
+    });
+  });
+
+  it("字下げのコードブロックと引用の中のコードブロックの記法を変換しない", () => {
+    const body = "    [[私的なメモ]]\n\n> ```\n> [[私的なメモ]] %%a%%\n> ```";
+    expect(convert(body)).toEqual({ ok: true, markdown: body });
+  });
+
+  it.each([
+    [
+      "リンク",
+      "| [[公開中の記事|a]] | ` |\n| --- | --- | --- |\n| `[[私的なメモ]]` | b | c |\n",
+      "[[私的なメモ]]",
+      3,
+    ],
+    [
+      "複数行のコメントの後ろの埋め込み",
+      "%%\n%%\n| [[公開中の記事|a]] | ` |\n| --- | --- | --- |\n| `![[秘密.pdf]]` | b | c |\n",
+      "![[秘密.pdf]]",
+      5,
+    ],
+  ])(
+    "表のセルの数を変える置き換えの後ろでコードの外に出る%sをエラーにする",
+    (_name, body, source, line) => {
+      expect(convert(body)).toEqual({
+        ok: false,
+        errors: [{ code: "link_out_of_code", source, line }],
+      });
+    },
+  );
+
+  it("表の中の表示の \\| を保ち、リンクと後ろのセルを壊さない", () => {
+    const tail = "| `[[私的なメモ]]` | b |\n";
+    expect(
+      convert(`| [[公開中の記事\\|a\\|b]] | x |\n| --- | --- |\n${tail}`),
+    ).toEqual({
+      ok: true,
+      markdown: `| [a\\|b](${url}) | x |\n| --- | --- |\n${tail}`,
+    });
+  });
+
+  it.each([
+    ["閉じない", "| `[[a` | b | c |\n"],
+    ["改行をまたぐ", "| `[[a` | b | c |\n| a]] | b | c |\n"],
+  ])(
+    "置き換えの後ろでコードの外に出ても、%s二重の角括弧はエラーにしない",
+    (_name, rows) => {
+      const tail = `| --- | --- | --- |\n${rows}`;
+      expect(convert(`| [[公開中の記事|a]] | \` |\n${tail}`)).toEqual({
+        ok: true,
+        markdown: `| [a](${url}) | \` |\n${tail}`,
+      });
+    },
+  );
+
+  it.each([
+    [
+      "リンクの置き換え",
+      "| [[公開中の記事|a]] | ` |\n| --- | --- | --- |\n| `%%秘密%%` | b | c |\n",
+      "%%秘密%%",
+    ],
+    [
+      "コメントの削除",
+      "| %%a|b%% | ` |\n| --- | --- | --- |\n| `%%秘密%%` | b | c |\n",
+      "%%秘密%%",
+    ],
+    [
+      "リンクの置き換え（閉じない %%）",
+      "| [[公開中の記事|a]] | ` |\n| --- | --- | --- |\n| `%%` | b | c |\n",
+      "%%",
+    ],
+  ])(
+    "%sの後ろでコードの外に出るコメントをエラーにする",
+    (_name, body, source) => {
+      expect(convert(body)).toEqual({
+        ok: false,
+        errors: [{ code: "comment_out_of_code", source, line: 3 }],
+      });
+    },
+  );
+
+  it("置き換えの後ろでコードの外に出た画像の埋め込みはエラーにしない", () => {
+    const tail = "| --- | --- | --- |\n| `![[図.png]]` | b | c |\n";
+    expect(convert(`| [[公開中の記事|a]] | \` |\n${tail}`)).toEqual({
+      ok: true,
+      markdown: `| [a](${url}) | \` |\n${tail}`,
+    });
+  });
 });

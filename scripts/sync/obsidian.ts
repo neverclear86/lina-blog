@@ -3,6 +3,7 @@
  * publishes. Comments are removed, links to published articles become URLs on the site, and
  * links or embeds that would expose other notes of the Vault are reported as errors.
  */
+import { type MdastNode, markdownToMdast } from "satteri";
 
 /** URL of an article page without the slug. */
 const ARTICLE_URL_BASE = "https://ikili.pro/blog/";
@@ -18,21 +19,6 @@ const IMAGE_EXTENSIONS = new Set([
   "svg",
   "webp",
 ]);
-
-/** Start of a line that opens a fenced code block: at most three spaces and a fence. */
-const FENCE_OPEN = /^ {0,3}(`{3,}(?=[^`\n]*(?:\n|$))|~{3,})/;
-
-/** A line that ends a paragraph: an ATX heading, a quote, a list item or a thematic break. */
-const BLOCK_START = new RegExp(
-  `^[ \\t]*(?:${[
-    "#{1,6}(?:[ \\t]|$)",
-    ">",
-    "[-+*](?:[ \\t]|$)",
-    "\\d{1,9}[.)](?:[ \\t]|$)",
-    "([-*_])(?:[ \\t]*\\1){2,}[ \\t]*$",
-    "(?:=+|-+)[ \\t]*$",
-  ].join("|")})`,
-);
 
 /**
  * What a link name refers to in the Vault: an article with `published: true` and its slug, an
@@ -57,13 +43,20 @@ export type ResolveLink = (name: string) => LinkTarget;
  * - `heading_only_link`: a `[[#heading]]` or `[[]]` link without a note name
  * - `non_image_embed`: a `![[embed]]` of anything but an image
  * - `unclosed_comment`: a `%%` comment without the closing `%%`
+ * - `backtick_in_link`: a `[[link]]` to an article with `published: true` that has a `` ` `` in it
+ * - `link_out_of_code`: a `[[link]]` or a `![[embed]]` but an image that is not in code in the
+ *   converted body
+ * - `comment_out_of_code`: a `%%` that is not in code in the converted body
  */
 export type ObsidianErrorCode =
   | "not_article_link"
   | "unpublished_link"
   | "heading_only_link"
   | "non_image_embed"
-  | "unclosed_comment";
+  | "unclosed_comment"
+  | "backtick_in_link"
+  | "link_out_of_code"
+  | "comment_out_of_code";
 
 /** One rejected piece of syntax, with the 1-based line of the body where it starts. */
 export interface ObsidianError {
@@ -89,53 +82,126 @@ function isImage(name: string): boolean {
   return dot !== -1 && IMAGE_EXTENSIONS.has(name.slice(dot + 1).toLowerCase());
 }
 
-/** End of the line that starts at `start`: the index of its `\n`, or the length of `text`. */
-function lineEnd(text: string, start: number): number {
-  const newline = text.indexOf("\n", start);
-  return newline === -1 ? text.length : newline;
+/**
+ * Which UTF-16 code units of `text` are code (a code block or inline code) when the site's
+ * Markdown processor parses it.
+ */
+function codeMask(text: string): boolean[] {
+  const mask = new Array<boolean>(text.length).fill(false);
+  const visit = (node: MdastNode): void => {
+    if (node.type === "code" || node.type === "inlineCode") {
+      const start = node.position?.start.offset;
+      const end = node.position?.end.offset;
+      if (start === undefined || end === undefined) {
+        throw new Error(`The ${node.type} node has no position`);
+      }
+      mask.fill(true, start, end);
+      return;
+    }
+    if ("children" in node) {
+      for (const child of node.children) {
+        visit(child);
+      }
+    }
+  };
+  visit(markdownToMdast(text));
+  return mask;
 }
 
 /**
- * Where inline code starting at `index` must close: the next blank line, fence line, or line
- * that starts another block.
+ * The body without its `%%comment%%`s outside the code that `code` (`codeMask(body)`) marks.
+ * `origin` maps each index of `text` to its index in `body`, and `unclosed` is the index in
+ * `body` of a `%%` without the closing `%%`, where `text` ends, or -1.
  */
-function codeSpanLimit(text: string, index: number): number {
-  let newline = text.indexOf("\n", index);
-  while (newline !== -1) {
-    const start = newline + 1;
-    const end = lineEnd(text, start);
-    const line = text.slice(start, end).replace(/\r$/, "");
-    if (line.trim() === "" || FENCE_OPEN.test(line) || BLOCK_START.test(line)) {
-      return start;
+function removeComments(
+  body: string,
+  code: boolean[],
+): {
+  text: string;
+  origin: number[];
+  unclosed: number;
+} {
+  let text = "";
+  const origin: number[] = [];
+  let index = 0;
+  while (index < body.length) {
+    if (!code[index] && body.startsWith("%%", index)) {
+      const close = body.indexOf("%%", index + 2);
+      if (close === -1) {
+        return { text, origin, unclosed: index };
+      }
+      index = close + 2;
+      continue;
     }
-    newline = end === text.length ? -1 : end;
+    text += body[index];
+    origin.push(index);
+    index += 1;
   }
-  return text.length;
+  return { text, origin, unclosed: -1 };
 }
 
-/** Start of the next run of exactly `length` backticks in `text` from `from` to `end`, or -1. */
-function findBacktickRun(
-  text: string,
-  from: number,
-  length: number,
-  end: number,
-): number {
-  let index = from;
-  while (index < end) {
-    if (text[index] !== "`") {
+/** The note name of the content of a `[[link]]`, without the text and the heading. */
+function noteName(content: string): string {
+  const bar = content.indexOf("|");
+  let namePart = bar === -1 ? content : content.slice(0, bar);
+  if (namePart.endsWith("\\")) {
+    namePart = namePart.slice(0, -1);
+  }
+  const hash = namePart.indexOf("#");
+  return (hash === -1 ? namePart : namePart.slice(0, hash)).trim();
+}
+
+/**
+ * Errors for the `%%` and for the `[[link]]` and `![[embed]]` other than an image embed that are
+ * not in code in `markdown`, the converted body. `from` maps each index of `markdown` to the
+ * index in `body` that it comes from.
+ */
+function outOfCode(
+  markdown: string,
+  from: number[],
+  body: string,
+): ObsidianError[] {
+  const errors: ObsidianError[] = [];
+  const code = codeMask(markdown);
+  let index = 0;
+  while (index < markdown.length) {
+    if (code[index]) {
       index += 1;
       continue;
     }
-    let runEnd = index;
-    while (runEnd < end && text[runEnd] === "`") {
-      runEnd += 1;
+    if (markdown.startsWith("%%", index)) {
+      const close = markdown.indexOf("%%", index + 2);
+      const end = close === -1 ? index + 2 : close + 2;
+      const source = markdown.slice(index, end);
+      errors.push({
+        code: "comment_out_of_code",
+        source,
+        line: lineAt(body, from[index]),
+      });
+      index = end;
+      continue;
     }
-    if (runEnd - index === length) {
-      return index;
+    const embed = markdown.startsWith("![[", index);
+    if (embed || markdown.startsWith("[[", index)) {
+      const contentStart = index + (embed ? 3 : 2);
+      const close = markdown.indexOf("]]", contentStart);
+      const content = close === -1 ? "" : markdown.slice(contentStart, close);
+      if (close !== -1 && !content.includes("\n")) {
+        if (!embed || !isImage(noteName(content))) {
+          const source = markdown.slice(index, close + 2);
+          errors.push({
+            code: "link_out_of_code",
+            source,
+            line: lineAt(body, from[index]),
+          });
+        }
+        index = close + 2;
+        continue;
+      }
     }
-    index = runEnd;
+    index += 1;
   }
-  return -1;
+  return errors;
 }
 
 /**
@@ -144,102 +210,62 @@ function findBacktickRun(
  * - `%%comment%%`, including one over several lines, is removed.
  * - `[[name]]`, `[[name|text]]` and `[[name#heading]]` to an article with `published: true`
  *   become `[text](https://ikili.pro/blog/<slug>)`. The heading is dropped, and the text is
- *   the part after `|`, or else the name, with `\`, `[` and `]` escaped. In a table, `\|` also
- *   separates the text.
+ *   the part after `|`, or else the name, with `[`, `]` and a `\` not before `|` escaped. In
+ *   a table, `\|` also separates the text and is kept in it.
  * - `![[name]]` whose name ends with an image extension of Obsidian is kept as written.
- * - Other links and embeds, a `[[#heading]]` link without a note name, and a `%%` without the
- *   closing `%%` are errors. Nothing after an unclosed `%%` is checked.
- * - Fenced code blocks (opened after at most three spaces) and inline code are kept as
- *   written, with no syntax converted in them. Inline code does not run past a blank line,
- *   a fence, or a line that starts a heading, a quote, a list item or a thematic break. A
- *   fence without its closing line runs to the end of the body, and the closing line may end
- *   with `\r`.
+ * - Other links and embeds, a link to a published article with a `` ` `` in it, a
+ *   `[[#heading]]` link without a note name, and a `%%` without the closing `%%` are errors.
+ *   Nothing after an unclosed `%%` is checked.
+ * - Code is what the site's Markdown processor reads as a code block or inline code. A `%%`
+ *   in the code of the body is kept. A link or embed is kept as written only when it is in
+ *   code both in the body and in the body without its comments; otherwise it is converted
+ *   or reported.
+ * - When there is no other error, a `%%`, a link or an embed but an image that is not in code
+ *   in the converted body, as when a converted link changes the cells of a table row, is an
+ *   error.
  *
- * Every error in the body is reported, and no converted body is returned when there is one.
+ * Every error in the body is reported, except the last kind when there is another one, and
+ * no converted body is returned when there is an error.
  */
 export function convertObsidianSyntax(
   body: string,
   resolve: ResolveLink,
 ): ObsidianConversion {
   const errors: ObsidianError[] = [];
+  const bodyCode = codeMask(body);
+  const { text, origin, unclosed } = removeComments(body, bodyCode);
+  const textCode = codeMask(text);
+  const from: number[] = [];
   let markdown = "";
+  const emit = (part: string, at: number): void => {
+    markdown += part;
+    for (let count = 0; count < part.length; count += 1) {
+      from.push(origin[at]);
+    }
+  };
   let index = 0;
 
-  while (index < body.length) {
-    if (index === 0 || body[index - 1] === "\n") {
-      const openEnd = lineEnd(body, index);
-      const fence = FENCE_OPEN.exec(body.slice(index, openEnd));
-      if (fence) {
-        const close = new RegExp(
-          `^[ \\t]*${fence[1][0]}{${fence[1].length},}[ \\t\\r]*$`,
-        );
-        let blockEnd = body.length;
-        let lineStart = openEnd + 1;
-        while (lineStart <= body.length) {
-          const end = lineEnd(body, lineStart);
-          if (close.test(body.slice(lineStart, end))) {
-            blockEnd = end;
-            break;
-          }
-          lineStart = end + 1;
-        }
-        markdown += body.slice(index, blockEnd);
-        index = blockEnd;
-        continue;
-      }
-    }
-
-    if (body[index] === "`") {
-      let runEnd = index;
-      while (body[runEnd] === "`") {
-        runEnd += 1;
-      }
-      const length = runEnd - index;
-      const close = findBacktickRun(
-        body,
-        runEnd,
-        length,
-        codeSpanLimit(body, index),
-      );
-      const codeEnd = close === -1 ? runEnd : close + length;
-      markdown += body.slice(index, codeEnd);
-      index = codeEnd;
+  while (index < text.length) {
+    if (textCode[index] && bodyCode[origin[index]]) {
+      emit(text[index], index);
+      index += 1;
       continue;
     }
 
-    if (body.startsWith("%%", index)) {
-      const close = body.indexOf("%%", index + 2);
-      if (close === -1) {
-        errors.push({
-          code: "unclosed_comment",
-          source: "%%",
-          line: lineAt(body, index),
-        });
-        break;
-      }
-      index = close + 2;
-      continue;
-    }
-
-    const embed = body.startsWith("![[", index);
-    if (embed || body.startsWith("[[", index)) {
+    const embed = text.startsWith("![[", index);
+    if (embed || text.startsWith("[[", index)) {
       const contentStart = index + (embed ? 3 : 2);
-      const close = body.indexOf("]]", contentStart);
-      const content = close === -1 ? "" : body.slice(contentStart, close);
+      const close = text.indexOf("]]", contentStart);
+      const content = close === -1 ? "" : text.slice(contentStart, close);
       if (close !== -1 && !content.includes("\n")) {
-        const source = body.slice(index, close + 2);
-        const line = lineAt(body, index);
+        const source = text.slice(index, close + 2);
+        const line = lineAt(body, origin[index]);
         const bar = content.indexOf("|");
-        let namePart = bar === -1 ? content : content.slice(0, bar);
-        if (namePart.endsWith("\\")) {
-          namePart = namePart.slice(0, -1);
-        }
-        const hash = namePart.indexOf("#");
-        const name = (hash === -1 ? namePart : namePart.slice(0, hash)).trim();
+        const name = noteName(content);
 
         if (embed) {
           if (isImage(name)) {
-            markdown += source;
+            emit(source, index);
           } else {
             errors.push({ code: "non_image_embed", source, line });
           }
@@ -247,12 +273,14 @@ export function convertObsidianSyntax(
           errors.push({ code: "heading_only_link", source, line });
         } else {
           const target = resolve(name);
-          if (target.kind === "published") {
+          if (target.kind === "published" && !content.includes("`")) {
             const text = (bar === -1 ? name : content.slice(bar + 1)).replace(
-              /[\\[\]]/g,
+              /\\(?!\|)|[[\]]/g,
               "\\$&",
             );
-            markdown += `[${text}](${ARTICLE_URL_BASE}${target.slug})`;
+            emit(`[${text}](${ARTICLE_URL_BASE}${target.slug})`, index);
+          } else if (target.kind === "published") {
+            errors.push({ code: "backtick_in_link", source, line });
           } else if (target.kind === "unpublished") {
             errors.push({ code: "unpublished_link", source, line });
           } else {
@@ -264,9 +292,19 @@ export function convertObsidianSyntax(
       }
     }
 
-    markdown += body[index];
+    emit(text[index], index);
     index += 1;
   }
 
+  if (unclosed !== -1) {
+    errors.push({
+      code: "unclosed_comment",
+      source: "%%",
+      line: lineAt(body, unclosed),
+    });
+  }
+  if (errors.length === 0) {
+    errors.push(...outOfCode(markdown, from, body));
+  }
   return errors.length > 0 ? { ok: false, errors } : { ok: true, markdown };
 }
