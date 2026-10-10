@@ -339,6 +339,39 @@ Before the site goes public, open the `ikili.pro` zone in the Cloudflare dashboa
 3. In AI Crawl Control, set the action of every crawler that shows Block to Allow (https://developers.cloudflare.com/ai-crawl-control/features/manage-ai-crawlers/).
 4. Check that `curl -fsS https://ikili.pro/robots.txt` prints the same text as `dist/client/robots.txt`.
 
+## 🔒 Content Security Policy
+
+`security.csp` in `astro.config.mjs` makes `astro build` write each page's Content Security
+Policy into a `<meta http-equiv="content-security-policy">` at the end of `<head>`. Astro fills
+`script-src` and `style-src` with the hashes of the scripts and styles it bundles and adds
+`font-src 'self'` for the fonts. The config adds the rest:
+
+| Directive    | Value set in `astro.config.mjs`                                         | For                                  |
+| :----------- | :---------------------------------------------------------------------- | :----------------------------------- |
+| `img-src`    | `'self' https://img.ikili.pro https://i.ytimg.com`                      | Article images and YouTube thumbnails |
+| `script-src` | `'self' https://challenges.cloudflare.com` and the hash of `THEME_SCRIPT` | Turnstile's `api.js` and the theme script |
+| `frame-src`  | `https://challenges.cloudflare.com https://www.youtube-nocookie.com`    | The Turnstile widget and article videos |
+
+`THEME_SCRIPT` (`src/theme.ts`) is rendered with `is:inline`, which Astro does not hash, so
+`astro.config.mjs` computes its SHA-256 hash from the constant instead of writing the value.
+The script comes before the `<meta>`, which applies only to what follows it, so the hash has no
+effect while the policy is a `<meta>`; it is there so that the same policy also works as a
+header. The `slot="head"` script of `/dev/components/` is before the `<meta>` too.
+
+No element has a `style` attribute, and the policy allows none: `styleDirective` is not set,
+so `style-src` holds only `'self'` and the hashes of `<style>` elements. Pass values with classes
+instead.
+`src/styles/style-attributes.test.ts` fails when an `.astro` file has a `style` attribute or
+`define:vars`, which Astro renders as `style` attributes.
+
+`frame-ancestors` has no effect in a `<meta>`, so `public/_headers` and `src/api.ts` send it as
+the `Content-Security-Policy` header, which holds nothing else. The header and the `<meta>`
+therefore never need the same hashes.
+
+To check the policy, build and capture pages with `.claude/scripts/screenshot.mjs`: each line
+of its output lists the violations the page reported (`violations`). Turnstile loads only when
+focus first enters the contact form or at the first submission, so a capture does not load it.
+
 ## 🧞 Commands
 
 All commands are run from the root of the project, from a terminal:
