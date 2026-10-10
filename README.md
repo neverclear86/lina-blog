@@ -164,6 +164,7 @@ bun create astro@latest -- --template basics
 │       │   ├── github-commit.ts     # Writes files to main on GitHub in one commit (Git Data API)
 │       │   ├── images.ts            # Image names, R2 lookups and uploads for /images/{name}
 │       │   ├── nip46-message.ts     # Builds NIP-46 requests and reads responses (kind 24133, NIP-44) for the remote signer
+│       │   ├── nip46-signer.ts      # Asks the remote signer to sign an event over the bunker's relay (NIP-46)
 │       │   ├── nostr-relays.ts      # Reads write relays (kind 10002) and sends events to relays
 │       │   └── published-record.ts  # Reads, updates and writes src/content/published.json (GET /articles)
 │       ├── .dev.vars.example
