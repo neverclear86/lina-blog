@@ -33,7 +33,12 @@ import {
   withoutPublishedEntry,
   withPublishedEntry,
 } from "./published-record";
-import { isZennTarget } from "./zenn-article";
+import {
+  buildZennArticle,
+  isZennTarget,
+  zennArticlePath,
+} from "./zenn-article";
+import { convertToZennSyntax } from "./zenn-syntax";
 
 /**
  * Hono app of the publish Worker, and the Worker entry (`main` in `wrangler.jsonc`).
@@ -130,11 +135,16 @@ const ARTICLE_BASE_URL = "https://ikili.pro/blog";
 // Path of the published record in this repository (docs/publish-api.md).
 const PUBLISHED_RECORD_PATH = "src/content/published.json";
 
-// Publishes an article (docs/publish-api.md) by running steps 0 to 4 and 6: the request, the
+// Where step 5 writes: the Zenn repository and its default branch.
+const ZENN_REPO = "neverclear86/zenn-contents";
+const ZENN_BRANCH = "master";
+
+// Publishes an article (docs/publish-api.md) by running steps 0 to 6: the request, the
 // frontmatter and the image references are checked, each referenced image is looked up in R2 in
 // turn, the references are rewritten, the article file and its entry of the published record
 // are written to main in one commit, the article's Nostr event is signed through the bunker and
-// posted to the author's write relays, and the entry's hash is then set to the content hash.
+// posted to the author's write relays, an article with the tag 技術 is written to zenn-contents
+// in the syntax of Zenn, and the entry's hash is then set to the content hash.
 app.put("/articles/:slug", async (c) => {
   let body: unknown;
   try {
@@ -161,6 +171,25 @@ app.put("/articles/:slug", async (c) => {
   const rewritten = rewriteImageRefs(markdown);
   if (!rewritten.ok) {
     return c.json(errorBody(rewritten.code, rewritten.message), 422);
+  }
+
+  // Converts the body for Zenn before anything is written: HTML that Zenn cannot show does not
+  // go away by sending the article again, so it must not leave the article half published.
+  let zennArticle: string | null = null;
+  if (isZennTarget(article.frontmatter.tags)) {
+    const converted = convertToZennSyntax(articleBody(rewritten.markdown));
+    if (!converted.ok) {
+      return c.json(
+        errorBody("invalid_markdown", converted.message, "zenn"),
+        422,
+      );
+    }
+    zennArticle = buildZennArticle({
+      frontmatter: article.frontmatter,
+      body: converted.markdown,
+      originalUrl: `${ARTICLE_BASE_URL}/${slug}`,
+      published: true,
+    });
   }
 
   const missing: string[] = [];
@@ -276,6 +305,28 @@ app.put("/articles/:slug", async (c) => {
     return c.json(errorBody("upstream_error", posted.message, "nostr"), 502);
   }
 
+  // Step 5: writes the article to the Zenn repository on top of its branch as it is now. When
+  // this fails, step 6 does not run: the entry keeps the hash that step 3 wrote, which is null
+  // unless a done article was sent again with the same content, so the sync sends it again.
+  let zenn: { commit: string | null } | null = null;
+  if (zennArticle !== null) {
+    const written = await commitFiles({
+      token,
+      apiUrl,
+      repo: ZENN_REPO,
+      branch: ZENN_BRANCH,
+      message: `content: ${slug} を Zenn に転載する`,
+      files: [{ path: zennArticlePath(slug), content: zennArticle }],
+    });
+    if (!written.ok) {
+      return c.json(
+        errorBody(written.code, written.message, "zenn"),
+        written.code === "conflict" ? 409 : 502,
+      );
+    }
+    zenn = { commit: written.commit };
+  }
+
   // Step 6: sets the entry's hash to the content hash on top of main as it is now, which marks
   // the article as done for GET /articles.
   const recordHead = await getMainHead({ token, apiUrl });
@@ -333,7 +384,7 @@ app.put("/articles/:slug", async (c) => {
     hash,
     commit: committed.commit,
     nostr: { eventId: posted.eventId },
-    zenn: isZennTarget(article.frontmatter.tags) ? { commit: null } : null,
+    zenn,
   });
 });
 
