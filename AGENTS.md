@@ -18,6 +18,8 @@ astro dev --background
 
 公開用 Worker（`workers/publish/`）は `bun run dev:publish`（`wrangler dev`）で立てる。シークレットは `workers/publish/.dev.vars.example` を `workers/publish/.dev.vars` に写して置く。`wrangler dev` は背景に回らないので、エージェントが立てるときは `timeout` と `--port` を付ける。
 
+記事の同期スクリプト（`scripts/sync/`）は `bun run sync -- --vault <Vault のルート>` で実行する。公開用 Worker の URL と共有シークレットを環境変数 `PUBLISH_URL`、`PUBLISH_TOKEN` に置く。`--dry-run` は `GET /articles` だけを送って差分を出すが、この 2 つは要る。結果は標準出力の JSON で、エラーがあれば終了コードが 1 になる。
+
 ## ドキュメント
 
 Astro のドキュメント: https://docs.astro.build
