@@ -64,12 +64,11 @@ main[tabindex="-1"]:focus {
 
 /*
  * The site header sticks to the top of the viewport and is 61px high (see `SiteHeader.astro`),
- * so a section that a link scrolls to stops 72px below the top, as `section[id],#blog` does in
- * `design/Main.dc.html`, and its heading stays below the header. `#main`, which the skip link
- * jumps to, stops there too, so the top of the page content is not under the header.
+ * so the page scrolls an element into view 72px below the top, as `section[id],#blog` does in
+ * `design/Main.dc.html`: a section or a heading that a link jumps to, `#main` that the skip link
+ * jumps to, and an element that Shift+Tab focuses all stay below the header. The 8px at the
+ * bottom keeps the focus outline of an element that Tab focuses at the bottom in view.
  */
-section[id],
-#blog,
-#main {
-  scroll-margin-top: 72px;
+html {
+  scroll-padding: 72px 0 8px;
 }

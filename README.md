@@ -144,7 +144,7 @@ bun create astro@latest -- --template basics
 │   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
 │   └── styles/
 │       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ink, .btn-ghost), icon links (.sq, .iconbtn) and page switch links (.ws) of plan A
-│       ├── global.css    # body colors, the links, the keyboard focus outline (none on the focused <main>) and the scroll margin of the anchors under the sticky header
+│       ├── global.css    # body colors, the links, the keyboard focus outline (none on the focused <main>) and the scroll padding that keeps the anchors and the focused element clear of the sticky header
 │       ├── labels.css    # Labels of plan A: .label (shared with the labels of an article's message boxes), .tag and the category chip .chip-acc
 │       ├── motion.css    # The blinking cursor of the name logo (.blink-on), the appearance when the page opens (.rv, band-in), stopped under reduced motion
 │       ├── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
@@ -201,7 +201,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | File         | Holds                                                                      |
 | :----------- | :------------------------------------------------------------------------- |
 | `tokens.css` | Color tokens (CSS variables): the plan A tokens for the light and dark themes, the icon colors of the services and the colors that stay the same in both themes |
-| `global.css` | Styles of `body` (colors, which switch with the theme at once), the links, the keyboard focus outline (none on `<main tabindex="-1">`, which the skip link focuses) and the scroll margin of `section[id]`, `#blog` and `#main` |
+| `global.css` | Styles of `body` (colors, which switch with the theme at once), the links, the keyboard focus outline (none on `<main tabindex="-1">`, which the skip link focuses) and the scroll padding of the page (72px at the top below the sticky header, 8px at the bottom), which the anchors, `#main` and the focused element stop inside |
 | `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ink`, `.btn-ghost`), icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) and page switch links (`.ws`, `.ws.on`) of plan A |
 | `window.css` | Plan A windows (`.win`, `.article-body details` and an article's message boxes; a link window turns its border on hover, and an accordion while its `<summary>` is hovered or focused), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid background (`.gridbg`) and the stripe band (`.stripes`, flowing right) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions, and the flow of `.stripes` stops, under `prefers-reduced-motion: reduce` |
 | `labels.css` | Labels of plan A: the caption `.label` (whose declarations the labels of an article's message boxes share), the bordered tag `.tag` and the orange category chip `.chip-acc` |

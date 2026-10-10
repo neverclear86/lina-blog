@@ -115,8 +115,6 @@ describe("main のランドマーク", () => {
   it("フォーカスした main には輪を描かず、#main へ飛ぶとヘッダーの下 72px で止まる", () => {
     const css = source("styles/global.css").replace(/\/\*[\s\S]*?\*\//g, "");
     expect(ruleBody(css, 'main[tabindex="-1"]:focus')).toBe("outline: none;");
-    expect(ruleBody(css, "section[id], #blog, #main")).toBe(
-      "scroll-margin-top: 72px;",
-    );
+    expect(ruleBody(css, "html")).toBe("scroll-padding: 72px 0 8px;");
   });
 });

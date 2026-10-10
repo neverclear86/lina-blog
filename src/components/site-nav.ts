@@ -125,7 +125,7 @@ export function languageLinks(lang: Locale, pathname: string): LanguageLink[] {
 /**
  * Distance from the top of the viewport above which a section counts as the one the reader is
  * in. It is more than the 61px of the sticky header and the 72px below the top at which a link
- * to a section lands (`scroll-margin-top` in `global.css`), so the section of a clicked item
+ * to a section lands (`scroll-padding` in `global.css`), so the section of a clicked item
  * is the current one.
  */
 export const SECTION_LINE = 160;
