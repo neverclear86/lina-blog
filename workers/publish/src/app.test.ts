@@ -535,12 +535,15 @@ const ZENN_TREE = "8".repeat(40);
 const ZENN_NEW_TREE = "9".repeat(40);
 const ZENN_COMMIT = "a".repeat(40);
 const GIT = "https://api.github.com/repos/neverclear86/lina-blog/git";
-const ZENN_GIT = "https://api.github.com/repos/neverclear86/zenn-contents/git";
 const RECORD_URL =
   "https://api.github.com/repos/neverclear86/lina-blog/contents/src/content/published.json";
 const RECORD = `${RECORD_URL}?ref=${HEAD}`;
 // The published record that step 6 reads, on top of the commit that step 3 made.
 const RECORD_AT_COMMIT = `${RECORD_URL}?ref=${COMMIT}`;
+// zenn-contents, whose `master` step 5 of a publish and step 3 of a withdrawal write.
+const ZENN_API = "https://api.github.com/repos/neverclear86/zenn-contents";
+const ZENN_GIT = `${ZENN_API}/git`;
+const ZENN_FILE = `${ZENN_API}/contents/articles/hello-ikili-pro.md?ref=${ZENN_HEAD}`;
 
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), init);
@@ -551,9 +554,10 @@ type Answer = () => Response | Promise<Response>;
  * Replaces the global `fetch` with a stub that answers by `"<METHOD> <URL>"`. The default
  * answers are those of a successful publish: step 3 on top of `HEAD`, whose published record
  * does not exist, step 5 on top of `ZENN_HEAD` of zenn-contents, and step 6 on top of
- * `COMMIT`, whose published record has the article with a null hash. `overrides` replaces the
- * answer of a key; an array answers the n-th call of the key with its n-th element and the
- * calls after its end with its last element. A key it does not know is answered 599.
+ * `COMMIT`, whose published record has the article with a null hash. zenn-contents has no file
+ * for the article (`zenn: null` of a withdrawal). `overrides` replaces the answer of a key; an
+ * array answers the n-th call of the key with its n-th element and the calls after its end with
+ * its last element. A key it does not know is answered 599.
  */
 const stubGitHub = (overrides: Record<string, Answer | Answer[]> = {}) => {
   const ref =
@@ -573,6 +577,7 @@ const stubGitHub = (overrides: Record<string, Answer | Answer[]> = {}) => {
           },
         },
       }),
+    [`GET ${ZENN_FILE}`]: () => new Response("Not Found", { status: 404 }),
     [`GET ${GIT}/commits/${HEAD}`]: () => json({ tree: { sha: TREE } }),
     [`GET ${GIT}/commits/${COMMIT}`]: () => json({ tree: { sha: NEW_TREE } }),
     [`POST ${GIT}/trees`]: [
@@ -1515,7 +1520,14 @@ describe("DELETE /articles/{slug}", () => {
   const COMMITS = `POST ${GIT}/commits`;
   const REFS = `PATCH ${GIT}/refs/heads/main`;
   const MAIN_REF = `GET ${GIT}/ref/heads/main`;
-  // The tree of the commit that step 4 builds on, as `GET git/trees/{sha}?recursive=1` lists it.
+  const ZENN_MAIN_REF = `GET ${ZENN_GIT}/ref/heads/master`;
+  const ZENN_TREES = `POST ${ZENN_GIT}/trees`;
+  const ZENN_COMMITS = `POST ${ZENN_GIT}/commits`;
+  const ZENN_REFS = `PATCH ${ZENN_GIT}/refs/heads/master`;
+  // The article file of zenn-contents as step 3 reads it.
+  const ZENN_TEXT = (published: boolean) =>
+    `---\ntitle: "hello"\npublished: ${published}\n---\n\n本文\n`;
+  // The tree of the commit that step 5 builds on, as `GET git/trees/{sha}?recursive=1` lists it.
   const TREE_LIST = `GET ${GIT}/trees/${NEW_TREE}?recursive=1`;
   const entry = (images: string[]) => ({
     hash: "d".repeat(64),
@@ -1534,7 +1546,7 @@ describe("DELETE /articles/{slug}", () => {
   });
 
   /**
-   * Stubs GitHub for a successful withdrawal: step 1 reads `HEAD`, step 4 reads `COMMIT`
+   * Stubs GitHub for a successful withdrawal: step 1 reads `HEAD`, step 5 reads `COMMIT`
    * (main has moved by then), and the tree of `COMMIT` has the article file.
    */
   const stubWithdraw = (overrides: Record<string, Answer | Answer[]> = {}) =>
@@ -1557,6 +1569,19 @@ describe("DELETE /articles/{slug}", () => {
       [COMMITS]: () => json({ sha: RECORD_COMMIT }, { status: 201 }),
       ...overrides,
     });
+
+  /**
+   * The answers of zenn-contents when it has the article file with the given \`published\`
+   * and a commit on its \`master\` succeeds.
+   */
+  const zennFile = (published: boolean) => ({
+    [`GET ${ZENN_FILE}`]: () => new Response(ZENN_TEXT(published)),
+    [`GET ${ZENN_GIT}/commits/${ZENN_HEAD}`]: () =>
+      json({ tree: { sha: ZENN_TREE } }),
+    [ZENN_TREES]: () => json({ sha: ZENN_NEW_TREE }, { status: 201 }),
+    [ZENN_COMMITS]: () => json({ sha: ZENN_COMMIT }, { status: 201 }),
+    [ZENN_REFS]: () => json({ ref: "refs/heads/master" }),
+  });
 
   function withdraw(
     images: ReturnType<typeof bucket>,
@@ -1608,6 +1633,7 @@ describe("DELETE /articles/{slug}", () => {
       slug: SLUG,
       commit: RECORD_COMMIT,
       nostr: { eventId: nostr.posted[0].event.id },
+      zenn: null,
       images: [A],
     });
     expect(images.delete.mock.calls).toEqual([[[A]]]);
@@ -1696,27 +1722,93 @@ describe("DELETE /articles/{slug}", () => {
     ]);
   });
 
-  it("段は Nostr、画像、コミットの順に行う", async () => {
-    const postedBeforeDelete: number[] = [];
-    const deletesBeforeRef: number[] = [];
+  it("zenn-contents に記事のファイルが有る記事の取り下げは、そのファイルを published: false にするコミットを master に作り、応答の zenn に返す", async () => {
+    const fetchImpl = stubWithdraw(zennFile(true));
+
+    const res = await withdraw(bucket());
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      commit: RECORD_COMMIT,
+      zenn: { commit: ZENN_COMMIT },
+    });
+    expect(bodyOf(fetchImpl, ZENN_TREES)).toEqual({
+      base_tree: ZENN_TREE,
+      tree: [
+        {
+          path: `articles/${SLUG}.md`,
+          mode: "100644",
+          type: "blob",
+          content: ZENN_TEXT(false),
+        },
+      ],
+    });
+    expect(bodyOf(fetchImpl, ZENN_COMMITS)).toEqual({
+      message: `content: ${SLUG} を非公開にする`,
+      tree: ZENN_NEW_TREE,
+      parents: [ZENN_HEAD],
+    });
+    expect(bodyOf(fetchImpl, ZENN_REFS)).toEqual({
+      sha: ZENN_COMMIT,
+      force: false,
+    });
+    expect(calls(fetchImpl)).toContain(COMMITS);
+  });
+
+  it("zenn-contents に記事のファイルが無い記事の取り下げは、zenn-contents に書かず zenn: null を返す", async () => {
+    const fetchImpl = stubWithdraw();
+
+    const res = await withdraw(bucket());
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { zenn: unknown }).zenn).toBeNull();
+    expect(calls(fetchImpl)).not.toContain(ZENN_TREES);
+    expect(calls(fetchImpl)).not.toContain(ZENN_REFS);
+  });
+
+  it("zenn-contents のファイルがすでに published: false なら、zenn-contents にコミットを作らず zenn: { commit: null } を返す", async () => {
+    const fetchImpl = stubWithdraw(zennFile(false));
+
+    const res = await withdraw(bucket());
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { zenn: unknown }).zenn).toEqual({
+      commit: null,
+    });
+    expect(calls(fetchImpl)).not.toContain(ZENN_TREES);
+    expect(calls(fetchImpl)).toContain(COMMITS);
+  });
+
+  it("段は Nostr、Zenn、画像、コミットの順に行う", async () => {
+    const postedAtZenn: number[] = [];
+    const zennWritesAtDelete: number[] = [];
+    const deletesAtRef: number[] = [];
+    let zennWrites = 0;
     const images = bucket();
     images.delete.mockImplementation(async () => {
-      postedBeforeDelete.push(nostr.posted.length);
+      zennWritesAtDelete.push(zennWrites);
     });
     stubWithdraw({
+      ...zennFile(true),
+      [ZENN_REFS]: () => {
+        postedAtZenn.push(nostr.posted.length);
+        zennWrites += 1;
+        return json({ ref: "refs/heads/master" });
+      },
       [REFS]: () => {
-        deletesBeforeRef.push(images.delete.mock.calls.length);
+        deletesAtRef.push(images.delete.mock.calls.length);
         return json({ ref: "refs/heads/main" });
       },
     });
 
     await withdraw(images);
 
-    expect(postedBeforeDelete).toEqual([WRITE_RELAYS.length]);
-    expect(deletesBeforeRef).toEqual([1]);
+    expect(postedAtZenn).toEqual([WRITE_RELAYS.length]);
+    expect(zennWritesAtDelete).toEqual([1]);
+    expect(deletesAtRef).toEqual([1]);
   });
 
-  it("段 4 は読み直した main の先頭を親にする", async () => {
+  it("段 5 は読み直した main の先頭を親にする", async () => {
     const fetchImpl = stubWithdraw();
 
     await withdraw(bucket());
@@ -1724,6 +1816,8 @@ describe("DELETE /articles/{slug}", () => {
     expect(calls(fetchImpl)).toEqual([
       MAIN_REF,
       `GET ${RECORD}`,
+      ZENN_MAIN_REF,
+      `GET ${ZENN_FILE}`,
       MAIN_REF,
       `GET ${RECORD_AT_COMMIT}`,
       `GET ${GIT}/commits/${COMMIT}`,
@@ -1796,7 +1890,8 @@ describe("DELETE /articles/{slug}", () => {
   );
 
   // The last step that a failing request reaches, in order: the bunker is contacted, a
-  // signature is asked, R2 is called, a tree is created, a commit is created.
+  // signature is asked (zenn-contents comes next), R2 is called, a tree is created, a commit
+  // is created.
   const STAGES = [
     "none",
     "bunker",
@@ -1862,6 +1957,30 @@ describe("DELETE /articles/{slug}", () => {
       code: "upstream_error",
       step: "nostr",
       messageContains: "blocked: no deletes",
+      reached: "signed",
+    },
+    {
+      name: "zenn-contents の master の先頭の読み出しが失敗する",
+      overrides: { [ZENN_MAIN_REF]: failure(500) },
+      status: 502,
+      code: "upstream_error",
+      step: "zenn",
+      reached: "signed",
+    },
+    {
+      name: "zenn-contents のファイルの読み出しが失敗する",
+      overrides: { [`GET ${ZENN_FILE}`]: failure(500) },
+      status: 502,
+      code: "upstream_error",
+      step: "zenn",
+      reached: "signed",
+    },
+    {
+      name: "zenn-contents の master の更新が 422 で断られる",
+      overrides: { ...zennFile(true), [ZENN_REFS]: failure(422) },
+      status: 409,
+      code: "conflict",
+      step: "zenn",
       reached: "signed",
     },
     {
@@ -2005,6 +2124,43 @@ describe("DELETE /articles/{slug}", () => {
       nostr.posted.filter((p) => p.relay === WRITE_RELAYS[0]),
     ).toHaveLength(2);
     expect(images.delete.mock.calls).toEqual([[[A]], [[A]]]);
+  });
+
+  it("Zenn のコミットが失敗した後の再送で、取り下げが完了する", async () => {
+    const images = bucket();
+    stubWithdraw({ ...zennFile(true), [ZENN_TREES]: failure(500) });
+
+    const first = await withdraw(images);
+    const fetchImpl = stubWithdraw(zennFile(true));
+    const second = await withdraw(images);
+
+    expect(first.status).toBe(502);
+    expect(
+      ((await first.json()) as { error: { step: string } }).error.step,
+    ).toBe("zenn");
+    expect(images.delete).toHaveBeenCalledTimes(1);
+    expect(second.status).toBe(200);
+    expect(await second.json()).toMatchObject({
+      zenn: { commit: ZENN_COMMIT },
+    });
+    expect(calls(fetchImpl)).toContain(ZENN_REFS);
+    expect(images.delete.mock.calls).toEqual([[[A]]]);
+  });
+
+  it("取り下げのコミットが失敗した後の再送では、すでに published: false の zenn-contents にコミットを作らない", async () => {
+    const images = bucket();
+    stubWithdraw({ ...zennFile(true), [REFS]: failure(500) });
+
+    const first = await withdraw(images);
+    const fetchImpl = stubWithdraw(zennFile(false));
+    const second = await withdraw(images);
+
+    expect(first.status).toBe(502);
+    expect(second.status).toBe(200);
+    expect(((await second.json()) as { zenn: unknown }).zenn).toEqual({
+      commit: null,
+    });
+    expect(calls(fetchImpl)).not.toContain(ZENN_TREES);
   });
 });
 

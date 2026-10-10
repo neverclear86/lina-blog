@@ -177,7 +177,8 @@ bun create astro@latest -- --template basics
 │       │   ├── nostr-withdraw.ts    # Asks Nostr to delete an article's event (NIP-09): public key, signature, relays
 │       │   ├── published-record.ts  # Reads, updates and writes src/content/published.json (GET /articles); images only one article uses
 │       │   ├── zenn-article.ts      # Builds a Zenn article file (articles/<slug>.md) and picks the articles that go to Zenn
-│       │   └── zenn-syntax.ts       # Converts an article body to the syntax of Zenn and rejects the HTML Zenn cannot show
+│       │   ├── zenn-syntax.ts       # Converts an article body to the syntax of Zenn and rejects the HTML Zenn cannot show
+│       │   └── zenn-unpublish.ts    # Sets an article's file in zenn-contents to published: false (withdrawal)
 │       ├── .dev.vars.example
 │       └── wrangler.jsonc
 ├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin, sitemap, OGP image writer; pages are prerendered by default
@@ -451,8 +452,9 @@ must then also answer the Git database API (`git/ref`, `git/commits`, `git/trees
 written to `articles/<slug>.md` on `master` of `neverclear86/zenn-contents`, so the mock must
 answer the same API for `repos/neverclear86/zenn-contents` too.
 `DELETE /articles/<slug>` reads the published record with `GITHUB_TOKEN`, posts a deletion
-request (kind 5) signed by the bunker of `NOSTR_BUNKER_URL`, deletes the images that only this
-article uses from that bucket, and commits the removal to `main`. With `.dev.vars.example`
+request (kind 5) signed by the bunker of `NOSTR_BUNKER_URL`, sets the article's file in
+zenn-contents to `published: false`, deletes the images that only this article uses from that
+bucket, and commits the removal to `main`. With `.dev.vars.example`
 alone GitHub answers 401 (`step: "record"`); with a mock at `GITHUB_API_URL` that also serves
 `repos/neverclear86/lina-blog/git/ref/heads/main`, it ends with 502 (`step: "nostr"`) after
 reading the record.
