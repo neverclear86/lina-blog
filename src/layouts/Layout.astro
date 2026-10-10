@@ -4,6 +4,7 @@ import { FEED_PATH, FEED_TITLE } from "../blog-rss";
 import type { FooterVariant } from "../components/footer-links";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
+import SkipLink from "../components/SkipLink.astro";
 import { DEFAULT_LOCALE, type Locale } from "../i18n/locales";
 import { absoluteUrl, alternateLinks, canonicalUrl } from "../i18n/paths";
 import { openGraphTags, pageDescription, twitterTags } from "../page-meta";
@@ -117,6 +118,8 @@ const twitter = twitterTags(imageUrl);
     <slot name="head" />
   </head>
   <body>
+    {/* First in <body>, so the first Tab reaches it; it jumps to <main id="main">. */}
+    <SkipLink lang={lang} />
     <SiteHeader lang={lang} readingProgress={readingProgress} />
     {/* The page content; it grows so that the footer sits at the bottom of a short page. */}
     <div class="site-content"><slot /></div>

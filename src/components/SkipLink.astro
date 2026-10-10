@@ -1,0 +1,48 @@
+---
+/**
+ * The link at the top of every page that jumps to the page's `<main id="main">`. It is the
+ * first element of `<body>` (`Layout.astro`), so the first Tab reaches it. Until it has the
+ * focus it is visually hidden (a 1px clipped box, not `display: none`, so it stays focusable);
+ * with the focus it is a `.btn .btn-acc` (`src/styles/controls.css`) fixed 8px from the top and
+ * 16px from the left of the viewport, above the site header. It looks the same at every width
+ * and under `prefers-reduced-motion`, because it has no motion. `.is-focus` shows that state
+ * without the keyboard, for the sample in `src/dev/components.astro`.
+ */
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+
+interface Props {
+  /** Language of the text of the link. */
+  lang: Locale;
+  /** Classes added to the link, such as `is-focus` for a sample. */
+  class?: string;
+}
+
+const { lang, class: className } = Astro.props;
+---
+
+<a class:list={["skip-link", "btn", "btn-acc", className]} href="#main"
+  >{translate(lang, "nav.skip")}</a
+>
+
+<style>
+.skip-link:not(:focus, .is-focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link:is(:focus, .is-focus) {
+  position: fixed;
+  top: 8px;
+  left: 16px;
+  z-index: 60;
+  white-space: nowrap;
+}
+</style>

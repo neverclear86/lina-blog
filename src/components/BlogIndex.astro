@@ -28,7 +28,7 @@ const text = blogListText(tag);
 const crumbs = blogCrumbs(tag);
 ---
 
-<main>
+<main id="main" tabindex="-1">
   <PageHead>
     <nav class="crumbs" aria-label={translate("ja", "nav.breadcrumb")}>
       {crumbs.map((crumb, index) => (

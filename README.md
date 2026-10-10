@@ -88,6 +88,7 @@ bun create astro@latest -- --template basics
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, the path of the contact page, and which section the reader is in, on the top page and in a post, unit-tested
 │   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
 │   │   ├── SiteHeader.astro      # Site header, sticky: compact name logo; from 1024px the navigation 00 top to 04 works with an indicator on the top page that follows the section being read, JA / EN, theme switch and contact button, below 1024px the theme switch and a menu button that opens a popover sheet; on a post's page a line under it for how far the reader is
+│   │   ├── SkipLink.astro        # Skip link, first in <body>: hidden until it has the focus, then a .btn-acc fixed at the top left above the header; jumps to <main id="main">
 │   │   ├── SponsorNotice.astro   # PR window above the body of a sponsored blog post: orange PR chip and the sponsor's name
 │   │   ├── ThemeToggle.astro     # Theme switch: an .iconbtn that shows the moon or the sun with a name that says the next theme, or a button with a sun and the current theme
 │   │   ├── three-view-tabs.ts    # Which view of the avatar a key, a swipe or a tap selects, and the swipe gesture, unit-tested
@@ -107,7 +108,7 @@ bun create astro@latest -- --template basics
 │   │   ├── paths.ts      # Path of the same page in another locale, and the canonical and hreflang URLs of a page, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description, Open Graph and Twitter card tags (description and image props, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the site header (SiteHeader.astro, with the line of how far the reader is in a post when the readingProgress prop is set) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
+│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description, Open Graph and Twitter card tags (description and image props, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the skip link (SkipLink.astro) and the site header (SiteHeader.astro, with the line of how far the reader is in a post when the readingProgress prop is set) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code blocks as a window <figure> with a title (file name, language or text), unit-tested
 │   │   ├── highlight.css     # Code block window (frame, title and copy button) and role colors
@@ -140,7 +141,7 @@ bun create astro@latest -- --template basics
 │   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
 │   └── styles/
 │       ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ink, .btn-ghost), icon links (.sq, .iconbtn) and page switch links (.ws) of plan A
-│       ├── global.css    # body colors, the links and the keyboard focus outline
+│       ├── global.css    # body colors, the links, the keyboard focus outline (none on the focused <main>) and the scroll margin of the anchors under the sticky header
 │       ├── labels.css    # Labels of plan A: .label (shared with the labels of an article's message boxes), .tag and the category chip .chip-acc
 │       ├── motion.css    # The blinking cursor of the name logo (.blink-on), the appearance when the page opens (.rv, band-in), stopped under reduced motion
 │       ├── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
@@ -193,7 +194,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | File         | Holds                                                                      |
 | :----------- | :------------------------------------------------------------------------- |
 | `tokens.css` | Color tokens (CSS variables): the plan A tokens for the light and dark themes, the icon colors of the services and the colors that stay the same in both themes |
-| `global.css` | Styles of `body` (colors, which switch with the theme at once), the links and the keyboard focus outline |
+| `global.css` | Styles of `body` (colors, which switch with the theme at once), the links, the keyboard focus outline (none on `<main tabindex="-1">`, which the skip link focuses) and the scroll margin of `section[id]`, `#blog` and `#main` |
 | `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ink`, `.btn-ghost`), icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) and page switch links (`.ws`, `.ws.on`) of plan A |
 | `window.css` | Plan A windows (`.win`, `.article-body details` and an article's message boxes; a link window turns its border on hover, and an accordion while its `<summary>` is hovered or focused), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid background (`.gridbg`) and the stripe band (`.stripes`, flowing right) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions, and the flow of `.stripes` stops, under `prefers-reduced-motion: reduce` |
 | `labels.css` | Labels of plan A: the caption `.label` (whose declarations the labels of an article's message boxes share), the bordered tag `.tag` and the orange category chip `.chip-acc` |

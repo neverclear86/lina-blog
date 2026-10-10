@@ -185,12 +185,12 @@ describe("SiteHeader の全幅", () => {
 });
 
 describe("global.css の scroll-margin-top", () => {
-  it("section[id] と #blog は幅によらずヘッダーの下 72px で止まる", () => {
+  it("section[id]、#blog、#main は幅によらずヘッダーの下 72px で止まる", () => {
     const css = source("styles/global.css");
     expect(
       rulesOf(withoutMedia(css)).map((r) => [r.selector, r.body]),
     ).toContainEqual([
-      expect.stringContaining("section[id], #blog"),
+      expect.stringContaining("section[id], #blog, #main"),
       "scroll-margin-top: 72px;",
     ]);
     expect(css.match(/scroll-margin-top/g)).toHaveLength(1);
