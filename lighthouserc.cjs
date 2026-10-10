@@ -8,8 +8,8 @@ const categories = ["performance", "accessibility", "best-practices", "seo"];
 module.exports = {
   ci: {
     collect: {
-      startServerCommand: `bunx astro preview --ignore-lock --host 127.0.0.1 --port ${port}`,
-      startServerReadyPattern: "127.0.0.1",
+      startServerCommand: `bunx wrangler dev --ip 127.0.0.1 --port ${port} --inspector-port ${Number(port) + 1}`,
+      startServerReadyPattern: "Ready on",
       url: ["/ja/", "/en/", "/blog/", "/blog/dev-preview-sample/"].map(
         (path) => origin + path,
       ),
