@@ -16,6 +16,7 @@
     "lint": "biome lint",
     "check": "biome check",
     "test": "vitest run",
+    "sync": "bun scripts/sync/main.ts",
     "lighthouse": "lhci autorun",
     "import:avatars": "bun scripts/avatars/import.ts",
     "a11y": "bun scripts/a11y/run.ts"

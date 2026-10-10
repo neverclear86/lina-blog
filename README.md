@@ -21,7 +21,7 @@ bun create astro@latest -- --template basics
 │   ├── audit/            # Audit scripts run by hand: reduced-motion.mjs lists what still moves under `prefers-reduced-motion: reduce`
 │   ├── avatars/          # Makes the avatar images in src/assets/ from the v2.1 originals (bun run import:avatars), unit-tested
 │   ├── lighthouse/       # Job summary table of the Lighthouse CI scores (bun scripts/lighthouse/report.ts), unit-tested
-│   └── sync/             # Article sync script for the publish Worker: Vault scan, images, Markdown, diff and API client, unit-tested
+│   └── sync/             # Article sync script for the publish Worker (bun run sync, run by Hermes): main.ts prints the report of run.ts, which joins the Vault scan, Obsidian syntax, images, Markdown, diff and API client steps, unit-tested
 ├── src/
 │   ├── ansi-art.ts       # Pixels to terminal text art (half blocks, 24-bit color), unit-tested
 │   ├── ansi-art-source.ts # The illustration of the text art, decoded and resized to 80 pixels wide, unit-tested
@@ -395,6 +395,7 @@ All commands are run from the root of the project, from a terminal:
 | `bun run lint`        | Lints files with Biome                              |
 | `bun run check`       | Runs Biome formatting, lint and import checks       |
 | `bun run test`        | Runs unit tests with Vitest                         |
+| `bun run sync -- --vault <path>` | Syncs the Vault's articles to the publish Worker (`PUBLISH_URL`, `PUBLISH_TOKEN`); `--dry-run` only compares |
 | `bun run a11y [path...]` | Audits `dist/client/` with axe and a contrast check (build with `LINA_DEV_PAGES=1` first) |
 | `bun run lighthouse`  | Measures four pages of `./dist/` with Lighthouse CI (see "CI and deployment") |
 | `bun run import:avatars <dir>` | Makes the nine avatar images in `src/assets/` from the v2.1 originals in `<dir>` |
