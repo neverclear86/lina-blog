@@ -1,5 +1,6 @@
 const DEFAULT_API_URL = "https://api.github.com";
-const GIT_URL_PATH = "/repos/neverclear86/lina-blog/git";
+const DEFAULT_REPO = "neverclear86/lina-blog";
+const DEFAULT_BRANCH = "main";
 const SHA_PATTERN = /^[0-9a-f]{40}$/;
 
 /** One file that {@link commitFiles} writes: its path in the repository and its whole text. */
@@ -13,8 +14,8 @@ export type MainHeadResult =
 /**
  * Result of {@link commitFiles}. `commit` is the SHA of the new commit, or `null` when the
  * files already had this content, no path was left to delete, and no commit was made.
- * `conflict` means that `main` moved after the parent; `upstream_error` is any other failure
- * of GitHub.
+ * `conflict` means that the branch moved after the parent; `upstream_error` is any other
+ * failure of GitHub.
  */
 export type CommitFilesResult =
   | { ok: true; commit: string | null }
@@ -29,7 +30,7 @@ type GitHubResponse =
   | { ok: false; status: number | null; message: string };
 
 /**
- * Sends one request to the Git database API of this repository and reads its JSON body.
+ * Sends one request to the Git database API of a repository and reads its JSON body.
  *
  * @param fetchImpl The `fetch` to call, as a plain function (see {@link commitFiles}).
  * @param url Full URL of the request.
@@ -93,13 +94,21 @@ async function requestGitHub(
   }
 }
 
+/** Base URL of the Git database API of `repo` (`owner/name`), without a trailing slash. */
+function gitApiUrl(
+  apiUrl: string | undefined,
+  repo: string | undefined,
+): string {
+  return `${apiUrl ?? DEFAULT_API_URL}/repos/${repo ?? DEFAULT_REPO}/git`;
+}
+
 /** Returns `value` when it is a SHA of 40 lowercase hexadecimal digits, otherwise `null`. */
 function asSha(value: unknown): string | null {
   return typeof value === "string" && SHA_PATTERN.test(value) ? value : null;
 }
 
 /**
- * Reads the commit SHA that `refs/heads/main` of this repository points to, through the Git
+ * Reads the commit SHA that `refs/heads/{branch}` of a repository points to, through the Git
  * database API of GitHub. A caller that reads other files at this SHA passes it to
  * {@link commitFiles} as `parent`, so that the commit is made on top of what it read.
  *
@@ -108,19 +117,28 @@ function asSha(value: unknown): string | null {
  *
  * @param options.token GitHub token sent as `Authorization: Bearer <token>`.
  * @param options.apiUrl Base URL of the GitHub API. `https://api.github.com` when not given.
+ * @param options.repo Repository to read, as `owner/name`. `neverclear86/lina-blog` when not
+ *   given. It is put into the URL as it is, so a caller passes a constant of its own.
+ * @param options.branch Branch to read, without `refs/heads/`. `main` when not given. It is put
+ *   into the URL as it is, so a caller passes a constant of its own.
  * @param fetchImpl The `fetch` to call. It is called as a plain function, never as a method,
  *   because workerd rejects `fetch` called with another `this`. Tests pass a stub so that
  *   they never reach the network.
  * @returns The SHA, or a failure with a message. It never throws.
  */
 export async function getMainHead(
-  { token, apiUrl }: { token: string; apiUrl?: string },
+  {
+    token,
+    apiUrl,
+    repo,
+    branch = DEFAULT_BRANCH,
+  }: { token: string; apiUrl?: string; repo?: string; branch?: string },
   fetchImpl: typeof fetch = fetch,
 ): Promise<MainHeadResult> {
-  const what = "reading refs/heads/main";
+  const what = `reading refs/heads/${branch}`;
   const res = await requestGitHub(
     fetchImpl,
-    `${apiUrl ?? DEFAULT_API_URL}${GIT_URL_PATH}/ref/heads/main`,
+    `${gitApiUrl(apiUrl, repo)}/ref/heads/${branch}`,
     token,
     what,
   );
@@ -140,10 +158,10 @@ export async function getMainHead(
 }
 
 /**
- * Writes and deletes files on `main` of this repository in one commit, through the Git
+ * Writes and deletes files on `{branch}` of a repository in one commit, through the Git
  * database API of GitHub. It sends at most 6 requests, in this order:
  *
- * 1. `GET git/ref/heads/main` for the parent commit, skipped when `parent` is given.
+ * 1. `GET git/ref/heads/{branch}` for the parent commit, skipped when `parent` is given.
  * 2. `GET git/commits/{parent}` for the tree of the parent.
  * 3. `GET git/trees/{tree}?recursive=1` for the files of the parent, skipped when `deletes` is
  *    empty. A path to delete that is not a file of the parent, or that `files` writes, is left
@@ -152,28 +170,32 @@ export async function getMainHead(
  *    with its `content`, and each path left to delete as a blob entry with `sha: null`. Files
  *    of the parent that are not given stay as they are.
  * 5. `POST git/commits` with `message`, the new tree and the parent.
- * 6. `PATCH git/refs/heads/main` with the new commit and `force: false`.
+ * 6. `PATCH git/refs/heads/{branch}` with the new commit and `force: false`.
  *
  * - When there is no file to write and no path left to delete, it sends no request 4 and
  *   makes no commit.
  * - When the new tree is the tree of the parent, it stops after request 4 and makes no commit.
  * - When request 6 is answered 422, GitHub refused an update that is not a fast forward:
- *   `main` has moved after the parent, and it fails with `conflict`. The new commit is left
- *   unreferenced.
+ *   the branch has moved after the parent, and it fails with `conflict`. The new commit is
+ *   left unreferenced.
  * - When GitHub cannot be reached, answers another non-2xx status (a 422 of requests 1 to 5
  *   included), answers requests 1, 2, 4 and 5 without the SHA it needs, or answers request 3
  *   without a `tree` array or with `truncated` that is not `false`, it fails with
  *   `upstream_error`.
  *
  * @param options.token GitHub token sent as `Authorization: Bearer <token>`. It needs write
- *   access to the contents of this repository.
+ *   access to the contents of the repository.
  * @param options.apiUrl Base URL of the GitHub API. `https://api.github.com` when not given.
+ * @param options.repo Repository to write to, as `owner/name`. `neverclear86/lina-blog` when
+ *   not given. It is put into the URL as it is, so a caller passes a constant of its own.
+ * @param options.branch Branch to write to, without `refs/heads/`. `main` when not given. It is
+ *   put into the URL as it is, so a caller passes a constant of its own.
  * @param options.message Commit message.
  * @param options.files Files to write. A path that the parent already has is replaced.
  * @param options.deletes Paths of files to delete, relative to the root of the repository.
  *   Empty when not given.
  * @param options.parent Commit SHA to commit on, as {@link getMainHead} returned it. When it is
- *   not given, the SHA that `refs/heads/main` points to is read first.
+ *   not given, the SHA that the branch points to is read first.
  * @param fetchImpl The `fetch` to call. It is called as a plain function, never as a method,
  *   because workerd rejects `fetch` called with another `this`. Tests pass a stub so that
  *   they never reach the network.
@@ -184,6 +206,8 @@ export async function commitFiles(
   {
     token,
     apiUrl,
+    repo,
+    branch = DEFAULT_BRANCH,
     message,
     files,
     deletes = [],
@@ -191,6 +215,8 @@ export async function commitFiles(
   }: {
     token: string;
     apiUrl?: string;
+    repo?: string;
+    branch?: string;
     message: string;
     files: CommitFile[];
     deletes?: string[];
@@ -198,7 +224,7 @@ export async function commitFiles(
   },
   fetchImpl: typeof fetch = fetch,
 ): Promise<CommitFilesResult> {
-  const base = `${apiUrl ?? DEFAULT_API_URL}${GIT_URL_PATH}`;
+  const base = gitApiUrl(apiUrl, repo);
   const upstream = (text: string) =>
     ({ ok: false, code: "upstream_error", message: text }) as const;
   const unexpected = (what: string) =>
@@ -206,7 +232,7 @@ export async function commitFiles(
 
   let parentSha = parent;
   if (parentSha === undefined) {
-    const head = await getMainHead({ token, apiUrl }, fetchImpl);
+    const head = await getMainHead({ token, apiUrl, repo, branch }, fetchImpl);
     if (!head.ok) {
       return upstream(head.message);
     }
@@ -306,10 +332,10 @@ export async function commitFiles(
     return unexpected(what);
   }
 
-  what = "updating refs/heads/main";
+  what = `updating refs/heads/${branch}`;
   const updated = await requestGitHub(
     fetchImpl,
-    `${base}/refs/heads/main`,
+    `${base}/refs/heads/${branch}`,
     token,
     what,
     { method: "PATCH", payload: { sha, force: false } },
@@ -319,7 +345,7 @@ export async function commitFiles(
       return {
         ok: false,
         code: "conflict",
-        message: `refs/heads/main on GitHub is no longer ${parentSha}; another publish moved it.`,
+        message: `refs/heads/${branch} on GitHub is no longer ${parentSha}; another publish moved it.`,
       };
     }
     return upstream(updated.message);

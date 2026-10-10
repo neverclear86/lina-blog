@@ -1,6 +1,8 @@
 # Copy to .dev.vars for `wrangler dev`; in production use `wrangler secret put <NAME>` for each.
 PUBLISH_TOKEN=local-dev-token
 # GET and PUT /articles send it to GitHub. To use a local mock instead, add GITHUB_API_URL.
+# In production the token needs read and write access to the contents of this repository and
+# of neverclear86/zenn-contents.
 GITHUB_TOKEN=local-dev-github-token
 # NIP-46: the client key (64 hex digits) and the bunker URL from nostr-no-su. These are
 # placeholders: the keys are valid, but no bunker listens on the local relay, so step 4 of

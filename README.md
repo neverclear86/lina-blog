@@ -467,7 +467,8 @@ Both deploy workflows need the same two repository secrets:
 
 The publish Worker also needs four secrets on Cloudflare, each set once: its shared secret
 (`bunx wrangler secret put PUBLISH_TOKEN -c workers/publish/wrangler.jsonc`), a GitHub token
-with read and write access to this repository's contents (fine-grained: "Contents: Read and write")
+with read and write access to the contents of this repository and of `neverclear86/zenn-contents`
+(fine-grained: "Contents: Read and write" on both)
 (`bunx wrangler secret put GITHUB_TOKEN -c workers/publish/wrangler.jsonc`), the private key
 (64 hex digits) of its NIP-46 client
 (`bunx wrangler secret put NOSTR_CLIENT_KEY -c workers/publish/wrangler.jsonc`), and the bunker
