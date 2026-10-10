@@ -14,6 +14,17 @@ const FILES = [
   { path: "src/content/blog/hello.md", content: "# Hello\n" },
 ];
 
+const ARTICLE = "src/content/blog/hello.md";
+const RECORD = "src/content/published.json";
+/** Entries of `HEAD_TREE` as `GET git/trees/{sha}?recursive=1` lists them. */
+const HEAD_ENTRIES = [
+  { path: "src", mode: "040000", type: "tree", sha: "7".repeat(40) },
+  { path: "src/content", mode: "040000", type: "tree", sha: "8".repeat(40) },
+  { path: RECORD, mode: "100644", type: "blob", sha: "9".repeat(40) },
+  { path: ARTICLE, mode: "100644", type: "blob", sha: "a".repeat(40) },
+];
+const RECORD_FILE = { path: RECORD, content: '{"articles":{}}\n' };
+
 const json = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), init);
 
@@ -31,6 +42,8 @@ const stubGitHub = (
     [`GET ${git}/commits/${HEAD}`]: () => json({ tree: { sha: HEAD_TREE } }),
     [`GET ${git}/commits/${PARENT}`]: () =>
       json({ tree: { sha: PARENT_TREE } }),
+    [`GET ${git}/trees/${HEAD_TREE}?recursive=1`]: () =>
+      json({ sha: HEAD_TREE, tree: HEAD_ENTRIES, truncated: false }),
     [`POST ${git}/trees`]: () => json({ sha: NEW_TREE }, { status: 201 }),
     [`POST ${git}/commits`]: () => json({ sha: NEW_COMMIT }, { status: 201 }),
     [`PATCH ${git}/refs/heads/main`]: () => json({ ref: "refs/heads/main" }),
@@ -340,5 +353,151 @@ describe("commitFiles", () => {
 
     expect(result).toEqual({ ok: true, commit: NEW_COMMIT });
     expect(json).not.toHaveBeenCalled();
+  });
+
+  describe("deletes", () => {
+    it("消すパスを sha: null の項目にして、書き込みと同じ 1 つのコミットで送る", async () => {
+      const fetchImpl = stubGitHub();
+
+      const result = await commitFiles(
+        {
+          token: TOKEN,
+          message: "m",
+          files: [RECORD_FILE],
+          deletes: [ARTICLE],
+        },
+        fetchImpl,
+      );
+
+      expect(result).toEqual({ ok: true, commit: NEW_COMMIT });
+      expect(calls(fetchImpl)).toEqual([
+        `GET ${GIT}/ref/heads/main`,
+        `GET ${GIT}/commits/${HEAD}`,
+        `GET ${GIT}/trees/${HEAD_TREE}?recursive=1`,
+        `POST ${GIT}/trees`,
+        `POST ${GIT}/commits`,
+        `PATCH ${GIT}/refs/heads/main`,
+      ]);
+      expect(bodyOf(fetchImpl, 3)).toEqual({
+        base_tree: HEAD_TREE,
+        tree: [
+          { ...RECORD_FILE, mode: "100644", type: "blob" },
+          { path: ARTICLE, mode: "100644", type: "blob", sha: null },
+        ],
+      });
+    });
+
+    it("親の tree に無い消すパスは tree の項目から外す", async () => {
+      const fetchImpl = stubGitHub();
+
+      const result = await commitFiles(
+        {
+          token: TOKEN,
+          message: "m",
+          files: [],
+          deletes: ["src/content/blog/gone.md", ARTICLE],
+        },
+        fetchImpl,
+      );
+
+      expect(result).toEqual({ ok: true, commit: NEW_COMMIT });
+      expect(bodyOf(fetchImpl, 3).tree).toEqual([
+        { path: ARTICLE, mode: "100644", type: "blob", sha: null },
+      ]);
+    });
+
+    it("親の tree でディレクトリーのパスや、書き込むファイルと同じパスは消さない", async () => {
+      const fetchImpl = stubGitHub();
+
+      const result = await commitFiles(
+        {
+          token: TOKEN,
+          message: "m",
+          files: [RECORD_FILE],
+          deletes: ["src/content", RECORD, ARTICLE],
+        },
+        fetchImpl,
+      );
+
+      expect(result).toEqual({ ok: true, commit: NEW_COMMIT });
+      expect(bodyOf(fetchImpl, 3).tree).toEqual([
+        { ...RECORD_FILE, mode: "100644", type: "blob" },
+        { path: ARTICLE, mode: "100644", type: "blob", sha: null },
+      ]);
+    });
+
+    it("消すパスが親に無く、書き込むファイルも無いときは tree を作らず commit: null を返す", async () => {
+      const fetchImpl = stubGitHub();
+
+      const result = await commitFiles(
+        {
+          token: TOKEN,
+          message: "m",
+          files: [],
+          deletes: ["src/content/blog/gone.md"],
+        },
+        fetchImpl,
+      );
+
+      expect(result).toEqual({ ok: true, commit: null });
+      expect(calls(fetchImpl)).toEqual([
+        `GET ${GIT}/ref/heads/main`,
+        `GET ${GIT}/commits/${HEAD}`,
+        `GET ${GIT}/trees/${HEAD_TREE}?recursive=1`,
+      ]);
+    });
+
+    it("消すパスが親に無く、書き込みも同じ内容のときはコミットせず commit: null を返す", async () => {
+      const fetchImpl = stubGitHub({
+        [`POST ${GIT}/trees`]: () => json({ sha: HEAD_TREE }, { status: 201 }),
+      });
+
+      const result = await commitFiles(
+        {
+          token: TOKEN,
+          message: "m",
+          files: [RECORD_FILE],
+          deletes: ["src/content/blog/gone.md"],
+        },
+        fetchImpl,
+      );
+
+      expect(result).toEqual({ ok: true, commit: null });
+      expect(bodyOf(fetchImpl, 3).tree).toEqual([
+        { ...RECORD_FILE, mode: "100644", type: "blob" },
+      ]);
+      expect(calls(fetchImpl)).toHaveLength(4);
+    });
+
+    it.each([
+      ["非 2xx", () => new Response("failed", { status: 500 })],
+      ["JSON でない", () => new Response("not json")],
+      ["tree が無い", () => json({ sha: HEAD_TREE, truncated: false })],
+      [
+        "truncated が true",
+        () => json({ sha: HEAD_TREE, tree: HEAD_ENTRIES, truncated: true }),
+      ],
+      ["truncated が無い", () => json({ sha: HEAD_TREE, tree: HEAD_ENTRIES })],
+    ])(
+      "親の tree の読み出しが失敗した（%s）ときは tree を作らず upstream_error を返す",
+      async (_name, answer) => {
+        const fetchImpl = stubGitHub({
+          [`GET ${GIT}/trees/${HEAD_TREE}?recursive=1`]: answer,
+        });
+
+        const result = await commitFiles(
+          {
+            token: TOKEN,
+            message: "m",
+            files: [RECORD_FILE],
+            deletes: [ARTICLE],
+          },
+          fetchImpl,
+        );
+
+        expect(result).toMatchObject({ ok: false, code: "upstream_error" });
+        expect(calls(fetchImpl)).not.toContain(`POST ${GIT}/trees`);
+      },
+    );
   });
 });

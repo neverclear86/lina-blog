@@ -12,8 +12,9 @@ export type MainHeadResult =
 
 /**
  * Result of {@link commitFiles}. `commit` is the SHA of the new commit, or `null` when the
- * files already had this content and no commit was made. `conflict` means that `main` moved
- * after the parent; `upstream_error` is any other failure of GitHub.
+ * files already had this content, no path was left to delete, and no commit was made.
+ * `conflict` means that `main` moved after the parent; `upstream_error` is any other failure
+ * of GitHub.
  */
 export type CommitFilesResult =
   | { ok: true; commit: string | null }
@@ -139,22 +140,29 @@ export async function getMainHead(
 }
 
 /**
- * Writes files to `main` of this repository in one commit, through the Git database API of
- * GitHub. It sends at most 5 requests, in this order:
+ * Writes and deletes files on `main` of this repository in one commit, through the Git
+ * database API of GitHub. It sends at most 6 requests, in this order:
  *
  * 1. `GET git/ref/heads/main` for the parent commit, skipped when `parent` is given.
  * 2. `GET git/commits/{parent}` for the tree of the parent.
- * 3. `POST git/trees` with that tree as `base_tree` and each file as a blob entry of mode
- *    `100644` with its `content`. Files of the parent that are not given stay as they are.
- * 4. `POST git/commits` with `message`, the new tree and the parent.
- * 5. `PATCH git/refs/heads/main` with the new commit and `force: false`.
+ * 3. `GET git/trees/{tree}?recursive=1` for the files of the parent, skipped when `deletes` is
+ *    empty. A path to delete that is not a file of the parent, or that `files` writes, is left
+ *    out, because GitHub refuses to delete a file that does not exist.
+ * 4. `POST git/trees` with that tree as `base_tree`, each file as a blob entry of mode `100644`
+ *    with its `content`, and each path left to delete as a blob entry with `sha: null`. Files
+ *    of the parent that are not given stay as they are.
+ * 5. `POST git/commits` with `message`, the new tree and the parent.
+ * 6. `PATCH git/refs/heads/main` with the new commit and `force: false`.
  *
- * - When the new tree is the tree of the parent, it stops after request 3 and makes no commit.
- * - When request 5 is answered 422, GitHub refused an update that is not a fast forward:
+ * - When there is no file to write and no path left to delete, it sends no request 4 and
+ *   makes no commit.
+ * - When the new tree is the tree of the parent, it stops after request 4 and makes no commit.
+ * - When request 6 is answered 422, GitHub refused an update that is not a fast forward:
  *   `main` has moved after the parent, and it fails with `conflict`. The new commit is left
  *   unreferenced.
- * - When GitHub cannot be reached, answers another non-2xx status (a 422 of requests 1 to 4
- *   included), or answers requests 1 to 4 without the SHA it needs, it fails with
+ * - When GitHub cannot be reached, answers another non-2xx status (a 422 of requests 1 to 5
+ *   included), answers requests 1, 2, 4 and 5 without the SHA it needs, or answers request 3
+ *   without a `tree` array or with `truncated` that is not `false`, it fails with
  *   `upstream_error`.
  *
  * @param options.token GitHub token sent as `Authorization: Bearer <token>`. It needs write
@@ -162,6 +170,8 @@ export async function getMainHead(
  * @param options.apiUrl Base URL of the GitHub API. `https://api.github.com` when not given.
  * @param options.message Commit message.
  * @param options.files Files to write. A path that the parent already has is replaced.
+ * @param options.deletes Paths of files to delete, relative to the root of the repository.
+ *   Empty when not given.
  * @param options.parent Commit SHA to commit on, as {@link getMainHead} returned it. When it is
  *   not given, the SHA that `refs/heads/main` points to is read first.
  * @param fetchImpl The `fetch` to call. It is called as a plain function, never as a method,
@@ -176,12 +186,14 @@ export async function commitFiles(
     apiUrl,
     message,
     files,
+    deletes = [],
     parent,
   }: {
     token: string;
     apiUrl?: string;
     message: string;
     files: CommitFile[];
+    deletes?: string[];
     parent?: string;
   },
   fetchImpl: typeof fetch = fetch,
@@ -218,18 +230,54 @@ export async function commitFiles(
     return unexpected(what);
   }
 
+  let present: string[] = [];
+  if (deletes.length > 0) {
+    what = `reading tree ${parentTree}`;
+    const listed = await requestGitHub(
+      fetchImpl,
+      `${base}/trees/${parentTree}?recursive=1`,
+      token,
+      what,
+    );
+    if (!listed.ok) {
+      return upstream(listed.message);
+    }
+    const body = listed.body as { tree?: unknown; truncated?: unknown } | null;
+    if (!Array.isArray(body?.tree) || body.truncated !== false) {
+      return unexpected(what);
+    }
+    const blobs = new Set(
+      body.tree
+        .filter(
+          (entry) => (entry as { type?: unknown } | null)?.type === "blob",
+        )
+        .map((entry) => (entry as { path: unknown }).path),
+    );
+    const written = new Set(files.map(({ path }) => path));
+    present = deletes.filter((path) => blobs.has(path) && !written.has(path));
+  }
+  const entries = [
+    ...files.map(({ path, content }) => ({
+      path,
+      mode: "100644",
+      type: "blob",
+      content,
+    })),
+    ...present.map((path) => ({
+      path,
+      mode: "100644",
+      type: "blob",
+      sha: null,
+    })),
+  ];
+  if (entries.length === 0) {
+    return { ok: true, commit: null };
+  }
+
   what = "creating a tree";
   const created = await requestGitHub(fetchImpl, `${base}/trees`, token, what, {
     method: "POST",
-    payload: {
-      base_tree: parentTree,
-      tree: files.map(({ path, content }) => ({
-        path,
-        mode: "100644",
-        type: "blob",
-        content,
-      })),
-    },
+    payload: { base_tree: parentTree, tree: entries },
   });
   if (!created.ok) {
     return upstream(created.message);
