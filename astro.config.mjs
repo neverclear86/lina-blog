@@ -1,4 +1,5 @@
 // @ts-check
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
@@ -19,6 +20,7 @@ import { loadOgFonts } from "./src/og-font.ts";
 import { renderOgImage } from "./src/og-image.ts";
 import { OG_IMAGES_LIST_PATH } from "./src/og-pages.ts";
 import { isSitemapPage, withXDefault } from "./src/sitemap.ts";
+import { THEME_SCRIPT } from "./src/theme.ts";
 
 /** Same pattern Astro uses to read a page's `export const prerender`. */
 const PRERENDER_EXPORT = /^\s*export\s+const\s+prerender\s*=\s*(true|false);?/m;
@@ -157,6 +159,28 @@ export default defineConfig({
     ogImages(),
   ],
   vite: { plugins: [linaAnsiArt()] },
+  // Astro writes each page's Content Security Policy into a <meta> at the end of <head>, with the
+  // hashes of the scripts and styles it bundles and `font-src 'self'`. `THEME_SCRIPT` is rendered
+  // with `is:inline`, which Astro does not hash, so its hash is computed from the constant. No
+  // `style` attribute is allowed. `frame-ancestors` has no effect in a <meta> and is sent as a
+  // header by `public/_headers` and `src/api.ts`.
+  security: {
+    csp: {
+      directives: [
+        // This site, article images and YouTube thumbnails.
+        "img-src 'self' https://img.ikili.pro https://i.ytimg.com",
+        // The Turnstile widget of the contact form and the players of article videos.
+        "frame-src https://challenges.cloudflare.com https://www.youtube-nocookie.com",
+      ],
+      scriptDirective: {
+        // Turnstile's api.js, added by the contact form.
+        resources: ["'self'", "https://challenges.cloudflare.com"],
+        hashes: [
+          `sha256-${createHash("sha256").update(THEME_SCRIPT).digest("base64")}`,
+        ],
+      },
+    },
+  },
   // Sessions are not used; this also keeps the adapter from provisioning a KV namespace.
   session: false,
   // Turnstile site key of the contact form, public and read at build time because the page is

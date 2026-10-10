@@ -36,7 +36,7 @@ export function resolveTheme(stored: string | null): Theme {
  * throws.
  *
  * It is a plain string rather than the source of a function, so the page carries exactly this
- * text and its CSP hash can be computed from this constant.
+ * text and `astro.config.mjs` computes its CSP hash from this constant.
  */
 export const THEME_SCRIPT = `(() => {
   const key = ${JSON.stringify(THEME_STORAGE_KEY)};

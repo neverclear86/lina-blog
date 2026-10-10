@@ -6,9 +6,11 @@
 // <out>/<name>-<width>-<theme>.png, with animations disabled (reduced motion) so shots are
 // stable. With --selector, only the first matching element is captured, scrolled into view,
 // as <out>/<name>-<selector slug>-<width>-<theme>.png. One JSON line per shot is printed to stdout:
-//   {"file", "path", "width", "theme", "status", "overflowX", "overflowing"[, "selector", "box"]}
+//   {"file", "path", "width", "theme", "status", "overflowX", "overflowing", "violations"[, "selector", "box"]}
 // overflowX is how far the page scrolls horizontally (0 means no horizontal overflow);
 // overflowing lists up to 10 elements that stick out of the viewport horizontally;
+// violations lists up to 10 Content Security Policy violations that the page reported while
+// it loaded and was captured, as "<directive> <blocked URI>" (an empty list means none);
 // box is the bounding box of the captured element ({x, y, width, height}).
 //
 // Only the preview server of this worktree is stopped afterwards (`astro preview stop`).
@@ -143,6 +145,14 @@ try {
             localStorage.setItem("theme", saved);
           } catch {}
         }, theme);
+        await context.addInitScript(() => {
+          window.__cspViolations = [];
+          document.addEventListener("securitypolicyviolation", (event) => {
+            window.__cspViolations.push(
+              `${event.effectiveDirective} ${event.blockedURI}`,
+            );
+          });
+        });
         const page = await context.newPage();
         const response = await page.goto(`${base}${path}`, {
           waitUntil: "networkidle",
@@ -186,6 +196,9 @@ try {
             theme,
             status: response?.status() ?? null,
             ...overflow,
+            violations: await page.evaluate(() =>
+              window.__cspViolations.slice(0, 10),
+            ),
             ...target,
           }),
         );
