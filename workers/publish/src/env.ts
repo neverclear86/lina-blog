@@ -13,8 +13,9 @@ export type PublishEnv = {
     /** Shared secret that clients send as `Authorization: Bearer <secret>`. */
     PUBLISH_TOKEN?: string;
     /**
-     * GitHub token that reads and writes the contents of this repository. A fine-grained token
-     * needs the permission "Contents: Read and write".
+     * GitHub token that reads and writes the contents of this repository and of
+     * `neverclear86/zenn-contents`. A fine-grained token needs the permission
+     * "Contents: Read and write" on both repositories.
      */
     GITHUB_TOKEN?: string;
     /** Base URL of the GitHub API; `https://api.github.com` when not set. */

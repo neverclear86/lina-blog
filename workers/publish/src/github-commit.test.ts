@@ -3,6 +3,7 @@ import { commitFiles, getMainHead } from "./github-commit";
 
 const TOKEN = "github-token";
 const GIT = "https://api.github.com/repos/neverclear86/lina-blog/git";
+const ZENN_GIT = "https://api.github.com/repos/neverclear86/zenn-contents/git";
 const HEAD = "1".repeat(40);
 const PARENT = "2".repeat(40);
 const HEAD_TREE = "3".repeat(40);
@@ -31,14 +32,16 @@ const json = (body: unknown, init?: ResponseInit) =>
 /**
  * Returns a `fetch` stub that answers by `"<METHOD> <URL>"`. The default answers are those
  * of a successful write on top of `HEAD`; `overrides` replaces the answer of a key. A key it
- * does not know is answered 599.
+ * does not know is answered 599. `git` is the base URL of the Git database API that it
+ * answers for, and `branch` is the branch that `ref` and `refs` answer for.
  */
 const stubGitHub = (
   overrides: Record<string, () => Response | Promise<Response>> = {},
   git = GIT,
+  branch = "main",
 ) => {
   const answers: Record<string, () => Response | Promise<Response>> = {
-    [`GET ${git}/ref/heads/main`]: () => json({ object: { sha: HEAD } }),
+    [`GET ${git}/ref/heads/${branch}`]: () => json({ object: { sha: HEAD } }),
     [`GET ${git}/commits/${HEAD}`]: () => json({ tree: { sha: HEAD_TREE } }),
     [`GET ${git}/commits/${PARENT}`]: () =>
       json({ tree: { sha: PARENT_TREE } }),
@@ -46,7 +49,8 @@ const stubGitHub = (
       json({ sha: HEAD_TREE, tree: HEAD_ENTRIES, truncated: false }),
     [`POST ${git}/trees`]: () => json({ sha: NEW_TREE }, { status: 201 }),
     [`POST ${git}/commits`]: () => json({ sha: NEW_COMMIT }, { status: 201 }),
-    [`PATCH ${git}/refs/heads/main`]: () => json({ ref: "refs/heads/main" }),
+    [`PATCH ${git}/refs/heads/${branch}`]: () =>
+      json({ ref: `refs/heads/${branch}` }),
     ...overrides,
   };
   return vi.fn<typeof fetch>(async (input, init) => {
@@ -95,6 +99,49 @@ describe("getMainHead", () => {
 
     expect(result).toEqual({ ok: true, sha: HEAD });
     expect(calls(fetchImpl)).toEqual([`GET ${git}/ref/heads/main`]);
+  });
+
+  it("repo と branch を渡すと、そのリポジトリのそのブランチの ref を読む", async () => {
+    const fetchImpl = stubGitHub({}, ZENN_GIT, "master");
+
+    const result = await getMainHead(
+      { token: TOKEN, repo: "neverclear86/zenn-contents", branch: "master" },
+      fetchImpl,
+    );
+
+    expect(result).toEqual({ ok: true, sha: HEAD });
+    expect(calls(fetchImpl)).toEqual([`GET ${ZENN_GIT}/ref/heads/master`]);
+  });
+
+  it("repo だけを渡すと main を、branch だけを渡すと neverclear86/lina-blog を読む", async () => {
+    const repoOnly = stubGitHub({}, ZENN_GIT);
+    const branchOnly = stubGitHub({}, GIT, "master");
+
+    await getMainHead(
+      { token: TOKEN, repo: "neverclear86/zenn-contents" },
+      repoOnly,
+    );
+    await getMainHead({ token: TOKEN, branch: "master" }, branchOnly);
+
+    expect(calls(repoOnly)).toEqual([`GET ${ZENN_GIT}/ref/heads/main`]);
+    expect(calls(branchOnly)).toEqual([`GET ${GIT}/ref/heads/master`]);
+  });
+
+  it("branch を渡したときの失敗の説明は、その ref の名前を含む", async () => {
+    const fetchImpl = stubGitHub({
+      [`GET ${GIT}/ref/heads/master`]: () =>
+        new Response("Not Found", { status: 404 }),
+    });
+
+    const result = await getMainHead(
+      { token: TOKEN, branch: "master" },
+      fetchImpl,
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      message: "GitHub answered 404 when reading refs/heads/master.",
+    });
   });
 
   it("GitHub が非 2xx を返すと、状態コードを含む説明で失敗を返す", async () => {
@@ -205,6 +252,112 @@ describe("commitFiles", () => {
       `POST ${git}/commits`,
       `PATCH ${git}/refs/heads/main`,
     ]);
+  });
+
+  it("repo と branch を渡すと 5 回の要求をすべてそのリポジトリのそのブランチに送る", async () => {
+    const fetchImpl = stubGitHub({}, ZENN_GIT, "master");
+
+    const result = await commitFiles(
+      {
+        token: TOKEN,
+        repo: "neverclear86/zenn-contents",
+        branch: "master",
+        message: "m",
+        files: FILES,
+      },
+      fetchImpl,
+    );
+
+    expect(result).toEqual({ ok: true, commit: NEW_COMMIT });
+    expect(calls(fetchImpl)).toEqual([
+      `GET ${ZENN_GIT}/ref/heads/master`,
+      `GET ${ZENN_GIT}/commits/${HEAD}`,
+      `POST ${ZENN_GIT}/trees`,
+      `POST ${ZENN_GIT}/commits`,
+      `PATCH ${ZENN_GIT}/refs/heads/master`,
+    ]);
+  });
+
+  it("repo と branch と apiUrl を渡すと、apiUrl の下の指定したリポジトリに送る", async () => {
+    const git = "http://127.0.0.1:9999/repos/neverclear86/zenn-contents/git";
+    const fetchImpl = stubGitHub({}, git, "master");
+
+    const result = await commitFiles(
+      {
+        token: TOKEN,
+        apiUrl: "http://127.0.0.1:9999",
+        repo: "neverclear86/zenn-contents",
+        branch: "master",
+        message: "m",
+        files: FILES,
+      },
+      fetchImpl,
+    );
+
+    expect(result).toEqual({ ok: true, commit: NEW_COMMIT });
+    const urls = calls(fetchImpl);
+    expect(urls[0]).toBe(`GET ${git}/ref/heads/master`);
+    expect(urls[4]).toBe(`PATCH ${git}/refs/heads/master`);
+  });
+
+  it("repo と branch と parent を渡すと ref を読まず、そのリポジトリの parent から 4 回送る", async () => {
+    const fetchImpl = stubGitHub({}, ZENN_GIT, "master");
+
+    const result = await commitFiles(
+      {
+        token: TOKEN,
+        repo: "neverclear86/zenn-contents",
+        branch: "master",
+        message: "m",
+        files: FILES,
+        parent: PARENT,
+      },
+      fetchImpl,
+    );
+
+    expect(result).toEqual({ ok: true, commit: NEW_COMMIT });
+    expect(calls(fetchImpl)).toEqual([
+      `GET ${ZENN_GIT}/commits/${PARENT}`,
+      `POST ${ZENN_GIT}/trees`,
+      `POST ${ZENN_GIT}/commits`,
+      `PATCH ${ZENN_GIT}/refs/heads/master`,
+    ]);
+  });
+
+  it("branch を渡したときの conflict と upstream_error の説明は、その ref の名前を含む", async () => {
+    const conflict = stubGitHub(
+      {
+        [`PATCH ${GIT}/refs/heads/master`]: () =>
+          json({ message: "Update is not a fast forward" }, { status: 422 }),
+      },
+      GIT,
+      "master",
+    );
+    const broken = stubGitHub(
+      {
+        [`PATCH ${GIT}/refs/heads/master`]: () =>
+          new Response("boom", { status: 500 }),
+      },
+      GIT,
+      "master",
+    );
+    const input = {
+      token: TOKEN,
+      branch: "master",
+      message: "m",
+      files: FILES,
+    };
+
+    expect(await commitFiles(input, conflict)).toEqual({
+      ok: false,
+      code: "conflict",
+      message: `refs/heads/master on GitHub is no longer ${HEAD}; another publish moved it.`,
+    });
+    expect(await commitFiles(input, broken)).toEqual({
+      ok: false,
+      code: "upstream_error",
+      message: "GitHub answered 500 when updating refs/heads/master.",
+    });
   });
 
   it("parent を渡すと ref を読まず、そのコミットを親にする", async () => {
