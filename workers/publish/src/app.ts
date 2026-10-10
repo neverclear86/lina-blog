@@ -39,6 +39,7 @@ import {
   zennArticlePath,
 } from "./zenn-article";
 import { convertToZennSyntax } from "./zenn-syntax";
+import { unpublishZennArticle } from "./zenn-unpublish";
 
 /**
  * Hono app of the publish Worker, and the Worker entry (`main` in `wrangler.jsonc`).
@@ -389,8 +390,9 @@ app.put("/articles/:slug", async (c) => {
 });
 
 // Withdraws an article (docs/publish-api.md): reads the published record, asks Nostr to delete
-// the article's event, deletes the images that no other article refers to, and deletes the
-// article file and its entry of the published record from main in one commit.
+// the article's event, sets the article's file in zenn-contents to `published: false`, deletes
+// the images that no other article refers to, and deletes the article file and its entry of
+// the published record from main in one commit.
 app.delete("/articles/:slug", async (c) => {
   const token = c.env.GITHUB_TOKEN;
   if (!token) {
@@ -429,14 +431,23 @@ app.delete("/articles/:slug", async (c) => {
     return c.json(errorBody("upstream_error", nostr.message, "nostr"), 502);
   }
 
-  // Step 3: deletes the images that no other article refers to.
+  // Step 3: sets the article's file in zenn-contents to `published: false`.
+  const zenn = await unpublishZennArticle({ token, apiUrl, slug });
+  if (!zenn.ok) {
+    return c.json(
+      errorBody(zenn.code, zenn.message, "zenn"),
+      zenn.code === "conflict" ? 409 : 502,
+    );
+  }
+
+  // Step 4: deletes the images that no other article refers to.
   const images = exclusiveImages(current.record, slug);
   const deleted = await deleteImages(c.env.IMAGES, images);
   if (!deleted.ok) {
     return c.json(errorBody(deleted.code, deleted.message, "images"), 502);
   }
 
-  // Step 4: removes the article file and its entry on top of main as it is now.
+  // Step 5: removes the article file and its entry on top of main as it is now.
   const latestHead = await getMainHead({ token, apiUrl });
   if (!latestHead.ok) {
     return c.json(
@@ -488,6 +499,7 @@ app.delete("/articles/:slug", async (c) => {
     slug,
     commit: committed.commit,
     nostr: { eventId: nostr.eventId },
+    zenn: zenn.zenn,
     images,
   });
 });
