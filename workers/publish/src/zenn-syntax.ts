@@ -233,7 +233,8 @@ export function convertToZennSyntax(body: string): ZennSyntaxResult {
       const kept =
         bare !== undefined &&
         ZENN_YOUTUBE.some((pattern) => pattern.test(bare)) &&
-        !new URL(bare).searchParams.has("t");
+        !new URL(bare).searchParams.has("t") &&
+        (new URL(bare).searchParams.get("v") ?? id) === id;
       output.push(kept ? line : `https://www.youtube.com/watch?v=${id}`);
       continue;
     }

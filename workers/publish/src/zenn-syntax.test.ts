@@ -31,6 +31,7 @@ describe("convertToZennSyntax の YouTube", () => {
     `https://m.youtube.com/watch?v=${ID}`,
     `https://youtube.com/watch?v=${ID}&t=10s`,
     `https://youtu.be/${ID}?t=30`,
+    `https://youtu.be/${ID}?v=AAAAAAAAAAA`,
     `<https://youtu.be/${ID}>`,
   ])(
     "%s だけの段落を、Zenn が埋め込む www.youtube.com の watch URL にする",
