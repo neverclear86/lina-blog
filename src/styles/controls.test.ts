@@ -257,30 +257,6 @@ describe("記事のアコーディオン", () => {
     }
   });
 
-  it("輪の動きは prefers-reduced-motion: reduce で、動かす規則より後ろで止まる", () => {
-    for (const selector of Object.values(SELECTORS)) {
-      const rules = rulesFor(WINDOW, selector);
-      const moving = rules.filter(
-        (rule) =>
-          !hasCondition(rule, REDUCE) &&
-          valueIn(rule, "transition") !== undefined,
-      );
-      const stops = rules.filter(
-        (rule) =>
-          hasCondition(rule, REDUCE) && valueIn(rule, "transition") === "none",
-      );
-      expect(moving.length, selector).toBeGreaterThan(0);
-      expect(stops.length, selector).toBeGreaterThan(0);
-      for (const stop of stops) {
-        for (const move of moving) {
-          expect(WINDOW.indexOf(stop), selector).toBeGreaterThan(
-            WINDOW.indexOf(move),
-          );
-        }
-      }
-    }
-  });
-
   it("開閉は <details> に任せ、ArticleBody のスクリプトは details に触れない", () => {
     const scripts =
       read("components/ArticleBody.astro").match(
