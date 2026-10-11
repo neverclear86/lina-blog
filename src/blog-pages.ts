@@ -8,41 +8,20 @@ import type { MarkdownHeading } from "astro";
 import { type BlogFrontmatter, blogSchema } from "./blog-schema";
 import { homeSectionPath } from "./components/site-nav";
 import type { UiKey } from "./i18n/ui";
+import { formatJstDate } from "./jst-date";
 import {
   type BlogTag,
   postsNewestFirst,
   tagPath,
   tagSlug,
+  tagUiKeys,
 } from "./latest-posts";
-import { formatVideoDate } from "./latest-videos";
 
 /** Path of the page that lists every post. */
 const BLOG_INDEX_PATH = "/blog/";
 
 /** Every tag that `blogSchema` allows, in the order it lists them. */
 const BLOG_TAGS: readonly BlogTag[] = blogSchema.shape.tags.element.options;
-
-/** Keys of the texts of each tag's page. */
-const TAG_PAGE_KEYS: Record<
-  BlogTag,
-  { label: UiKey; subtitle: UiKey; noPosts: UiKey }
-> = {
-  制作記: {
-    label: "blog.tag.devlog",
-    subtitle: "blog.tagPage.devlog.subtitle",
-    noPosts: "blog.tagPage.devlog.noPosts",
-  },
-  技術: {
-    label: "blog.tag.tech",
-    subtitle: "blog.tagPage.tech.subtitle",
-    noPosts: "blog.tagPage.tech.noPosts",
-  },
-  日記: {
-    label: "blog.tag.diary",
-    subtitle: "blog.tagPage.diary.subtitle",
-    noPosts: "blog.tagPage.diary.noPosts",
-  },
-};
 
 /**
  * Returns the `getStaticPaths` entries of the tag pages: one for every tag that `blogSchema`
@@ -80,7 +59,7 @@ export function blogListText(tag: BlogTag | undefined): BlogListText {
       noPosts: "latest.blog.noPosts",
     };
   }
-  const { subtitle, noPosts } = TAG_PAGE_KEYS[tag];
+  const { subtitle, noPosts } = tagUiKeys(tag);
   return {
     label: `~/blog/tags/${tagSlug(tag)}`,
     title: subtitle,
@@ -110,7 +89,7 @@ export function tagFilterLinks(current: BlogTag | undefined): TagFilterLink[] {
       current: current === undefined,
     },
     ...BLOG_TAGS.map((tag) => ({
-      key: TAG_PAGE_KEYS[tag].label,
+      key: tagUiKeys(tag).label,
       href: tagPath(tag),
       current: tag === current,
     })),
@@ -205,7 +184,7 @@ export function blogPostBreadcrumb(
   slug: string,
   date: Date,
 ): BlogPostBreadcrumb {
-  return { year: formatVideoDate(date).slice(0, 4), file: `${slug}.md` };
+  return { year: formatJstDate(date).slice(0, 4), file: `${slug}.md` };
 }
 
 /** A post's date for its page: the text shown and the value of `<time datetime>`. */
@@ -218,7 +197,7 @@ export interface BlogPostDate {
 
 /** Returns the text and the `datetime` value of `date` for the page of a post. */
 export function blogPostDate(date: Date): BlogPostDate {
-  return { text: formatVideoDate(date), dateTime: date.toISOString() };
+  return { text: formatJstDate(date), dateTime: date.toISOString() };
 }
 
 /** Characters of Japanese text that are read in a minute. */

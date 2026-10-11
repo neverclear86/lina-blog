@@ -12,7 +12,7 @@
 import { externalLinkAttrs, requireSite } from "../external-link";
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
-import { formatVideoDate } from "../latest-videos";
+import { formatJstDate } from "../jst-date";
 import { YOUTUBE_URL } from "../profile-links";
 import type { YouTubeVideo } from "../youtube-feed";
 import ExternalNote from "./ExternalNote.astro";
@@ -48,7 +48,7 @@ const site = requireSite(Astro.site);
           </div>
           <div class="text">
             <time class="label" datetime={v.publishedAt.toISOString()}>
-              {formatVideoDate(v.publishedAt)}
+              {formatJstDate(v.publishedAt)}
             </time>
             <span class="title" lang="ja">
               {v.title}

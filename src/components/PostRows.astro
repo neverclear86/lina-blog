@@ -20,9 +20,9 @@
  */
 import type { BlogFrontmatter } from "../blog-schema";
 import type { Locale } from "../i18n/locales";
-import { translate, type UiKey } from "../i18n/ui";
-import type { BlogTag } from "../latest-posts";
-import { formatVideoDate } from "../latest-videos";
+import { translate } from "../i18n/ui";
+import { formatJstDate } from "../jst-date";
+import { tagUiKeys } from "../latest-posts";
 
 interface Props {
   /** Path in the command, such as `~/blog` or `~/blog/tags/tech`. */
@@ -36,13 +36,6 @@ interface Props {
   /** Language of the page, for the tag labels. Defaults to `"ja"`. */
   lang?: Locale;
 }
-
-/** UI string key of the label of each tag. */
-const TAG_LABEL_KEYS = {
-  制作記: "blog.tag.devlog",
-  技術: "blog.tag.tech",
-  日記: "blog.tag.diary",
-} as const satisfies Record<BlogTag, UiKey>;
 
 const { path, posts, emptyText, lang = "ja" } = Astro.props;
 const inJapanese = lang !== "ja";
@@ -70,11 +63,11 @@ const hreflang = inJapanese ? "ja" : undefined;
         <a class="row" href={`/blog/${data.slug}/`} hreflang={hreflang}>
           <span class="meta">
             <time class="label date" datetime={data.date.toISOString()}>
-              {formatVideoDate(data.date)}
+              {formatJstDate(data.date)}
             </time>
             <span class="tags">
               {data.tags.map((tag) => (
-                <span class="tag">{translate(lang, TAG_LABEL_KEYS[tag])}</span>
+                <span class="tag">{translate(lang, tagUiKeys(tag).label)}</span>
               ))}
               {data.sponsor && <span class="tag pr">PR</span>}
               {inJapanese && (

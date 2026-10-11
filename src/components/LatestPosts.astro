@@ -1,12 +1,13 @@
 ---
 /**
  * The blog section of the home page (`03 blog`): the heading, then the newest
- * `LATEST_POSTS_SHOWN` posts in a `PostRows` window with the command `$ ls -lt ~/blog | head -3`.
+ * `LATEST_POSTS_SHOWN` posts in a `PostRows` window with the command
+ * `$ ls -lt ~/blog | head -N`, where N is `LATEST_POSTS_SHOWN`.
  * The root has `id="blog"` unless `id` is given. It puts 56px above the heading, 96px from
  * 768px, so that the section that holds it adds no margin.
  *
  * From 768px the command line ends with a link to `/blog/`; below 768px the command loses
- * ` | head -3` and the link is left out, as the navigation of the header links to the list.
+ * ` | head -N` and the link is left out, as the navigation of the header links to the list.
  * Without posts, the link is left out at any width.
  */
 import type { ComponentProps } from "astro/types";
@@ -45,7 +46,7 @@ const latest = newestPosts(posts, LATEST_POSTS_SHOWN);
     emptyText={translate(lang, "latest.blog.noPosts")}
     lang={lang}
   >
-    <span slot="command" class="limit">{" | head -3"}</span>
+    <span slot="command" class="limit">{` | head -${LATEST_POSTS_SHOWN}`}</span>
     {latest.length > 0 && (
   <a
     slot="action"

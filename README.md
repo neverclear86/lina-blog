@@ -40,7 +40,8 @@ bun create astro@latest -- --template basics
 │   ├── content.config.ts # blog collection: src/content/blog/ (and blog-dev/ in astro dev or with LINA_DEV_PAGES=1) checked by blog-schema.ts
 │   ├── external-link.ts  # Which `href`s leave the site, the `target` and `rel` of such a link and the hidden text that says it opens in a new tab, unit-tested
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
-│   ├── latest-videos.ts  # Splits the YouTube videos into the Latest card and list, JST dates, unit-tested
+│   ├── jst-date.ts       # Writes the date of a post or a video in Japan time as YYYY.MM.DD, unit-tested
+│   ├── latest-videos.ts  # Splits the YouTube videos into the Latest card and list, unit-tested
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
 │   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
 │   ├── lina-published-slugs.d.ts # Types of virtual:lina-published-slugs, the slugs on Nostr built in astro.config.mjs

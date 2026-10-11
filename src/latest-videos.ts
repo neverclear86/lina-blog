@@ -1,19 +1,11 @@
 /**
  * Prepares the videos from the channel's feed for the Latest section of the home page: which
- * video goes in the large window, which go in the list, and how their dates are written.
+ * video goes in the large window and which go in the list.
  */
 import type { YouTubeFeedResult, YouTubeVideo } from "./youtube-feed";
 
 /** How many videos the Latest section shows: one in the large window and the rest in the list. */
 export const LATEST_VIDEOS_SHOWN = 4;
-
-/** Formats a date as YYYY-MM-DD in Japan time, where the videos are published. */
-const VIDEO_DATE_FORMAT = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "Asia/Tokyo",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
 
 /** Videos of the Latest section, split by where they are shown. */
 export interface LatestVideos {
@@ -35,9 +27,4 @@ export function latestVideos(result: YouTubeFeedResult): LatestVideos {
   }
   const [feature, ...rest] = result.videos;
   return { feature, list: rest.slice(0, LATEST_VIDEOS_SHOWN - 1) };
-}
-
-/** Writes `date` in Japan time as `YYYY.MM.DD`, whatever the time zone of the build. */
-export function formatVideoDate(date: Date): string {
-  return VIDEO_DATE_FORMAT.format(date).replaceAll("-", ".");
 }
