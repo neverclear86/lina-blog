@@ -56,7 +56,7 @@
 }
 
 .rv {
-  animation: rv-up 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation: rv-up 0.7s var(--ease-out) backwards;
 }
 
 @media (max-width: 767px) {

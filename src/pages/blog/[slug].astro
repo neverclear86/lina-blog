@@ -10,7 +10,7 @@
  * one step newer (`next`), which `getStaticPaths` gives as props.
  *
  * From 1024px `.toc-col` holds the table of contents of the `h2` headings of the post in a window
- * (`ArticleToc`) that sticks 88px below the top of the viewport; below 1024px the same items are
+ * (`ArticleToc`) that sticks below the site header; below 1024px the same items are
  * in a closed `<details>` before the body. The hidden `h2` of the footnotes is not an item. A post
  * without an `h2` of its own has no table of contents, and `.toc-col` stays empty so that the
  * body keeps its place.
@@ -165,9 +165,10 @@ const nostrUrl = isNostrPublished(slug, nostrPublishedSlugs)
     flex: 0 0 240px;
     align-self: stretch;
   }
+  /* Sticks `--header-h` and 27px below the top: 88px, as `design/AArticle.dc.html` does. */
   .toc-side {
     position: sticky;
-    top: 88px;
+    top: calc(var(--header-h) + 27px);
     display: flex;
     flex-direction: column;
     gap: 14px;
