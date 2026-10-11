@@ -21,6 +21,16 @@ function sampleProse(): string {
     .replace(/`[^`\n]*`/g, "");
 }
 
+describe("サンプル記事のリンク", () => {
+  it("サンプル記事は、ikili.pro の外への文字のリンクと画像だけのリンクを Markdown の記法で持つ", () => {
+    const prose = sampleProse();
+    expect(prose).toMatch(/\[[^\]!][^\]]*\]\(https?:\/\/(?!ikili\.pro[/)])/);
+    expect(prose).toMatch(
+      /\[!\[[^\]]*\]\([^)]*\)\]\(https?:\/\/(?!ikili\.pro[/)])/,
+    );
+  });
+});
+
 describe("サンプル記事のメッセージボックス", () => {
   it("サンプル記事は種類ごとに <aside> の例を持つ", () => {
     const prose = sampleProse();
