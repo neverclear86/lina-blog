@@ -14,7 +14,7 @@ import Layout from "../layouts/Layout.astro";
       title={translate("ja", "notFound.subtitle")}
     />
     <div class="win card">
-      <p class="window-title">~/404</p>
+      <p class="win-title">~/404</p>
       <div class="body">
         <p class="shell" aria-hidden="true">
           <span class="prompt">$</span>{" "}cd ~/404<br>
@@ -58,15 +58,6 @@ import Layout from "../layouts/Layout.astro";
 .card {
   width: 100%;
   max-width: 720px;
-}
-
-.window-title {
-  margin: 0;
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--line);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
 }
 
 .body {

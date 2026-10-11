@@ -761,6 +761,24 @@ const sampleVideos: YouTubeVideo[] = [
       <ContactForm lang="ja" />
     </section>
 
+    <section id="a-win-title">
+      <h2>A案: 窓のタイトル行とアコーディオンの summary</h2>
+      <div class="a-samples">
+        <div class="win">
+          <p class="win-title">p.win-title</p>
+          <p class="a-win-body">div.win の中のタイトル行</p>
+        </div>
+        <details class="win">
+          <summary>details.win &gt; summary</summary>
+          <p class="a-win-body">閉じているときは + が出る。</p>
+        </details>
+        <details class="win" open>
+          <summary>details.win[open] &gt; summary</summary>
+          <p class="a-win-body">開いているときは − が出る。</p>
+        </details>
+      </div>
+    </section>
+
     <section id="english" lang="en">
       <h2>英語</h2>
       <div class="row">
@@ -905,6 +923,12 @@ const sampleVideos: YouTubeVideo[] = [
   gap: 6px;
   max-width: 240px;
   text-decoration: none;
+}
+
+.a-win-body {
+  margin: 0;
+  padding: 16px;
+  color: var(--text);
 }
 
 .a-inner {

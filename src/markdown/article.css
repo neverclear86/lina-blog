@@ -8,14 +8,15 @@
    apart (WCAG 1.4.1).
 
    It sets the accordion too, a `<details>` with its `<summary>` that an article writes as raw
-   HTML (a `<summary>` of at least 48px in JetBrains Mono, with a plus as its mark while the
-   accordion is closed and a minus while it is open), and the message boxes written as raw HTML,
-   `<aside class="note">` and `<aside class="warning">`. A box with the class `face` shows the
-   thinking face of `src/assets/hate.webp` at its left as a CSS background, so it adds no `<img>`
-   and screen readers skip it:
+   HTML (its `<summary>` reaches 16px beyond the padding of the accordion at each side), and the
+   message boxes written as raw HTML, `<aside class="note">` and `<aside class="warning">`. A box
+   with the class `face` shows the thinking face of `src/assets/hate.webp` at its left as a CSS
+   background, so it adds no `<img>` and screen readers skip it:
    52 by 70px with a 12px gap below 768px, and 72 by 96px with a 16px gap from 768px. The ground
-   and the ring of both are in `src/styles/window.css`, shared with `.win`: the ring of an
-   accordion turns while its `<summary>` is hovered or has keyboard focus, and under
+   and the ring of both, and the look of the `<summary>` of an accordion (at least 48px high in
+   JetBrains Mono, with a plus as its mark while the accordion is closed and a minus while it is
+   open), are in `src/styles/window.css`, shared with `.win`: the ring of an accordion turns
+   while its `<summary>` is hovered or has keyboard focus, and under
    `prefers-reduced-motion: reduce` it takes the new angle without a transition. The look of the
    label of a box is in `src/styles/labels.css`, shared with `.label`. */
 
@@ -239,37 +240,10 @@
   padding-bottom: 12px;
 }
 
+/* The `<summary>` reaches over the padding of the `<details>`; the rest of its look is in
+   window.css. */
 .article-body summary {
-  position: relative;
-  display: block;
-  box-sizing: border-box;
-  min-height: 48px;
   margin-inline: -16px;
-  padding: 14px 44px 14px 16px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 20px;
-  cursor: pointer;
-  list-style: none;
-}
-
-.article-body summary::-webkit-details-marker {
-  display: none;
-}
-
-.article-body summary::after {
-  content: "+" / "";
-  position: absolute;
-  top: 50%;
-  right: 16px;
-  translate: 0 -50%;
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1;
-}
-
-.article-body details[open] > summary::after {
-  content: "\2212" / "";
 }
 
 .article-body details > summary + * {

@@ -40,7 +40,7 @@ const label = translate(lang, "blog.toc.label");
 
 {variant === "window" ? (
   <div class="win panel">
-    <div class="title" lang="en">
+    <div class="win-title title" lang="en">
       neo-tree · <span>toc</span>
     </div>
     <nav class="toc" aria-label={label}>
@@ -71,11 +71,7 @@ const label = translate(lang, "blog.toc.label");
 }
 .title {
   margin-bottom: 8px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
+  padding: 0 0 10px;
 }
 .title span {
   color: var(--text);
@@ -114,34 +110,6 @@ const label = translate(lang, "blog.toc.label");
   transition:
     background-color 0.2s,
     transform 0.2s;
-}
-.sheet summary {
-  position: relative;
-  display: block;
-  box-sizing: border-box;
-  min-height: 48px;
-  padding: 14px 44px 14px 16px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 20px;
-  cursor: pointer;
-  list-style: none;
-}
-.sheet summary::-webkit-details-marker {
-  display: none;
-}
-.sheet summary::after {
-  content: "+" / "";
-  position: absolute;
-  top: 50%;
-  right: 16px;
-  translate: 0 -50%;
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1;
-}
-.sheet[open] > summary::after {
-  content: "\2212" / "";
 }
 .sheet summary:focus-visible {
   outline-offset: -4px;

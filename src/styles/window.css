@@ -26,6 +26,18 @@
  * specificity, so the rules in `src/markdown/article.css` that change them win whatever the order
  * of the stylesheets.
  *
+ * `.win-title` is the title row at the top of a `.win`, a `<p>` or a `<div>`: `--muted` text in
+ * `--font-mono` at 12px, with 12px of padding above and below and 20px at the sides, and a 1px
+ * `--line` rule below. It has the specificity of one class, so the rule of a component that
+ * needs another margin or padding wins whatever the order of the stylesheets.
+ *
+ * The `<summary>` of an accordion, the direct child of `details.win` or of
+ * `.article-body details`, is a block of at least 48px in `--font-mono` at 13px, without the
+ * marker of the browser. Its mark at the right is a `--muted` plus while the `<details>` is
+ * closed and a minus while it is open. The selectors are in `:where()`, so the rules that a
+ * component or `src/markdown/article.css` writes for a `<summary>` win whatever the order of
+ * the stylesheets.
+ *
  * `.ticks` draws four `--muted` L-shaped ticks, 16px long and 1.5px thick, at the corners of its
  * box with `background`, so it replaces the `background-color` of the element.
  * `.ticks-acc` draws four keyword orange ticks, 14px long and 2px thick, on its `::after`, which
@@ -107,6 +119,47 @@ a.win:focus-visible::before,
   transition:
     --wa 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
     --wb 0s;
+}
+
+.win-title {
+  margin: 0;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+:where(details.win, .article-body details) > summary {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 14px 44px 14px 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+  list-style: none;
+}
+
+:where(details.win, .article-body details) > summary::-webkit-details-marker {
+  display: none;
+}
+
+:where(details.win, .article-body details) > summary::after {
+  content: "+" / "";
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  translate: 0 -50%;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+}
+
+:where(details.win[open], .article-body details[open]) > summary::after {
+  content: "\2212" / "";
 }
 
 .ticks {
