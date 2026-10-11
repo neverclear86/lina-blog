@@ -2,7 +2,9 @@
 import { Picture } from "astro:assets";
 import { nostrShareUrl, twitterShareUrl } from "../article-share";
 import { avatarAlt, THUMBS_UP_ARTICLE } from "../avatar-images";
+import { externalLinkAttrs, requireSite } from "../external-link";
 import { translate } from "../i18n/ui";
+import ExternalNote from "./ExternalNote.astro";
 import { labelSegments } from "./label-break";
 
 /**
@@ -10,7 +12,8 @@ import { labelSegments } from "./label-break";
  * face, three buttons and the thumbs-up of Lina.
  *
  * Two buttons are links to the post forms of Twitter (self-proclaimed X) and Nostr, which open in
- * a new tab. The third copies `url` with the Clipboard API and reads the result out in a
+ * a new tab. A text hidden from the eyes at the end of each (`ExternalNote`) says so. The third
+ * copies `url` with the Clipboard API and reads the result out in a
  * `role="status"` line below the buttons. The copy button and the line are `hidden` in the HTML,
  * and the script shows them only when `navigator.clipboard.writeText` exists, so that they do not
  * appear without JavaScript or outside a secure context.
@@ -30,6 +33,9 @@ interface Props {
 }
 
 const { title, url } = Astro.props;
+const site = requireSite(Astro.site);
+const twitterUrl = twitterShareUrl(title, url);
+const nostrUrl = nostrShareUrl(title, url);
 const twitter = labelSegments(translate("ja", "social.twitter"));
 ---
 
@@ -44,9 +50,8 @@ const twitter = labelSegments(translate("ja", "social.twitter"));
     <div class="buttons">
       <a
         class="btn btn-ghost"
-        href={twitterShareUrl(title, url)}
-        target="_blank"
-        rel="noopener noreferrer"
+        href={twitterUrl}
+        {...externalLinkAttrs(twitterUrl, site, "noopener noreferrer")}
         ><span class="name"
           >{twitter.map((segment, index) => (
   <>
@@ -54,18 +59,17 @@ const twitter = labelSegments(translate("ja", "social.twitter"));
     <span class="segment">{segment}</span>
   </>
 ))}<span class="part">{translate("ja", "articleEnd.shareSuffix")}</span></span
-        ></a
+        ><ExternalNote lang="ja" /></a
       >
       <a
         class="btn btn-ghost"
-        href={nostrShareUrl(title, url)}
-        target="_blank"
-        rel="noopener noreferrer"
+        href={nostrUrl}
+        {...externalLinkAttrs(nostrUrl, site, "noopener noreferrer")}
         ><span class="name"
           >{translate("ja", "articleEnd.nostr")}<span class="part"
             >{translate("ja", "articleEnd.shareSuffix")}</span
           ></span
-        ></a
+        ><ExternalNote lang="ja" /></a
       >
       <button
         class="btn btn-ghost copy"

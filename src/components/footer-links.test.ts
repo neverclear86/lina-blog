@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { footerProfileLinks, footerSiteLinks } from "./footer-links";
 
+const SITE = new URL("https://ikili.pro");
+
 describe("footerSiteLinks", () => {
   it("日本語のページではトップ・プロフィール・ブログ・お問い合わせの順に、言語のトップとその節と /blog/ とお問い合わせのページを指す", () => {
     expect(footerSiteLinks("ja").map(({ key, href }) => [key, href])).toEqual([
@@ -24,7 +26,7 @@ describe("footerSiteLinks", () => {
 describe("footerProfileLinks", () => {
   it("日本語のページでは PROFILE_LINKS の 5 つの後ろに RSS を並べる", () => {
     expect(
-      footerProfileLinks("ja").map(({ label, href }) => [label, href]),
+      footerProfileLinks("ja", SITE).map(({ label, href }) => [label, href]),
     ).toEqual([
       ["YouTube", "https://www.youtube.com/@LinaTsukusu"],
       ["Twitter(自称X)", "https://x.com/TsukusuLina"],
@@ -39,18 +41,35 @@ describe("footerProfileLinks", () => {
   });
 
   it("英語のページでは Twitter のラベルを Twitter (self-proclaimed X) にする", () => {
-    expect(footerProfileLinks("en").map(({ label }) => label)).toContain(
+    expect(footerProfileLinks("en", SITE).map(({ label }) => label)).toContain(
       "Twitter (self-proclaimed X)",
     );
   });
 
-  it("プロフィールには rel を me で付け、RSS には付けない", () => {
-    expect(footerProfileLinks("ja").map(({ rel }) => rel)).toEqual([
-      "me",
-      "me",
-      "me",
-      "me",
-      "me",
+  it("プロフィールは external で target を _blank、rel を me noopener にし、RSS は external でなく target も rel も付けない", () => {
+    const links = footerProfileLinks("ja", SITE);
+    expect(links.map(({ external }) => external)).toEqual([
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+    ]);
+    expect(links.map(({ target }) => target)).toEqual([
+      "_blank",
+      "_blank",
+      "_blank",
+      "_blank",
+      "_blank",
+      undefined,
+    ]);
+    expect(links.map(({ rel }) => rel)).toEqual([
+      "me noopener",
+      "me noopener",
+      "me noopener",
+      "me noopener",
+      "me noopener",
       undefined,
     ]);
   });

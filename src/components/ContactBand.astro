@@ -11,7 +11,8 @@
  * `::before` of `.flow`, which starts 52px (44px below 900px) left of the band.
  *
  * The DM line is a second `p` in `.text`. Its link goes to the Twitter (self-proclaimed X)
- * profile in a new tab, and the name breaks only before its "(". The link keeps `--ink` and is
+ * profile in a new tab, and the name breaks only before its "(". `ExternalNote` after the name
+ * says so to assistive technology. The link keeps `--ink` and is
  * underlined in every state (1px, and 2px while hovered or focused), because the link colors of
  * `global.css` would make the text or the underline `--keyword`, the color of the band.
  *
@@ -28,9 +29,11 @@
  */
 import { Picture } from "astro:assets";
 import { avatarAlt, THUMBS_UP_BAND } from "../avatar-images";
+import { externalLinkAttrs, requireSite } from "../external-link";
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import { profileLink } from "../profile-links";
+import ExternalNote from "./ExternalNote.astro";
 import { labelSegments } from "./label-break";
 import { contactPagePath } from "./site-nav";
 
@@ -41,6 +44,7 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
+const site = requireSite(Astro.site);
 const twitter = profileLink("twitter");
 const twitterLabel = labelSegments(twitter.label[lang]);
 ---
@@ -56,14 +60,13 @@ const twitterLabel = labelSegments(twitter.label[lang]);
         <p>
           {t("contact.dm.before")}<a
             href={twitter.url}
-            target="_blank"
-            rel="noopener"
+            {...externalLinkAttrs(twitter.url, site)}
             >{twitterLabel.map((segment, index) => (
   <>
     {index > 0 && <wbr />}
     <span class="segment">{segment}</span>
   </>
-))}</a
+))}<ExternalNote lang={lang} /></a
           >{t("contact.dm.after")}
         </p>
       </div>

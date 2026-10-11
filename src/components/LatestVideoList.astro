@@ -9,11 +9,13 @@
  * of the section there. From 768px it takes the full width of its place and the height of its
  * content (`align-self: start`), so a short column does not stretch the large window.
  */
+import { externalLinkAttrs, requireSite } from "../external-link";
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import { formatVideoDate } from "../latest-videos";
 import { YOUTUBE_URL } from "../profile-links";
 import type { YouTubeVideo } from "../youtube-feed";
+import ExternalNote from "./ExternalNote.astro";
 
 interface Props {
   /** Locale of the page, which chooses the text of the button. */
@@ -23,6 +25,7 @@ interface Props {
 }
 
 const { lang, videos } = Astro.props;
+const site = requireSite(Astro.site);
 ---
 
 <div class="latest-video-list">
@@ -30,7 +33,7 @@ const { lang, videos } = Astro.props;
   <ul class="list">
     {videos.map((v) => (
       <li>
-        <a class="win video" href={v.url}>
+        <a class="win video" href={v.url} {...externalLinkAttrs(v.url, site)}>
           <div class="gridbg thumb">
             <img
               src={v.thumbnail.src}
@@ -51,13 +54,19 @@ const { lang, videos } = Astro.props;
               {v.title}
             </span>
           </div>
+          <ExternalNote lang={lang} />
         </a>
       </li>
     ))}
   </ul>
 )}
-  <a class="btn btn-ghost channel" href={YOUTUBE_URL}>
+  <a
+    class="btn btn-ghost channel"
+    href={YOUTUBE_URL}
+    {...externalLinkAttrs(YOUTUBE_URL, site)}
+  >
     {translate(lang, "latest.videos.channel")}<span aria-hidden="true">→</span>
+    <ExternalNote lang={lang} />
   </a>
 </div>
 

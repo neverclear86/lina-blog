@@ -3,12 +3,15 @@
  * The contact page, `/ja/contact/` and `/en/contact/`: a head after the article pages of plan A
  * (the path, `$ mail lina`, the heading, the lead and a line about a DM on Twitter
  * (self-proclaimed X) in `PageHead`) and the contact form in a window. The DM line has the size
- * of the lead, and its link opens in a new tab and is underlined in every state.
+ * of the lead, and its link opens in a new tab, says so to assistive technology with
+ * `ExternalNote` and is underlined in every state.
  */
 import type { GetStaticPaths } from "astro";
 import ContactForm from "../../../components/ContactForm.astro";
+import ExternalNote from "../../../components/ExternalNote.astro";
 import { labelSegments } from "../../../components/label-break";
 import PageHead from "../../../components/PageHead.astro";
+import { externalLinkAttrs, requireSite } from "../../../external-link";
 import { LOCALES, type Locale } from "../../../i18n/locales";
 import { translate } from "../../../i18n/ui";
 import Layout from "../../../layouts/Layout.astro";
@@ -26,6 +29,7 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
+const site = requireSite(Astro.site);
 const twitter = profileLink("twitter");
 const twitterLabel = labelSegments(twitter.label[lang]);
 ---
@@ -48,14 +52,13 @@ const twitterLabel = labelSegments(twitter.label[lang]);
       <p class="dm">
         {t("contact.dm.before")}<a
           href={twitter.url}
-          target="_blank"
-          rel="noopener"
+          {...externalLinkAttrs(twitter.url, site)}
           >{twitterLabel.map((segment, index) => (
   <>
     {index > 0 && <wbr />}
     <span class="segment">{segment}</span>
   </>
-))}</a
+))}<ExternalNote lang={lang} /></a
         >{t("contact.dm.after")}
       </p>
     </PageHead>
