@@ -61,8 +61,9 @@ describe("リンクのホバー", () => {
     expect(selectors.filter((selector) => bareA.test(selector))).not.toEqual(
       [],
     );
+    // A `:where()` holds selectors with one level of parentheses, such as `:not([…])`.
     const outside = selectors.map((selector) =>
-      selector.replace(/:where\([^)]*\)/g, ""),
+      selector.replace(/:where\((?:[^()]|\([^()]*\))*\)/g, ""),
     );
     expect(outside.filter((selector) => bareA.test(selector))).toEqual([]);
   });
@@ -213,25 +214,84 @@ describe("記事の本文のリンク", () => {
   });
 });
 
-describe("記事の一覧の行", () => {
-  it("行のリンクは自分に下線を引かず、ライトのホバーとフォーカスではタイトルにだけ下線を引く", () => {
-    const rows = astroStyle("components/PostRows.astro");
-    expect(
-      rulesFor(rows, ".row")
-        .map((rule) => valueIn(rule, "text-decoration"))
-        .filter((value) => value !== undefined),
-    ).toEqual(["none"]);
-    const underlined = rows.filter(
-      (rule) => valueIn(rule, "text-decoration") === "underline",
+/** The files of the cards whose title is underlined, with the selector of the card's link. */
+const CARDS = [
+  ["components/PostRows.astro", ".row"],
+  ["components/PostNav.astro", ".item"],
+  ["components/LatestVideoFeature.astro", ".feature"],
+] as const;
+
+describe("カードのタイトル", () => {
+  it("カードのリンクは自分に下線を引かず、部品はタイトルの下線の規則を持たない", () => {
+    for (const [path, link] of CARDS) {
+      const rules = astroStyle(path);
+      expect(
+        rulesFor(rules, link)
+          .map((rule) => valueIn(rule, "text-decoration"))
+          .filter((value) => value !== undefined),
+        path,
+      ).toEqual(["none"]);
+      const decorated = rules.filter((rule) =>
+        rule.declarations.some(
+          (declaration) =>
+            declaration.property.startsWith("text-decoration") &&
+            declaration.value !== "none",
+        ),
+      );
+      expect(decorated, path).toEqual([]);
+    }
+  });
+
+  it("カードのタイトルはすべて .link-title を持つ", () => {
+    for (const [path] of CARDS) {
+      const titles = read(path).match(/<strong class="title[^"]*"/g) ?? [];
+      expect(titles.length, path).toBeGreaterThan(0);
+      for (const title of titles) {
+        expect(title, path).toBe('<strong class="title link-title"');
+      }
+    }
+  });
+
+  it("ライトのホバーとフォーカスではタイトルにだけ下線を引く規則が、リンクの下線の規則に並ぶ", () => {
+    const found = GLOBAL.filter(
+      (rule) => valueIn(rule, "text-decoration-line") === "underline",
     );
-    expect(underlined).toHaveLength(1);
-    const [title] = underlined;
-    expect(title.selectors).toHaveLength(1);
-    expect(selectorText(title)).toMatch(/\.title$/);
-    expect(selectorText(title)).toContain(':not([data-theme="dark"])');
-    expect(selectorText(title)).toContain(":hover");
-    expect(selectorText(title)).toContain(":focus-visible");
-    expect(valueIn(title, "text-decoration-color")).toMatch(TOKEN);
+    expect(found).toHaveLength(1);
+    expect(found[0].selectors).toHaveLength(1);
+    expect(selectorText(found[0])).toContain(
+      ':root:not([data-theme="dark"]) a:is(:hover, :focus-visible, .is-hover, .is-focus) .link-title',
+    );
+  });
+});
+
+describe("カテゴリのチップ", () => {
+  it("767px までの小さい寸法は labels.css の 1 つの規則が持ち、基本の規則より後にある", () => {
+    const chips = rulesFor(LABELS, ".chip-acc");
+    const base = chips.filter((rule) => rule.conditions.length === 0);
+    expect(base).toHaveLength(1);
+    const small = chips.filter((rule) =>
+      hasCondition(rule, "@media (max-width: 767px)"),
+    );
+    expect(small).toHaveLength(1);
+    expect(valueIn(small[0], "padding")).toBe("3px 8px");
+    expect(valueIn(small[0], "font-size")).toBe("11px");
+    expect(LABELS.indexOf(small[0])).toBeGreaterThan(LABELS.indexOf(base[0]));
+  });
+
+  it("使い手は寸法を写さない", () => {
+    for (const path of [
+      "pages/blog/[slug].astro",
+      "components/SponsorNotice.astro",
+    ]) {
+      const sizes = rulesFor(astroStyle(path), ".chip-acc").flatMap((rule) =>
+        rule.declarations.filter(
+          (declaration) =>
+            declaration.property === "padding" ||
+            declaration.property === "font-size",
+        ),
+      );
+      expect(sizes, path).toEqual([]);
+    }
   });
 });
 

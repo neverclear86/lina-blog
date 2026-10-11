@@ -9,8 +9,8 @@
  * text to the channel, all in one link to the YouTube channel.
  *
  * The ring of `.win` goes over the thumbnail. A hovered or focused link underlines the title
- * only, in the light theme; in the dark theme the title turns `--keyword` through the link rule
- * of `global.css`.
+ * only, in the light theme, through `.link-title` of `global.css`; in the dark theme the title
+ * turns `--keyword` through the link rule there.
  */
 import { externalLinkAttrs, requireSite } from "../external-link";
 import type { Locale } from "../i18n/locales";
@@ -68,7 +68,7 @@ const SIZES =
         </time>{" "}
         <span class="source">· youtube</span>
       </span>
-      <strong class="title" lang="ja">
+      <strong class="title link-title" lang="ja">
         {video.title}
       </strong>
     </div>
@@ -88,7 +88,7 @@ const SIZES =
     <div class="body">
       <span class="label">youtube</span>
       <span class="message">{translate(lang, "latest.videos.empty")}</span>
-      <strong class="title">
+      <strong class="title link-title">
         {translate(lang, "latest.videos.channel")}{" "}
         <span aria-hidden="true">→</span>
       </strong>
@@ -127,6 +127,7 @@ const SIZES =
   object-fit: cover;
 }
 
+/* The NEW chip keeps its own size and letter spacing at every width, unlike `.chip-acc` alone. */
 .new {
   position: absolute;
   top: 10px;
@@ -161,16 +162,6 @@ const SIZES =
   font-size: 17px;
   line-height: 1.5;
   overflow-wrap: anywhere;
-}
-
-/* The light theme underlines the title only; the date line and the mark would take a line too. */
-:root:not([data-theme="dark"])
-  .feature:is(:hover, :focus-visible, .is-hover, .is-focus)
-  .title {
-  text-decoration: underline;
-  text-decoration-color: var(--keyword);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
 }
 
 @media (min-width: 768px) {

@@ -5,7 +5,8 @@
  *
  * `.label` is a caption in JetBrains Mono: 11px, upper case, letter-spaced, in `--muted`. `.tag`
  * is a 22px box with a `--line2` border, for the tags of posts. `.chip-acc` is the
- * category chip: `--ink` on `--keyword`, 12px, weight 800.
+ * category chip: `--ink` on `--keyword`, 12px, weight 800. Below 768px it is smaller: 11px with
+ * 3px 8px of padding.
  *
  * `.tag` and `.chip-acc` stay on one line, at most as wide as their container, and end a longer
  * text with an ellipsis. They are inline blocks so that `text-overflow` applies to the text.
@@ -59,4 +60,11 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   vertical-align: middle;
+}
+
+@media (max-width: 767px) {
+  .chip-acc {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
 }

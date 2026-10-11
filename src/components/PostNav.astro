@@ -9,8 +9,8 @@
  * 768px they are in two columns: `prev` in the first and `next` in the second, with its text at
  * the right, and a window that is the only one stays in its own column. A long title wraps and
  * is never cut. In the light theme the title of the window that is hovered or has keyboard focus
- * is underlined; in the dark theme it takes the keyword color from the rule of `a:hover` in
- * `global.css`.
+ * is underlined by `.link-title` of `global.css`; in the dark theme it takes the keyword color
+ * from the rule of `a:hover` there.
  */
 import type { BlogFrontmatter } from "../blog-schema";
 import { translate } from "../i18n/ui";
@@ -35,7 +35,7 @@ const { prev, next } = Astro.props;
         <span class="label" lang="en">
           <span aria-hidden="true">←</span> prev
         </span>
-        <strong class="title">{prev.data.title}</strong>
+        <strong class="title link-title">{prev.data.title}</strong>
       </a>
     )}
     {next && (
@@ -43,7 +43,7 @@ const { prev, next } = Astro.props;
         <span class="label" lang="en">
           next <span aria-hidden="true">→</span>
         </span>
-        <strong class="title">{next.data.title}</strong>
+        <strong class="title link-title">{next.data.title}</strong>
       </a>
     )}
   </nav>
@@ -68,14 +68,6 @@ const { prev, next } = Astro.props;
   font-size: 15px;
   line-height: 1.6;
   overflow-wrap: anywhere;
-}
-:global(:root:not([data-theme="dark"]))
-  .item:is(:hover, :focus-visible)
-  .title {
-  text-decoration: underline;
-  text-decoration-color: var(--keyword);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
 }
 
 @media (min-width: 768px) {

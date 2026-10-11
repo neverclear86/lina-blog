@@ -19,6 +19,10 @@ body {
  * `.is-hover` and `.is-focus` show the two states without the pointer or the keyboard, for the
  * samples in `src/dev/components.astro`.
  *
+ * A card whose link has `text-decoration: none` marks its title with `.link-title`: in the light
+ * theme the title, and not the whole card, gets the same underline while the link is hovered or
+ * focused. The dark theme changes the color of the link, and so of the title, instead.
+ *
  * Every selector is inside `:where()`, so that a rule of a part, whose specificity is higher,
  * always wins.
  */
@@ -27,7 +31,15 @@ body {
   text-decoration: none;
 }
 
-:where(a:hover, a:focus-visible, a.is-hover, a.is-focus) {
+:where(
+  a:hover,
+  a:focus-visible,
+  a.is-hover,
+  a.is-focus,
+  :root:not([data-theme="dark"])
+    a:is(:hover, :focus-visible, .is-hover, .is-focus)
+    .link-title
+) {
   text-decoration-line: underline;
   text-decoration-color: var(--keyword);
   text-decoration-thickness: 2px;

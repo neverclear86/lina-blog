@@ -77,7 +77,7 @@ const hreflang = inJapanese ? "ja" : undefined;
               )}
             </span>
           </span>
-          <strong class="title" lang={inJapanese ? "ja" : undefined}>
+          <strong class="title link-title" lang={inJapanese ? "ja" : undefined}>
             {data.title}
           </strong>
           {inJapanese && (
@@ -185,13 +185,6 @@ const hreflang = inJapanese ? "ja" : undefined;
   border-top: 1px solid var(--line);
   font-size: 15px;
   color: var(--muted);
-}
-
-:global(:root:not([data-theme="dark"])) .row:is(:hover, :focus-visible) .title {
-  text-decoration: underline;
-  text-decoration-color: var(--keyword);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
 }
 
 @media (min-width: 768px) {
