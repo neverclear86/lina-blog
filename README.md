@@ -111,7 +111,7 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   │   ├── paths.ts      # Path of the same page in another locale, and the canonical and hreflang URLs of a page, unit-tested
 │   │   └── ui.ts         # UI strings per locale, unit-tested
 │   ├── layouts/
-│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description, Open Graph and Twitter card tags (description and image props, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the skip link (SkipLink.astro) and the site header (SiteHeader.astro, with the line of how far the reader is in a post when the readingProgress prop is set) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
+│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description, Open Graph and Twitter card tags (description and image props, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, controls.css, window.css, labels.css and motion.css; sets --font-body on html; puts the skip link (SkipLink.astro) and the site header (SiteHeader.astro, with the line of how far the reader is in a post when the readingProgress prop is set) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
 │   │   ├── a11y.ts           # Sätteri hast plugins: aria-label on task list checkboxes, tabindex="0" on tables, unit-tested
 │   │   ├── article.css       # Type of an article under .article-body: links, body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, YouTube embeds, accordions and message boxes
@@ -146,7 +146,7 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
 │   ├── styles/
 │   │   ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ink, .btn-ghost), icon links (.sq, .iconbtn) and page switch links (.ws) of plan A
-│   │   ├── global.css    # body colors, the links, the keyboard focus outline (none on the focused <main>), the scroll padding that keeps the anchors and the focused element clear of the sticky header and the classes that hide text from the eyes (.sr-only, .sr-only-focusable, .sr-only-narrow)
+│   │   ├── global.css    # the frame of the page (html, body and .site-content: no margin, the full height, the footer at the bottom of a short page), the font of html (--font-mono and no faked weight), body colors, the links, the keyboard focus outline (none on the focused <main>), the scroll padding that keeps the anchors and the focused element clear of the sticky header and the classes that hide text from the eyes (.sr-only, .sr-only-focusable, .sr-only-narrow)
 │   │   ├── labels.css    # Labels of plan A: .label (shared with the labels of an article's message boxes), .tag and the category chip .chip-acc
 │   │   ├── motion.css    # The blinking cursor of the name logo (.blink-on), the appearance when the page opens (.rv, band-in), stopped under reduced motion
 │   │   ├── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
@@ -213,7 +213,7 @@ CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in 
 | File         | Holds                                                                      |
 | :----------- | :------------------------------------------------------------------------- |
 | `tokens.css` | Color tokens (CSS variables): the plan A tokens for the light and dark themes, the icon colors of the services and the colors that stay the same in both themes |
-| `global.css` | Styles of `body` (colors, which switch with the theme at once), the links (with `.link-title`, the title of a card link that the light theme underlines), the keyboard focus outline (none on `<main tabindex="-1">`, which the skip link focuses) and the scroll padding of the page (72px at the top below the sticky header, 8px at the bottom), which the anchors, `#main` and the focused element stop inside, and the classes that hide text from the eyes: `.sr-only`, `.sr-only-focusable` (hidden until it has the focus, for the skip link) and `.sr-only-narrow` (hidden below 768px) |
+| `global.css` | The frame of the page (`html`, `body` and `.site-content`: no margin, the full height, and the footer at the bottom of a short page), the font of `html` (`--font-mono` and `font-synthesis-weight`), the colors of `body` (which switch with the theme at once), the links (with `.link-title`, the title of a card link that the light theme underlines), the keyboard focus outline (none on `<main tabindex="-1">`, which the skip link focuses) and the scroll padding of the page (72px at the top below the sticky header, 8px at the bottom), which the anchors, `#main` and the focused element stop inside, and the classes that hide text from the eyes: `.sr-only`, `.sr-only-focusable` (hidden until it has the focus, for the skip link) and `.sr-only-narrow` (hidden below 768px) |
 | `controls.css` | Buttons (`.btn`, `.btn-acc`, `.btn-ink`, `.btn-ghost`), icon links (`.sq`, `.iconbtn`, `.iconbtn-acc`) and page switch links (`.ws`, `.ws.on`) of plan A |
 | `window.css` | Plan A windows (`.win`, `.article-body details` and an article's message boxes; a link window turns its border on hover, and an accordion while its `<summary>` is hovered or focused), the title row of a window (`.win-title`), the `<summary>` of an accordion (`details.win` and `.article-body details`, a plus while closed and a minus while open), corner ticks (`.ticks`, and `.ticks-acc` inside an `.acct`), the grid background (`.gridbg`) and the stripe band (`.stripes`, flowing right) and the avatar shadow (`.av-shadow`). The turn of the border and the spread of the ticks stop their transitions, and the flow of `.stripes` stops, under `prefers-reduced-motion: reduce` |
 | `labels.css` | Labels of plan A: the caption `.label` (whose declarations the labels of an article's message boxes share), the bordered tag `.tag` and the orange category chip `.chip-acc` |
@@ -223,7 +223,8 @@ A global file holds only what several components share.
 Styles that belong to one component go in that component's scoped `<style>`.
 Color values are written only in `tokens.css`; other CSS, global or scoped, uses the tokens with `var(--…)`. The one exception is `black` in the masks of `window.css`, which sets only the opacity and is never drawn.
 A component that must style an element outside its own markup, such as `<html data-theme>`,
-wraps only that selector in `:global()`.
+wraps only that selector in `:global()`, as in `:global(:root[data-theme="dark"]) .x`.
+It does so for `:root` and `html` too, although Astro adds no scope attribute to them either way.
 The elements that rendered Markdown outputs are styled by plain CSS files in `src/markdown/`: `article.css`, whose rules sit under `.article-body` instead of in `:global()`, and `highlight.css` for the windows of code blocks.
 
 The inline script in the `<head>` of `src/layouts/Layout.astro` (`THEME_SCRIPT` in `src/theme.ts`) sets `<html data-theme>` before the first paint.
@@ -242,9 +243,9 @@ A new component adds its samples to `/dev/components/`, and a new Markdown synta
 
 Fonts are self-hosted with the Astro Fonts API (`fonts` in `astro.config.mjs`). `astro build`
 downloads them from Google Fonts, and pages load them from `/_astro/fonts/`, never from a font
-CDN. `src/layouts/Layout.astro` emits the `@font-face` rules on every page, sets `--font-body` on
-`html` and builds `--font-mono` there from `--font-mono-latin` (JetBrains Mono) and
-`--font-body`. No font file is preloaded.
+CDN. `src/layouts/Layout.astro` emits the `@font-face` rules on every page and sets `--font-body`
+on `html`; `src/styles/global.css` builds `--font-mono` there from `--font-mono-latin`
+(JetBrains Mono) and `--font-body`. No font file is preloaded.
 
 | CSS variable     | Font                                                  | Weights       | Used for                                                                                                              |
 | :--------------- | :---------------------------------------------------- | :------------ | :-------------------------------------------------------------------------------------------------------------------- |

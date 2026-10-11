@@ -1,8 +1,44 @@
 /*
- * Global element styles for every page, and the classes that hide text from the eyes, imported
- * by `src/layouts/Layout.astro` after `tokens.css`. Colors come only from the tokens in
- * `tokens.css`.
+ * Global element styles for every page, imported by `src/layouts/Layout.astro` after
+ * `tokens.css`: the frame of the page (`html`, `body` and `.site-content`), the colors, the links,
+ * the keyboard focus outline, the scroll padding and the classes that hide text from the eyes.
+ * Colors come only from the tokens in `tokens.css`.
  */
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+}
+
+html {
+  height: 100%;
+}
+
+/* On a page shorter than the viewport, .site-content grows and the footer sits at the bottom. */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Keeps the page in block layout, where its margin-inline: auto works as on a plain body. */
+.site-content {
+  flex-grow: 1;
+}
+
+/*
+ * Every element except form controls (which need `font: inherit`) inherits Zen Kaku Gothic New;
+ * components set var(--font-mono) where the design uses JetBrains Mono. --font-mono is the
+ * JetBrains Mono list followed by --font-body, so Japanese in a monospace label is drawn in the
+ * loaded Zen Kaku Gothic New.
+ */
+html {
+  --font-mono: var(--font-mono-latin), var(--font-body);
+  font-family: var(--font-body);
+  /* Only the loaded faces are drawn: the browser never fakes a heavier weight. */
+  font-synthesis-weight: none;
+}
 
 /*
  * The theme switches at once: `.lx` of `design/Main.dc.html` has no transition on its colors.

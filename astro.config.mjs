@@ -264,7 +264,7 @@ export default defineConfig({
   // drops the named Latin Extended, Greek and Cyrillic chunks. Browsers download only the chunks
   // whose characters a page uses. The design's Zen Kaku Gothic New 500 is not loaded and is
   // written as 400. Google serves JetBrains Mono as one variable file for every weight, so it is
-  // loaded as the range 400-800. Its variable is `--font-mono-latin`: `src/layouts/Layout.astro`
+  // loaded as the range 400-800. Its variable is `--font-mono-latin`: `src/styles/global.css`
   // builds `--font-mono` from it and `--font-body`, because Astro renames each loaded family
   // with a hash and a fallback here cannot name the loaded Zen Kaku Gothic New.
   fonts: [
