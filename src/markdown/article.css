@@ -3,9 +3,9 @@
    links, body text, headings (h2 to h4, with the marks `##` and `###` before h2 and h3),
    paragraphs, `strong`, inline code, lists, block quotes, images and horizontal rules, and the
    other elements that Sätteri and the plugins in src/markdown/ output: GFM tables, task lists,
-   footnotes, YouTube embeds and the text that only screen readers read (`.sr-only`). The type is
-   16px below 768px and 17px from 768px. A link is underlined, because `global.css` leaves a link
-   plain and the text color alone would not set it apart (WCAG 1.4.1).
+   footnotes and YouTube embeds. The type is 16px below 768px and 17px from 768px. A link is
+   underlined, because `global.css` leaves a link plain and the text color alone would not set it
+   apart (WCAG 1.4.1).
 
    It sets the accordion too, a `<details>` with its `<summary>` that an article writes as raw
    HTML (a `<summary>` of at least 48px in JetBrains Mono, with a plus as its mark while the
@@ -214,15 +214,6 @@
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.875em;
-}
-
-.article-body .sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .article-body .youtube-embed {

@@ -137,20 +137,20 @@ const nostrUrl = isNostrPublished(slug, nostrPublishedSlugs)
         <h1>{title}</h1>
         <dl class="meta">
           <div class="cell">
-            <dt class="label" lang="en">date</dt>
+            <dt class="label sr-only-narrow" lang="en">date</dt>
             <dd><time datetime={published.dateTime}>{published.text}</time></dd>
           </div>
           <div class="cell">
-            <dt class="label" lang="en">read</dt>
+            <dt class="label sr-only-narrow" lang="en">read</dt>
             <dd lang="en">{minutes} min</dd>
           </div>
           <div class="cell author">
-            <dt class="label" lang="en">author</dt>
+            <dt class="label sr-only-narrow" lang="en">author</dt>
             <dd>{translate("ja", "blog.author")}</dd>
           </div>
           {nostrUrl && (
   <div class="cell">
-    <dt class="label" lang="en">
+    <dt class="label sr-only-narrow" lang="en">
       mirror
     </dt>
     <dd>
@@ -291,11 +291,6 @@ h1 {
   margin: 0;
 }
 .meta dt {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
   white-space: nowrap;
 }
 .cell {
@@ -367,13 +362,6 @@ h1 {
     background: var(--shade);
     font-size: 14px;
     color: var(--text);
-  }
-  .meta dt {
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip-path: none;
   }
   .cell {
     display: flex;

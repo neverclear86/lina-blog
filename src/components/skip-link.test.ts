@@ -36,11 +36,15 @@ describe("スキップリンク", () => {
     expect(skipLink).toContain('translate(lang, "nav.skip")');
   });
 
-  it("フォーカスが無いときは切り抜いて隠し、display: none も hidden も使わない", () => {
-    const [hidden] = rulesFor(SKIP, ".skip-link:not(:focus, .is-focus)");
+  it("フォーカスが無いときは共通の .sr-only-focusable で切り抜いて隠し、display: none も hidden も使わない", () => {
+    expect(skipLink).toMatch(/class:list=\{\[[^\]]*"sr-only-focusable"/);
+    const [hidden] = rulesFor(
+      parseCss(source("styles/global.css")),
+      ".sr-only-focusable:not(:focus, .is-focus)",
+    );
     expect(valueIn(hidden, "clip-path")).toBeDefined();
     expect(
-      SKIP.some((rule) =>
+      [...SKIP, hidden].some((rule) =>
         rule.declarations.some(
           (d) => d.property === "display" && d.value === "none",
         ),

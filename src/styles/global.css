@@ -1,6 +1,7 @@
 /*
- * Global element styles for every page, imported by `src/layouts/Layout.astro` after
- * `tokens.css`. Colors come only from the tokens in `tokens.css`.
+ * Global element styles for every page, and the classes that hide text from the eyes, imported
+ * by `src/layouts/Layout.astro` after `tokens.css`. Colors come only from the tokens in
+ * `tokens.css`.
  */
 
 /*
@@ -83,4 +84,46 @@ main[tabindex="-1"]:focus {
  */
 html {
   scroll-padding: 72px 0 8px;
+}
+
+/*
+ * Text that only assistive technology reads is a 1px box cut down to nothing. Unlike
+ * `display: none` and `hidden`, it stays in the accessibility tree and stays focusable.
+ * `min-height`, `margin`, `padding` and `border` are reset as well, so that `.btn` of
+ * `controls.css` cannot make the box of `.sr-only-focusable` larger than 1px.
+ *
+ * `.sr-only-focusable` is the same box until the element has the focus (`.is-focus` shows that
+ * state without the keyboard), and `.sr-only-narrow` is the same box below 768px and no box
+ * from 768px. `.sr-only` and `.sr-only-narrow` have the specificity of one class, so that a rule
+ * of a part, whose scope attribute makes it higher, can override a declaration;
+ * `.sr-only-focusable:not(:focus, .is-focus)` has two, so that it wins over `.btn` of
+ * `controls.css`.
+ */
+.sr-only,
+.sr-only-focusable:not(:focus, .is-focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .sr-only-narrow {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
