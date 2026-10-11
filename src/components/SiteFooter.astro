@@ -50,7 +50,7 @@ const profileLinks = footerProfileLinks(lang, requireSite(Astro.site));
 <footer class:list={["site-footer", variant]}>
   {variant === "full" ? (
   <>
-    <div class="main">
+    <div class="main page-width">
       <div class="logo">
         <NameLogo variant="full" label="/tsukusu/lina $_" />
       </div>
@@ -82,7 +82,7 @@ const profileLinks = footerProfileLinks(lang, requireSite(Astro.site));
         </ul>
       </nav>
     </div>
-    <div class="band">
+    <div class="band page-width">
       <span class="label">
         {copyright}
         <span class="id">{ID}</span>
@@ -94,7 +94,7 @@ const profileLinks = footerProfileLinks(lang, requireSite(Astro.site));
     </div>
   </>
 ) : (
-  <div class="solo">
+  <div class="solo page-width">
     <FaceIcon kind="mark" size={28} alt="" />
     <span class="label">
       {copyright}
@@ -109,17 +109,10 @@ const profileLinks = footerProfileLinks(lang, requireSite(Astro.site));
   color: var(--text);
   font-size: 14px;
 }
-.main,
-.band,
-.solo {
-  box-sizing: border-box;
-  max-width: 1440px;
-  margin-inline: auto;
-}
 .main {
   display: grid;
   gap: 18px;
-  padding: 36px 16px 18px;
+  padding-block: 36px 18px;
 }
 .logo {
   min-width: 0;
@@ -134,7 +127,7 @@ const profileLinks = footerProfileLinks(lang, requireSite(Astro.site));
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  padding: 0 16px 28px;
+  padding-block: 0 28px;
 }
 .badge {
   display: none;
@@ -149,7 +142,7 @@ const profileLinks = footerProfileLinks(lang, requireSite(Astro.site));
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 24px 16px;
+  padding-block: 24px;
 }
 ul {
   display: flex;
@@ -174,7 +167,7 @@ li a {
   .main {
     grid-template-columns: 1fr 1fr;
     gap: 40px;
-    padding: 64px 32px 32px;
+    padding-block: 64px 32px;
   }
   .logo {
     grid-column: 1 / -1;
@@ -185,7 +178,7 @@ li a {
   }
   .band {
     gap: 12px;
-    padding: 18px 32px 28px;
+    padding-block: 18px 28px;
     border-top: 1px solid var(--line);
   }
   .badge {
@@ -198,21 +191,16 @@ li a {
   }
   .solo {
     gap: 12px;
-    padding: 28px 32px;
+    padding-block: 28px;
   }
 }
 @media (min-width: 1024px) {
   .main {
     grid-template-columns: 2fr 1fr 1fr;
-    padding-inline: 64px;
   }
   .logo {
     grid-column: auto;
     width: min(420px, 100%);
-  }
-  .band,
-  .solo {
-    padding-inline: 64px;
   }
 }
 </style>

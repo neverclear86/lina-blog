@@ -50,7 +50,7 @@ const crumbs = blogCrumbs(tag);
       </ul>
     </nav>
   </PageHead>
-  <div class="list">
+  <div class="list page-width">
     <PostRows
       path={text.label}
       posts={posts}
@@ -74,10 +74,7 @@ const crumbs = blogCrumbs(tag);
 }
 
 .list {
-  box-sizing: border-box;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 24px 16px 56px;
+  padding-block: 24px 56px;
 }
 
 @media (min-width: 768px) {
@@ -86,13 +83,13 @@ const crumbs = blogCrumbs(tag);
   }
 
   .list {
-    padding: 40px 20px 72px;
+    padding-block: 40px 72px;
   }
 }
 
 @media (min-width: 900px) {
   .list {
-    padding: 56px 64px 96px;
+    padding-block: 56px 96px;
   }
 }
 </style>
