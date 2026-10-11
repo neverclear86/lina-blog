@@ -21,6 +21,10 @@ describe("article.css", () => {
     expect(outside).toEqual([]);
   });
 
+  it("ArticleBody.astro は :global() を使わない", () => {
+    expect(read("../components/ArticleBody.astro")).not.toContain(":global");
+  });
+
   it("ArticleBody.astro は article.css を読み込む", () => {
     expect(read("../components/ArticleBody.astro")).toContain(
       'import "../markdown/article.css";',
