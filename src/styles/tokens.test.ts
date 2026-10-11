@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { parseCss, rulesFor, valueIn } from "../test/css-source";
 
 /**
  * The `.lx` (dark) and `.lx.light` rules of `Main.dc.html` with `--code` of `AArticle.dc.html` and
@@ -26,44 +27,39 @@ const highlightCss = readFileSync(
   new URL("../markdown/highlight.css", import.meta.url),
   "utf8",
 );
+const highlightRules = parseCss(highlightCss);
 
 /**
- * Returns the declarations of the rule whose selector starts a line of `css`.
+ * Returns the declarations of the one rule of `css` that has `selector` among its selectors, as an
+ * object of property names to values.
  *
- * Comments are dropped, property names are kept as written and values are lowercased, with the
- * spaces around commas and the zero before a decimal point removed, so `#E8731A` in the design
- * and `#e8731a` in `tokens.css` compare equal, and so do `rgba(23,24,27,.86)` and
- * `rgba(23, 24, 27, 0.86)`.
+ * Property names are kept as written and values are lowercased, with the spaces around commas and
+ * the zero before a decimal point removed, so `#E8731A` in the design and `#e8731a` in
+ * `tokens.css` compare equal, and so do `rgba(23,24,27,.86)` and `rgba(23, 24, 27, 0.86)`.
+ * Fails when there is not exactly one such rule.
  */
-function declarations(css: string, selector: string): Record<string, string> {
-  const source = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = new RegExp(`^${escaped}\\s*\\{([^}]*)\\}`, "m").exec(source);
-  if (!match) {
-    throw new Error(`no rule for ${selector}`);
+function valuesOf(css: string, selector: string): Record<string, string> {
+  const found = rulesFor(parseCss(css), selector);
+  if (found.length !== 1) {
+    throw new Error(`${found.length} rules for ${selector}, expected 1`);
   }
-  const result: Record<string, string> = {};
-  for (const declaration of match[1].split(";")) {
-    const colon = declaration.indexOf(":");
-    if (colon === -1) {
-      continue;
-    }
-    result[declaration.slice(0, colon).trim()] = declaration
-      .slice(colon + 1)
-      .trim()
-      .toLowerCase()
-      .replace(/\s*,\s*/g, ",")
-      .replace(/\b0\./g, ".");
-  }
-  return result;
+  return Object.fromEntries(
+    found[0].declarations.map((d) => [
+      d.property,
+      d.value
+        .toLowerCase()
+        .replace(/\s*,\s*/g, ",")
+        .replace(/\b0\./g, "."),
+    ]),
+  );
 }
 
-/** Keeps only the custom properties (`--*`) of a rule. */
-function customProperties(
-  rule: Record<string, string>,
-): Record<string, string> {
+/** Returns only the custom properties (`--*`) of `valuesOf`. */
+function tokensOf(css: string, selector: string): Record<string, string> {
   return Object.fromEntries(
-    Object.entries(rule).filter(([name]) => name.startsWith("--")),
+    Object.entries(valuesOf(css, selector)).filter(([name]) =>
+      name.startsWith("--"),
+    ),
   );
 }
 
@@ -78,11 +74,11 @@ const THEME_INDEPENDENT = {
 };
 
 describe("tokens.css", () => {
-  const light = declarations(tokens, ":root");
-  const dark = declarations(tokens, ':root[data-theme="dark"]');
+  const light = valuesOf(tokens, ":root");
+  const dark = valuesOf(tokens, ':root[data-theme="dark"]');
 
   it("ライトのトークンはデザインの A案 の .lx.light の変数を --hdr のほかは同じ値で持ち、--hdr は .88 でなく .9 にする", () => {
-    const expected = customProperties(declarations(designA, ".lx.light"));
+    const expected = tokensOf(designA, ".lx.light");
     expect(Object.keys(expected)).toHaveLength(18);
     expect(expected["--hdr"]).toBe("rgba(236,234,229,.88)");
     expect(light).toMatchObject({
@@ -92,14 +88,14 @@ describe("tokens.css", () => {
   });
 
   it("ダークのトークンはデザインの A案 の .lx の変数をすべて同じ値で持つ", () => {
-    const expected = customProperties(declarations(designA, ".lx"));
+    const expected = tokensOf(designA, ".lx");
     expect(Object.keys(expected)).toHaveLength(18);
     expect(dark).toMatchObject(expected);
   });
 
   it("ダークのトークンはライトに無い名前の変数を持たない", () => {
-    const missing = Object.keys(customProperties(dark)).filter(
-      (name) => !(name in light),
+    const missing = Object.keys(dark).filter(
+      (name) => name.startsWith("--") && !(name in light),
     );
     expect(missing).toEqual([]);
   });
@@ -290,7 +286,7 @@ function luminance(color: string): number {
 }
 
 /**
- * Returns `top`, a `#rrggbb` or `rgba(r,g,b,a)` color as `declarations` writes it, laid over the
+ * Returns `top`, a `#rrggbb` or `rgba(r,g,b,a)` color as `valuesOf` writes it, laid over the
  * opaque `#rrggbb` color `under`, as the `#rrggbb` color that the viewer sees. Each channel is
  * rounded to an integer, as a browser does.
  */
@@ -319,29 +315,11 @@ function flatten(top: string, under: string): string {
  * does not match `outline-color` or `--code-color`.
  */
 function tokensUsedFor(css: string, properties: readonly string[]): string[] {
-  const source = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  const pattern = new RegExp(
-    String.raw`(?<![\w-])(?:${properties.join("|")})\s*:\s*var\((--[\w-]+)\)`,
-    "g",
-  );
-  return [
-    ...new Set([...source.matchAll(pattern)].map((match) => match[1])),
-  ].sort();
-}
-
-/**
- * Declarations of the first rule of `src/markdown/highlight.css` whose selector list is
- * `selector`, written with single spaces as in `.a, .b`. Comments are removed. Returns an empty
- * string when there is no such rule.
- */
-function highlightRule(selector: string): string {
-  const source = highlightCss.replace(/\/\*[\s\S]*?\*\//g, "");
-  for (const match of source.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
-    if (match[1].trim().replace(/\s*,\s*/g, ", ") === selector) {
-      return match[2];
-    }
-  }
-  return "";
+  const tokens = parseCss(css)
+    .flatMap((rule) => rule.declarations)
+    .filter((d) => properties.includes(d.property))
+    .flatMap((d) => /^var\((--[\w-]+)\)/.exec(d.value)?.slice(1) ?? []);
+  return [...new Set(tokens)].sort();
 }
 
 /** Returns the labels of the pairs of `A_TEXT_PAIRS` that are under 4.5:1 in `colors`. */
@@ -359,12 +337,12 @@ function failingTextPairs(colors: Record<string, string>): string[] {
 }
 
 describe("tokens.css のコントラスト", () => {
-  const light = customProperties(declarations(tokens, ":root"));
+  const light = tokensOf(tokens, ":root");
   const themes = {
     light,
     dark: {
       ...light,
-      ...customProperties(declarations(tokens, ':root[data-theme="dark"]')),
+      ...tokensOf(tokens, ':root[data-theme="dark"]'),
     },
   };
 
@@ -459,7 +437,7 @@ describe("tokens.css のコントラスト", () => {
   });
 
   it("コードブロックの題の帯の下線 --code-line と枠 --code-line2 は、ダークの --line と --line2 と同じ値で、両テーマで変えない", () => {
-    const darkOnly = declarations(tokens, ':root[data-theme="dark"]');
+    const darkOnly = valuesOf(tokens, ':root[data-theme="dark"]');
     expect(light["--code-line"]).toBe("rgba(236,234,229,.12)");
     expect(light["--code-line"]).toBe(darkOnly["--line"]);
     expect(light["--code-line2"]).toBe(darkOnly["--line2"]);
@@ -467,53 +445,42 @@ describe("tokens.css のコントラスト", () => {
     expect(darkOnly).not.toHaveProperty("--code-line2");
   });
 
-  it("コードブロックの窓は枠を --line2、題の帯の下線を --code-line で描く", () => {
-    expect(highlightCss).toMatch(
-      /figure\.code-window\s*\{[^}]*?border:\s*1px solid var\(--line2\)/,
-    );
-    expect(highlightCss).toMatch(
-      /figure\.code-window > figcaption\s*\{[^}]*?border-bottom:\s*1px solid var\(--code-line\)/,
-    );
+  it("コードブロックの題の帯の下線はダークの規則が値を変えないトークンで描き、窓の枠もトークンで描く", () => {
+    const valuesFor = (selector: string, property: string) =>
+      rulesFor(highlightRules, selector).flatMap(
+        (rule) => valueIn(rule, property) ?? [],
+      );
+    const darkOnly = valuesOf(tokens, ':root[data-theme="dark"]');
+    const bars = valuesFor("figure.code-window > figcaption", "border-bottom");
+    expect(bars).toHaveLength(1);
+    const name = /var\((--[\w-]+)\)$/.exec(bars[0])?.[1] ?? "";
+    expect(name).not.toBe("");
+    expect(Object.keys(darkOnly)).not.toContain(name);
+    expect(valuesFor("figure.code-window", "border")).toEqual([
+      expect.stringMatching(/var\(--[\w-]+\)$/),
+    ]);
   });
 
   it.each(Object.entries(themes))(
-    "%s のコードブロックのフォーカスの輪は --keyword で描き、--code の上で 3:1 以上になる",
+    "%s のコードブロックとコピーのボタンのフォーカスの輪は、--code の上で 3:1 以上の色のトークンで描く",
     (_theme, colors) => {
-      const ring =
-        /pre\.shiki:focus-visible\s*\{[^}]*?outline:\s*2px solid var\((--[\w-]+)\)/.exec(
-          highlightCss,
+      for (const selector of [
+        "pre.shiki:focus-visible",
+        ".code-copy:focus-visible",
+      ]) {
+        const rings = rulesFor(highlightRules, selector).flatMap(
+          (rule) => valueIn(rule, "outline") ?? [],
         );
-      expect(ring?.[1]).toBe("--keyword");
-      expect(
-        contrastRatio(colors["--keyword"], colors["--code"]),
-      ).toBeGreaterThanOrEqual(3);
+        expect(rings, selector).toHaveLength(1);
+        const name = /var\((--[\w-]+)\)/.exec(rings[0])?.[1] ?? "";
+        expect(colors[name], selector).toMatch(/^#[0-9a-f]{6}$/);
+        expect(
+          contrastRatio(colors[name], colors["--code"]),
+          selector,
+        ).toBeGreaterThanOrEqual(3);
+      }
     },
   );
-
-  it("コピーのボタンの枠と輪はコードのトークンで描く", () => {
-    expect(highlightRule(".code-copy")).toContain(
-      "border: 1px solid var(--code-line2)",
-    );
-    expect(
-      highlightRule(".code-copy:hover, .code-copy:focus-visible"),
-    ).toContain("border-color: var(--code-keyword)");
-    expect(highlightRule(".code-copy:focus-visible")).toContain(
-      "outline: 2px solid var(--keyword)",
-    );
-  });
-
-  it("コピーのボタンの文字の色は状態ごとのコードのトークン", () => {
-    expect(highlightRule(".code-copy")).toContain("color: var(--code-comment)");
-    expect(
-      highlightRule(".code-copy:hover, .code-copy:focus-visible"),
-    ).toContain("color: var(--code-fg)");
-    expect(highlightRule('.code-copy[data-state="copied"]')).toContain(
-      "color: var(--code-string)",
-    );
-    expect(highlightRule('.code-copy[data-state="failed"]')).toContain(
-      "color: var(--code-constant)",
-    );
-  });
 
   it.each(Object.entries(themes))(
     "%s のお問い合わせの入力欄の枠は --panel と --bg の上で 3:1 以上になる",

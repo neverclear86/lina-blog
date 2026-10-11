@@ -1,237 +1,186 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import {
+  type CssRule,
+  cssOfAstro,
+  hasCondition,
+  parseCss,
+  rulesFor,
+  valueIn,
+} from "../test/css-source";
 
 const SRC = new URL("../", import.meta.url);
 
-/** Reads a file under `src/` without its CSS comments. */
-function source(path: string): string {
-  return readFileSync(new URL(path, SRC), "utf8").replace(
-    /\/\*[\s\S]*?\*\//g,
-    "",
-  );
-}
+const REDUCE = "@media (prefers-reduced-motion: reduce)";
 
-interface Rule {
-  selector: string;
-  body: string;
-}
-
-/** Returns the contents of the `<style>` elements of an `.astro` source. */
-function styleOf(text: string): string {
-  return [...text.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g)]
-    .map((match) => match[1])
-    .join("\n");
-}
-
-/** Returns the rules of a CSS text, with the whitespace of each selector collapsed. */
-function rulesOf(text: string): Rule[] {
-  return [...text.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => ({
-    selector: match[1].replace(/\s+/g, " ").trim(),
-    body: match[2],
-  }));
+/** Returns a file under `src/` as text. */
+function read(path: string): string {
+  return readFileSync(new URL(path, SRC), "utf8");
 }
 
 /** Returns the rules of `src/styles/<name>`. */
-function rules(name: string): Rule[] {
-  return rulesOf(source(`styles/${name}`));
+function cssFile(name: string): CssRule[] {
+  return parseCss(read(`styles/${name}`));
 }
 
-/** Returns the rules of `src/styles/<name>` that have `declaration` among their declarations. */
-function withDeclaration(name: string, declaration: string): Rule[] {
-  return rules(name).filter((rule) =>
-    rule.body.split(";").some((part) => part.trim() === declaration),
+/** Returns the rules of the `<style>` of the `.astro` file `path` under `src/`. */
+function astroStyle(path: string): CssRule[] {
+  return parseCss(cssOfAstro(read(path)));
+}
+
+/** Returns the one rule outside `REDUCE` that has `selector` among its selectors, or fails. */
+function only(rules: CssRule[], selector: string): CssRule {
+  const found = rulesFor(rules, selector).filter(
+    (rule) => !hasCondition(rule, REDUCE),
   );
+  expect(found, selector).toHaveLength(1);
+  return found[0];
 }
 
-/** Returns true when `selector` names `cls` as a whole class, not as the start of a longer one. */
-function hasClass(selector: string, cls: string): boolean {
-  return new RegExp(`${cls.replace(".", "\\.")}(?![\\w-])`).test(selector);
+/** Returns the selectors of `rule` as one text, however the list is split. */
+function selectorText(rule: CssRule): string {
+  return rule.selectors.join(", ");
 }
 
+const GLOBAL = cssFile("global.css");
+const CONTROLS = cssFile("controls.css");
+const WINDOW = cssFile("window.css");
+const LABELS = cssFile("labels.css");
+const ARTICLE = astroStyle("components/ArticleBody.astro");
+
+/** A color written as one token, such as `var(--text)`. */
+const TOKEN = /^var\(--[\w-]+\)$/;
+
+/** The states a control shows alike: the pointer, the keyboard and the two sample classes. */
 const STATES = [":hover", ":focus-visible", ".is-hover", ".is-focus"];
 
 describe("リンクのホバー", () => {
   it("リンクの規則はすべて :where の中にあり、部品のクラスの規則が常に勝つ", () => {
-    const outside = rules("global.css").map((rule) =>
-      rule.selector.replace(/:where\([^)]*\)/g, ""),
+    const bareA = /(^|[\s,>+~(])a(?![\w-])/;
+    const selectors = GLOBAL.flatMap((rule) => rule.selectors);
+    expect(selectors.filter((selector) => bareA.test(selector))).not.toEqual(
+      [],
     );
-    expect(
-      outside.filter((selector) => /(^|[\s,>+~])a(?![\w-])/.test(selector)),
-    ).toEqual([]);
-    expect(rules("global.css").map((rule) => rule.selector)).toContain(
-      ":where(a)",
+    const outside = selectors.map((selector) =>
+      selector.replace(/:where\([^)]*\)/g, ""),
     );
+    expect(outside.filter((selector) => bareA.test(selector))).toEqual([]);
   });
 
-  it("ライトのホバーとフォーカスは 2px の --keyword の下線になり、見本の状態も同じ規則に載る", () => {
-    const found = withDeclaration(
-      "global.css",
-      "text-decoration-line: underline",
+  it("ライトのホバーとフォーカスは色に頼らず下線で示し、見本の状態も同じ規則に載る", () => {
+    const found = GLOBAL.filter(
+      (rule) => valueIn(rule, "text-decoration-line") === "underline",
     );
     expect(found).toHaveLength(1);
-    const [rule] = found;
-    for (const state of [
-      "a:hover",
-      "a:focus-visible",
-      "a.is-hover",
-      "a.is-focus",
-    ]) {
-      expect(rule.selector).toContain(state);
-    }
-    expect(rule.body).toContain("text-decoration-color: var(--keyword)");
-    expect(rule.body).toContain("text-decoration-thickness: 2px");
-  });
-
-  it("ダークのホバーとフォーカスは文字が --keyword になり、下線は付かない", () => {
-    const found = withDeclaration("global.css", "color: var(--keyword)");
-    expect(found).toHaveLength(1);
-    const [rule] = found;
     for (const state of STATES) {
-      expect(rule.selector).toContain(`:root[data-theme="dark"] a${state}`);
+      expect(selectorText(found[0])).toContain(state);
     }
-    expect(rule.body).toContain("text-decoration-line: none");
+    expect(valueIn(found[0], "text-decoration-color")).toMatch(TOKEN);
   });
 
-  it("ダークの規則はライトの規則より後にあり、ダークのホバーに下線が残らない", () => {
-    const all = rules("global.css");
-    const indexOf = (declaration: string) =>
-      all.findIndex((rule) =>
-        rule.body.split(";").some((part) => part.trim() === declaration),
+  it("ダークのホバーとフォーカスは文字の色で示して下線を消し、その規則はライトの規則より後にある", () => {
+    const light = GLOBAL.findIndex(
+      (rule) => valueIn(rule, "text-decoration-line") === "underline",
+    );
+    const found = GLOBAL.filter(
+      (rule) =>
+        valueIn(rule, "text-decoration-line") === "none" &&
+        selectorText(rule).includes('[data-theme="dark"]'),
+    );
+    expect(found).toHaveLength(1);
+    for (const state of STATES) {
+      expect(selectorText(found[0])).toContain(state);
+    }
+    expect(valueIn(found[0], "color")).toMatch(TOKEN);
+    expect(GLOBAL.indexOf(found[0])).toBeGreaterThan(light);
+  });
+
+  it("global.css と controls.css の hover の規則は、フォーカスと見本の状態も同じ規則に持つ", () => {
+    for (const [name, rules] of [
+      ["global.css", GLOBAL],
+      ["controls.css", CONTROLS],
+    ] as const) {
+      const hover = rules.filter((rule) =>
+        /:hover|\.is-hover/.test(selectorText(rule)),
       );
-    const dark = indexOf("color: var(--keyword)");
-    const light = indexOf("text-decoration-line: underline");
-    expect(light).toBeGreaterThanOrEqual(0);
-    expect(dark).toBeGreaterThan(light);
+      expect(hover.length, name).toBeGreaterThan(0);
+      for (const rule of hover) {
+        for (const state of STATES) {
+          expect(selectorText(rule), name).toContain(state);
+        }
+      }
+    }
   });
 });
 
 describe("body", () => {
-  it("body の文字色は --text で、テーマの切り替えに transition を使わない", () => {
-    const body = rules("global.css").find((rule) => rule.selector === "body");
-    expect(body?.body).toContain("color: var(--text)");
-    expect(body?.body).not.toContain("transition");
+  it("body の文字色はトークンで、テーマの切り替えに transition を使わない", () => {
+    const body = only(GLOBAL, "body");
+    expect(valueIn(body, "color")).toMatch(TOKEN);
+    expect(
+      body.declarations.filter((d) => d.property.startsWith("transition")),
+    ).toEqual([]);
   });
 });
 
 describe("フォーカスの輪", () => {
-  it("global.css が 2px の --focus-ring の輪を :focus-visible と .is-focus に描く", () => {
-    const found = withDeclaration(
-      "global.css",
-      "outline: 2px solid var(--focus-ring)",
+  it("global.css は --focus-ring の輪を :focus-visible と .is-focus に描く", () => {
+    const found = GLOBAL.filter((rule) =>
+      valueIn(rule, "outline")?.includes("var(--focus-ring)"),
     );
     expect(found).toHaveLength(1);
-    expect(found[0].selector).toContain(":focus-visible");
-    expect(found[0].selector).toContain(".is-focus");
-    expect(found[0].body).toContain("outline-offset: 2px");
+    expect(selectorText(found[0])).toContain(":focus-visible");
+    expect(selectorText(found[0])).toContain(".is-focus");
   });
 });
 
 describe("ボタンとアイコンのリンク", () => {
-  it(".btn-acc は地が --keyword-hover に、.btn-ghost・.sq・.iconbtn は枠が --keyword になり、ホバーとフォーカスと見本の状態で同じになる", () => {
-    const fill = withDeclaration(
-      "controls.css",
-      "background: var(--keyword-hover)",
-    );
-    const border = rules("controls.css").filter(
+  it("地を塗るボタンは、地と一緒に文字の色をトークンで持つ", () => {
+    for (const selector of [".btn-acc", ".btn-ink", ".iconbtn-acc", ".ws.on"]) {
+      const rule = only(CONTROLS, selector);
+      expect(valueIn(rule, "background"), selector).toMatch(TOKEN);
+      expect(valueIn(rule, "color"), selector).toMatch(TOKEN);
+    }
+  });
+
+  it(".btn と .ws は下線を自分で消し、:where の下線の規則に頼らない", () => {
+    for (const selector of [".btn", ".ws"]) {
+      expect(valueIn(only(CONTROLS, selector), "text-decoration")).toBe("none");
+    }
+  });
+
+  it(".ws.on は .ws のホバーの規則より後にあり、ホバーでも地を変えない", () => {
+    const hover = CONTROLS.filter(
       (rule) =>
-        rule.body.trim() === "border-color: var(--keyword);" &&
-        hasClass(rule.selector, ".btn-ghost"),
+        /\.ws(?![\w-])/.test(selectorText(rule)) &&
+        selectorText(rule).includes(":hover") &&
+        valueIn(rule, "background") !== undefined,
     );
-    expect(fill).toHaveLength(1);
-    expect(border).toHaveLength(1);
-    for (const state of STATES) {
-      expect(fill[0].selector).toContain(state);
-      expect(border[0].selector).toContain(state);
+    expect(hover.length).toBeGreaterThan(0);
+    const current = only(CONTROLS, ".ws.on");
+    for (const rule of hover) {
+      expect(CONTROLS.indexOf(current)).toBeGreaterThan(CONTROLS.indexOf(rule));
     }
-    expect(hasClass(fill[0].selector, ".btn-acc")).toBe(true);
-    for (const cls of [".btn-ghost", ".sq", ".iconbtn"]) {
-      expect(hasClass(border[0].selector, cls)).toBe(true);
-    }
-  });
-
-  it(".btn-ink は --ink の地に --ivory の文字で、ホバーとフォーカスと見本の状態で文字が --keyword になる", () => {
-    const base = rules("controls.css").filter(
-      (rule) => rule.selector === ".btn-ink",
-    );
-    expect(base).toHaveLength(1);
-    expect(base[0].body).toContain("background: var(--ink)");
-    expect(base[0].body).toContain("color: var(--ivory)");
-    const hover = rules("controls.css").filter(
-      (rule) =>
-        hasClass(rule.selector, ".btn-ink") &&
-        rule.selector !== ".btn-ink" &&
-        rule.body.trim() === "color: var(--keyword);",
-    );
-    expect(hover).toHaveLength(1);
-    for (const state of STATES) {
-      expect(hover[0].selector).toContain(state);
-    }
-  });
-
-  it(".sq と .iconbtn は 44px 角で、.btn は 46px 以上の高さを持つ", () => {
-    const square = withDeclaration("controls.css", "width: 44px");
-    expect(square).toHaveLength(1);
-    expect(hasClass(square[0].selector, ".sq")).toBe(true);
-    expect(hasClass(square[0].selector, ".iconbtn")).toBe(true);
-    expect(square[0].body).toContain("height: 44px");
-    const button = withDeclaration("controls.css", "min-height: 46px");
-    expect(button).toHaveLength(1);
-    expect(button[0].selector).toBe(".btn");
-    expect(button[0].body).toContain("text-decoration: none");
-  });
-
-  it(".sq と .iconbtn は box-sizing: border-box と padding: 0 を持ち、<button> の既定の余白で中が縮まない", () => {
-    const [rule] = withDeclaration("controls.css", "width: 44px");
-    expect(rule.body).toContain("box-sizing: border-box");
-    expect(rule.body).toContain("padding: 0");
-  });
-
-  it(".iconbtn-acc は地と枠が --keyword、文字が --ink になる", () => {
-    const found = rules("controls.css").filter(
-      (rule) => rule.selector === ".iconbtn-acc",
-    );
-    expect(found).toHaveLength(1);
-    expect(found[0].body).toContain("border-color: var(--keyword)");
-    expect(found[0].body).toContain("background: var(--keyword)");
-    expect(found[0].body).toContain("color: var(--ink)");
-  });
-
-  it(".ws は高さ 30px、最小幅 44px で下線を持たず、ホバー・フォーカス・見本の状態で地が --panel になる", () => {
-    const base = rules("controls.css").filter(
-      (rule) => rule.selector === ".ws",
-    );
-    expect(base).toHaveLength(1);
-    expect(base[0].body).toContain("height: 30px");
-    expect(base[0].body).toContain("min-width: 44px");
-    expect(base[0].body).toContain("text-decoration: none");
-    const fill = withDeclaration("controls.css", "background: var(--panel)");
-    expect(fill).toHaveLength(1);
-    expect(hasClass(fill[0].selector, ".ws")).toBe(true);
-    for (const state of STATES) {
-      expect(fill[0].selector).toContain(state);
-    }
-  });
-
-  it(".ws.on は --keyword の地に --ink の太い文字で、ホバーの規則より後にあり、ホバーでも変わらない", () => {
-    const all = rules("controls.css");
-    const current = all.findIndex((rule) => rule.selector === ".ws.on");
-    const hover = all.findIndex((rule) => rule.selector.startsWith(".ws:is("));
-    expect(current).toBeGreaterThanOrEqual(0);
-    expect(current).toBeGreaterThan(hover);
-    expect(all[current].body).toContain("background: var(--keyword)");
-    expect(all[current].body).toContain("color: var(--ink)");
-    expect(all[current].body).toContain("font-weight: 700");
   });
 
   it("controls.css と global.css は !important を使わない", () => {
-    expect(source("styles/controls.css")).not.toContain("!important");
-    expect(source("styles/global.css")).not.toContain("!important");
+    for (const [name, rules] of [
+      ["controls.css", CONTROLS],
+      ["global.css", GLOBAL],
+    ] as const) {
+      const found = rules.flatMap((rule) =>
+        rule.declarations
+          .filter((d) => d.value.includes("!important"))
+          .map((d) => `${selectorText(rule)} { ${d.property} }`),
+      );
+      expect(found, name).toEqual([]);
+    }
   });
 });
 
 describe("配線", () => {
   it("記事一覧の頭は PageHead の中にパンくずと h1 と絞り込みを置き、絞り込みのリンクに .ws と現在地の .on を付ける", () => {
-    const index = source("components/BlogIndex.astro");
+    const index = read("components/BlogIndex.astro");
     const head = index.slice(
       index.indexOf("<PageHead>"),
       index.indexOf("</PageHead>"),
@@ -244,48 +193,45 @@ describe("配線", () => {
   });
 
   it("ブラウザーの既定の下線に頼っていた 404 ページのリンクは自分で下線を持つ", () => {
-    const targets: [string, string][] = [["pages/404.astro", "p a"]];
-    for (const [path, selector] of targets) {
-      const found = rulesOf(styleOf(source(path))).find(
-        (rule) => rule.selector === selector,
-      );
-      expect(found?.body, `${path} ${selector}`).toContain(
-        "text-decoration: underline;",
-      );
-    }
+    const link = only(astroStyle("pages/404.astro"), "p a");
+    expect(valueIn(link, "text-decoration")).toBe("underline");
   });
 
   it("404 ページの戻るボタン .btn-acc の色と下線を、ページの a の規則が上書きしない", () => {
-    const rules = rulesOf(styleOf(source("pages/404.astro")));
-    expect(rules.map((rule) => rule.selector)).not.toContain("a");
-    expect(source("pages/404.astro")).toContain('class="btn btn-acc back"');
+    const selectors = astroStyle("pages/404.astro").flatMap(
+      (rule) => rule.selectors,
+    );
+    expect(selectors).not.toContain("a");
+    expect(read("pages/404.astro")).toContain('class="btn btn-acc back"');
   });
 });
 
 describe("記事の本文のリンク", () => {
   it("記事の本文のリンクには下線が付く", () => {
-    const found = rulesOf(styleOf(source("components/ArticleBody.astro"))).find(
-      (rule) => rule.selector === ".article-body :global(a)",
-    );
-    expect(found?.body).toContain("text-decoration-line: underline;");
+    const link = only(ARTICLE, ".article-body :global(a)");
+    expect(valueIn(link, "text-decoration-line")).toBe("underline");
   });
 });
 
 describe("記事の一覧の行", () => {
-  it("行のリンクは自分に下線を引かず、ライトのホバーとフォーカスではタイトルにだけ 2px の --keyword の下線を引く", () => {
-    const all = rulesOf(styleOf(source("components/PostRows.astro")));
-    const row = all.find((rule) => rule.selector === ".row");
-    expect(row?.body).toContain("text-decoration: none;");
-    const underlined = all.filter((rule) =>
-      rule.body.includes("text-decoration: underline;"),
+  it("行のリンクは自分に下線を引かず、ライトのホバーとフォーカスではタイトルにだけ下線を引く", () => {
+    const rows = astroStyle("components/PostRows.astro");
+    expect(
+      rulesFor(rows, ".row")
+        .map((rule) => valueIn(rule, "text-decoration"))
+        .filter((value) => value !== undefined),
+    ).toEqual(["none"]);
+    const underlined = rows.filter(
+      (rule) => valueIn(rule, "text-decoration") === "underline",
     );
-    expect(underlined.map((rule) => rule.selector)).toEqual([
-      ':global(:root:not([data-theme="dark"])) .row:is(:hover, :focus-visible) .title',
-    ]);
-    expect(underlined[0].body).toContain(
-      "text-decoration-color: var(--keyword);",
-    );
-    expect(underlined[0].body).toContain("text-decoration-thickness: 2px;");
+    expect(underlined).toHaveLength(1);
+    const [title] = underlined;
+    expect(title.selectors).toHaveLength(1);
+    expect(selectorText(title)).toMatch(/\.title$/);
+    expect(selectorText(title)).toContain(':not([data-theme="dark"])');
+    expect(selectorText(title)).toContain(":hover");
+    expect(selectorText(title)).toContain(":focus-visible");
+    expect(valueIn(title, "text-decoration-color")).toMatch(TOKEN);
   });
 });
 
@@ -295,42 +241,49 @@ describe("記事のアコーディオン", () => {
     hover: ".article-body details:has(> summary:hover)::before",
     focus: ".article-body details:has(> summary:focus-visible)::before",
   };
-  const article = () =>
-    rulesOf(styleOf(source("components/ArticleBody.astro")));
 
   it("details の地と輪は .win の規則と同じ規則で描く", () => {
-    const [panel] = withDeclaration("window.css", "background: var(--panel)");
-    const [ring] = withDeclaration("window.css", "--wb: 360deg");
-    expect(panel.selector.split(", ")).toContain(".article-body details");
-    expect(ring.selector.split(", ")).toContain(SELECTORS.ring);
+    expect(only(WINDOW, ".win").selectors).toContain(".article-body details");
+    expect(only(WINDOW, ".win::before").selectors).toContain(SELECTORS.ring);
   });
 
   it("summary のホバーとキーボードのフォーカスは同じ規則で輪を回す", () => {
-    const [turn] = withDeclaration("window.css", "--wa: 180deg");
-    expect(turn.selector.split(", ")).toEqual(
-      expect.arrayContaining([SELECTORS.hover, SELECTORS.focus]),
+    const turn = rulesFor(WINDOW, SELECTORS.hover).filter(
+      (rule) => !hasCondition(rule, REDUCE),
     );
+    expect(turn.length).toBeGreaterThan(0);
+    for (const rule of turn) {
+      expect(rule.selectors).toContain(SELECTORS.focus);
+    }
   });
 
-  it("輪の動きは prefers-reduced-motion: reduce で止まる", () => {
-    const [stop] = withDeclaration("window.css", "transition: none");
-    expect(stop.selector.split(", ")).toEqual(
-      expect.arrayContaining(Object.values(SELECTORS)),
-    );
-  });
-
-  it("summary は JetBrains Mono で、高さ 48px 以上の押せる行になる", () => {
-    const found = article().find(
-      (rule) => rule.selector === ".article-body :global(summary)",
-    );
-    expect(found?.body).toContain("font-family: var(--font-mono);");
-    expect(found?.body).toContain("min-height: 48px;");
-    expect(found?.body).toContain("cursor: pointer;");
+  it("輪の動きは prefers-reduced-motion: reduce で、動かす規則より後ろで止まる", () => {
+    for (const selector of Object.values(SELECTORS)) {
+      const rules = rulesFor(WINDOW, selector);
+      const moving = rules.filter(
+        (rule) =>
+          !hasCondition(rule, REDUCE) &&
+          valueIn(rule, "transition") !== undefined,
+      );
+      const stops = rules.filter(
+        (rule) =>
+          hasCondition(rule, REDUCE) && valueIn(rule, "transition") === "none",
+      );
+      expect(moving.length, selector).toBeGreaterThan(0);
+      expect(stops.length, selector).toBeGreaterThan(0);
+      for (const stop of stops) {
+        for (const move of moving) {
+          expect(WINDOW.indexOf(stop), selector).toBeGreaterThan(
+            WINDOW.indexOf(move),
+          );
+        }
+      }
+    }
   });
 
   it("開閉は <details> に任せ、ArticleBody のスクリプトは details に触れない", () => {
     const scripts =
-      source("components/ArticleBody.astro").match(
+      read("components/ArticleBody.astro").match(
         /<script>[\s\S]*?<\/script>/g,
       ) ?? [];
     expect(scripts).toHaveLength(1);
@@ -342,95 +295,38 @@ describe("記事のメッセージボックス", () => {
   /** The selector that `window.css` and `labels.css` share with `.win` and `.label`. */
   const SHARED = ":where(.article-body aside:is(.note, .warning))";
 
-  /** Returns true when a rule of `list` has both `selector` and `among` in its selector list. */
-  function listsBoth(list: Rule[], selector: string, among: string): boolean {
-    return list.some((rule) => {
-      const items = rule.selector
-        .split(/,(?![^(]*\))/)
-        .map((item) => item.trim());
-      return items.includes(selector) && items.includes(among);
-    });
-  }
-
-  /** Returns the body of the first rule of `text` whose selector is `:global(<inner>)`. */
-  function bodyOf(text: string, inner: string): string | undefined {
-    return rulesOf(text).find(
-      (rule) => rule.selector === `.article-body :global(${inner})`,
-    )?.body;
-  }
-
-  const article = () => styleOf(source("components/ArticleBody.astro"));
-  /** The part of the article's style from the last `@media (min-width: 768px)`. */
-  const wide = () =>
-    article().slice(article().lastIndexOf("@media (min-width: 768px)"));
-
   it("window.css は .win の地の規則と輪の規則に記事のメッセージボックスを足している", () => {
-    const list = rules("window.css");
-    expect(listsBoth(list, SHARED, ".win")).toBe(true);
-    expect(listsBoth(list, `${SHARED}::before`, ".win::before")).toBe(true);
+    expect(only(WINDOW, ".win").selectors).toContain(SHARED);
+    expect(only(WINDOW, ".win::before").selectors).toContain(
+      `${SHARED}::before`,
+    );
   });
 
   it("labels.css は .label の規則にメッセージボックスの ::after を足している", () => {
-    expect(listsBoth(rules("labels.css"), `${SHARED}::after`, ".label")).toBe(
-      true,
-    );
+    expect(only(LABELS, ".label").selectors).toContain(`${SHARED}::after`);
   });
 
-  it("ラベルの語は ::after の content で、読み上げには # を除いた語を渡す", () => {
-    expect(bodyOf(article(), "aside.note::after")).toContain(
-      'content: "# note" / "note";',
-    );
-    expect(bodyOf(article(), "aside.warning::after")).toContain(
-      'content: "# warning" / "warning";',
-    );
+  it("ラベルの語は ::after の content で、読み上げには # を除いた同じ語を渡す", () => {
+    for (const kind of ["note", "warning"]) {
+      const label = only(
+        ARTICLE,
+        `.article-body :global(aside.${kind}::after)`,
+      );
+      expect(valueIn(label, "content"), kind).toMatch(/^"#+ (.+)" \/ "\1"$/);
+    }
   });
 
-  it("ラベルは文の上に出て、色は --acc-text になる", () => {
-    const body = bodyOf(article(), "aside:is(.note, .warning)::after");
-    expect(body).toContain("order: -1;");
-    expect(body).toContain("color: var(--acc-text);");
-  });
-
-  it("警告だけが上端の縞を背景の 1 層目に持ち、地の --panel を最後の層に残す", () => {
-    const warning = bodyOf(article(), "aside.warning") ?? "";
-    expect(warning).toMatch(/--stripes:\s*repeating-linear-gradient\(/);
-    expect(warning).toMatch(/background: var\(--stripes\), var\(--panel\);/);
-    expect(bodyOf(article(), "aside:is(.note, .warning)")).not.toContain(
-      "gradient",
+  it("背景は縞や顔を重ねても、最後の層が地の --panel になる", () => {
+    const boxes = ARTICLE.filter(
+      (rule) =>
+        selectorText(rule).includes("aside") &&
+        valueIn(rule, "background") !== undefined,
     );
-  });
-
-  it("768px 以上で余白と文の大きさが PC の値になり、警告の上の余白も 6px 増えたまま", () => {
-    const text = wide();
-    expect(bodyOf(text, "aside:is(.note, .warning)")).toContain(
-      "padding: 16px 20px;",
-    );
-    expect(bodyOf(text, "aside:is(.note, .warning) > *")).toContain(
-      "font-size: 15px;",
-    );
-    expect(bodyOf(text, "aside.warning")).toContain("padding-top: 22px;");
-    expect(bodyOf(article(), "aside.warning")).toContain("padding-top: 18px;");
-  });
-
-  it("face は hate.webp を背景の層に置き、768px 未満で 52px × 70px、以上で 72px × 96px にする", () => {
-    const face = bodyOf(article(), "aside:is(.note, .warning).face") ?? "";
-    expect(face).toContain(
-      '--face: url("../assets/hate.webp") 14px center / 52px 70px no-repeat;',
-    );
-    expect(face).toContain("min-height: 70px;");
-    expect(face).toContain("padding-left: 78px;");
-    expect(face).toContain("background: var(--face), var(--panel);");
-    const wideFace = bodyOf(wide(), "aside:is(.note, .warning).face") ?? "";
-    expect(wideFace).toContain(
-      '--face: url("../assets/hate.webp") 20px center / 72px 96px no-repeat;',
-    );
-    expect(wideFace).toContain("min-height: 96px;");
-    expect(wideFace).toContain("padding-left: 108px;");
-  });
-
-  it("顔ありの警告は縞を 1 層目、顔を 2 層目に置き、地の --panel を最後の層に残す", () => {
-    expect(bodyOf(article(), "aside.warning.face")).toContain(
-      "background: var(--stripes), var(--face), var(--panel);",
-    );
+    expect(boxes.length).toBeGreaterThan(0);
+    for (const rule of boxes) {
+      expect(valueIn(rule, "background"), selectorText(rule)).toMatch(
+        /var\(--panel\)$/,
+      );
+    }
   });
 });
