@@ -8,190 +8,48 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 
 ```text
 /
-├── docs/
-│   ├── markdown.md       # How to write an article body: Markdown, and the message boxes and the accordion written as raw HTML
-│   ├── publish-api.md    # API contract between the article sync script and the publishing Worker
-│   └── vault-sync.md     # How to write articles in the Vault, the Bases view and the Hermes skill
-├── public/
-│   ├── _headers          # Security headers of the static files; the Worker sends the same values
-│   └── favicon/          # Favicons from the brand kit, unchanged: the mark /li on ink as SVG, and PNGs of 32, 180 and 192 pixels
-├── scripts/
-│   ├── a11y/             # bun run a11y: axe and a screenshot contrast check, pure parts unit-tested
-│   ├── audit/            # Audit scripts run by hand: reduced-motion.mjs lists what still moves under `prefers-reduced-motion: reduce`; external-links.mjs checks the links that leave the site
-│   ├── avatars/          # Makes the avatar images in src/assets/ from the v2.1 originals (bun run import:avatars), unit-tested
-│   ├── lighthouse/       # Job summary table of the Lighthouse CI scores (bun scripts/lighthouse/report.ts), unit-tested
-│   └── sync/             # Article sync script for the publish Worker (bun run sync, run by Hermes): main.ts prints the report of run.ts, which joins the Vault scan, Obsidian syntax, images, Markdown, diff and API client steps, unit-tested
-├── src/
-│   ├── ansi-art.ts       # Pixels to terminal text art (half blocks, 24-bit color), unit-tested
-│   ├── ansi-art-source.ts # The illustration of the text art, decoded and resized to 80 pixels wide, unit-tested
-│   ├── contact.ts        # Contact form input validation, unit-tested
-│   ├── api.ts            # Hono routes handled by the Worker (/, /api/*), unit-tested
-│   ├── article-share.ts  # Post address and share addresses for Twitter (self-proclaimed X) and Nostr, unit-tested
-│   ├── avatar-images.ts  # The nine v2.1 avatar images of src/assets/ with their alt keys, widths, sizes and priority, unit-tested
-│   ├── blog-pages.ts     # Paths of /blog/<slug>/ and /blog/tags/<slug>/, the heading texts, the breadcrumbs, the tag filter links, the breadcrumb, date, reading time and table of contents items of a post, and the posts next to it, unit-tested
-│   ├── blog-rss.ts       # Blog posts to /rss.xml items (【PR】 on sponsored posts), unit-tested
-│   ├── blog-schema.ts    # Frontmatter schema of blog posts (no astro:content), unit-tested
-│   ├── cloudflare-workers.d.ts # Types of env from cloudflare:workers (bindings and secrets)
-│   ├── code-copy.ts      # Copy buttons of a post's page: texts and logic of the code-block button, and the clipboard check and write that the end window shares, unit-tested
-│   ├── contact-form.ts   # Contact form states before and after sending, their UI strings and the widget size, unit-tested
-│   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
-│   ├── content.config.ts # blog collection: src/content/blog/ (and blog-dev/ in astro dev or with LINA_DEV_PAGES=1) checked by blog-schema.ts
-│   ├── external-link.ts  # Which `href`s leave the site, the `target` and `rel` of such a link and the hidden text that says it opens in a new tab, unit-tested
-│   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
-│   ├── jst-date.ts       # Writes the date of a post or a video in Japan time as YYYY.MM.DD, unit-tested
-│   ├── latest-videos.ts  # Splits the YouTube videos into the Latest card and list, unit-tested
-│   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
-│   ├── lina-ansi-art.d.ts # Types of virtual:lina-ansi-art, the text art built in astro.config.mjs
-│   ├── lina-published-slugs.d.ts # Types of virtual:lina-published-slugs, the slugs on Nostr built in astro.config.mjs
-│   ├── nostr-address.ts  # NIP-19 naddr of an addressable Nostr event from its npub, kind and d tag, unit-tested
-│   ├── og-font.ts        # Downloads the OGP fonts (headings and labels) as TrueType from Google Fonts, unit-tested
-│   ├── og-image.ts       # Draws OGP images with Satori and sharp (Node only): the plan A element tree of a title, language, category and sponsor, and the PNG of any tree, unit-tested
-│   ├── og-pages.ts       # Paths of the OGP images and what each one says (title, category, sponsor), unit-tested
-│   ├── page-meta.ts      # Description (default from ui.ts), Open Graph tags (with the OGP image) and Twitter card tags of a page, unit-tested
-│   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro, hero-account.ts, footer-links.ts, ContactBand.astro and the contact page
-│   ├── published-articles.ts # Which posts are on Nostr: parses the published record (src/content/published.json) and looks up a slug, unit-tested
-│   ├── published-articles-source.ts # Reads the published records from disk for virtual:lina-published-slugs (Node only), unit-tested
-│   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
-│   ├── sponsor-notice.ts # PR notice of a sponsored blog post: label, sentence and rel="sponsored" link, unit-tested
-│   ├── text-site.ts      # Builds the text version of the site for curl (80 columns), unit-tested
-│   ├── theme.ts          # Theme key and values, the inline script that sets <html data-theme> and the toggle, unit-tested
-│   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
-│   ├── user-agent.ts     # Tells curl and other command-line clients from browsers, unit-tested
-│   ├── youtube-feed.ts   # Channel RSS feed to the newest videos at build time (WebP or JPEG thumbnails), unit-tested
-│   ├── assets/           # Images processed by astro:assets
-│   │   ├── <avatar>.webp   # Nine avatars of v2.1 (rohan, lgtm-fullbody, happy-fullbody, main-visual, threeview-front/side/back, lgtm-bastup, hate), made by scripts/avatars/ (see "Images and caching")
-│   │   ├── icon/           # Face mark and avatar SVGs of the brand kit (regular and small versions), used as they are by FaceIcon
-│   │   └── name-logo/      # Name logo of the brand kit (t3_full_for-dark.svg), kept as it is and drawn by og-image.ts
-│   ├── components/
-│   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
-│   │   ├── article-reading.ts    # Script of a post's page: sets --reading-progress, marks the h2 being read in the table of contents and reveals the progress line and bar
-│   │   ├── ArticleBody.astro     # Wraps rendered Markdown: imports article.css (body text, accordions, message boxes) and highlight.css (code blocks), and puts the copy button on code blocks
-│   │   ├── ArticleEnd.astro      # End window of a post: share links, copy-link button, thumbs-up
-│   │   ├── ArticleHead.astro     # Head of a post's page: PageHead with the breadcrumb, the chips, the h1 and the date, reading time, author and Nostr link
-│   │   ├── ArticleToc.astro      # Table of contents of a post: the neo-tree window in the left column from 1024px, a closed <details> before the body below it; the h2 being read is marked
-│   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: in a row from 1200px, below it stacked or one at a time with tabs
-│   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
-│   │   ├── Breadcrumb.astro      # Breadcrumb of the blog pages, the contact page and a post's page: a nav with an ol of the items (text, link, name of the link), the last one the current page
-│   │   ├── ContactBand.astro     # Contact band of the top page: heading, lead, a line about a DM on Twitter (self-proclaimed X), a button to the contact page and the thumbs-up
-│   │   ├── ContactForm.astro     # Contact form of the contact page in a window of plan A, sent with Turnstile
-│   │   ├── ExternalNote.astro    # End of the name of a link that leaves the site: hidden text for assistive technology and, with `arrow`, ↗
-│   │   ├── face-icon.ts          # Picks the brand kit files of a face mark or avatar from its size and tone, unit-tested
-│   │   ├── FaceIcon.astro        # Face mark or avatar from the brand kit SVGs, switched with the theme; tone="inverse" for the mark on --text faces
-│   │   ├── footer-links.ts       # Link targets of the footer columns and the footer variants, unit-tested
-│   │   ├── hero-account.ts       # Links of the account window of the hero, with the icon each one shows, unit-tested
-│   │   ├── hero-poses.ts         # Rules of the pose switch of the hero, unit-tested
-│   │   ├── Hero.astro            # Hero of the top page: grid background with a tilted band whose text and hatch flow, name logo with a blinking cursor, heading, intro, button to the latest video, the account window, the stripes below (flowing right) and HeroPoses in the right column; when the page opens, the left column rises in turn and the band and the hatch open upwards
-│   │   ├── HeroAccount.astro     # Account window of the hero: avatar, @LinaTsukusu and six link squares
-│   │   ├── HeroPoses.astro       # Right column of the hero: four poses switched by a button, ruler and table; when the page opens, the first pose slides in from the right
-│   │   ├── label-break.ts        # Splits a label before "(" for a <wbr>, unit-tested
-│   │   ├── LatestPosts.astro     # Blog section of the home page: heading and a PostRows window of the newest posts
-│   │   ├── LatestVideoFeature.astro # Latest section: newest video as a large window with a NEW chip, or a no-signal window that links to the channel
-│   │   ├── LatestVideoList.astro # Latest section: the next videos as small windows with JST dates, and the YouTube channel button; hidden below 768px
-│   │   ├── NameLogo.astro        # Name logo of the brand kit as inline SVG: compact, full and full-sub, painted with the --lg-* tokens
-│   │   ├── once-per-frame.ts     # Runs a function once in the next animation frame, for the scroll and resize handlers of the site header and a post's page, unit-tested
-│   │   ├── PageHead.astro        # Head of the blog pages, the contact page and a post's page: grid background, diagonal band and the slot with an h1
-│   │   ├── PostNav.astro         # Links to the posts one step older (prev) and newer (next) at the end of a post's page; nothing when there are none
-│   │   ├── PostRows.astro        # Window of blog posts: ls -lt command line with a command slot, rows with JST date, tags, PR and title, or one empty line
-│   │   ├── reading-progress.ts   # How far the reader is in a post and which h2 they are in, unit-tested
-│   │   ├── ReadingProgress.astro # How far the reader is in a post: a bar with a label, or a line under the site header
-│   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line drawn on scroll, path, and the Japanese heading
-│   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, the path of the contact page, and which section the reader is in, on the top page and in a post, unit-tested
-│   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
-│   │   ├── SiteHeader.astro      # Site header, sticky: compact name logo; from 1024px the navigation 00 top to 03 blog with an indicator on the top page that follows the section being read, JA / EN, theme switch and contact button, below 1024px the theme switch and a menu button that opens a popover sheet; on a post's page a line under it for how far the reader is
-│   │   ├── SkipLink.astro        # Skip link, first in <body>: hidden until it has the focus, then a .btn-acc fixed at the top left above the header; jumps to <main id="main">
-│   │   ├── SponsorNotice.astro   # PR window above the body of a sponsored blog post: orange PR chip and the sponsor's name
-│   │   ├── ThemeToggle.astro     # Theme switch: an .iconbtn, the same at every width, that shows the moon in the dark theme or the sun in the light theme, with a hidden name that says the next theme
-│   │   ├── three-view-tabs.ts    # Which view of the avatar a key, a swipe or a tap selects, and the swipe gesture, unit-tested
-│   │   └── icons/                # Service icons for HeroAccount; sources and terms in icons/README.md
-│   ├── content/
-│   │   └── blog-dev/     # Posts for checking how pages look, and published.json, their published record; loaded by astro dev (or with LINA_DEV_PAGES=1)
-│   ├── dev/
-│   │   ├── components.astro  # /dev/components/: lists the sections of samples of the plan A styles, components and avatar images
-│   │   ├── dev-pages.ts      # Adds the dev pages in astro dev (or with LINA_DEV_PAGES=1), unit-tested
-│   │   ├── layout.css        # The classes that more than one section of /dev/components/ uses (.dev-section, .dev-row, .dev-stack, .dev-samples)
-│   │   ├── markdown.astro    # /dev/markdown/: sample article with every supported Markdown syntax
-│   │   ├── samples.ts        # The data of the samples of /dev/components/: posts, videos, breadcrumbs and table of contents items
-│   │   └── sections/         # A <name>Samples.astro for each section of /dev/components/, with the classes only that section uses
-│   ├── i18n/
-│   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
-│   │   ├── negotiate.ts  # Picks the locale for / from Accept-Language, unit-tested
-│   │   ├── paths.ts      # Path of the same page in another locale, and the canonical and hreflang URLs of a page, unit-tested
-│   │   └── ui.ts         # UI strings per locale, unit-tested
-│   ├── layouts/
-│   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description, Open Graph and Twitter card tags (description and image props, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, controls.css, window.css, labels.css and motion.css; sets --font-body on html; puts the skip link (SkipLink.astro) and the site header (SiteHeader.astro, with the line of how far the reader is in a post when the readingProgress prop is set) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
-│   ├── markdown/
-│   │   ├── a11y.ts           # Sätteri hast plugins: aria-label on task list checkboxes, tabindex="0" on tables, unit-tested
-│   │   ├── article.css       # Type of an article under .article-body: links, body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, YouTube embeds, accordions and message boxes
-│   │   ├── code-filename.ts  # Sätteri mdast plugin: code blocks as a window <figure> with a title (file name, language or text), unit-tested
-│   │   ├── external-links.ts # Sätteri hast plugin: links to other sites in a new tab, unit-tested
-│   │   ├── highlight.css     # Code block window (frame, title and copy button) and role colors
-│   │   ├── highlight.ts      # Shiki highlighting of code blocks with role classes, unit-tested
-│   │   ├── sample.md         # Sample article shown at /dev/markdown/
-│   │   ├── table-align.ts    # Sätteri hast plugin: table alignment as classes, unit-tested
-│   │   ├── youtube-id.ts     # YouTube video ID of a video URL, used by youtube.ts and workers/publish/src/zenn-syntax.ts
-│   │   └── youtube.ts        # Sätteri hast plugin: YouTube URL paragraphs as iframes, unit-tested
-│   ├── pages/
-│   │   ├── 404.astro     # /404.html: the 404 page, served for every path with no file
-│   │   ├── [lang]/
-│   │   │   ├── contact/
-│   │   │   │   └── index.astro   # /ja/contact/ and /en/contact/: the contact form and a line about a DM on Twitter (self-proclaimed X)
-│   │   │   └── index.astro   # /ja/ and /en/
-│   │   ├── ansi/
-│   │   │   ├── color.txt.ts  # /ansi/color.txt: the avatar main-visual as 24-bit color text art
-│   │   │   └── plain.txt.ts  # /ansi/plain.txt: the same art without escape sequences
-│   │   ├── blog/
-│   │   │   ├── [slug].astro  # /blog/<slug>/: a post, with its head above the body, its table of contents with the reading progress and the compact footer
-│   │   │   ├── index.astro   # /blog/: every post, newest first
-│   │   │   └── tags/
-│   │   │       └── [tag].astro   # /blog/tags/devlog/, tech/ and diary/: the posts of one tag, built with or without posts
-│   │   ├── llms.txt.ts   # /llms.txt, prerendered to dist/client/
-│   │   ├── og/
-│   │   │   └── images.json.ts # /og/images.json: the OGP images to draw, read and deleted by astro.config.mjs after the build
-│   │   ├── robots.txt.ts # /robots.txt, prerendered to dist/client/
-│   │   ├── rss.xml.ts    # /rss.xml: prerendered RSS feed with each post's full HTML
-│   │   └── text/
-│   │       └── [lang].txt.ts # /text/ja.txt and /text/en.txt: prerendered text version of the site
-│   ├── styles/
-│   │   ├── controls.css  # Buttons (.btn, .btn-acc, .btn-ink, .btn-ghost), icon links (.sq, .iconbtn) and page switch links (.ws) of plan A
-│   │   ├── global.css    # the frame of the page (html, body and .site-content: no margin, the full height, the footer at the bottom of a short page), the side padding of the page and the width of its content (--page-gutter and .page-width), the font and the variables of html (--font-mono, --header-h, --ease-out and no faked weight), body colors, the links, the keyboard focus outline (none on the focused <main>), the scroll padding that keeps the anchors and the focused element clear of the sticky header and the classes that hide text from the eyes (.sr-only, .sr-only-focusable, .sr-only-narrow)
-│   │   ├── labels.css    # Labels of plan A: .label (shared with the labels of an article's message boxes), .tag and the category chip .chip-acc
-│   │   ├── motion.css    # The blinking cursor of the name logo (.blink-on), the appearance when the page opens (.rv, band-in), stopped under reduced motion
-│   │   ├── tokens.css    # Color tokens; the theme is the data-theme attribute on <html>, set by src/theme.ts
-│   │   └── window.css    # Windows (.win, shared with the accordions and the message boxes of articles; .win-title, the title row of a window; the <summary> of an accordion), corner ticks (.ticks, .ticks-acc), grid background, the stripe band (flowing right) and the avatar shadow of plan A
-│   └── test/
-│       └── css-source.ts # Test helper: reads the CSS of a .css file or an .astro <style> as rules with their @media and @supports conditions, unit-tested
-├── workers/
-│   └── publish/          # Publish Worker, separate from the site and deployed on its own
-│       ├── src/
-│       │   ├── app.ts               # Hono app and Worker entry; every route needs the shared secret
-│       │   ├── article-event.ts     # Builds the unsigned kind 30023 (NIP-23) event of an article and the kind 5 (NIP-09) deletion request for it
-│       │   ├── article-markdown.ts  # Splits an article's markdown, checks its frontmatter (blog-schema.ts without date), inserts date
-│       │   ├── auth.ts              # Bearer auth with a constant-time comparison
-│       │   ├── bunker-url.ts        # Parses the bunker URL (NIP-46) of nostr-no-su
-│       │   ├── content-hash.ts      # Content hash of an article (SHA-256 of its markdown)
-│       │   ├── env.ts               # Bindings (PUBLISH_TOKEN, GITHUB_TOKEN, GITHUB_API_URL, NOSTR_CLIENT_KEY, NOSTR_BUNKER_URL, NOSTR_INDEX_RELAYS, IMAGES)
-│       │   ├── errors.ts            # Error body shared by every error response
-│       │   ├── fake-nostr.ts        # Test double for WebSocket: a bunker and relays (used by tests only)
-│       │   ├── github-commit.ts     # Writes and deletes files on main on GitHub in one commit (Git Data API)
-│       │   ├── image-refs.ts        # Rewrites image:<name> references to img.ikili.pro URLs
-│       │   ├── images.ts            # Image names, R2 lookups (/images/{name}, PUT /articles/{slug}), uploads (PUT /images/{name}) and deletes
-│       │   ├── nip46-message.ts     # Builds NIP-46 requests and reads responses (kind 24133, NIP-44) for the remote signer
-│       │   ├── nip46-signer.ts      # Asks the remote signer for the user's public key or to sign an event over the bunker's relay (NIP-46)
-│       │   ├── nostr-publish.ts     # Reads the Nostr settings and posts an article's event: sign through the bunker, then send to the write relays
-│       │   ├── nostr-relays.ts      # Reads write relays (kind 10002) and sends events to relays
-│       │   ├── nostr-withdraw.ts    # Asks Nostr to delete an article's event (NIP-09): public key, signature, relays
-│       │   ├── published-record.ts  # Reads, updates and writes src/content/published.json (GET /articles); images only one article uses
-│       │   ├── zenn-article.ts      # Builds a Zenn article file (articles/<slug>.md) and picks the articles that go to Zenn
-│       │   ├── zenn-syntax.ts       # Converts an article body to the syntax of Zenn and rejects the HTML Zenn cannot show
-│       │   └── zenn-unpublish.ts    # Sets an article's file in zenn-contents to published: false (withdrawal)
-│       ├── .dev.vars.example
-│       └── wrangler.jsonc
-├── astro.config.mjs      # Cloudflare adapter, self-hosted fonts, Sätteri Markdown, dev pages, text art plugin, sitemap, OGP image writer; pages are prerendered by default
-├── biome.json
-├── lighthouserc.cjs      # Lighthouse CI: the four pages, three runs, Performance targets (bun run lighthouse)
-├── wrangler.jsonc
-└── package.json
+├── docs/               # Documents: how to write an article body, the API contract between the article sync script and the publishing Worker, and how to write articles in the Vault
+├── public/             # Static files copied as they are, with `_headers`, the security headers of the static files (the Worker sends the same values)
+│   └── favicon/        # Favicons from the brand kit, unchanged: the mark /li on ink as SVG, and PNGs of 32, 180 and 192 pixels
+├── scripts/            # Scripts that run outside the site build
+│   ├── a11y/           # `bun run a11y`: axe and a screenshot contrast check
+│   ├── audit/          # Audit scripts run by hand: what still moves under `prefers-reduced-motion: reduce`, and the links that leave the site
+│   ├── avatars/        # Makes the avatar images in `src/assets/` from the v2.1 originals (`bun run import:avatars`)
+│   ├── lighthouse/     # Job summary table of the Lighthouse CI scores
+│   └── sync/           # Article sync script for the publish Worker (`bun run sync`, run by Hermes)
+├── src/                # The site; a module in this directory has its unit test `<name>.test.ts` beside it, and `fetch.ts` is the Worker entry
+│   ├── assets/         # Images processed by astro:assets: the nine v2.1 avatars, made by `scripts/avatars/` (see “Images and caching”)
+│   │   ├── icon/       # Face mark and avatar SVGs of the brand kit (regular and small versions), used as they are by FaceIcon
+│   │   └── name-logo/  # Name logo of the brand kit, kept as it is and drawn by `og-image.ts`
+│   ├── components/     # Astro components, in a directory for each part of the site; the `.ts` modules of a part and their tests are in the same directory (the tests that read several parts are directly in `components/`)
+│   │   ├── article/    # A post's page: head, body, table of contents, reading progress, end window, the links to the next posts and the PR notice
+│   │   ├── blog/       # The blog pages (the list with the tag filter) and the window of post rows
+│   │   ├── contact/    # The contact form and its states
+│   │   ├── home/       # The top page: hero, About, Latest, the three views of the avatar and the contact band
+│   │   ├── icons/      # Service icons for HeroAccount; sources and terms in icons/README.md
+│   │   └── site/       # What more than one kind of page uses: header, footer, skip link, page head, section title, name logo, face mark, theme switch, breadcrumb and the note on a link that leaves the site
+│   ├── content/        # The `blog` collection and `published.json`, the record of which posts are on Nostr, written by the publishing Worker
+│   │   ├── blog/       # Posts committed by the publishing Worker
+│   │   └── blog-dev/   # Posts for checking how pages look, and published.json, their published record; loaded by astro dev (or with LINA_DEV_PAGES=1)
+│   ├── dev/            # The dev pages, added in astro dev (or with LINA_DEV_PAGES=1): /dev/components/, samples of the plan A styles, components and avatar images, and /dev/markdown/, a sample article with every supported Markdown syntax
+│   │   └── sections/   # A section of /dev/components/ in each file, with the classes only that section uses
+│   ├── i18n/           # Locales (ja, en), the locale picked for /, the path of the same page in another locale, canonical and hreflang URLs, and the UI strings per locale
+│   ├── layouts/        # The layout of every page: `<head>` with its meta tags, the skip link, the site header and the site footer
+│   ├── markdown/       # Markdown rendering with Sätteri: its plugins, the highlighting of code blocks, the CSS of an article and of its code blocks, and the sample article shown at /dev/markdown/
+│   ├── pages/          # A file for each URL, prerendered unless it exports `prerender = false`; a directory is a part of the path
+│   │   ├── [lang]/     # The pages that exist in every language, generated once for each locale in `src/i18n/locales.ts` (/ja/, /en/)
+│   │   ├── ansi/       # /ansi/color.txt and /ansi/plain.txt: the avatar main-visual as text art
+│   │   ├── blog/       # /blog/, the posts at /blog/<slug>/ and the tag pages
+│   │   ├── og/         # /og/images.json: the OGP images to draw, read and deleted by `astro.config.mjs` after the build
+│   │   └── text/       # /text/ja.txt and /text/en.txt: the text version of the site
+│   ├── styles/         # The global CSS (see “CSS”)
+│   └── test/           # Helpers for the tests, and the test that checks this tree
+└── workers/            # Workers that are not part of the site
+    └── publish/        # Publish Worker, separate from the site and deployed on its own
+        └── src/        # The Hono app and Worker entry (every route needs the shared secret) and what its routes call: checking an article, writing files to GitHub, images in R2, posting to Nostr through the bunker (NIP-46), Zenn and withdrawal; each module has its unit test beside it
 ```
+
+The tree names directories only, so that it does not repeat the comment at the top of each file. `src/test/readme-tree.test.ts` fails when the tree names a directory that does not exist or leaves out one that holds files; `src/content/blog/`, where the publishing Worker commits posts, is listed even while it is empty, and below `src/pages/<name>/` a directory is a part of a URL and is not listed.
 
 Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` and `/api/*` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets, and a `GET` for a path with no file gets `/404.html` (`src/pages/404.astro`) with status 404 without starting the Worker (`assets.not_found_handling`), so a page that exports `prerender = false` must also be added to `assets.run_worker_first`. `/` has no page: the route in `src/api.ts` answers command-line clients such as curl (`src/user-agent.ts`) with `text/plain`, and redirects other clients to `/en/` when `Accept-Language` prefers English over Japanese and to `/ja/` otherwise. The text is the text art `/ansi/color.txt`, a blank line and the text version `/text/en.txt` or `/text/ja.txt`, chosen by `Accept-Language` in the same way, which the Worker fetches through the `ASSETS` binding (`assets.binding` in `wrangler.jsonc`). Without the text art it is the text version alone; without the text version it is a short notice with the top page's URL and status 503. All three responses carry `Vary: User-Agent, Accept-Language`. Every response of `/` and `/api/*` also carries the security headers of Hono's `secureHeaders()`, added by middleware in `src/api.ts`, because a `_headers` file applies to static assets only and not to responses from the Worker. `Content-Security-Policy` (`frame-ancestors 'none'` only), `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options`, `Permissions-Policy` and `Strict-Transport-Security` take the values of the `/*` rule in `public/_headers`, and `src/api.test.ts` checks that both agree; the other headers, such as `Cross-Origin-Opener-Policy`, keep Hono's defaults. Do not add `src/pages/index.astro`, because the adapter serves a prerendered page before the Hono app sees the request. Requests to `/` and `/api/*` go to the Hono app in `src/fetch.ts`, which serves the routes in `src/api.ts`; a request that no route matches, such as `/api/nope` or a `POST` to `/`, gets the same 404 page from Astro's handlers. Astro calls that app with the request only, so `src/fetch.ts` passes the Worker's bindings and secrets (`env` from `cloudflare:workers`) to it.
 
@@ -237,7 +95,7 @@ The elements that rendered Markdown outputs are styled by plain CSS files in `sr
 The inline script in the `<head>` of `src/layouts/Layout.astro` (`THEME_SCRIPT` in `src/theme.ts`) sets `<html data-theme>` before the first paint.
 It sets the light theme when `localStorage` holds `light` under the key `theme`, and the dark theme in every other case: nothing saved, any other value, or `localStorage` throwing. It does not read `prefers-color-scheme` and does not follow changes of the OS setting.
 Without JavaScript, the page keeps the dark theme that `Layout.astro` renders.
-`src/components/ThemeToggle.astro` switches the theme with `toggleTheme` and saves it under the same key; when saving throws, the switch lasts only until the next page.
+`src/components/site/ThemeToggle.astro` switches the theme with `toggleTheme` and saves it under the same key; when saving throws, the switch lasts only until the next page.
 
 Breakpoints are the widths of the viewport at which a layout changes.
 In `@media`, `sizes` and `matchMedia`, write the wide side of a width N as `min-width: N` and the narrow side as `max-width: N-1`, without decimals such as `767.98px`, so that a viewport of exactly N px is on the wide side. `src/styles/breakpoints.test.ts` fails on a `min-width` or `max-width` of any other value.
@@ -536,7 +394,7 @@ disabled; it is rate-limited and meant for development.
 - In production, register it with `bunx wrangler secret put TURNSTILE_SECRET_KEY`.
 - Locally, put it in `.dev.vars` at the root of the repository (ignored by git). `wrangler dev`, which `bun run preview:wrangler` runs, reads it and prints `Using secrets defined in .dev.vars` on startup.
 
-The contact form (`src/components/ContactForm.astro`) renders the widget with the site key `TURNSTILE_SITE_KEY`, a public variable declared with `astro:env` in `astro.config.mjs`. Pages are prerendered, so `astro build` reads it from the environment or from `.env` at the root of the repository (ignored by git), not from `.dev.vars`. Without it the build uses Cloudflare's test site key `1x00000000000000000000AA`, whose widget always passes with the dummy token `XXXX.DUMMY.TOKEN.XXXX`. A production secret key rejects that token, so a production build must set the real site key.
+The contact form (`src/components/contact/ContactForm.astro`) renders the widget with the site key `TURNSTILE_SITE_KEY`, a public variable declared with `astro:env` in `astro.config.mjs`. Pages are prerendered, so `astro build` reads it from the environment or from `.env` at the root of the repository (ignored by git), not from `.dev.vars`. Without it the build uses Cloudflare's test site key `1x00000000000000000000AA`, whose widget always passes with the dummy token `XXXX.DUMMY.TOKEN.XXXX`. A production secret key rejects that token, so a production build must set the real site key.
 
 Locally, use one of Cloudflare's test secret keys instead of the production key:
 
