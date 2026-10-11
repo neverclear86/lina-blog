@@ -116,10 +116,16 @@ describe("リンクのホバー", () => {
 
 describe("body", () => {
   it("body の文字色はトークンで、テーマの切り替えに transition を使わない", () => {
-    const body = only(GLOBAL, "body");
-    expect(valueIn(body, "color")).toMatch(TOKEN);
+    const rules = rulesFor(GLOBAL, "body");
+    const colored = rules.filter(
+      (rule) => valueIn(rule, "color") !== undefined,
+    );
+    expect(colored).toHaveLength(1);
+    expect(valueIn(colored[0], "color")).toMatch(TOKEN);
     expect(
-      body.declarations.filter((d) => d.property.startsWith("transition")),
+      rules
+        .flatMap((rule) => rule.declarations)
+        .filter((d) => d.property.startsWith("transition")),
     ).toEqual([]);
   });
 });

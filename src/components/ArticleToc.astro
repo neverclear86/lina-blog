@@ -133,7 +133,7 @@ const label = translate(lang, "blog.toc.label");
 .toc a:is(:hover, :focus-visible) {
   color: var(--text);
 }
-:root[data-theme="dark"] .toc a:is(:hover, :focus-visible) {
+:global(:root[data-theme="dark"]) .toc a:is(:hover, :focus-visible) {
   color: var(--keyword);
 }
 .panel .toc a[aria-current],
