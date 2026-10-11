@@ -27,7 +27,10 @@ interface Props {
   lang: Locale;
   /** `window` for the left column from 1024px, `sheet` for the `<details>` before the body. */
   variant: "window" | "sheet";
-  /** Index in `items` of the item of the `h2` that the reader is in, marked in the window. */
+  /**
+   * Index in `items` of the item of the `h2` that the reader is in, marked in the window. Sample
+   * only (見本用): the post page leaves it out, and its script marks the item as the reader scrolls.
+   */
   current?: number;
 }
 

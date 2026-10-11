@@ -25,7 +25,10 @@ interface Props {
   lang: Locale;
   /** The newest video, or `undefined` when there is none. */
   video: YouTubeVideo | undefined;
-  /** Classes for the window, such as `is-hover` to show the hovered state. */
+  /**
+   * Classes for the window. Sample only (見本用): the sample page passes `is-hover` and
+   * `is-focus` to show the hovered and focused states, and the home page leaves it out.
+   */
   class?: string;
 }
 
