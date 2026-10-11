@@ -204,8 +204,6 @@ Colors are tested the same way. `src/styles/tokens.test.ts` checks that the plan
 
 `bun run a11y` audits the built site in headless Chromium: every page of `dist/client/` at 1440px and 390px in both themes. It fails on an axe result with `serious` or `critical` impact or any `color-contrast` result. Axe cannot decide the contrast of some text, for example over a gradient, an image, a pseudo-element or another element, so `scripts/a11y/run.ts` measures that text on a screenshot with the glyphs hidden and fails under 4.5:1 (3:1 for large text). Run `LINA_DEV_PAGES=1 bun run build` first to include the posts and the dev pages; it does not run in CI. It opens the pages without their Content Security Policy (Playwright's `bypassCSP`), which would block the style tag that hides the glyphs for the contrast check. Pass paths, `--widths` or `--themes` to narrow it.
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
-
 ## 🎨 CSS
 
 CSS is plain CSS: a few global files in `src/styles/` and a scoped `<style>` in each component.
