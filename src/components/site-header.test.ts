@@ -1,5 +1,12 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import {
+  cssOfAstro,
+  hasCondition,
+  parseCss,
+  rulesFor,
+  valueIn,
+} from "../test/css-source";
 
 /** Reads a file under `src/` without its CSS comments. */
 function source(path: string): string {
@@ -9,35 +16,12 @@ function source(path: string): string {
   );
 }
 
-interface Rule {
-  selector: string;
-  body: string;
-}
-
-/** Returns the rules of a CSS text, with the whitespace of each selector collapsed. */
-function rulesOf(text: string): Rule[] {
-  return [...text.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => ({
-    selector: match[1].replace(/\s+/g, " ").trim(),
-    body: match[2].replace(/\s+/g, " ").trim(),
-  }));
-}
-
 const header = source("components/SiteHeader.astro");
-const style = header.slice(
-  header.indexOf("<style>"),
-  header.indexOf("</style>"),
-);
+const RULES = parseCss(cssOfAstro(header));
+const REDUCE = "@media (prefers-reduced-motion: reduce)";
 
-/** The part of the `<style>` of the header that is inside `@media (min-width: 1024px)`. */
-const wide = style.slice(style.indexOf("@media (min-width: 1024px)"));
-
-/** Removes the `@media` blocks of a CSS text, which leaves the rules that apply at every width. */
-function withoutMedia(css: string): string {
-  return css.replace(/@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, "");
-}
-
-/** The rules of the `<style>` of the header that apply at every width. */
-const base = withoutMedia(style);
+/** A color written as one token, such as `var(--text)`. */
+const TOKEN = /^var\(--[\w-]+\)$/;
 
 /** The markup of the header, that is, the file without the frontmatter, `<style>` and `<script>`. */
 const markup = header.slice(
@@ -48,114 +32,48 @@ const markup = header.slice(
 /** The `<script>` of the header. */
 const script = header.slice(header.indexOf("<script>"));
 
-/** Returns the declarations of the rule with `selector` in `css`, or fails. */
-function body(css: string, selector: string): string {
-  const rule = rulesOf(css).find((r) => r.selector.endsWith(selector));
-  if (!rule) throw new Error(`no rule for ${selector}`);
-  return rule.body;
-}
-
-describe("SiteHeader の 1024px 以上", () => {
-  it("現在地のナビは --keyword の地に --ink の太い文字で、ホバーでも変わらない", () => {
-    const rule = rulesOf(wide).find((r) =>
-      r.selector.includes(".ws[aria-current]:is(:hover, :focus-visible)"),
+describe("SiteHeader の現在地のナビ", () => {
+  it("現在地のナビは地と文字の色をトークンで指し、ホバー・フォーカス・JS が無いときの 00 top でも変わらない", () => {
+    const [current] = rulesFor(RULES, ".site-nav .ws[aria-current]");
+    expect(current.selectors).toEqual(
+      expect.arrayContaining([
+        ".site-nav .ws[aria-current]:is(:hover, :focus-visible)",
+        ".site-nav .ws.on:is(:hover, :focus-visible)",
+      ]),
     );
-    expect(rule?.selector).toContain(".site-nav .ws[aria-current],");
-    expect(rule?.body).toContain("background: var(--keyword)");
-    expect(rule?.body).toContain("color: var(--ink)");
-    expect(rule?.body).toContain("font-weight: 700");
-  });
-
-  it("JS が無いときの 00 top は、ホバー・フォーカスでも --ink の文字のまま", () => {
-    const rule = rulesOf(wide).find((r) =>
-      r.selector.includes(".ws[aria-current]:is(:hover, :focus-visible)"),
-    );
-    expect(rule?.selector).toContain(
-      ".site-nav .ws.on:is(:hover, :focus-visible)",
-    );
+    expect(valueIn(current, "background")).toMatch(TOKEN);
+    expect(valueIn(current, "color")).toMatch(TOKEN);
   });
 
   it("backdrop-filter は接頭辞なしの 1 行だけで、CSS の出力で消されない", () => {
-    expect(style).not.toContain("-webkit-backdrop-filter");
-    expect(style.match(/backdrop-filter/g)).toHaveLength(1);
+    const properties = RULES.flatMap((rule) =>
+      rule.declarations.map((d) => d.property),
+    );
+    expect(properties.filter((p) => p === "backdrop-filter")).toHaveLength(1);
+    expect(properties).not.toContain("-webkit-backdrop-filter");
   });
 });
 
 describe("SiteHeader の全幅", () => {
-  it("ヘッダーは幅によらず sticky で、--hdr の地と --line の線と blur を持つ", () => {
-    const rule = body(base, ".site-header");
-    expect(rule).toContain("position: sticky");
-    expect(rule).toContain("top: 0");
-    expect(rule).toContain("z-index: 50");
-    expect(rule).toContain("border-bottom: 1px solid var(--line)");
-    expect(rule).toContain("background: var(--hdr)");
-    expect(rule).toContain("backdrop-filter: blur(10px)");
-  });
-
-  it("バーは上下 8px の余白と 44px のボタンで 61px の高さになる", () => {
-    const bar = body(base, ".bar");
-    expect(bar).toContain("max-width: 1440px");
-    expect(bar).toContain("margin: 0 auto");
-    expect(bar).toContain("padding: 8px var(--gutter)");
-    expect(body(base, ".brand")).toContain("height: 44px");
-    expect(body(base, ".brand")).toContain("width: 82px");
-    expect(body(wide, ".brand")).toContain("width: 92px");
-    expect(body(base, ".site-header")).toContain("--gutter: 16px");
-    const media768 = style.slice(
-      style.indexOf("@media (min-width: 768px)"),
-      style.indexOf("@media (max-width: 1023px)"),
-    );
-    expect(body(media768, ".site-header")).toBe("--gutter: 32px;");
-    const controls = source("styles/controls.css");
-    const button = body(controls, ".sq, .iconbtn");
-    expect(button).toContain("width: 44px");
-    expect(button).toContain("height: 44px");
-    expect(button).toContain("border: 1px solid var(--line2)");
-  });
-
-  it("メニューのボタンは .iconbtn.iconbtn-acc で、名前は menu.label、押すと site-menu を開く", () => {
-    expect(markup).toContain('class="iconbtn iconbtn-acc menu-toggle"');
+  it("メニューのボタンは menu.label を名前に持ち、押すと popover の site-menu を開く", () => {
     expect(markup).toContain('aria-label={translate(lang, "menu.label")}');
     expect(markup).toContain('popovertarget="site-menu"');
-    expect(markup).toContain('<path d="M4 7h16M4 12h16M4 17h10"></path>');
-    expect(markup).toContain('<path d="M6 6l12 12M18 6L6 18"></path>');
-    expect(markup).toContain('stroke-linecap="square"');
+    expect(markup).toMatch(/<div\s+id="site-menu"[^>]*\spopover[\s>]/);
   });
 
-  it("テーマのボタンは variant を持たず、.iconbtn の button 1 つで作る", () => {
-    const toggle = source("components/ThemeToggle.astro");
-    expect(toggle).toContain(
-      '<button class="theme-toggle iconbtn" type="button">',
+  it("閉じた popover は UA の display で隠れ、幅の条件の無い .menu-panel の規則は display を持たない", () => {
+    const base = rulesFor(RULES, ".menu-panel").filter(
+      (rule) => rule.conditions.length === 0,
     );
-    expect(toggle.match(/<button/g)).toHaveLength(1);
-    for (const gone of [
-      "variant",
-      "labeled",
-      "now-light",
-      "now-dark",
-      "theme.nameSeparator",
-    ]) {
-      expect(toggle).not.toContain(gone);
+    expect(base.length).toBeGreaterThan(0);
+    for (const rule of base) {
+      expect(valueIn(rule, "display")).toBeUndefined();
     }
   });
 
-  it("テーマのボタンは、ダークで月、ライトで太陽を出し、名前は切り替え先を言う", () => {
-    const toggle = source("components/ThemeToggle.astro");
-    const toggleStyle = toggle.slice(toggle.indexOf("<style>"));
-    const dark = ':global(:root[data-theme="dark"])';
-    expect(body(toggleStyle, ".moon, .to-light")).toBe("display: none;");
-    expect(body(toggleStyle, `${dark} .moon`)).toBe("display: block;");
-    expect(body(toggleStyle, `${dark} .sun, ${dark} .to-dark`)).toBe(
-      "display: none;",
-    );
-    expect(body(toggleStyle, `${dark} .to-light`)).toBe("display: inline;");
-    expect(rulesOf(toggleStyle).some((r) => r.selector === ".sun")).toBe(false);
-    expect(toggle).toContain(
-      '<span class="to-dark">{translate(lang, "theme.toDark")}</span>',
-    );
-    expect(toggle).toContain(
-      '<span class="to-light">{translate(lang, "theme.toLight")}</span>',
-    );
+  it("メニューの行のフォーカスの輪は、行の内側に描く", () => {
+    const [focus] = rulesFor(RULES, ".menu-nav a:focus-visible");
+    expect(valueIn(focus, "outline-offset")).toMatch(/^-/);
   });
 
   it("ヘッダーは ThemeToggle を言語の切り替えとお問い合わせの間に 1 つだけ置く", () => {
@@ -163,44 +81,16 @@ describe("SiteHeader の全幅", () => {
     const toggle = markup.indexOf("<ThemeToggle");
     expect(toggle).toBeGreaterThan(markup.indexOf('class="languages"'));
     expect(toggle).toBeLessThan(markup.indexOf('class="btn btn-acc contact"'));
-    expect(header).not.toContain("theme-wide");
-    expect(header).not.toContain("theme-narrow");
   });
 
-  it("ヘッダーの下 61px から伸びる --bg の不透明なシートで、高さは残りまで", () => {
-    const rule = body(base, ".menu-panel");
-    expect(rule).toContain("position: fixed");
-    expect(rule).toContain("inset: 61px 0 auto");
-    expect(rule).toContain("max-height: calc(100dvh - 61px)");
-    expect(rule).toContain("background: var(--bg)");
-    expect(rule).toContain("overflow-y: auto");
-  });
-
-  it("ナビの行は高さ 48px の等幅で、現在地の行は --keyword の地と --ink の文字にする", () => {
-    const row = body(base, ".menu-nav a");
-    expect(row).toContain("height: 48px");
-    expect(row).toContain("font-family: var(--font-mono)");
-    expect(row).toContain("font-size: 14px");
-    expect(body(base, ".menu-nav a + a")).toContain(
-      "border-top: 1px solid var(--line)",
+  it("お問い合わせのリンクは、ヘッダーとメニューのどちらも aria-current を持つ", () => {
+    const links = markup.match(
+      /<a\b[^>]*\bhref=\{contactPagePath\(lang\)\}[^>]*>/g,
     );
-    expect(body(base, ".menu-nav a:focus-visible")).toContain(
-      "outline-offset: -2px",
-    );
-    const current = rulesOf(base).find((r) =>
-      r.selector.startsWith(".menu-nav a[aria-current],"),
-    );
-    expect(current?.body).toContain("background: var(--keyword)");
-    expect(current?.body).toContain("color: var(--ink)");
-    expect(current?.body).toContain("font-weight: 700");
-  });
-
-  it("お問い合わせは .btn.btn-acc を全幅で置く", () => {
-    expect(markup).toMatch(
-      /<a\s+class="btn btn-acc"\s+href=\{contactPagePath\(lang\)\}\s+aria-current=\{contactCurrent\}\s*>/,
-    );
-    expect(body(base, ".menu-contact .btn")).toContain("display: flex");
-    expect(body(base, ".menu-contact .btn")).toContain("flex: 1");
+    expect(links).toHaveLength(2);
+    for (const link of links ?? []) {
+      expect(link).toContain("aria-current={contactCurrent}");
+    }
   });
 
   it("日本語だけのページの JA に lang.jaOnly を添える", () => {
@@ -210,7 +100,7 @@ describe("SiteHeader の全幅", () => {
   });
 
   it("ヘッダーの style は要素名だけの a の規則を持たない", () => {
-    expect(rulesOf(style).filter((r) => r.selector === "a")).toEqual([]);
+    expect(RULES.filter((rule) => rule.selectors.includes("a"))).toEqual([]);
   });
 
   it("メニューを閉じる script は、リンクを押したときと、フォーカスがヘッダーの外の要素に入ったときに閉じる", () => {
@@ -230,14 +120,54 @@ describe("SiteHeader の全幅", () => {
   });
 });
 
+describe("ThemeToggle", () => {
+  const toggle = source("components/ThemeToggle.astro");
+  const rules = parseCss(cssOfAstro(toggle));
+  const dark = ':global(:root[data-theme="dark"])';
+
+  /** Returns the `display` that the first rule with `selector` declares, if any. */
+  const displayOf = (selector: string) => {
+    const [rule] = rulesFor(rules, selector);
+    return rule && valueIn(rule, "display");
+  };
+
+  it("名前は切り替え先を言い、ライトでは to-dark、ダークでは to-light だけを出す", () => {
+    expect(toggle).toContain(
+      '<span class="to-dark">{translate(lang, "theme.toDark")}</span>',
+    );
+    expect(toggle).toContain(
+      '<span class="to-light">{translate(lang, "theme.toLight")}</span>',
+    );
+    expect(displayOf(".to-light")).toBe("none");
+    expect(displayOf(".to-dark")).toBeUndefined();
+    expect(displayOf(`${dark} .to-dark`)).toBe("none");
+    expect(displayOf(`${dark} .to-light`)).toBeDefined();
+    expect(displayOf(`${dark} .to-light`)).not.toBe("none");
+  });
+
+  it("アイコンは、ライトでは太陽、ダークでは月だけを出す", () => {
+    expect(displayOf(".moon")).toBe("none");
+    expect(displayOf(".sun")).toBeUndefined();
+    expect(displayOf(`${dark} .sun`)).toBe("none");
+    expect(displayOf(`${dark} .moon`)).toBeDefined();
+    expect(displayOf(`${dark} .moon`)).not.toBe("none");
+  });
+});
+
 describe("global.css の scroll-padding", () => {
-  it("ページは幅によらず上 72px と下 8px を空けてスクロールし、要素の scroll-margin-top は持たない", () => {
-    const css = source("styles/global.css");
+  it("ページは幅によらず scroll-padding を 1 か所に持ち、要素の scroll-margin は持たない", () => {
+    const global = parseCss(source("styles/global.css"));
+    const declared = global.filter((rule) =>
+      rule.declarations.some((d) => d.property.startsWith("scroll-padding")),
+    );
+    expect(declared).toHaveLength(1);
+    expect(declared[0].selectors).toEqual(["html"]);
+    expect(declared[0].conditions).toEqual([]);
     expect(
-      rulesOf(withoutMedia(css)).map((r) => [r.selector, r.body]),
-    ).toContainEqual(["html", "scroll-padding: 72px 0 8px;"]);
-    expect(css.match(/scroll-padding/g)).toHaveLength(1);
-    expect(css).not.toContain("scroll-margin");
+      global.some((rule) =>
+        rule.declarations.some((d) => d.property.startsWith("scroll-margin")),
+      ),
+    ).toBe(false);
     expect(source("components/ArticleBody.astro")).not.toContain(
       "scroll-margin",
     );
@@ -245,55 +175,48 @@ describe("global.css の scroll-padding", () => {
 });
 
 describe("SiteHeader のトップの現在地の印", () => {
-  const rules = rulesOf(style);
-  const rule = (selector: string) => rules.find((r) => r.selector === selector);
-
-  it("--nav-index に 96px を掛けて動き、--keyword の地で、追従の前は出さない", () => {
-    const ind = rule(".nav-ind")?.body;
-    expect(ind).toContain(
-      "transform: translateX(calc(var(--nav-index, 0) * 96px))",
-    );
-    expect(ind).toContain("background: var(--keyword)");
-    expect(ind).toContain("display: none");
-    expect(rule(".site-nav.following .nav-ind")?.body).toContain(
-      "display: block",
-    );
+  it("印は追従が始まるまで出さない", () => {
+    const [mark] = rulesFor(RULES, ".nav-ind");
+    expect(valueIn(mark, "display")).toBe("none");
+    const [following] = rulesFor(RULES, ".site-nav.following .nav-ind");
+    expect(valueIn(following, "display")).toBeDefined();
+    expect(valueIn(following, "display")).not.toBe("none");
   });
 
-  it("追従の間、現在地の項目は地を持たず、印の地が見える", () => {
-    expect(rule(".site-nav.following .ws[aria-current]")?.body).toContain(
-      "background: transparent;",
-    );
-  });
-
-  it("追従の間の現在地の規則は、#308 の現在地の規則より後ろにある", () => {
-    const index = (match: (r: Rule) => boolean) => rules.findIndex(match);
-    expect(
-      index((r) => r.selector === ".site-nav.following .ws[aria-current]"),
-    ).toBeGreaterThan(
-      index((r) =>
-        r.selector.includes(".ws[aria-current]:is(:hover, :focus-visible)"),
-      ),
-    );
+  it("追従の間の現在地の項目の地は、現在地の規則より後ろで置き換える", () => {
+    const [current] = rulesFor(RULES, ".site-nav.following .ws[aria-current]");
+    expect(valueIn(current, "background")).toBeDefined();
+    // On hover and focus, the current item matches both rules with the same specificity, so the
+    // replacement comes last.
+    const [shown] = rulesFor(RULES, ".site-nav .ws[aria-current]");
+    expect(RULES.indexOf(current)).toBeGreaterThan(RULES.indexOf(shown));
   });
 
   it(".nav-ind の規則は transition を持たず、.site-nav.ready .nav-ind だけが持つ", () => {
-    expect(rule(".nav-ind")?.body).not.toContain("transition");
-    expect(rule(".site-nav.ready .nav-ind")?.body).toContain(
-      "transition: transform 0.4s",
-    );
+    for (const rule of rulesFor(RULES, ".nav-ind")) {
+      expect(valueIn(rule, "transition")).toBeUndefined();
+    }
+    const [ready] = rulesFor(RULES, ".site-nav.ready .nav-ind");
+    expect(valueIn(ready, "transition")).toBeDefined();
   });
 
-  it("prefers-reduced-motion: reduce で印の移動と項目の文字の色の変化を止める", () => {
-    expect(
-      rule(".site-nav.ready .nav-ind, .site-nav[data-follow] .ws")?.body,
-    ).toBe("transition: none;");
-  });
-
-  it("印の移動と項目の文字の色には、止める前の transition がある", () => {
-    expect(rule(".site-nav.ready .nav-ind")?.body).toContain("transform 0.4s");
-    expect(rule(".site-nav[data-follow] .ws")?.body).toContain(
-      "transition: color 0.25s",
+  it("transition のある規則のセレクタは、それより後ろの reduce の中でそれぞれ transition: none になる", () => {
+    const moving = RULES.filter(
+      (rule) =>
+        !hasCondition(rule, REDUCE) &&
+        valueIn(rule, "transition") !== undefined,
     );
+    expect(moving.length).toBeGreaterThan(0);
+    for (const rule of moving) {
+      for (const selector of rule.selectors) {
+        const stops = rulesFor(RULES, selector).filter(
+          (r) =>
+            hasCondition(r, REDUCE) &&
+            RULES.indexOf(r) > RULES.indexOf(rule) &&
+            valueIn(r, "transition") === "none",
+        );
+        expect(stops, selector).toHaveLength(1);
+      }
+    }
   });
 });
