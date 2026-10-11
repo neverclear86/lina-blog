@@ -1,6 +1,8 @@
 ---
+import { requireSite } from "../external-link";
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
+import ExternalNote from "./ExternalNote.astro";
 import FaceIcon from "./FaceIcon.astro";
 import {
   type FooterVariant,
@@ -42,7 +44,7 @@ const year = new Date().getFullYear();
 const copyright = `© ${year} ${translate(lang, "footer.copyrightHolder")}`;
 const ID = " / LinaTsukusu";
 const siteLinks = footerSiteLinks(lang);
-const profileLinks = footerProfileLinks(lang);
+const profileLinks = footerProfileLinks(lang, requireSite(Astro.site));
 ---
 
 <footer class:list={["site-footer", variant]}>
@@ -69,10 +71,11 @@ const profileLinks = footerProfileLinks(lang);
           links
         </span>
         <ul>
-          {profileLinks.map(({ label, href, rel }) => (
+          {profileLinks.map(({ label, href, external, target, rel }) => (
             <li>
-              <a href={href} rel={rel}>
+              <a href={href} target={target} rel={rel}>
                 {label}
+                {external && <ExternalNote lang={lang} />}
               </a>
             </li>
           ))}

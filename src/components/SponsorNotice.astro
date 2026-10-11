@@ -4,9 +4,16 @@
  * that names the sponsor, with the name linked when the notice has a link. The chip is hidden
  * from assistive technology, because the sentence says "PR 記事" itself. The window has no margin
  * and no width of its own, so the page decides where it stands. The caller shows it only for a
- * post with `sponsor`.
+ * post with `sponsor`. A link to another site opens in a new tab, and its name ends with `↗` and
+ * `ExternalNote`, a text hidden from the eyes that says so; a link to this site has neither.
  */
+import {
+  externalLinkAttrs,
+  isExternalLink,
+  requireSite,
+} from "../external-link";
 import type { SponsorNotice } from "../sponsor-notice";
+import ExternalNote from "./ExternalNote.astro";
 
 interface Props {
   /** What to show, from `sponsorNotice`. */
@@ -14,14 +21,20 @@ interface Props {
 }
 
 const { label, before, name, link, after } = Astro.props.notice;
+const site = requireSite(Astro.site);
 ---
 
 <div class="sponsor-notice win">
   <span class="chip-acc" aria-hidden="true">{label}</span>
   <p>
     {before}{link ? (
-  <a class="name" href={link.href} rel={link.rel}>
+  <a
+    class="name"
+    href={link.href}
+    {...externalLinkAttrs(link.href, site, link.rel)}
+  >
     {name}
+    {isExternalLink(link.href, site) && <ExternalNote lang="ja" arrow />}
   </a>
 ) : (
   <strong class="name">{name}</strong>

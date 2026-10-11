@@ -12,11 +12,13 @@
  * only, in the light theme; in the dark theme the title turns `--keyword` through the link rule
  * of `global.css`.
  */
+import { externalLinkAttrs, requireSite } from "../external-link";
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import { formatVideoDate } from "../latest-videos";
 import { YOUTUBE_URL } from "../profile-links";
 import type { YouTubeVideo } from "../youtube-feed";
+import ExternalNote from "./ExternalNote.astro";
 
 interface Props {
   /** Locale of the page, which chooses the texts shown without a video. */
@@ -28,6 +30,7 @@ interface Props {
 }
 
 const { lang, video, class: className } = Astro.props;
+const site = requireSite(Astro.site);
 
 // Width of the window assumed for the images: from 1280px, two thirds of a box of up to 1440px
 // less 64px padding on both sides and 14px between two columns; the screen less 64px on each
@@ -37,7 +40,11 @@ const SIZES =
 ---
 
 {video ? (
-  <a class:list={["win", "feature", className]} href={video.url}>
+  <a
+    class:list={["win", "feature", className]}
+    href={video.url}
+    {...externalLinkAttrs(video.url, site)}
+  >
     <div class="gridbg thumb">
       <img
         src={video.thumbnail.src}
@@ -62,9 +69,14 @@ const SIZES =
         {video.title}
       </strong>
     </div>
+    <ExternalNote lang={lang} />
   </a>
 ) : (
-  <a class:list={["win", "feature", className]} href={YOUTUBE_URL}>
+  <a
+    class:list={["win", "feature", className]}
+    href={YOUTUBE_URL}
+    {...externalLinkAttrs(YOUTUBE_URL, site)}
+  >
     <div class="gridbg thumb">
       <span class="label" aria-hidden="true">
         [ no signal ]
@@ -78,6 +90,7 @@ const SIZES =
         <span aria-hidden="true">→</span>
       </strong>
     </div>
+    <ExternalNote lang={lang} />
   </a>
 )}
 

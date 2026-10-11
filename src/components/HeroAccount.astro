@@ -5,7 +5,8 @@
  * the handle `@LinaTsukusu` and a square link (`.sq`) with an icon for each of `accountLinks`.
  * The label and the handle are the same in every locale. The avatar has an empty `alt` because
  * the handle next to it names it, a link is named by its `aria-label`, and the `<nav>` by
- * `hero.links`.
+ * `hero.links`. A link to another site opens in a new tab and its `aria-label` ends with the
+ * note that says so (`externalLabel`); the link to the feed stays on the site and has neither.
  *
  * The root is the size container and the window fills it, so the layout follows the width of
  * the window, not of the screen. From 768px the squares stand under the handle while the window
@@ -14,6 +15,7 @@
  * 318px they wrap onto more rows. Up to 767px the squares are always in the second row, the
  * label is left out and the avatar is 70px.
  */
+import { requireSite } from "../external-link";
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import FaceIcon from "./FaceIcon.astro";
@@ -41,7 +43,7 @@ const ICONS = {
   rss: RssIcon,
 } satisfies Record<AccountLinkId, unknown>;
 
-const links = accountLinks(lang);
+const links = accountLinks(lang, requireSite(Astro.site));
 ---
 
 <div class="account">
@@ -53,10 +55,16 @@ const links = accountLinks(lang);
         <span class="handle">@LinaTsukusu</span>
       </div>
       <nav aria-label={translate(lang, "hero.links")}>
-        {links.map(({ id, label, href, rel }) => {
+        {links.map(({ id, label, href, target, rel }) => {
   const Icon = ICONS[id];
   return (
-    <a class:list={["sq", `sq-${id}`]} href={href} rel={rel} aria-label={label}>
+    <a
+      class:list={["sq", `sq-${id}`]}
+      href={href}
+      target={target}
+      rel={rel}
+      aria-label={label}
+    >
       <Icon />
     </a>
   );

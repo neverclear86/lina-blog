@@ -1,6 +1,6 @@
 /**
- * Links that leave the site: which `href`s do, the attributes that open them in a new tab, and
- * the text that tells assistive technology about it.
+ * Links that leave the site: which `href`s do, the attributes that open them in a new tab, the
+ * text that tells assistive technology about it, and the `site` that components judge them by.
  */
 import type { Locale } from "./i18n/locales";
 import { translate } from "./i18n/ui";
@@ -71,4 +71,19 @@ export function externalNote(lang: Locale): string {
  */
 export function externalLabel(lang: Locale, label: string): string {
   return label + externalNote(lang);
+}
+
+/**
+ * Returns `site`, which a component passes to `isExternalLink` and `externalLinkAttrs`:
+ * `Astro.site` is the `URL | undefined` that `astro.config.mjs` sets.
+ *
+ * @throws When `site` is undefined, because `astro.config.mjs` does not set it.
+ */
+export function requireSite(site: URL | undefined): URL {
+  if (site === undefined) {
+    throw new Error(
+      "`site` in astro.config.mjs is required to tell the links that leave the site.",
+    );
+  }
+  return site;
 }

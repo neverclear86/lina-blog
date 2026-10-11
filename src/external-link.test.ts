@@ -4,6 +4,7 @@ import {
   externalLinkAttrs,
   externalNote,
   isExternalLink,
+  requireSite,
 } from "./external-link";
 
 const site = new URL("https://ikili.pro/");
@@ -123,4 +124,14 @@ describe("externalLabel", () => {
       expect(externalLabel(lang, label)).toBe(expected);
     },
   );
+});
+
+describe("requireSite", () => {
+  it("site があればそのまま返す", () => {
+    expect(requireSite(site)).toBe(site);
+  });
+
+  it("site が無ければ astro.config.mjs の site が要ると言って投げる", () => {
+    expect(() => requireSite(undefined)).toThrow(/astro\.config\.mjs/);
+  });
 });

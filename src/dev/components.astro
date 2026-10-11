@@ -69,9 +69,12 @@ const samplePosts: ComponentProps<typeof LatestPosts>["posts"] = [
   },
 ];
 
-// Sponsors for the notice samples: one with a URL, whose name is a link, and one without.
+// Sponsors for the notice samples: one with a URL of another site, whose name is a link that
+// opens in a new tab; one with a URL on this site, whose name is a link that does not; and one
+// without a URL.
 const sampleNotices = [
   { name: "サンプル株式会社", url: "https://example.com/" },
+  { name: "サンプル株式会社", url: "https://ikili.pro/" },
   { name: "サンプル株式会社" },
 ]
   .map(sponsorNotice)
