@@ -179,8 +179,7 @@ const ja = {
     "創好リナ（Tsukusu Lina）の個人サイト兼ブログ。創好リナはバーチャルイキリプログラマで、ITで遊ぶ動画と配信を、Resoniteを中心に届けている。",
   // Label of the Twitter link; "X" appears only in its icon.
   "social.twitter": "Twitter(自称X)",
-  // Hidden text between the visible theme name and the name of the switch.
-  "theme.nameSeparator": "：",
+  // Name of the theme button: the theme that a click switches to.
   "theme.toDark": "ダークテーマに切り替え",
   "theme.toLight": "ライトテーマに切り替え",
 } as const;
@@ -322,7 +321,6 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "site.description":
       'Personal site and blog of Tsukusu Lina (創好リナ), a virtual "ikiri" programmer who makes videos and streams about playing with IT, mostly in Resonite.',
     "social.twitter": "Twitter (self-proclaimed X)",
-    "theme.nameSeparator": ": ",
     "theme.toDark": "Switch to dark theme",
     "theme.toLight": "Switch to light theme",
   },
