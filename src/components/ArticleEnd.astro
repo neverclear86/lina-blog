@@ -1,12 +1,4 @@
 ---
-import { Picture } from "astro:assets";
-import { nostrShareUrl, twitterShareUrl } from "../article-share";
-import { avatarAlt, THUMBS_UP_ARTICLE } from "../avatar-images";
-import { externalLinkAttrs, requireSite } from "../external-link";
-import { translate } from "../i18n/ui";
-import ExternalNote from "./ExternalNote.astro";
-import { labelSegments } from "./label-break";
-
 /**
  * The window at the end of an article, in Japanese only: the prompt `$ exit 0`, a thanks with a
  * face, three buttons and the thumbs-up of Lina.
@@ -25,6 +17,14 @@ import { labelSegments } from "./label-break";
  * 768px and from 1024px to 1279px, where the column of the table of contents narrows the text, and
  * 24px elsewhere.
  */
+import { Picture } from "astro:assets";
+import { nostrShareUrl, twitterShareUrl } from "../article-share";
+import { avatarAlt, THUMBS_UP_ARTICLE } from "../avatar-images";
+import { externalLinkAttrs, requireSite } from "../external-link";
+import { translate } from "../i18n/ui";
+import ExternalNote from "./ExternalNote.astro";
+import { labelSegments } from "./label-break";
+
 interface Props {
   /** Title of the post, put in the text of the shared post. */
   title: string;

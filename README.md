@@ -1,10 +1,8 @@
-# Astro Starter Kit: Basics
+# lina-blog
 
-```sh
-bun create astro@latest -- --template basics
-```
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+The repository of [ikili.pro](https://ikili.pro), the personal site and blog of Tsukusu Lina, a self-proclaimed virtual ikiri programmer.
+Astro 7 prerenders almost every page, and Cloudflare Workers serves them from Workers Static Assets, with a Hono app in `src/fetch.ts` for the routes that run on the Worker, such as the contact form and the text version of the site for curl.
+Articles are published by a separate Worker (`workers/publish/`, also Hono).
 
 ## 🚀 Project Structure
 
@@ -206,8 +204,6 @@ Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, t
 Colors are tested the same way. `src/styles/tokens.test.ts` checks that the plan A tokens have the values of the design, that every foreground and background token pair used for text (a translucent background is laid over each fill that can come under it) reaches 4.5:1 (WCAG AA) in both themes and that every icon color reaches 3:1 on `--panel`, `--bg` and `--bg2`, `--focus-ring` on the page backgrounds, every diff bar of a code block on its line and the focus ring of a code block on `--code`, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--text)` and so on) instead; inline SVG takes `currentColor`. The service icons in `src/components/icons/` are also checked by `icons.test.ts`: their `fill` and `stroke` are only `currentColor` or `none`, because named colors such as `black` pass the check above. `src/styles/token-references.test.ts` fails when a `var(--name)` without a fallback in an `.astro`, `.css` or `.ts` file under `src/` reads a custom property that no file under `src/` defines (`--font-body` and `--font-mono-latin`, which the Fonts API defines, count as defined), because a browser does not report such a read and the property falls back to its inherited or initial value.
 
 `bun run a11y` audits the built site in headless Chromium: every page of `dist/client/` at 1440px and 390px in both themes. It fails on an axe result with `serious` or `critical` impact or any `color-contrast` result. Axe cannot decide the contrast of some text, for example over a gradient, an image, a pseudo-element or another element, so `scripts/a11y/run.ts` measures that text on a screenshot with the glyphs hidden and fails under 4.5:1 (3:1 for large text). Run `LINA_DEV_PAGES=1 bun run build` first to include the posts and the dev pages; it does not run in CI. It opens the pages without their Content Security Policy (Playwright's `bypassCSP`), which would block the style tag that hides the glyphs for the contrast check. Pass paths, `--widths` or `--themes` to narrow it.
-
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
 
 ## 🎨 CSS
 
@@ -589,7 +585,3 @@ The following are not covered by the MIT License. All rights are reserved by Tsu
 - Blog posts and other written content published on the site
 
 The service icons in `src/components/icons/` are not covered by the MIT License either. They are trademarks or works of their owners and are used under the terms listed in [src/components/icons/README.md](src/components/icons/README.md).
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
