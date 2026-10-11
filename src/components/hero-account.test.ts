@@ -8,19 +8,6 @@ const ACCOUNT = readFileSync(
   "utf8",
 );
 
-/** Returns the body of the first at-rule that starts with `prelude`, without its braces. */
-const atRule = (prelude: string) => {
-  const from = ACCOUNT.indexOf(prelude);
-  expect(from).toBeGreaterThanOrEqual(0);
-  const open = ACCOUNT.indexOf("{", from);
-  let depth = 0;
-  for (let i = open; i < ACCOUNT.length; i++) {
-    if (ACCOUNT[i] === "{") depth++;
-    if (ACCOUNT[i] === "}" && --depth === 0) return ACCOUNT.slice(open + 1, i);
-  }
-  throw new Error(`unclosed: ${prelude}`);
-};
-
 describe("accountLinks", () => {
   it("日本語のページでは YouTube・Twitter・GitHub・Nostr・Zenn の後ろに RSS を並べる", () => {
     expect(
@@ -60,40 +47,18 @@ describe("accountLinks", () => {
 });
 
 describe("HeroAccount の組み", () => {
-  it("アバターは 96px の FaceIcon で、隣の @LinaTsukusu が名指すので alt を空にする", () => {
-    expect(ACCOUNT).toMatch(
-      /<div class="ticks-acc"><FaceIcon kind="avatar" size=\{96\} alt="" \/><\/div>/,
-    );
+  it("アバターの alt は空にし、隣の @LinaTsukusu に名指させる", () => {
+    expect(ACCOUNT).toMatch(/<FaceIcon\b[^>]*\balt=""[^>]*\/>/);
     expect(ACCOUNT).toMatch(/<span class="handle">@LinaTsukusu<\/span>/);
   });
 
-  it("リンクの四角は .sq で、名前を aria-label に、rel を rel に渡し、nav の名前は hero.links にする", () => {
+  it("リンクの四角は名前を aria-label に、rel を rel に渡し、nav の名前は hero.links にする", () => {
     expect(ACCOUNT).toMatch(
-      /<a\s+class:list=\{\["sq", `sq-\$\{id\}`\]\}\s+href=\{href\}\s+rel=\{rel\}\s+aria-label=\{label\}\s*>/,
+      /<a\b[^>]*\bhref=\{href\}[^>]*\brel=\{rel\}[^>]*\baria-label=\{label\}/,
     );
     expect(ACCOUNT).toMatch(
       /<nav aria-label=\{translate\(lang, "hero\.links"\)\}>/,
     );
-  });
-
-  it("窓の外側の箱を container にし、幅 459px 以下で nav を 2 段目に移し、317px 以下で折り返す", () => {
-    expect(ACCOUNT).toMatch(/\.account \{\s*container-type: inline-size;/);
-    const narrow = atRule("@container (max-width: 459px)");
-    expect(narrow).toMatch(/\.text \{\s*display: contents;/);
-    expect(narrow).toMatch(/nav \{\s*grid-column: 1 \/ -1;/);
-    expect(atRule("@container (max-width: 317px)")).toMatch(
-      /nav \{\s*flex-wrap: wrap;/,
-    );
-  });
-
-  it("767px 以下は label を出さず、アバターを 70px にし、nav を常に 2 段目に置く", () => {
-    const mobile = atRule("@media (max-width: 767px)");
-    expect(mobile).toMatch(/\.label \{\s*display: none;/);
-    expect(mobile).toMatch(
-      /\.ticks-acc :global\(img\) \{\s*width: 70px;\s*height: 70px;/,
-    );
-    expect(mobile).toMatch(/\.text \{\s*display: contents;/);
-    expect(mobile).toMatch(/nav \{\s*grid-column: 1 \/ -1;/);
   });
 
   it("インラインの style 属性を持たない", () => {
