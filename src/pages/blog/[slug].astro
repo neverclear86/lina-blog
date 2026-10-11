@@ -49,11 +49,11 @@ import {
 import ArticleBody from "../../components/ArticleBody.astro";
 import ArticleEnd from "../../components/ArticleEnd.astro";
 import ArticleToc from "../../components/ArticleToc.astro";
+import Breadcrumb from "../../components/Breadcrumb.astro";
 import ExternalNote from "../../components/ExternalNote.astro";
 import PostNav from "../../components/PostNav.astro";
 import ReadingProgress from "../../components/ReadingProgress.astro";
 import SponsorNotice from "../../components/SponsorNotice.astro";
-import { homeSectionPath } from "../../components/site-nav";
 import { externalLinkAttrs } from "../../external-link";
 import { translate } from "../../i18n/ui";
 import Layout from "../../layouts/Layout.astro";
@@ -83,7 +83,7 @@ if (!site) {
   );
 }
 const url = blogPostUrl(slug, site);
-const crumb = blogPostBreadcrumb(slug, date);
+const crumbs = blogPostBreadcrumb(slug, date);
 const published = blogPostDate(date);
 const minutes = readingMinutes(post.body);
 const notice = sponsorNotice(sponsor);
@@ -103,25 +103,7 @@ const nostrUrl = isNostrPublished(slug, nostrPublishedSlugs)
   <main id="main" tabindex="-1">
     <section class="head gridbg">
       <div class="head-inner">
-        <nav aria-label={translate("ja", "nav.breadcrumb")}>
-          <ol class="crumbs">
-            <li>
-              <a href={homeSectionPath("ja", "top")}>~</a>
-              <span aria-hidden="true">/</span>
-            </li>
-            <li>
-              <a href="/blog/">blog</a>
-              <span aria-hidden="true">/</span>
-            </li>
-            <li>
-              <span>{crumb.year}</span>
-              <span aria-hidden="true">/</span>
-            </li>
-            <li>
-              <span class="file" aria-current="page">{crumb.file}</span>
-            </li>
-          </ol>
-        </nav>
+        <Breadcrumb lang="ja" items={crumbs} />
         <ul class="chips">
           {tags.map((tag) => (
   <li>
@@ -229,32 +211,6 @@ const nostrUrl = isNostrPublished(slug, nostrPublishedSlugs)
   margin: 0 auto;
   padding: 28px 16px 24px;
 }
-.crumbs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin: 0;
-  padding: 0 24px 0 0;
-  list-style: none;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
-}
-.crumbs li {
-  display: flex;
-  align-items: center;
-}
-.crumbs a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  min-height: 24px;
-}
-.file {
-  color: var(--text);
-  overflow-wrap: anywhere;
-}
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -330,14 +286,6 @@ h1 {
   .head-inner {
     gap: 22px;
     padding: 64px 20px 48px;
-  }
-  .crumbs {
-    gap: 4px;
-    padding: 0;
-    font-size: 13px;
-  }
-  .crumbs li {
-    gap: 4px;
   }
   .chips {
     gap: 8px;

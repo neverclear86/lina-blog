@@ -1,12 +1,13 @@
 ---
 /**
  * The contact page, `/ja/contact/` and `/en/contact/`: a head after the article pages of plan A
- * (the path, `$ mail lina`, the heading, the lead and a line about a DM on Twitter
+ * (the breadcrumb, `$ mail lina`, the heading, the lead and a line about a DM on Twitter
  * (self-proclaimed X) in `PageHead`) and the contact form in a window. The DM line has the size
  * of the lead, and its link opens in a new tab, says so to assistive technology with
  * `ExternalNote` and is underlined in every state.
  */
 import type { GetStaticPaths } from "astro";
+import Breadcrumb from "../../../components/Breadcrumb.astro";
 import ContactForm from "../../../components/ContactForm.astro";
 import ExternalNote from "../../../components/ExternalNote.astro";
 import { labelSegments } from "../../../components/label-break";
@@ -32,6 +33,10 @@ const t = useTranslations(lang);
 const site = requireSite(Astro.site);
 const twitter = profileLink("twitter");
 const twitterLabel = labelSegments(twitter.label[lang]);
+const crumbs = [
+  { text: "~", href: `/${lang}/`, label: t("nav.top") },
+  { text: "contact" },
+];
 ---
 
 <Layout
@@ -41,11 +46,7 @@ const twitterLabel = labelSegments(twitter.label[lang]);
 >
   <main id="main" tabindex="-1">
     <PageHead>
-      <nav class="crumbs" aria-label={t("nav.breadcrumb")}>
-        <a href={`/${lang}/`} aria-label={t("nav.top")}>~</a>
-        <span aria-hidden="true">/</span>
-        <span aria-current="page">contact</span>
-      </nav>
+      <Breadcrumb lang={lang} items={crumbs} />
       <p class="prompt">$ mail lina</p>
       <h1>{t("contact.title")}</h1>
       <p class="lead">{t("contact.lead")}</p>
@@ -67,25 +68,6 @@ const twitterLabel = labelSegments(twitter.label[lang]);
 </Layout>
 
 <style>
-.crumbs {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.crumbs a {
-  padding-block: 4px;
-}
-
-.crumbs [aria-current="page"] {
-  padding-block: 4px;
-  color: var(--text);
-}
-
 .prompt {
   margin: 0;
   font-family: var(--font-mono);
@@ -123,12 +105,6 @@ const twitterLabel = labelSegments(twitter.label[lang]);
 @media (min-width: 600px) {
   .content {
     padding: 40px 20px 72px;
-  }
-}
-
-@media (min-width: 768px) {
-  .crumbs {
-    font-size: 13px;
   }
 }
 

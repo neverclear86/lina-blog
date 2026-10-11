@@ -70,6 +70,7 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   │   ├── ArticleToc.astro      # Table of contents of a post: the neo-tree window in the left column from 1024px, a closed <details> before the body below it; the h2 being read is marked
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: in a row from 1200px, below it stacked or one at a time with tabs
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
+│   │   ├── Breadcrumb.astro      # Breadcrumb of the blog pages, the contact page and a post's page: a nav with an ol of the items (text, link, name of the link), the last one the current page
 │   │   ├── ContactBand.astro     # Contact band of the top page: heading, lead, a line about a DM on Twitter (self-proclaimed X), a button to the contact page and the thumbs-up
 │   │   ├── ContactForm.astro     # Contact form of the contact page in a window of plan A, sent with Turnstile
 │   │   ├── ExternalNote.astro    # End of the name of a link that leaves the site: hidden text for assistive technology and, with `arrow`, ↗

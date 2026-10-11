@@ -1,13 +1,13 @@
 /**
  * Paths, texts, breadcrumbs and tag filter links of the pages of blog posts: `/blog/`, which
  * lists every post, `/blog/tags/<slug>/`, which lists the posts of one tag, and `/blog/<slug>/`,
- * a post. For a post's page it also gives the posts next to it and the parts of its breadcrumb,
+ * a post. For a post's page it also gives the posts next to it and the elements of its breadcrumb,
  * its date, its reading time and the items of its table of contents.
  */
 import type { MarkdownHeading } from "astro";
 import { type BlogFrontmatter, blogSchema } from "./blog-schema";
 import { homeSectionPath } from "./components/site-nav";
-import type { UiKey } from "./i18n/ui";
+import { translate, type UiKey } from "./i18n/ui";
 import { formatJstDate } from "./jst-date";
 import {
   type BlogTag,
@@ -100,8 +100,19 @@ export function tagFilterLinks(current: BlogTag | undefined): TagFilterLink[] {
 export interface BlogCrumb {
   /** Text of the element, such as `~` or `blog`. */
   text: string;
-  /** Link target; undefined for the current page and for `tags`, which has no page. */
+  /** Link target; undefined for the current page and for `tags` and a year, which have no page. */
   href?: string;
+  /** Name of the link, when its text does not name it: the name of `~` in Japanese. */
+  label?: string;
+}
+
+/** The element `~`, a link to the top page of `ja` that is named "トップ". */
+function homeCrumb(): BlogCrumb {
+  return {
+    text: "~",
+    href: homeSectionPath("ja", "top"),
+    label: translate("ja", "nav.top"),
+  };
 }
 
 /**
@@ -111,12 +122,11 @@ export interface BlogCrumb {
  * current page. The last element is always the current page and has no `href`.
  */
 export function blogCrumbs(tag: BlogTag | undefined): BlogCrumb[] {
-  const home = { text: "~", href: homeSectionPath("ja", "top") };
   if (tag === undefined) {
-    return [home, { text: "blog" }];
+    return [homeCrumb(), { text: "blog" }];
   }
   return [
-    home,
+    homeCrumb(),
     { text: "blog", href: BLOG_INDEX_PATH },
     { text: "tags" },
     { text: tagSlug(tag) },
@@ -167,24 +177,20 @@ export function blogPostPaths<
   }));
 }
 
-/** Parts of the breadcrumb `~ / blog / <year> / <file>` of a post's page. */
-export interface BlogPostBreadcrumb {
-  /** Year of the post's date in Japan time, such as `2026`. */
-  year: string;
-  /** File name at the end, the post's slug and `.md`. */
-  file: string;
-}
-
 /**
- * Returns the year and the file name of the breadcrumb of the post with `slug` and `date`. The
- * year is the year of `blogPostDate(date).text`, the date in Japan time, so it matches the date
- * shown on the page even when the year in UTC is a different one.
+ * Returns the elements of the breadcrumb `~ / blog / <year> / <file>` of the page of the post
+ * with `slug` and `date`: `~` (the top page of `ja`), `blog` (a link to `/blog/`), the year
+ * (no link, because no page lists a year) and the file name, the slug and `.md`, as the current
+ * page. The year is the year of `blogPostDate(date).text`, the date in Japan time, so it matches
+ * the date shown on the page even when the year in UTC is a different one.
  */
-export function blogPostBreadcrumb(
-  slug: string,
-  date: Date,
-): BlogPostBreadcrumb {
-  return { year: formatJstDate(date).slice(0, 4), file: `${slug}.md` };
+export function blogPostBreadcrumb(slug: string, date: Date): BlogCrumb[] {
+  return [
+    homeCrumb(),
+    { text: "blog", href: BLOG_INDEX_PATH },
+    { text: formatJstDate(date).slice(0, 4) },
+    { text: `${slug}.md` },
+  ];
 }
 
 /** A post's date for its page: the text shown and the value of `<time datetime>`. */
