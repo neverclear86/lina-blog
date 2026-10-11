@@ -1,15 +1,18 @@
 ---
 /**
  * The contact page, `/ja/contact/` and `/en/contact/`: a head after the article pages of plan A
- * (the path, `$ mail lina`, the heading and the lead in `PageHead`) and the contact form in a
- * window.
+ * (the path, `$ mail lina`, the heading, the lead and a line about a DM on Twitter
+ * (self-proclaimed X) in `PageHead`) and the contact form in a window. The DM line has the size
+ * of the lead, and its link opens in a new tab and is underlined in every state.
  */
 import type { GetStaticPaths } from "astro";
 import ContactForm from "../../../components/ContactForm.astro";
+import { labelSegments } from "../../../components/label-break";
 import PageHead from "../../../components/PageHead.astro";
 import { LOCALES, type Locale } from "../../../i18n/locales";
 import { translate } from "../../../i18n/ui";
 import Layout from "../../../layouts/Layout.astro";
+import { profileLink } from "../../../profile-links";
 
 export const getStaticPaths = (() =>
   LOCALES.map((lang) => ({
@@ -23,6 +26,8 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
+const twitter = profileLink("twitter");
+const twitterLabel = labelSegments(twitter.label[lang]);
 ---
 
 <Layout
@@ -40,6 +45,19 @@ const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
       <p class="prompt">$ mail lina</p>
       <h1>{t("contact.title")}</h1>
       <p class="lead">{t("contact.lead")}</p>
+      <p class="dm">
+        {t("contact.dm.before")}<a
+          href={twitter.url}
+          target="_blank"
+          rel="noopener"
+          >{twitterLabel.map((segment, index) => (
+  <>
+    {index > 0 && <wbr />}
+    <span class="segment">{segment}</span>
+  </>
+))}</a
+        >{t("contact.dm.after")}
+      </p>
     </PageHead>
     <div class="content"><ContactForm lang={lang} /></div>
   </main>
@@ -73,13 +91,23 @@ const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
   color: var(--acc-text);
 }
 
-.lead {
+.lead,
+.dm {
   margin: 0;
   max-width: 560px;
   padding-right: 48px;
   font-size: 16px;
   font-weight: 500;
   line-height: 1.9;
+}
+
+.dm a {
+  text-decoration-line: underline;
+  text-underline-offset: 4px;
+}
+
+.segment {
+  white-space: nowrap;
 }
 
 .content {
@@ -102,7 +130,8 @@ const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
 }
 
 @media (min-width: 900px) {
-  .lead {
+  .lead,
+  .dm {
     padding-right: 0;
   }
 

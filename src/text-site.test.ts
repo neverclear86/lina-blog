@@ -165,17 +165,19 @@ describe("buildTextSite", () => {
       "ja",
       "お仕事のご相談やコラボのお誘いなどはこちらから。",
       "フォーム: https://example.com/ja/contact/",
+      "Twitter(自称X) の DM: https://x.com/TsukusuLina",
     ],
     [
       "en",
       "For work inquiries, collaborations and more,",
       "use the form: https://example.com/en/contact/",
+      "or send a DM on Twitter (self-proclaimed X): https://x.com/TsukusuLina",
     ],
   ] as const)(
-    "%s: お問い合わせの節の末尾に、誘いの行と、言語のお問い合わせのページの絶対 URL の行を載せる",
-    (locale, lead, form) => {
+    "%s: お問い合わせの節の末尾に、誘いの行と、言語のお問い合わせのページの絶対 URL の行と、Twitter(自称X) の DM の行を載せる",
+    (locale, lead, form, dm) => {
       const lines = buildTextSite(locale, [], site).split("\n");
-      expect(lines.slice(-3, -1)).toEqual([lead, form]);
+      expect(lines.slice(-4, -1)).toEqual([lead, form, dm]);
     },
   );
 

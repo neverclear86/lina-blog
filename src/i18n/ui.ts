@@ -78,6 +78,8 @@ const ja = {
     "コピーできませんでした。コードを選んであるので、手でコピーしてください",
   // Contact page and the contact band of the top page.
   "contact.lead": "お仕事のご相談、コラボのお誘いなどはこちらから。",
+  "contact.dm.before": "フォームのほか、",
+  "contact.dm.after": " の DM でも受け付けています。",
   "contact.title": "お問い合わせ",
   "contact.description":
     "創好リナへのお問い合わせのフォームです。お仕事のご相談、コラボのお誘いなどはこちらから。",
@@ -89,7 +91,6 @@ const ja = {
   "contact.name": "お名前",
   "contact.email": "メールアドレス",
   "contact.message": "内容",
-  "contact.note": "ソッコー確認するね",
   "contact.submit": "送信する",
   // Contact form: the status line, the text under a rejected field and the noscript notice.
   "contact.error.invalid": "正しい形式で入力してください。",
@@ -249,6 +250,8 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
       "Couldn't copy. The code is selected, so copy it by hand.",
     "contact.lead":
       "For work inquiries, collaborations and more, get in touch here.",
+    "contact.dm.before": "You can also send me a DM on ",
+    "contact.dm.after": ".",
     "contact.title": "Contact",
     "contact.description":
       "The contact form for Tsukusu Lina, for work inquiries, collaborations and more.",
@@ -260,7 +263,6 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "contact.name": "Name",
     "contact.email": "Email",
     "contact.message": "Message",
-    "contact.note": "I'll check it right away",
     "contact.submit": "Send",
     "contact.error.invalid": "Enter a valid value.",
     "contact.error.invalidChoice": "Choose one of the options.",
