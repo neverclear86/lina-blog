@@ -63,7 +63,7 @@ const crumbs = [
         >{t("contact.dm.after")}
       </p>
     </PageHead>
-    <div class="content"><ContactForm lang={lang} /></div>
+    <div class="content page-width"><ContactForm lang={lang} /></div>
   </main>
 </Layout>
 
@@ -96,15 +96,12 @@ const crumbs = [
 }
 
 .content {
-  box-sizing: border-box;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 28px 16px 56px;
+  padding-block: 28px 56px;
 }
 
 @media (min-width: 600px) {
   .content {
-    padding: 40px 20px 72px;
+    padding-block: 40px 72px;
   }
 }
 
@@ -115,7 +112,7 @@ const crumbs = [
   }
 
   .content {
-    padding: 56px 64px 96px;
+    padding-block: 56px 96px;
   }
 }
 </style>

@@ -36,7 +36,8 @@
  * `data-offscreen`: that logo blinks in its place, so that one cursor blinks on a screen.
  *
  * Below 1024px it is the header of `design/AMobile.dc.html`: the logo, the theme toggle and the
- * menu button (`.iconbtn-acc`), with 16px beside them (32px from 768px).
+ * menu button (`.iconbtn-acc`), with `--page-gutter` beside them (16px, 20px from 768px and
+ * 64px from 900px).
  * The menu button shows and hides the menu without script. The menu is a popover sheet on
  * `--bg` under the header, with the items of the navigation as rows 48px high, the language
  * switch and the contact button. The button shows three bars, and a cross while the menu is
@@ -74,7 +75,7 @@ const follow = isTopPath(lang, pathname);
 ---
 
 <header class="site-header">
-  <div class="bar">
+  <div class="bar page-width">
     <a
       class="brand blink-on"
       href={homeSectionPath(lang, "top")}
@@ -215,7 +216,6 @@ const follow = isTopPath(lang, pathname);
 
 <style>
 .site-header {
-  --gutter: 16px;
   position: sticky;
   top: 0;
   z-index: 50;
@@ -224,13 +224,10 @@ const follow = isTopPath(lang, pathname);
   backdrop-filter: blur(10px);
 }
 .bar {
-  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 8px var(--gutter);
+  padding-block: 8px;
 }
 .reading-line {
   position: absolute;
@@ -301,7 +298,7 @@ const follow = isTopPath(lang, pathname);
   display: flex;
   align-items: center;
   height: 48px;
-  padding: 0 var(--gutter);
+  padding: 0 var(--page-gutter);
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: 14px;
@@ -329,7 +326,7 @@ const follow = isTopPath(lang, pathname);
 .menu-languages {
   display: flex;
   align-items: center;
-  padding: 8px calc(var(--gutter) - 12px);
+  padding: 8px calc(var(--page-gutter) - 12px);
   border-top: 1px solid var(--line);
   font-family: var(--font-mono);
   font-size: 14px;
@@ -337,7 +334,7 @@ const follow = isTopPath(lang, pathname);
 .menu-contact {
   display: flex;
   justify-content: center;
-  padding: 4px var(--gutter) 16px;
+  padding: 4px var(--page-gutter) 16px;
 }
 .menu-contact .btn {
   display: flex;
@@ -360,11 +357,6 @@ const follow = isTopPath(lang, pathname);
 .menu-languages .current-language {
   color: var(--text);
   font-weight: 700;
-}
-@media (min-width: 768px) {
-  .site-header {
-    --gutter: 32px;
-  }
 }
 @media (max-width: 1023px) {
   :global(html:has(#site-menu:popover-open)) {

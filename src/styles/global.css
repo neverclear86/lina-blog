@@ -1,7 +1,8 @@
 /*
  * Global element styles for every page, imported by `src/layouts/Layout.astro` after
- * `tokens.css`: the frame of the page (`html`, `body` and `.site-content`), the colors, the links,
- * the keyboard focus outline, the scroll padding and the classes that hide text from the eyes.
+ * `tokens.css`: the frame of the page (`html`, `body` and `.site-content`), the side padding and
+ * the width of the content (`--page-gutter` and `.page-width`), the colors, the links, the
+ * keyboard focus outline, the scroll padding and the classes that hide text from the eyes.
  * Colors come only from the tokens in `tokens.css`.
  */
 
@@ -25,6 +26,41 @@ body {
 /* Keeps the page in block layout, where its margin-inline: auto works as on a plain body. */
 .site-content {
   flex-grow: 1;
+}
+
+/*
+ * The left and right padding of the content of a page: 16px, 20px from 768px and 64px from
+ * 900px. The header, the footer and the body of a page share it, so that their left edges line up
+ * at every width.
+ */
+:root {
+  --page-gutter: 16px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --page-gutter: 20px;
+  }
+}
+
+@media (min-width: 900px) {
+  :root {
+    --page-gutter: 64px;
+  }
+}
+
+/*
+ * The width of the content of a page: at most 1440px including the padding, centered, with the
+ * left and right padding of `--page-gutter`. A part puts this class on its container and sets
+ * only `padding-block` in its own rule: the rule of a part has the specificity of its scope
+ * attribute as well, so a `padding` there would silently replace the padding of this class, and
+ * a `margin` its centering.
+ */
+.page-width {
+  box-sizing: border-box;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
 }
 
 /*

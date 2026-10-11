@@ -10,8 +10,7 @@
  * section in it keeps its own distance from the grid. A slot left empty leaves the heading and
  * the rest in place.
  *
- * The content is at most 1440px wide and centered, and the ground fills the width. The side
- * padding is 16px, 20px from 768px and 64px from 900px.
+ * The content is `.page-width` and the ground fills the width.
  */
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
@@ -26,7 +25,7 @@ const { lang } = Astro.props;
 ---
 
 <section id="latest">
-  <div class="inner">
+  <div class="inner page-width">
     <div class="head">
       <SectionTitle
         no="02"
@@ -50,10 +49,7 @@ const { lang } = Astro.props;
 }
 
 .inner {
-  box-sizing: border-box;
-  max-width: 1440px;
-  margin-inline: auto;
-  padding: 48px 16px;
+  padding-block: 48px;
 }
 
 .head {
@@ -72,17 +68,11 @@ const { lang } = Astro.props;
 
 @media (min-width: 768px) {
   .inner {
-    padding: 100px 20px;
+    padding-block: 100px;
   }
 
   .head {
     margin-bottom: 40px;
-  }
-}
-
-@media (min-width: 900px) {
-  .inner {
-    padding-inline: 64px;
   }
 }
 

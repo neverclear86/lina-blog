@@ -37,7 +37,10 @@ const between = (start: string, end: string) => {
 
 describe("Hero の飾りと窓の差し込み口", () => {
   it("斜めの帯・斜線・線・印は 1 つの aria-hidden の箱に入る", () => {
-    const decor = between('<div class="decor"', '<div class="hero-grid">');
+    const decor = between(
+      '<div class="decor"',
+      '<div class="hero-grid page-width">',
+    );
     expect(decor).toMatch(/^<div class="decor" aria-hidden="true">/);
     for (const cls of ["hatch", "band", "ln", "cross"]) {
       expect(decor, cls).toMatch(new RegExp(`class="${cls}[ "]`));

@@ -51,7 +51,7 @@ const twitterLabel = labelSegments(twitter.label[lang]);
 
 <section id="contact" class="band">
   <div class="flow" aria-hidden="true"></div>
-  <div class="inner">
+  <div class="inner page-width">
     <div class="copy">
       <div class="text">
         <span class="prompt">$ mail lina</span>
@@ -133,10 +133,6 @@ const twitterLabel = labelSegments(twitter.label[lang]);
   grid-template-columns: minmax(0, 1fr) 128px;
   gap: 4px;
   align-items: end;
-  box-sizing: border-box;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 0 0 16px;
 }
 
 .copy {
@@ -215,6 +211,10 @@ p a:is(:hover, :focus-visible) {
 }
 
 @media (max-width: 899px) {
+  .inner {
+    padding-right: 0;
+  }
+
   .thumbs {
     filter: drop-shadow(12px 8px 0 var(--av-hard))
       drop-shadow(0 20px 28px var(--av-soft));
@@ -235,7 +235,6 @@ p a:is(:hover, :focus-visible) {
   .inner {
     grid-template-columns: minmax(0, 1fr) 374px;
     gap: 24px;
-    padding: 0 64px;
   }
 
   .copy {

@@ -24,10 +24,11 @@
  * least 820px high. The left column holds the prompt, the logo, the heading, the intro and the
  * button, and ends with `.hero-account`, which holds the account window (`HeroAccount`).
  * `.hero-right` holds `HeroPoses`, the poses of the avatar with the ruler and the table of its
- * parts. Below 900px the grid is one column 20px from the sides, the heading is 40px, the band is
- * 150px wide and the two lines are left out. The band, the hatch and the lines keep clear of the
- * text: from 900px the band starts at 57% of the width, or further right where the intro would
- * reach it, and from 768px to 899px at 46% or 390px, whichever is further right.
+ * parts. Below 900px the grid is one column, `--page-gutter` from the sides (20px from 768px), the
+ * heading is 40px, the band is 150px wide and the two lines are left out. The band, the hatch and
+ * the lines keep clear of the text: from 900px the band starts at 57% of the width, or further
+ * right where the intro would reach it, and from 768px to 899px at 46% or 390px, whichever is
+ * further right.
  *
  * Up to 767px the hero is stacked, as in `design/AMobile.dc.html`. The right column has no box of
  * its own, so `HeroPoses` covers the whole hero. The left column starts 330px from the top, 16px
@@ -87,7 +88,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
     <span class="cross c4">+</span>
     <span class="cross c5">+</span>
   </div>
-  <div class="hero-grid">
+  <div class="hero-grid page-width">
     <div class="hero-left">
       <p class="whoami rv" aria-hidden="true">
         lina@tsukusu:~$ <span>whoami</span>
@@ -262,11 +263,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
-  box-sizing: border-box;
   min-height: 820px;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 64px;
 }
 
 .hero-left {
@@ -373,7 +370,6 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
 
   .hero-grid {
     grid-template-columns: minmax(0, 1fr);
-    padding: 0 20px;
   }
 
   .heading {
@@ -443,7 +439,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
   .hero-grid {
     position: static;
     min-height: 0;
-    padding: 0;
+    padding-inline: 0;
   }
 
   .hero-right {
@@ -452,7 +448,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
 
   .hero-left {
     gap: 18px;
-    padding: 440px 16px 32px;
+    padding: 440px var(--page-gutter) 32px;
     pointer-events: none;
   }
 
