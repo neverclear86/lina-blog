@@ -192,7 +192,7 @@ describe("配線", () => {
       index.indexOf("<PageHead>"),
       index.indexOf("</PageHead>"),
     );
-    expect(head).toContain('class="crumbs"');
+    expect(head).toContain("<Breadcrumb ");
     expect(head).toContain("<h1>");
     expect(head).toContain('class="filter"');
     expect(head).toContain('class:list={["ws", { on: link.current }]}');

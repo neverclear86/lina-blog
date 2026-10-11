@@ -2,10 +2,12 @@
 import { Image, Picture } from "astro:assets";
 import type { ComponentProps } from "astro/types";
 import { AVATAR_IMAGES, avatarAlt, THUMBS_UP_BAND } from "../avatar-images";
+import { blogCrumbs, blogPostBreadcrumb } from "../blog-pages";
 import ArticleBody from "../components/ArticleBody.astro";
 import ArticleEnd from "../components/ArticleEnd.astro";
 import ArticleToc from "../components/ArticleToc.astro";
 import AvatarThreeView from "../components/AvatarThreeView.astro";
+import Breadcrumb from "../components/Breadcrumb.astro";
 import ContactBand from "../components/ContactBand.astro";
 import ContactForm from "../components/ContactForm.astro";
 import ExternalNote from "../components/ExternalNote.astro";
@@ -33,6 +35,20 @@ import { translate } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
 import { sponsorNotice } from "../sponsor-notice";
 import type { YouTubeVideo } from "../youtube-feed";
+
+const tagCrumbs = blogCrumbs("技術");
+const postCrumbs = blogPostBreadcrumb(
+  "my-first-article",
+  new Date("2026-05-01T00:00:00Z"),
+);
+const longCrumbs = blogPostBreadcrumb(
+  "a-very-long-slug-for-a-post-about-how-this-site-was-made",
+  new Date("2026-05-01T00:00:00Z"),
+);
+const contactCrumbs = [
+  { text: "~", href: "/en/", label: translate("en", "nav.top") },
+  { text: "contact" },
+];
 
 const samplePosts: ComponentProps<typeof LatestPosts>["posts"] = [
   {
@@ -308,15 +324,24 @@ const sampleVideos: YouTubeVideo[] = [
         <a class="ws is-focus" href="#a-page-head">.ws.is-focus</a>
       </div>
       <PageHead>
-        <nav aria-label="パンくず" class="crumbs-sample">
-          ~ / blog / <span class="crumbs-current">tags</span>
-        </nav>
+        <Breadcrumb lang="ja" items={tagCrumbs} />
         <h1>技術の記事</h1>
         <div class="row">
           <a class="ws" href="#a-page-head">すべて</a>
           <a class="ws on" href="#a-page-head" aria-current="page">技術</a>
         </div>
       </PageHead>
+    </section>
+
+    <section id="a-breadcrumb">
+      <h2>A案: パンくず</h2>
+      <div class="breadcrumb-samples">
+        <Breadcrumb lang="ja" items={postCrumbs} />
+        <Breadcrumb lang="en" items={contactCrumbs} />
+        <div class="breadcrumb-narrow">
+          <Breadcrumb lang="ja" items={longCrumbs} />
+        </div>
+      </div>
     </section>
 
     <section id="a-article-toc">
@@ -812,15 +837,20 @@ const sampleVideos: YouTubeVideo[] = [
   gap: 16px;
 }
 
-/* The breadcrumb of the sample page head, with the current page in the text color. */
-.crumbs-sample {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--muted);
+/* The samples of the breadcrumb, one under another. */
+.breadcrumb-samples {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
-.crumbs-current {
-  color: var(--text);
+/* The width of a phone, to see the breadcrumb wrap. */
+.breadcrumb-narrow {
+  box-sizing: border-box;
+  width: 320px;
+  max-width: 100%;
+  padding: 12px 16px;
+  border: 1px dashed var(--line2);
 }
 
 /* The blog section takes the whole width of the page, like `#blog` of the home page. */

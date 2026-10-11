@@ -96,14 +96,14 @@ describe("tagFilterLinks", () => {
 describe("blogCrumbs", () => {
   it("/blog/ は ~ から日本語のトップへ進め、現在地の blog はリンクにしない", () => {
     expect(blogCrumbs(undefined)).toEqual([
-      { text: "~", href: "/ja/#top" },
+      { text: "~", href: "/ja/#top", label: "トップ" },
       { text: "blog" },
     ]);
   });
 
   it("タグのページは ~ と blog にリンクし、tags はリンクにせず、最後にタグのスラッグを出す", () => {
     expect(blogCrumbs("技術")).toEqual([
-      { text: "~", href: "/ja/#top" },
+      { text: "~", href: "/ja/#top", label: "トップ" },
       { text: "blog", href: "/blog/" },
       { text: "tags" },
       { text: "tech" },
@@ -217,23 +217,38 @@ describe("adjacentPosts", () => {
 });
 
 describe("blogPostBreadcrumb", () => {
+  it("~ と blog にリンクし、年とファイル名はリンクにせず、~ には日本語の名前を付ける", () => {
+    expect(
+      blogPostBreadcrumb("my-first-article", new Date("2026-05-01T00:00:00Z")),
+    ).toEqual([
+      { text: "~", href: "/ja/#top", label: "トップ" },
+      { text: "blog", href: "/blog/" },
+      { text: "2026" },
+      { text: "my-first-article.md" },
+    ]);
+  });
+
   it("年は日本時間の日付の年にする（UTC では前の年の 12/31 でも、日本では元日になる）", () => {
     expect(
-      blogPostBreadcrumb("new-year-post", new Date("2025-12-31T15:00:00Z")),
-    ).toEqual({ year: "2026", file: "new-year-post.md" });
+      blogPostBreadcrumb("new-year-post", new Date("2025-12-31T15:00:00Z")).at(
+        2,
+      ),
+    ).toEqual({ text: "2026" });
   });
 
   it("日本時間の大晦日の夜は前の年にする", () => {
     expect(
-      blogPostBreadcrumb("late-post", new Date("2025-12-31T14:59:59Z")).year,
-    ).toBe("2025");
+      blogPostBreadcrumb("late-post", new Date("2025-12-31T14:59:59Z")).at(2),
+    ).toEqual({ text: "2025" });
   });
 
   it("末尾は slug に .md を付けたファイル名にする", () => {
     expect(
-      blogPostBreadcrumb("my-first-article", new Date("2026-05-01T00:00:00Z"))
-        .file,
-    ).toBe("my-first-article.md");
+      blogPostBreadcrumb(
+        "my-first-article",
+        new Date("2026-05-01T00:00:00Z"),
+      ).at(-1),
+    ).toEqual({ text: "my-first-article.md" });
   });
 });
 
