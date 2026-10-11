@@ -236,6 +236,20 @@ It sets the light theme when `localStorage` holds `light` under the key `theme`,
 Without JavaScript, the page keeps the dark theme that `Layout.astro` renders.
 `src/components/ThemeToggle.astro` switches the theme with `toggleTheme` and saves it under the same key; when saving throws, the switch lasts only until the next page.
 
+Breakpoints are the widths of the viewport at which a layout changes.
+In `@media`, `sizes` and `matchMedia`, write the wide side of a width N as `min-width: N` and the narrow side as `max-width: N-1`, without decimals such as `767.98px`, so that a viewport of exactly N px is on the wide side. `src/styles/breakpoints.test.ts` fails on a `min-width` or `max-width` of any other value.
+A container query (`@container` in `HeroAccount.astro` and `ContactForm.astro`) switches on the width of its component, not of the viewport, and is not in the table.
+
+| Width    | From this width (`min-width: N`) |
+| :------- | :------------------------------- |
+| `360px`  | The contact band (`ContactBand.astro`) shows its image; below, the pose table of the hero (`HeroPoses.astro`) starts 48px from the top |
+| `600px`  | The contact page and its form (`contact/index.astro`, `ContactForm.astro`) have more padding |
+| `768px`  | The sides of a page are 20px instead of 16px, a section heading is 40px, and the hero leaves the stacked layout of the phone |
+| `900px`  | The sides of a page are 64px, a section heading is 52px, the hero is in two columns, a post row has four columns and the figures of the three-view are 440px high |
+| `1024px` | The bar of the header holds the navigation, the language switch and the contact button instead of the menu button, the footer has three columns, and an article has the column of its table of contents |
+| `1200px` | The three views of the avatar (`AvatarThreeView.astro`) stand in a row instead of being switched as tabs |
+| `1280px` | The windows of the top page (`LatestSection.astro`) are in two columns, and the title and the end of an article lose the rules for the narrower widths |
+
 `src/dev/components.astro` shows the plan A styles, the components and the avatar images on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
 `astro dev` serves them at `/dev/components/` and `/dev/markdown/`, and `astro build` leaves them out of `dist/` unless `LINA_DEV_PAGES=1` is set.
 Add `?theme=dark` or `?theme=light` to the URL of `/dev/components/` to see that theme whatever is saved.

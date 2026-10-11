@@ -20,14 +20,14 @@
  * 56s a loop, the hatch 1.2s and the stripes 1.6s; up to 767px they take 44s, 1s and 1.4s.
  * Under `prefers-reduced-motion: reduce` all three stand still.
  *
- * From 901px the content is a grid of two columns, 1.08fr and 0.92fr, 64px from the sides and at
+ * From 900px the content is a grid of two columns, 1.08fr and 0.92fr, 64px from the sides and at
  * least 820px high. The left column holds the prompt, the logo, the heading, the intro and the
  * button, and ends with `.hero-account`, which holds the account window (`HeroAccount`).
  * `.hero-right` holds `HeroPoses`, the poses of the avatar with the ruler and the table of its
- * parts. Up to 900px the grid is one column 20px from the sides, the heading is 40px, the band is
+ * parts. Below 900px the grid is one column 20px from the sides, the heading is 40px, the band is
  * 150px wide and the two lines are left out. The band, the hatch and the lines keep clear of the
- * text: from 901px the band starts at 57% of the width, or further right where the intro would
- * reach it, and from 768px to 900px at 46% or 390px, whichever is further right.
+ * text: from 900px the band starts at 57% of the width, or further right where the intro would
+ * reach it, and from 768px to 899px at 46% or 390px, whichever is further right.
  *
  * Up to 767px the hero is stacked, as in `design/AMobile.dc.html`. The right column has no box of
  * its own, so `HeroPoses` covers the whole hero. The left column starts 330px from the top, 16px
@@ -350,7 +350,7 @@ const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
   min-height: 560px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   .decor {
     --band-left: max(46%, 390px);
   }

@@ -77,6 +77,16 @@ describe("avatarAlt", () => {
   });
 });
 
+describe("HERO_POSES", () => {
+  it("sizes は 768px 未満で 678px、900px 未満で 306px、900px 以上で 454px を指す", () => {
+    for (const pose of HERO_POSES) {
+      expect(pose.sizes, pose.name).toBe(
+        "(max-width: 767px) 678px, (max-width: 899px) 306px, 454px",
+      );
+    }
+  });
+});
+
 describe("THUMBS_UP_BAND", () => {
   it("sizes は 900px 未満で 128px、900px 以上で 374px を指す", () => {
     expect(THUMBS_UP_BAND.sizes).toBe("(max-width: 899px) 128px, 374px");

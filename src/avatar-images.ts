@@ -30,10 +30,10 @@ export interface AvatarImage {
   priority: boolean;
 }
 
-// Hero shows a pose 800px high on desktop, 540px high up to 900px wide and 1195px high on mobile.
+// Hero shows a pose 800px high on desktop, 540px high below 900px wide and 1195px high on mobile.
 // The frame is 851:1500, so the displayed widths are 454px, 306px and 678px.
 const POSE_WIDTHS = [306, 454, 612, 678, 908, 1356];
-const POSE_SIZES = "(max-width: 767px) 678px, (max-width: 900px) 306px, 454px";
+const POSE_SIZES = "(max-width: 767px) 678px, (max-width: 899px) 306px, 454px";
 
 /** One of the four poses; they differ only in the file and in `priority`. */
 function pose(
