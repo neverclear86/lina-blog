@@ -136,48 +136,48 @@ const views: View[] = [
   <div class="model-stage gridbg">
     <div class="model-row">
       {views.map((v) => (
-        <figure class:list={["fig", v.id]}>
-          <div class="fig-box">
-            <Picture
-              src={v.avatar.src}
-              alt={avatarAlt(v.avatar, lang)}
-              formats={["avif", "webp"]}
-              fallbackFormat="webp"
-              widths={v.avatar.widths}
-              sizes={v.avatar.sizes}
-              priority={v.avatar.priority}
-              class="fig-img"
-            />
-            <svg
-              class="co-svg"
-              viewBox={v.viewBox}
-              aria-hidden="true"
-              focusable="false"
-            >
-              {v.lines.map((line) => (
-                <>
-                  <polyline class="co-bg" points={line.points}></polyline>
-                  <polyline class="co-ln" points={line.points}></polyline>
-                  <rect
-                    class="co-end"
-                    x={line.end[0]}
-                    y={line.end[1]}
-                    width="10"
-                    height="10"
-                  ></rect>
-                </>
-              ))}
-            </svg>
-            {v.notes.map((n) => (
-              <span class={`co-t ${n.side} n-${n.id}`}>
-                <b>{translate(lang, n.key)}</b>
-                <small>{n.small}</small>
-              </span>
-            ))}
-          </div>
-          <figcaption>{v.id}</figcaption>
-        </figure>
+  <figure class:list={["fig", v.id]}>
+    <div class="fig-box">
+      <Picture
+        src={v.avatar.src}
+        alt={avatarAlt(v.avatar, lang)}
+        formats={["avif", "webp"]}
+        fallbackFormat="webp"
+        widths={v.avatar.widths}
+        sizes={v.avatar.sizes}
+        priority={v.avatar.priority}
+        class="fig-img"
+      />
+      <svg
+        class="co-svg"
+        viewBox={v.viewBox}
+        aria-hidden="true"
+        focusable="false"
+      >
+        {v.lines.map((line) => (
+          <>
+            <polyline class="co-bg" points={line.points}></polyline>
+            <polyline class="co-ln" points={line.points}></polyline>
+            <rect
+              class="co-end"
+              x={line.end[0]}
+              y={line.end[1]}
+              width="10"
+              height="10"
+            ></rect>
+          </>
+        ))}
+      </svg>
+      {v.notes.map((n) => (
+        <span class={`co-t ${n.side} n-${n.id}`}>
+          <b>{translate(lang, n.key)}</b>
+          <small>{n.small}</small>
+        </span>
       ))}
+    </div>
+    <figcaption>{v.id}</figcaption>
+  </figure>
+))}
     </div>
   </div>
   <div class="tabs">
@@ -187,10 +187,10 @@ const views: View[] = [
       aria-label={translate(lang, "avatar.tabsLabel")}
     >
       {views.map((v) => (
-        <button type="button" role="tab" class="vt">
-          {v.id}
-        </button>
-      ))}
+  <button type="button" role="tab" class="vt">
+    {v.id}
+  </button>
+))}
     </div>
     <span class="label vt-hint" aria-hidden="true">tap / swipe</span>
   </div>
