@@ -88,8 +88,8 @@ describe("視覚的に隠す CSS", () => {
   });
 
   it("記事の頭の dt と ArticleEnd の続きの文は .sr-only-narrow で、部品に隠す規則は無い", () => {
-    const slug = source("pages/blog/[slug].astro");
-    const dts = slug.match(/<dt\b[^>]*>/g) ?? [];
+    const head = source("components/ArticleHead.astro");
+    const dts = head.match(/<dt\b[^>]*>/g) ?? [];
     expect(dts.length).toBeGreaterThan(0);
     for (const tag of dts) {
       expect(tag).toContain("sr-only-narrow");
@@ -99,7 +99,7 @@ describe("視覚的に隠す CSS", () => {
         /<span class="sr-only-narrow"/g,
       ),
     ).toHaveLength(3);
-    const [dt] = rulesFor(parseCss(cssOfAstro(slug)), ".meta dt");
+    const [dt] = rulesFor(parseCss(cssOfAstro(head)), ".meta dt");
     expect(declared(dt)).toEqual({ "white-space": "nowrap" });
   });
 });

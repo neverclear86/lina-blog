@@ -1,13 +1,13 @@
 ---
 /**
- * The page of a blog post, `/blog/<slug>/`, in Japanese only. The head is on the grid background
- * (`.gridbg`) and holds the breadcrumb `~ / blog / <year> / <slug>.md`, the category chips
- * (`tags`), the topic tags (`topics`, none when the post has no topics), the `h1`, and the date,
- * the reading time and the author. Below it, `<Content />` in `ArticleBody` fills a column of at
- * most 760px. From 1024px a column of 240px, `.toc-col`, stands at its left. A post with
- * `sponsor` has its PR notice (`SponsorNotice`) between the head and the columns. `emoji` is not
- * shown. At the end of the body column, after `ArticleEnd`, `PostNav` holds the links to the posts
- * one step older (`prev`) and one step newer (`next`), which `getStaticPaths` gives as props.
+ * The page of a blog post, `/blog/<slug>/`, in Japanese only. The head is `ArticleHead`: the
+ * breadcrumb `~ / blog / <year> / <slug>.md`, the category chips (`tags`), the topic tags
+ * (`topics`, none when the post has no topics), the `h1`, and the date, the reading time and the
+ * author. Below it, `<Content />` in `ArticleBody` fills a column of at most 760px. From 1024px a
+ * column of 240px, `.toc-col`, stands at its left. A post with `sponsor` has its PR notice
+ * (`SponsorNotice`) between the head and the columns. `emoji` is not shown. At the end of the body
+ * column, after `ArticleEnd`, `PostNav` holds the links to the posts one step older (`prev`) and
+ * one step newer (`next`), which `getStaticPaths` gives as props.
  *
  * From 1024px `.toc-col` holds the table of contents of the `h2` headings of the post in a window
  * (`ArticleToc`) that sticks 88px below the top of the viewport; below 1024px the same items are
@@ -23,13 +23,8 @@
  * (`ReadingProgress`) draw, and marks the item of the `h2` that the reader is in with
  * `aria-current="location"`. The line and the bar are hidden until it runs.
  *
- * A diagonal band at the right of the head is drawn with `::before`. It is 64px wide below 768px,
- * where the rows of the head keep clear of it with a right padding, and 120px wide from 1280px,
- * where a hatched line beside it is drawn with `::after`; from 768px to 1279px there is no band.
- * The date, the reading time and the author are a row of text below 768px, without the author,
- * and a table on the `--shade` background from 768px. A post that is on Nostr has one more item
- * after the author, `mirror`, the link `nostr ↗` to its article on njump (`nostrArticleUrl`),
- * which opens in a new tab and is in the row below 768px too. The page has the compact footer.
+ * A post that is on Nostr has the link `nostr ↗` to its article on njump (`nostrArticleUrl`) in
+ * the head. The page has the compact footer.
  *
  * After the body, in the same column and before `PostNav`, `ArticleEnd` is the window of the end of
  * the post, with the buttons that share the post's address on Twitter (self-proclaimed X) and
@@ -39,23 +34,14 @@ import { type CollectionEntry, getCollection, render } from "astro:content";
 import { nostrPublishedSlugs } from "virtual:lina-published-slugs";
 import type { GetStaticPaths } from "astro";
 import { blogPostUrl } from "../../article-share";
-import {
-  blogPostBreadcrumb,
-  blogPostDate,
-  blogPostPaths,
-  blogPostToc,
-  readingMinutes,
-} from "../../blog-pages";
+import { blogPostPaths, blogPostToc, readingMinutes } from "../../blog-pages";
 import ArticleBody from "../../components/ArticleBody.astro";
 import ArticleEnd from "../../components/ArticleEnd.astro";
+import ArticleHead from "../../components/ArticleHead.astro";
 import ArticleToc from "../../components/ArticleToc.astro";
-import Breadcrumb from "../../components/Breadcrumb.astro";
-import ExternalNote from "../../components/ExternalNote.astro";
 import PostNav from "../../components/PostNav.astro";
 import ReadingProgress from "../../components/ReadingProgress.astro";
 import SponsorNotice from "../../components/SponsorNotice.astro";
-import { externalLinkAttrs } from "../../external-link";
-import { translate } from "../../i18n/ui";
 import Layout from "../../layouts/Layout.astro";
 import { nostrArticleUrl } from "../../nostr-address";
 import { postOgImagePath } from "../../og-pages";
@@ -83,8 +69,6 @@ if (!site) {
   );
 }
 const url = blogPostUrl(slug, site);
-const crumbs = blogPostBreadcrumb(slug, date);
-const published = blogPostDate(date);
 const minutes = readingMinutes(post.body);
 const notice = sponsorNotice(sponsor);
 const nostrUrl = isNostrPublished(slug, nostrPublishedSlugs)
@@ -101,51 +85,16 @@ const nostrUrl = isNostrPublished(slug, nostrPublishedSlugs)
   readingProgress
 >
   <main id="main" tabindex="-1">
-    <section class="head gridbg">
-      <div class="head-inner">
-        <Breadcrumb lang="ja" items={crumbs} />
-        <ul class="chips">
-          {tags.map((tag) => (
-  <li>
-    <span class="chip-acc">{tag}</span>
-  </li>
-))}
-          {(topics ?? []).map((topic) => (
-  <li>
-    <span class="tag">{topic}</span>
-  </li>
-))}
-        </ul>
-        <h1>{title}</h1>
-        <dl class="meta">
-          <div class="cell">
-            <dt class="label sr-only-narrow" lang="en">date</dt>
-            <dd><time datetime={published.dateTime}>{published.text}</time></dd>
-          </div>
-          <div class="cell">
-            <dt class="label sr-only-narrow" lang="en">read</dt>
-            <dd lang="en">{minutes} min</dd>
-          </div>
-          <div class="cell author">
-            <dt class="label sr-only-narrow" lang="en">author</dt>
-            <dd>{translate("ja", "blog.author")}</dd>
-          </div>
-          {nostrUrl && (
-  <div class="cell">
-    <dt class="label sr-only-narrow" lang="en">
-      mirror
-    </dt>
-    <dd>
-      <a href={nostrUrl} lang="en" {...externalLinkAttrs(nostrUrl, site)}>
-        nostr
-        <ExternalNote lang="ja" arrow />
-      </a>
-    </dd>
-  </div>
-)}
-        </dl>
-      </div>
-    </section>
+    <ArticleHead
+      title={title}
+      slug={slug}
+      date={date}
+      tags={tags}
+      topics={topics}
+      minutes={minutes}
+      nostrUrl={nostrUrl}
+      site={site}
+    />
     <div class="body">
       {notice && (
   <div class="sponsor">
@@ -177,84 +126,6 @@ const nostrUrl = isNostrPublished(slug, nostrPublishedSlugs)
 </Layout>
 
 <style>
-.head {
-  position: relative;
-  overflow: hidden;
-  border-bottom: 1px solid var(--line);
-  background-size: 32px 32px;
-}
-.head::before,
-.head::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-  transform: rotate(22deg);
-}
-.head::before {
-  top: -40%;
-  right: -40px;
-  width: 64px;
-  height: 200%;
-  background: var(--keyword);
-}
-.head::after {
-  display: none;
-}
-.head-inner {
-  position: relative;
-  z-index: 1;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 28px 16px 24px;
-}
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
-  padding: 0 24px 0 0;
-  list-style: none;
-}
-.chips li {
-  display: flex;
-  min-width: 0;
-}
-h1 {
-  max-width: 900px;
-  margin: 0;
-  padding-right: 56px;
-  font-size: 28px;
-  font-weight: 900;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
-}
-.meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  margin: 0;
-  padding-right: 64px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--muted);
-}
-.meta dd {
-  margin: 0;
-}
-.meta dt {
-  white-space: nowrap;
-}
-.cell {
-  min-width: 0;
-}
-.author {
-  display: none;
-}
 .body {
   box-sizing: border-box;
   max-width: 1440px;
@@ -277,57 +148,6 @@ h1 {
 }
 
 @media (min-width: 768px) {
-  .head {
-    background-size: 48px 48px;
-  }
-  .head::before {
-    display: none;
-  }
-  .head-inner {
-    gap: 22px;
-    padding: 64px 20px 48px;
-  }
-  .chips {
-    gap: 8px;
-    padding: 0;
-  }
-  .chips .tag {
-    height: 24px;
-    padding: 0 9px;
-    line-height: 22px;
-  }
-  h1 {
-    padding-right: 0;
-    font-size: 32px;
-    line-height: 1.3;
-  }
-  .meta {
-    gap: 0;
-    max-width: 900px;
-    padding-right: 0;
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-    background: var(--shade);
-    font-size: 14px;
-    color: var(--text);
-  }
-  .cell {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 12px 20px;
-  }
-  .cell:first-child {
-    padding-left: 0;
-  }
-  .cell:not(:last-child) {
-    border-right: 1px solid var(--line);
-  }
-  .author {
-    display: flex;
-    font-family: var(--font-body);
-    font-weight: 700;
-  }
   .body {
     padding: 56px 20px 96px;
   }
@@ -337,12 +157,6 @@ h1 {
 }
 
 @media (min-width: 900px) {
-  .head-inner {
-    padding: 64px 64px 48px;
-  }
-  h1 {
-    font-size: 52px;
-  }
   .body {
     padding: 56px 64px 96px;
   }
@@ -371,29 +185,6 @@ h1 {
   }
   .text {
     flex: 1 1 0;
-  }
-}
-
-@media (min-width: 1280px) {
-  .head::before {
-    display: block;
-    top: -60%;
-    right: 6%;
-    width: 120px;
-    height: 220%;
-  }
-  .head::after {
-    display: block;
-    top: -60%;
-    right: calc(6% + 150px);
-    width: 28px;
-    height: 220%;
-    opacity: 0.7;
-    background: repeating-linear-gradient(
-      to bottom,
-      var(--keyword) 0 5px,
-      transparent 5px 15px
-    );
   }
 }
 </style>

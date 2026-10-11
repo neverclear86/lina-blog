@@ -30,7 +30,10 @@ describe("Breadcrumb のマークアップ", () => {
 describe("Breadcrumb の配線", () => {
   it.each([
     ["components/BlogIndex.astro", '<Breadcrumb lang="ja" items={crumbs} />'],
-    ["pages/blog/[slug].astro", '<Breadcrumb lang="ja" items={crumbs} />'],
+    [
+      "components/ArticleHead.astro",
+      '<Breadcrumb lang="ja" items={blogPostBreadcrumb(slug, date)} />',
+    ],
     [
       "pages/[lang]/contact/index.astro",
       "<Breadcrumb lang={lang} items={crumbs} />",

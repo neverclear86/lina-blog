@@ -67,6 +67,7 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   │   ├── article-reading.ts    # Script of a post's page: sets --reading-progress, marks the h2 being read in the table of contents and reveals the progress line and bar
 │   │   ├── ArticleBody.astro     # Wraps rendered Markdown: imports article.css (body text, accordions, message boxes) and highlight.css (code blocks), and puts the copy button on code blocks
 │   │   ├── ArticleEnd.astro      # End window of a post: share links, copy-link button, thumbs-up
+│   │   ├── ArticleHead.astro     # Head of a post's page: PageHead with the breadcrumb, the chips, the h1 and the date, reading time, author and Nostr link
 │   │   ├── ArticleToc.astro      # Table of contents of a post: the neo-tree window in the left column from 1024px, a closed <details> before the body below it; the h2 being read is marked
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: in a row from 1200px, below it stacked or one at a time with tabs
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
@@ -88,7 +89,7 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   │   ├── LatestVideoList.astro # Latest section: the next videos as small windows with JST dates, and the YouTube channel button; hidden below 768px
 │   │   ├── NameLogo.astro        # Name logo of the brand kit as inline SVG: compact, full and full-sub, painted with the --lg-* tokens
 │   │   ├── once-per-frame.ts     # Runs a function once in the next animation frame, for the scroll and resize handlers of the site header and a post's page, unit-tested
-│   │   ├── PageHead.astro        # Head of the blog pages and the contact page: grid background, diagonal band and the slot with an h1
+│   │   ├── PageHead.astro        # Head of the blog pages, the contact page and a post's page: grid background, diagonal band and the slot with an h1
 │   │   ├── PostNav.astro         # Links to the posts one step older (prev) and newer (next) at the end of a post's page; nothing when there are none
 │   │   ├── PostRows.astro        # Window of blog posts: ls -lt command line with a command slot, rows with JST date, tags, PR and title, or one empty line
 │   │   ├── reading-progress.ts   # How far the reader is in a post and which h2 they are in, unit-tested

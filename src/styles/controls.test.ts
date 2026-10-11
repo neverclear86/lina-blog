@@ -286,7 +286,7 @@ describe("カテゴリのチップ", () => {
 
   it("使い手は寸法を写さない", () => {
     for (const path of [
-      "pages/blog/[slug].astro",
+      "components/ArticleHead.astro",
       "components/SponsorNotice.astro",
     ]) {
       const sizes = rulesFor(astroStyle(path), ".chip-acc").flatMap((rule) =>
