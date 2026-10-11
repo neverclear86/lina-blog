@@ -1,10 +1,8 @@
-# Astro Starter Kit: Basics
+# lina-blog
 
-```sh
-bun create astro@latest -- --template basics
-```
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+The repository of [ikili.pro](https://ikili.pro), the personal site and blog of Tsukusu Lina, a self-proclaimed virtual ikiri programmer.
+Astro 7 prerenders almost every page, and Cloudflare Workers serves them from Workers Static Assets, with a Hono app in `src/fetch.ts` for the routes that run on the Worker, such as the contact form and the text version of the site for curl.
+Articles are published by a separate Worker (`workers/publish/`, also Hono).
 
 ## 🚀 Project Structure
 
@@ -588,7 +586,3 @@ The following are not covered by the MIT License. All rights are reserved by Tsu
 - Blog posts and other written content published on the site
 
 The service icons in `src/components/icons/` are not covered by the MIT License either. They are trademarks or works of their owners and are used under the terms listed in [src/components/icons/README.md](src/components/icons/README.md).
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
