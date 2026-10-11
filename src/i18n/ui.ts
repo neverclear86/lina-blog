@@ -157,15 +157,15 @@ const ja = {
   // Name of the menu button of the site header; whether the menu is open is its expanded state.
   "menu.label": "メニュー",
   // "nav.label" names the <nav> of the site header and "nav.contact" is the text of its contact
-  // button. The items of the navigation are in `src/components/site-nav.ts`. "nav.breadcrumb"
-  // names the <nav> of the breadcrumb at the top of a page.
+  // button. The items of the navigation are written in `src/components/site-nav.ts` in English in
+  // every locale and do not use the "nav.*" keys. "nav.breadcrumb" names the <nav> of the
+  // breadcrumb at the top of a page.
   // "nav.skip" is the text of the skip link at the top of every page.
   "nav.about": "プロフィール",
   "nav.blog": "ブログ",
   "nav.breadcrumb": "パンくず",
   "nav.contact": "お問い合わせ",
   "nav.label": "メイン",
-  "nav.latest": "さいきん",
   "nav.skip": "本文へ移動",
   "nav.top": "トップ",
   // The 404 page, which is in Japanese and shows the English message and link under the heading.
@@ -313,7 +313,6 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "nav.breadcrumb": "Breadcrumb",
     "nav.contact": "Contact",
     "nav.label": "Main",
-    "nav.latest": "Latest",
     "nav.skip": "Skip to main content",
     "nav.top": "Top",
     "notFound.back": "Back to top",
@@ -332,4 +331,13 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
 /** Returns the UI string for `key` in `locale`. */
 export function translate(locale: Locale, key: UiKey): string {
   return ui[locale][key];
+}
+
+/**
+ * Returns a function that looks up the UI string for a key in `locale`.
+ * `useTranslations(locale)(key)` is `translate(locale, key)`; a component calls this once and
+ * names the result `t`.
+ */
+export function useTranslations(locale: Locale): (key: UiKey) => string {
+  return (key) => translate(locale, key);
 }

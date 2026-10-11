@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildTextSite } from "../text-site";
 import { DEFAULT_LOCALE, LOCALES } from "./locales";
-import { translate, ui } from "./ui";
+import { translate, type UiKey, ui, useTranslations } from "./ui";
 
 describe("translate", () => {
   it("日本語を指定すると日本語の文言を返す", () => {
@@ -57,6 +57,37 @@ describe("translate", () => {
         new URL("https://example.com"),
       ).split("\n");
       expect(lines).toContain(translate(locale, "latest.blog.noPosts"));
+    }
+  });
+});
+
+describe("useTranslations", () => {
+  it("日本語を指定すると、キーから日本語の文言を返す関数になる", () => {
+    const t = useTranslations("ja");
+    expect(t("home.comingSoon")).toBe("準備中です。");
+    expect(t("nav.top")).toBe("トップ");
+  });
+
+  it("英語を指定すると、キーから英語の文言を返す関数になる", () => {
+    const t = useTranslations("en");
+    expect(t("home.comingSoon")).toBe("Coming soon.");
+    expect(t("nav.top")).toBe("Top");
+  });
+
+  it("言語ごとの関数を続けて作っても、それぞれの言語の文言を返す", () => {
+    const tJa = useTranslations("ja");
+    const tEn = useTranslations("en");
+    expect(tJa("nav.blog")).toBe("ブログ");
+    expect(tEn("nav.blog")).toBe("Blog");
+  });
+
+  it("すべての言語のすべてのキーで translate と同じ文言を返す", () => {
+    const keys = Object.keys(ui[DEFAULT_LOCALE]) as UiKey[];
+    for (const locale of LOCALES) {
+      const t = useTranslations(locale);
+      for (const key of keys) {
+        expect(t(key)).toBe(translate(locale, key));
+      }
     }
   });
 });

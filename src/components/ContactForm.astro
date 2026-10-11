@@ -23,7 +23,7 @@
 import { TURNSTILE_SITE_KEY } from "astro:env/client";
 import { CONTACT_KINDS, CONTACT_LIMITS } from "../contact";
 import type { Locale } from "../i18n/locales";
-import { translate } from "../i18n/ui";
+import { useTranslations } from "../i18n/ui";
 
 interface Props {
   /** Language of the page, for the strings from `src/i18n/ui.ts`. */
@@ -31,7 +31,7 @@ interface Props {
 }
 
 const { lang } = Astro.props;
-const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
+const t = useTranslations(lang);
 ---
 
 <div class="win window">
