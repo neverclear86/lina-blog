@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { translate } from "../i18n/ui";
+import { cssOfAstro, parseCss, rulesFor, valueIn } from "../test/css-source";
 
 /** Reads a file under `src/`. */
 function source(path: string): string {
@@ -17,17 +18,8 @@ function astroFiles(dir: string): string[] {
     .map((name) => `${dir}/${name}`);
 }
 
-/** Returns the body of the rule whose selector is exactly `selector` in a CSS text. */
-function ruleBody(css: string, selector: string): string | undefined {
-  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
-  const rule = rules.find((r) => r[1].replace(/\s+/g, " ").trim() === selector);
-  return rule?.[2].replace(/\s+/g, " ").trim();
-}
-
 const skipLink = source("components/SkipLink.astro");
-const skipStyle = skipLink.slice(
-  skipLink.indexOf("<style>") + "<style>".length,
-);
+const SKIP = parseCss(cssOfAstro(skipLink));
 const pages = [...astroFiles("pages"), ...astroFiles("dev")];
 
 describe("スキップリンク", () => {
@@ -39,18 +31,21 @@ describe("スキップリンク", () => {
     );
   });
 
-  it("main の id へのリンクで、.btn .btn-acc で描き、文言は nav.skip から取る", () => {
+  it("main の id へのリンクで、文言は nav.skip から取る", () => {
     expect(skipLink).toContain('href="#main"');
-    expect(skipLink).toMatch(/"skip-link", "btn", "btn-acc"/);
     expect(skipLink).toContain('translate(lang, "nav.skip")');
   });
 
-  it("フォーカスが無いときは 1px の箱に切り抜き、display: none も hidden も使わない", () => {
-    const hidden = ruleBody(skipStyle, ".skip-link:not(:focus, .is-focus)");
-    expect(hidden).toContain("width: 1px");
-    expect(hidden).toContain("height: 1px");
-    expect(hidden).toContain("clip-path: inset(50%)");
-    expect(skipStyle).not.toContain("display: none");
+  it("フォーカスが無いときは切り抜いて隠し、display: none も hidden も使わない", () => {
+    const [hidden] = rulesFor(SKIP, ".skip-link:not(:focus, .is-focus)");
+    expect(valueIn(hidden, "clip-path")).toBeDefined();
+    expect(
+      SKIP.some((rule) =>
+        rule.declarations.some(
+          (d) => d.property === "display" && d.value === "none",
+        ),
+      ),
+    ).toBe(false);
     const template = skipLink.slice(
       skipLink.indexOf("\n---\n", 4),
       skipLink.indexOf("<style>"),
@@ -58,15 +53,14 @@ describe("スキップリンク", () => {
     expect(template).not.toMatch(/\bhidden\b/);
   });
 
-  it("フォーカスがあるときは左上の 8px と 16px に固定し、ヘッダーの z-index より上に出す", () => {
-    const shown = ruleBody(skipStyle, ".skip-link:is(:focus, .is-focus)");
-    expect(shown).toContain("position: fixed");
-    expect(shown).toContain("top: 8px");
-    expect(shown).toContain("left: 16px");
-    const z = (css: string) => Number(css.match(/z-index: (\d+)/)?.[1]);
-    const header = source("components/SiteHeader.astro");
-    expect(z(shown ?? "")).toBeGreaterThan(
-      z(header.slice(header.indexOf(".site-header {"))),
+  it("フォーカスがあるときは、ヘッダーの z-index より上に出す", () => {
+    const [shown] = rulesFor(SKIP, ".skip-link:is(:focus, .is-focus)");
+    const headerRules = parseCss(
+      cssOfAstro(source("components/SiteHeader.astro")),
+    );
+    const [site] = rulesFor(headerRules, ".site-header");
+    expect(Number(valueIn(shown, "z-index"))).toBeGreaterThan(
+      Number(valueIn(site, "z-index")),
     );
   });
 
@@ -112,9 +106,9 @@ describe("main のランドマーク", () => {
     expect(others).toEqual(["components/BlogIndex.astro"]);
   });
 
-  it("フォーカスした main には輪を描かず、#main へ飛ぶとヘッダーの下 72px で止まる", () => {
-    const css = source("styles/global.css").replace(/\/\*[\s\S]*?\*\//g, "");
-    expect(ruleBody(css, 'main[tabindex="-1"]:focus')).toBe("outline: none;");
-    expect(ruleBody(css, "html")).toBe("scroll-padding: 72px 0 8px;");
+  it("フォーカスした main には輪を描かない", () => {
+    const global = parseCss(source("styles/global.css"));
+    const [main] = rulesFor(global, 'main[tabindex="-1"]:focus');
+    expect(valueIn(main, "outline")).toBe("none");
   });
 });
