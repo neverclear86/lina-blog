@@ -1,20 +1,4 @@
 ---
-import avatarDark from "../assets/icon/avatar-dark-on-ivory-square.svg";
-import avatarIvory from "../assets/icon/avatar-ivory-on-ink-square.svg";
-import avatarSmallDark from "../assets/icon/avatar-small-dark-on-ivory-square.svg";
-import avatarSmallIvory from "../assets/icon/avatar-small-ivory-on-ink-square.svg";
-import iconDark from "../assets/icon/icon-dark.svg";
-import iconIvory from "../assets/icon/icon-ivory.svg";
-import iconSmallDark from "../assets/icon/icon-small-dark.svg";
-import iconSmallIvory from "../assets/icon/icon-small-ivory.svg";
-import {
-  type AvatarFile,
-  avatarFiles,
-  type FaceTone,
-  type MarkFile,
-  markFiles,
-} from "./face-icon";
-
 /**
  * A face icon of the brand kit (`src/assets/icon/`), switched with the theme.
  *
@@ -33,6 +17,22 @@ import {
  * lazily loaded file is not fetched. A style that resizes the icons must keep each one in the
  * range of its `size`, because the version is picked from `size`.
  */
+import avatarDark from "../assets/icon/avatar-dark-on-ivory-square.svg";
+import avatarIvory from "../assets/icon/avatar-ivory-on-ink-square.svg";
+import avatarSmallDark from "../assets/icon/avatar-small-dark-on-ivory-square.svg";
+import avatarSmallIvory from "../assets/icon/avatar-small-ivory-on-ink-square.svg";
+import iconDark from "../assets/icon/icon-dark.svg";
+import iconIvory from "../assets/icon/icon-ivory.svg";
+import iconSmallDark from "../assets/icon/icon-small-dark.svg";
+import iconSmallIvory from "../assets/icon/icon-small-ivory.svg";
+import {
+  type AvatarFile,
+  avatarFiles,
+  type FaceTone,
+  type MarkFile,
+  markFiles,
+} from "./face-icon";
+
 type Props = {
   /** Side in CSS pixels of the square the icon is drawn in; a mark needs 27 or more. */
   size: number;

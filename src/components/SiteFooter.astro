@@ -1,16 +1,4 @@
 ---
-import { requireSite } from "../external-link";
-import type { Locale } from "../i18n/locales";
-import { translate } from "../i18n/ui";
-import ExternalNote from "./ExternalNote.astro";
-import FaceIcon from "./FaceIcon.astro";
-import {
-  type FooterVariant,
-  footerProfileLinks,
-  footerSiteLinks,
-} from "./footer-links";
-import NameLogo from "./NameLogo.astro";
-
 /**
  * The footer at the end of every page, on the page background `--bg`, with text in `--text` and
  * captions in `--muted`.
@@ -32,6 +20,18 @@ import NameLogo from "./NameLogo.astro";
  *
  * The year is the year of the build.
  */
+import { requireSite } from "../external-link";
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
+import ExternalNote from "./ExternalNote.astro";
+import FaceIcon from "./FaceIcon.astro";
+import {
+  type FooterVariant,
+  footerProfileLinks,
+  footerSiteLinks,
+} from "./footer-links";
+import NameLogo from "./NameLogo.astro";
+
 interface Props {
   /** Language of the page, for the strings of the footer. */
   lang: Locale;
