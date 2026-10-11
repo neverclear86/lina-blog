@@ -13,7 +13,7 @@ import { labelSegments } from "../../../components/label-break";
 import PageHead from "../../../components/PageHead.astro";
 import { externalLinkAttrs, requireSite } from "../../../external-link";
 import { LOCALES, type Locale } from "../../../i18n/locales";
-import { translate } from "../../../i18n/ui";
+import { useTranslations } from "../../../i18n/ui";
 import Layout from "../../../layouts/Layout.astro";
 import { profileLink } from "../../../profile-links";
 
@@ -28,7 +28,7 @@ interface Props {
 }
 
 const { lang } = Astro.props;
-const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
+const t = useTranslations(lang);
 const site = requireSite(Astro.site);
 const twitter = profileLink("twitter");
 const twitterLabel = labelSegments(twitter.label[lang]);
