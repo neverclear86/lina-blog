@@ -1,13 +1,18 @@
 /**
  * Orders and labels blog posts for the lists of posts and for the links between posts: the posts
- * newest first by date, the posts with a tag, and the URL slug and path of each tag's list.
+ * newest first by date, the posts with a tag, the URL slug and path of each tag's list, and the
+ * keys in `src/i18n/ui.ts` of the texts of each tag.
  */
 import type { BlogFrontmatter } from "./blog-schema";
+import type { UiKey } from "./i18n/ui";
 
 /** A tag of a blog post, one of the values `blogSchema` allows. */
 export type BlogTag = BlogFrontmatter["tags"][number];
 
-/** URL slug of a tag, used in the path of the tag's list and in its `blog.tag.*` UI key. */
+/**
+ * URL slug of a tag, used in the path of the tag's list and in its `blog.tag.*` and
+ * `blog.tagPage.*` UI keys.
+ */
 export type TagSlug = "devlog" | "tech" | "diary";
 
 /** URL slug of each tag. */
@@ -58,4 +63,27 @@ export function tagSlug(tag: BlogTag): TagSlug {
 /** Returns the path of the list of posts with `tag`, such as `/blog/tags/tech/`. */
 export function tagPath(tag: BlogTag): string {
   return `/blog/tags/${tagSlug(tag)}/`;
+}
+
+/** Keys in `src/i18n/ui.ts` of the texts of a tag. */
+export interface TagUiKeys {
+  /** The name of the tag, such as "技術". */
+  label: UiKey;
+  /** The heading of the tag's list, such as "技術の記事". */
+  subtitle: UiKey;
+  /** The line shown when the tag's list has no posts. */
+  noPosts: UiKey;
+}
+
+/**
+ * Returns the keys of the texts of `tag`. Each key is made from `tagSlug(tag)`, so a slug that
+ * lacks one of the three texts in `src/i18n/ui.ts` is a type error.
+ */
+export function tagUiKeys(tag: BlogTag): TagUiKeys {
+  const slug = tagSlug(tag);
+  return {
+    label: `blog.tag.${slug}`,
+    subtitle: `blog.tagPage.${slug}.subtitle`,
+    noPosts: `blog.tagPage.${slug}.noPosts`,
+  };
 }

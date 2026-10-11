@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { translate } from "./i18n/ui";
 import {
   type BlogTag,
   newestPosts,
@@ -6,6 +7,7 @@ import {
   postsWithTag,
   tagPath,
   tagSlug,
+  tagUiKeys,
 } from "./latest-posts";
 
 const post = (slug: string, date: string) => ({
@@ -125,4 +127,29 @@ describe("tagSlug と tagPath", () => {
       expect(tagPath(tag)).toBe(path);
     },
   );
+});
+
+describe("tagUiKeys", () => {
+  it.each([
+    ["制作記", "devlog"],
+    ["技術", "tech"],
+    ["日記", "diary"],
+  ] as const)("%s のキーはスラッグ %s から作る", (tag, slug) => {
+    expect(tagUiKeys(tag)).toEqual({
+      label: `blog.tag.${slug}`,
+      subtitle: `blog.tagPage.${slug}.subtitle`,
+      noPosts: `blog.tagPage.${slug}.noPosts`,
+    });
+  });
+
+  it("ラベルはタグの名前、副題と 0 件の文はそれを含む日本語になる", () => {
+    for (const tag of ["制作記", "技術", "日記"] as const) {
+      const keys = tagUiKeys(tag);
+      expect(translate("ja", keys.label)).toBe(tag);
+      expect(translate("ja", keys.subtitle)).toBe(`${tag}の記事`);
+      expect(translate("ja", keys.noPosts)).toBe(
+        `${tag}の記事はまだありません。`,
+      );
+    }
+  });
 });
