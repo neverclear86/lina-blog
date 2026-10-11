@@ -14,6 +14,7 @@ import { devPages, devPagesEnabled } from "./src/dev/dev-pages.ts";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
 import { tableFocusable, taskItemLabel } from "./src/markdown/a11y.ts";
 import { codeFilename } from "./src/markdown/code-filename.ts";
+import { externalLinks } from "./src/markdown/external-links.ts";
 import { highlightCodeBlocks } from "./src/markdown/highlight.ts";
 import { tableAlignToClass } from "./src/markdown/table-align.ts";
 import { youtubeEmbed } from "./src/markdown/youtube.ts";
@@ -167,11 +168,14 @@ function ogImages() {
   };
 }
 
+/** Origin of the site, which `site` below and the links of the articles are checked against. */
+const SITE = "https://ikili.pro";
+
 // https://astro.build/config
 export default defineConfig({
   // Origin of absolute URLs, such as the links in /llms.txt and /rss.xml, the sitemap, the
   // Sitemap line of /robots.txt and the canonical and hreflang links in the `<head>` of every page.
-  site: "https://ikili.pro",
+  site: SITE,
   markdown: {
     // Sätteri is Astro's default processor. It is set explicitly to add the plugins in
     // src/markdown/.
@@ -182,6 +186,7 @@ export default defineConfig({
         taskItemLabel,
         tableFocusable,
         youtubeEmbed,
+        externalLinks(new URL(SITE)),
         highlightCodeBlocks,
       ],
     }),

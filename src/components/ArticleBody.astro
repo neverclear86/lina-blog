@@ -6,6 +6,9 @@
  * 768px. It also styles the other elements that Sätteri and the plugins in src/markdown/ output:
  * GFM tables, task lists, footnotes, YouTube embeds and links. A link is underlined, because
  * `global.css` leaves a link plain and the text color alone would not set it apart (WCAG 1.4.1).
+ * A link to another site (see `externalLinks` in src/markdown/external-links.ts), except one in a
+ * heading or written as raw HTML, opens in a new tab and ends with an arrow `↗`, which takes the
+ * color and the underline of the link, and a text hidden from the eyes (`.sr-only`) that says so.
  * It styles the accordion too, a `<details>` with its `<summary>` that an article writes as raw
  * HTML: the window of `.win` (shared in `window.css`) with a `<summary>` of at least 48px in
  * JetBrains Mono, whose mark is a plus while the accordion is closed and a minus while it is
