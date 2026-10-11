@@ -8,7 +8,7 @@ import { FEED_PATH, rssItemTitle } from "./blog-rss";
 import type { BlogFrontmatter } from "./blog-schema";
 import { contactPagePath } from "./components/site-nav";
 import type { Locale } from "./i18n/locales";
-import { PROFILE_LINKS } from "./profile-links";
+import { PROFILE_LINKS, profileLink } from "./profile-links";
 
 /** Terminal columns that every line of the text version fits in. */
 const MAX_WIDTH = 80;
@@ -34,12 +34,16 @@ interface TextSiteStrings {
   };
   about: readonly string[];
   noPosts: string;
-  /** The contact section: the line that invites contact and the label before the form's URL. */
-  contact: { lead: string; formLabel: string };
+  /**
+   * The contact section: the line that invites contact, the label before the form's URL and the
+   * label before the URL of the Twitter (self-proclaimed X) profile.
+   */
+  contact: { lead: string; formLabel: string; dmLabel: string };
 }
 
 // Provisional: the wording of the about text is not decided yet. It uses the design's
-// sentences. The contact lines point to the contact page.
+// sentences. The contact lines point to the contact page and to the Twitter (self-proclaimed X)
+// profile.
 /** Text of the text version in each locale. The type requires every locale. */
 const STRINGS: Record<Locale, TextSiteStrings> = {
   ja: {
@@ -59,6 +63,7 @@ const STRINGS: Record<Locale, TextSiteStrings> = {
     contact: {
       lead: "お仕事のご相談やコラボのお誘いなどはこちらから。",
       formLabel: "フォーム:",
+      dmLabel: "Twitter(自称X) の DM:",
     },
   },
   en: {
@@ -78,6 +83,7 @@ const STRINGS: Record<Locale, TextSiteStrings> = {
     contact: {
       lead: "For work inquiries, collaborations and more,",
       formLabel: "use the form:",
+      dmLabel: "or send a DM on Twitter (self-proclaimed X):",
     },
   },
 };
@@ -137,7 +143,8 @@ function fitWidth(text: string, maxWidth: number): string {
  * Japan time, its title (with `【PR】` for a sponsored post, cut with `...` to fit the line) and
  * the absolute URL of its page; without posts, a line says there are none. The profile links
  * print `shortForm` instead of `url` when a link has one. The contact section ends with a line
- * that invites contact and a line with the absolute URL of the contact page of `locale`.
+ * that invites contact, a line with the absolute URL of the contact page of `locale` and a line
+ * with the URL of the Twitter (self-proclaimed X) profile.
  *
  * @param locale Language of the text; the post titles stay in Japanese.
  * @param posts Posts of the `blog` collection, in any order.
@@ -191,6 +198,7 @@ export function buildTextSite(
     strings.headings.contact,
     strings.contact.lead,
     `${strings.contact.formLabel} ${new URL(contactPagePath(locale), site).toString()}`,
+    `${strings.contact.dmLabel} ${profileLink("twitter").url}`,
     "",
   ].join("\n");
 }

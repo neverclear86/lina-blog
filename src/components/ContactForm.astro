@@ -103,9 +103,6 @@ const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
         <noscript><p class="noscript">{t("contact.noscript")}</p></noscript>
       </div>
       <div class="actions">
-        <span class="note"
-          >{t("contact.note")} <span class="note-kao">(๑•̀ㅂ•́)و✧</span></span
-        >
         <button type="submit" class="btn btn-acc submit">
           {t("contact.submit")}
         </button>
@@ -228,15 +225,6 @@ textarea[aria-invalid="true"] {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-}
-
-.note {
-  font-size: 14px;
-  color: var(--muted);
-}
-
-.note-kao {
-  white-space: nowrap;
 }
 
 .submit {

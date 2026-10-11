@@ -48,7 +48,7 @@ bun create astro@latest -- --template basics
 │   ├── og-image.ts       # Draws OGP images with Satori and sharp (Node only): the plan A element tree of a title, language, category and sponsor, and the PNG of any tree, unit-tested
 │   ├── og-pages.ts       # Paths of the OGP images and what each one says (title, category, sponsor), unit-tested
 │   ├── page-meta.ts      # Description (default from ui.ts), Open Graph tags (with the OGP image) and Twitter card tags of a page, unit-tested
-│   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro, hero-account.ts and footer-links.ts
+│   ├── profile-links.ts  # Profile links (service, label and note per locale), shared by llms.ts, text-site.ts, LatestVideoFeature.astro, LatestVideoList.astro, hero-account.ts, footer-links.ts, ContactBand.astro and the contact page
 │   ├── published-articles.ts # Which posts are on Nostr: parses the published record (src/content/published.json) and looks up a slug, unit-tested
 │   ├── published-articles-source.ts # Reads the published records from disk for virtual:lina-published-slugs (Node only), unit-tested
 │   ├── sitemap.ts        # Sitemap filter and x-default link, and the /robots.txt text, unit-tested
@@ -69,7 +69,7 @@ bun create astro@latest -- --template basics
 │   │   ├── ArticleToc.astro      # Table of contents of a post: the neo-tree window in the left column from 1024px, a closed <details> before the body below it; the h2 being read is marked
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: in a row from 1200px, below it stacked or one at a time with tabs
 │   │   ├── BlogIndex.astro       # Blog pages: PageHead with the breadcrumb, the h1 and the tag filter (.ws links), and the post rows
-│   │   ├── ContactBand.astro     # Contact band of the top page: heading, lead, a button to the contact page and the thumbs-up
+│   │   ├── ContactBand.astro     # Contact band of the top page: heading, lead, a line about a DM on Twitter (self-proclaimed X), a button to the contact page and the thumbs-up
 │   │   ├── ContactForm.astro     # Contact form of the contact page in a window of plan A, sent with Turnstile
 │   │   ├── face-icon.ts          # Picks the brand kit files of a face mark or avatar from its size and tone, unit-tested
 │   │   ├── FaceIcon.astro        # Face mark or avatar from the brand kit SVGs, switched with the theme; tone="inverse" for the mark on --text faces
@@ -124,7 +124,7 @@ bun create astro@latest -- --template basics
 │   │   ├── 404.astro     # /404.html: the 404 page, served for every path with no file
 │   │   ├── [lang]/
 │   │   │   ├── contact/
-│   │   │   │   └── index.astro   # /ja/contact/ and /en/contact/: the contact form
+│   │   │   │   └── index.astro   # /ja/contact/ and /en/contact/: the contact form and a line about a DM on Twitter (self-proclaimed X)
 │   │   │   └── index.astro   # /ja/ and /en/
 │   │   ├── ansi/
 │   │   │   ├── color.txt.ts  # /ansi/color.txt: the avatar main-visual as 24-bit color text art
@@ -191,7 +191,7 @@ Whether a post is on Nostr is decided at build time from `src/content/published.
 
 Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are highlighted at build time by `src/markdown/highlight.ts`, which gives tokens role classes such as `hl-keyword` instead of inline styles; `markdown.syntaxHighlight` is off so Astro's own Shiki does not run. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player. An accordion is written as raw HTML (`<details>` and `<summary>`), and how to write one is in `docs/markdown.md`. An `<aside class="note">` or `<aside class="warning">` written as raw HTML in an article is styled as a message box (`docs/markdown.md` shows how to write one). The checkbox of a task list item gets an `aria-label` with the text of the item, and every table gets `tabindex="0"` so that a table wider than the article can be scrolled with the keyboard (`src/markdown/a11y.ts`).
 
-`astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt`, the Latest section of the home page, the account window of the hero and the links column of the site footer use as well.
+`astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the five latest posts, the profile links and how to get in touch (the contact form and a DM on Twitter (self-proclaimed X)), with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt`, the Latest section of the home page, the account window of the hero, the links column of the site footer, the contact band of the top page and the contact page use as well.
 
 Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema, the RSS items and the Markdown plugins; `src/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`, and the plugins in `src/markdown/` with Sätteri's `markdownToHtml()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet). What still moves under `prefers-reduced-motion: reduce` is measured the same way: `node scripts/audit/reduced-motion.mjs --root . --port 4612` opens every page in `dist/client` and `/404` at 1440px and 390px in both themes, counts the running animations and transitions after the page opens, a Tab, hovers, a scroll and clicks, and exits with 1 when any is left (build with `LINA_DEV_PAGES=1` to include the sample posts and the dev pages); `--motion no-preference` only lists them.

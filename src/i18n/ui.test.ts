@@ -28,6 +28,27 @@ describe("translate", () => {
     );
   });
 
+  it("お問い合わせの DM の案内は、リンクの前後の文言が日本語と英語で決めた文になる", () => {
+    expect(translate("ja", "contact.dm.before")).toBe("フォームのほか、");
+    expect(translate("ja", "contact.dm.after")).toBe(
+      " の DM でも受け付けています。",
+    );
+    expect(translate("en", "contact.dm.before")).toBe(
+      "You can also send me a DM on ",
+    );
+    expect(translate("en", "contact.dm.after")).toBe(".");
+  });
+
+  it("お問い合わせの「ソッコー確認するね」は日本語にも英語にも無い", () => {
+    for (const locale of LOCALES) {
+      const entries = Object.entries(ui[locale]);
+      expect(entries.map(([key]) => key)).not.toContain("contact.note");
+      for (const [, text] of entries) {
+        expect(text).not.toMatch(/ソッコー|right away/);
+      }
+    }
+  });
+
   it("記事が 0 件のときの文言は、テキスト版の記事が 0 件のときの行と同じになる", () => {
     for (const locale of LOCALES) {
       const lines = buildTextSite(

@@ -1,13 +1,19 @@
 ---
 /**
- * The contact band of the top page, `#contact`: the prompt `$ mail lina`, the heading, the lead
- * and a button to the contact page (`contactPagePath`) on `--keyword` with diagonal stripes, and
- * the thumbs-up of Lina (`THUMBS_UP_BAND`) at the right edge. The values are copied from the
- * `#contact` section of `design/Main.dc.html` and `design/AMobile.dc.html`.
+ * The contact band of the top page, `#contact`: the prompt `$ mail lina`, the heading, the lead,
+ * a line about a DM on Twitter (self-proclaimed X), and a button to the contact page
+ * (`contactPagePath`) on `--keyword` with diagonal stripes, and the thumbs-up of Lina
+ * (`THUMBS_UP_BAND`) at the right edge. The values are copied from the `#contact` section of
+ * `design/Main.dc.html` and `design/AMobile.dc.html`, which have no DM line.
  *
  * The text is `--ink` on `--keyword` in both themes, and the band sets `--focus-ring` to `--ink`
  * because the ring of the dark theme, `--keyword`, would vanish on it. The stripes are drawn by
  * `::before` of `.flow`, which starts 52px (44px below 900px) left of the band.
+ *
+ * The DM line is a second `p` in `.text`. Its link goes to the Twitter (self-proclaimed X)
+ * profile in a new tab, and the name breaks only before its "(". The link keeps `--ink` and is
+ * underlined in every state (1px, and 2px while hovered or focused), because the link colors of
+ * `global.css` would make the text or the underline `--keyword`, the color of the band.
  *
  * The stripes move right by 51.78px (43.14px below 900px) every 4s and start again, which is two
  * repeats of the stripes along the band, so the restart does not show. The arrow of the button
@@ -21,6 +27,8 @@ import { Picture } from "astro:assets";
 import { avatarAlt, THUMBS_UP_BAND } from "../avatar-images";
 import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
+import { profileLink } from "../profile-links";
+import { labelSegments } from "./label-break";
 import { contactPagePath } from "./site-nav";
 
 interface Props {
@@ -30,6 +38,8 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
+const twitter = profileLink("twitter");
+const twitterLabel = labelSegments(twitter.label[lang]);
 ---
 
 <section id="contact" class="band">
@@ -40,6 +50,19 @@ const t = (key: Parameters<typeof translate>[1]) => translate(lang, key);
         <span class="prompt">$ mail lina</span>
         <h2>{t("contact.title")}</h2>
         <p>{t("contact.lead")}</p>
+        <p>
+          {t("contact.dm.before")}<a
+            href={twitter.url}
+            target="_blank"
+            rel="noopener"
+            >{twitterLabel.map((segment, index) => (
+  <>
+    {index > 0 && <wbr />}
+    <span class="segment">{segment}</span>
+  </>
+))}</a
+          >{t("contact.dm.after")}
+        </p>
       </div>
       <a class="btn btn-ink open" href={contactPagePath(lang)}
         >{t("contact.open")}{" "}<span class="nudge" aria-hidden="true"
@@ -140,6 +163,22 @@ p {
   font-size: 13px;
   line-height: 1.8;
   font-weight: 500;
+}
+
+p a {
+  color: var(--ink);
+  text-decoration-line: underline;
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+p a:is(:hover, :focus-visible) {
+  text-decoration-thickness: 2px;
+}
+
+.segment {
+  white-space: nowrap;
 }
 
 .open {

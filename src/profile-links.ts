@@ -2,8 +2,10 @@
  * Links to the profiles on other services, shared by `/llms.txt` (`src/llms.ts`), the text
  * version of the site (`src/text-site.ts`), the large window and the video list of the Latest
  * section (`src/components/LatestVideoFeature.astro`, `src/components/LatestVideoList.astro`),
- * the account window of the hero (`src/components/hero-account.ts`) and the links column of the
- * site footer (`src/components/footer-links.ts`).
+ * the account window of the hero (`src/components/hero-account.ts`), the links column of the
+ * site footer (`src/components/footer-links.ts`) and the line about a DM on Twitter
+ * (self-proclaimed X) in the contact page and the contact band
+ * (`src/pages/[lang]/contact/index.astro`, `src/components/ContactBand.astro`).
  */
 import type { Locale } from "./i18n/locales";
 
@@ -73,3 +75,15 @@ export const PROFILE_LINKS: readonly ProfileLink[] = [
     note: { ja: "技術記事", en: "Tech articles" },
   },
 ];
+
+/**
+ * Returns the profile of `PROFILE_LINKS` whose `id` is `id`. It throws when there is none, which
+ * the type of `id` and the unit test of every `id` rule out.
+ */
+export function profileLink(id: ProfileLink["id"]): ProfileLink {
+  const link = PROFILE_LINKS.find((profile) => profile.id === id);
+  if (link === undefined) {
+    throw new Error(`PROFILE_LINKS has no profile with the id "${id}"`);
+  }
+  return link;
+}
