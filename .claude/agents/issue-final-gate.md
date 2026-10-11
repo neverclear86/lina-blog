@@ -36,7 +36,7 @@ disallowedTools: Agent, Skill, Artifact, SendFeedback, EnterWorktree, ListAgents
 - 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
 - 開いている `要決定` ラベルの issue で決まっていない値（文言、作品の掲載内容）は、issue の指示どおり仮のままにし、先取りして決めない。決まった値は、要決定の issue のコメント「## 決定」と、各 issue のコメント「## 事前の決定」にある
 - X（旧 Twitter）の表記は、アイコン以外（本文、`aria-label`、テキスト版、`llms.txt` を含む）ではすべて日本語で「Twitter(自称X)」、英語で「Twitter (self-proclaimed X)」にする。X と書くのはアイコンの図柄だけ
-- 部品を足したら、`src/dev/components.astro`（dev サーバーの `/dev/components/`）の見本にも足す
+- 部品を足したら、`src/dev/sections/` に区画のファイルを足し、`src/dev/components.astro`（dev サーバーの `/dev/components/`）に並べる
 <!-- /ADAPT:design -->
 - 依頼文に「条件への対応コメント」があるとき（レビューが APPROVE に条件を付け、再レビューをせずに直させた場合）は、その対応の差分が条件の範囲に収まっているか。対応コメントの `kind=fix` のマーカーの head について `gh api repos/neverclear86/lina-blog/commits/<その head> --jq '.files[] | .filename, .patch'` でそのコミットの変更だけを見て、条件に無い変更が入っていれば must にする。対応が複数ラウンドあるときは各 `kind=fix` の head について同じことをする
   - 対応が PR 本文の修正だけでコミットが無いとき（対応コメントの head がレビューの head と同じ）は、対応コメントが述べる本文の修正が条件の範囲に収まるかを PR 本文で見る

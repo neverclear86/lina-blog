@@ -27,7 +27,7 @@ disallowedTools: Agent, Skill, Artifact, SendFeedback, EnterWorktree, ListAgents
 - Astro 7 は、エージェントの中で実行した `astro dev` / `astro preview` を自動で背景に回す（pid とロックは作業ツリーに置かれ、呼び出しはすぐ返る）。立てるときは `env -C <作業ツリー> bunx astro preview --background --host 127.0.0.1 --port <ポート>`（dev なら `astro dev --background --port <ポート>`）、止めるときは同じ作業ツリーで `env -C <作業ツリー> bunx astro preview stop`（`astro dev stop`）を実行する。状態は作業ツリーごとなので、ユーザーの作業ツリーの dev サーバーには影響しない。`--port` を省くと既定の 4321（ユーザーの dev サーバー）を取り合う。`pkill -f` は使わない
 - wrangler / workerd を立てるとき（#17 の Cloudflare アダプタ以降）も、既定の 8788 を使わず割り当てのポートを明示する
 - 画面の確認と撮影は headless で行う: `node <作業ツリー>/.claude/scripts/screenshot.mjs --root <作業ツリー> --port <ポート> --out <出力先> <パス>...`（Playwright の Chromium。`dist/` が要るので先に `bun run build`。preview の起動と停止はスクリプトが行う。ページ全体を、動きを止めた状態（`prefers-reduced-motion: reduce`）で撮り、撮影ごとに応答の状態と横のはみ出し（`overflowX`、はみ出した要素）を JSON で 1 行出す）。user スコープの Playwright MCP（`mcp__playwright__*`）は headed でユーザーの画面にブラウザーの窓を開き、作業ツリーに `.playwright-mcp/` を残すので使わない
-- 部品の見本は dev サーバーの `/dev/components/`（`src/dev/components.astro`）で見る。`dist/` から撮るときは `LINA_DEV_PAGES=1 bun run build` で build する（README の「CSS」）
+- 部品の見本は dev サーバーの `/dev/components/`（区画のファイルは `src/dev/sections/`、並べるのは `src/dev/components.astro`）で見る。`dist/` から撮るときは `LINA_DEV_PAGES=1 bun run build` で build する（README の「CSS」）
 - 公開用 Worker（`workers/publish/`）は `bun run dev:publish`（`wrangler dev -c workers/publish/wrangler.jsonc`）で立てる。シークレットは `workers/publish/.dev.vars.example` を `workers/publish/.dev.vars` に写して置く。`wrangler dev` は背景に回らないので、`timeout` と割り当てのポートの `--port` を付ける
 - 関係する作業の前に、AGENTS.md の「ドキュメント」に挙げた Astro のガイド（ルーティング、コンポーネント、フレームワークのコンポーネント、コンテンツ、スタイル、多言語対応）を読む。公開用 Worker と記事の同期スクリプトの作業の前に `docs/publish-api.md`（公開用 Worker の API の取り決め）を読む
 <!-- /ADAPT:env -->
@@ -100,7 +100,7 @@ disallowedTools: Agent, Skill, Artifact, SendFeedback, EnterWorktree, ListAgents
 - 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
 - 開いている `要決定` ラベルの issue で決まっていない値（文言、作品の掲載内容）は、issue の指示どおり仮のままにし、先取りして決めない。決まった値は、要決定の issue のコメント「## 決定」と、各 issue のコメント「## 事前の決定」にある
 - X（旧 Twitter）の表記は、アイコン以外（本文、`aria-label`、テキスト版、`llms.txt` を含む）ではすべて日本語で「Twitter(自称X)」、英語で「Twitter (self-proclaimed X)」にする。X と書くのはアイコンの図柄だけ
-- 部品を足したら、`src/dev/components.astro`（dev サーバーの `/dev/components/`）の見本にも足す
+- 部品を足したら、`src/dev/sections/` に区画のファイルを足し、`src/dev/components.astro`（dev サーバーの `/dev/components/`）に並べる
 - 試験を不変条件に絞る issue（#458 の子 issue など）のプランは、値だけの変異（v-）と不変条件の変異（i-）をラベル付きで再生できる変異スクリプトを付録の節に置く。不変条件を成り立たせるための最小のソース修正を許すかを「決めたこと」（事前の決定があればそれ）に書き、許さないときの逃がし先（別 issue）も書く
 <!-- /ADAPT:design -->
 - 既存のコードの流儀（モジュールの分け方、エラーの表し方、テストの書き方）に合わせる

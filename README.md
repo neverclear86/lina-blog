@@ -106,9 +106,12 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   ├── content/
 │   │   └── blog-dev/     # Posts for checking how pages look, and published.json, their published record; loaded by astro dev (or with LINA_DEV_PAGES=1)
 │   ├── dev/
-│   │   ├── components.astro  # /dev/components/: samples of the plan A styles, components and avatar images
+│   │   ├── components.astro  # /dev/components/: lists the sections of samples of the plan A styles, components and avatar images
 │   │   ├── dev-pages.ts      # Adds the dev pages in astro dev (or with LINA_DEV_PAGES=1), unit-tested
-│   │   └── markdown.astro    # /dev/markdown/: sample article with every supported Markdown syntax
+│   │   ├── layout.css        # The classes that more than one section of /dev/components/ uses (.dev-section, .dev-row, .dev-stack, .dev-samples)
+│   │   ├── markdown.astro    # /dev/markdown/: sample article with every supported Markdown syntax
+│   │   ├── samples.ts        # The data of the samples of /dev/components/: posts, videos, breadcrumbs and table of contents items
+│   │   └── sections/         # A <name>Samples.astro for each section of /dev/components/, with the classes only that section uses
 │   ├── i18n/
 │   │   ├── locales.ts    # Locales (ja, en) and the default, also read by astro.config.mjs
 │   │   ├── negotiate.ts  # Picks the locale for / from Accept-Language, unit-tested
@@ -250,12 +253,12 @@ A container query (`@container` in `HeroAccount.astro` and `ContactForm.astro`) 
 | `1200px` | The three views of the avatar (`AvatarThreeView.astro`) stand in a row instead of being switched as tabs |
 | `1280px` | The windows of the top page (`LatestSection.astro`) are in two columns, and the title and the end of an article lose the rules for the narrower widths |
 
-`src/dev/components.astro` shows the plan A styles, the components and the avatar images on one page, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
+`src/dev/components.astro` shows the plan A styles, the components and the avatar images on one page, with a file for each section in `src/dev/sections/` and the data of the samples in `src/dev/samples.ts`, and `src/dev/markdown.astro` shows `src/markdown/sample.md` the way articles are rendered.
 `astro dev` serves them at `/dev/components/` and `/dev/markdown/`, and `astro build` leaves them out of `dist/` unless `LINA_DEV_PAGES=1` is set.
 Add `?theme=dark` or `?theme=light` to the URL of `/dev/components/` to see that theme whatever is saved.
 To capture them with `.claude/scripts/screenshot.mjs`, which serves `dist/`, build with `LINA_DEV_PAGES=1 bun run build`.
 That build also loads the posts in `src/content/blog-dev/` (see “Project Structure”), so pages that list posts, such as `/blog/`, and the page of a post, such as `/blog/dev-preview-sample/` with an older and a newer post beside it, can be captured with posts in them.
-A new component adds its samples to `/dev/components/`, and a new Markdown syntax adds its examples to `src/markdown/sample.md`.
+A new component adds a section file to `src/dev/sections/` and lists it in `src/dev/components.astro`, and a new Markdown syntax adds its examples to `src/markdown/sample.md`.
 
 ## 🔤 Fonts
 

@@ -1,0 +1,25 @@
+<section id="a-win-title" class="dev-section">
+  <h2>A案: 窓のタイトル行とアコーディオンの summary</h2>
+  <div class="dev-samples">
+    <div class="win">
+      <p class="win-title">p.win-title</p>
+      <p class="a-win-body">div.win の中のタイトル行</p>
+    </div>
+    <details class="win">
+      <summary>details.win &gt; summary</summary>
+      <p class="a-win-body">閉じているときは + が出る。</p>
+    </details>
+    <details class="win" open>
+      <summary>details.win[open] &gt; summary</summary>
+      <p class="a-win-body">開いているときは − が出る。</p>
+    </details>
+  </div>
+</section>
+
+<style>
+.a-win-body {
+  margin: 0;
+  padding: 16px;
+  color: var(--text);
+}
+</style>

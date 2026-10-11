@@ -12,7 +12,7 @@ astro dev --background
 
 背景のサーバーは `astro dev stop`、`astro dev status`、`astro dev logs` で扱う。
 
-部品の見本は dev サーバーの `/dev/components/`（`src/dev/components.astro`）で見る。部品を足したら見本もここに足す。`dist/` から撮るときは `LINA_DEV_PAGES=1 bun run build` で build する（README の「CSS」）。この build には表示確認用の記事（`src/content/blog-dev/`）も出るので、記事のある状態もこの `dist/` で撮る。
+部品の見本は dev サーバーの `/dev/components/`（区画のファイルは `src/dev/sections/`、並べるのは `src/dev/components.astro`）で見る。部品を足したら区画のファイルを足し、`components.astro` に並べる。`dist/` から撮るときは `LINA_DEV_PAGES=1 bun run build` で build する（README の「CSS」）。この build には表示確認用の記事（`src/content/blog-dev/`）も出るので、記事のある状態もこの `dist/` で撮る。
 
 画面のアクセシビリティの自動チェックは、`LINA_DEV_PAGES=1 bun run build` の後に `bun run a11y` で行う（axe と、axe が判定できない文字のコントラストの画素検査。README の「Commands」）。CI には載せていない。
 

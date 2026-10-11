@@ -19,7 +19,7 @@
  * Hover and keyboard focus look the same: `.btn-acc` fills with `--keyword-hover`, the text of
  * `.btn-ink` becomes `--keyword`, and the border of `.btn-ghost`, `.sq` and `.iconbtn` becomes
  * `--keyword`. `.is-hover` and `.is-focus` show the two states without the pointer or the
- * keyboard, for the samples in `src/dev/components.astro`. The outline of the focus comes from
+ * keyboard, for the samples in `src/dev/sections/`. The outline of the focus comes from
  * `global.css`.
  *
  * `.btn` is written for `<a>`. It sets no `color`, so `.btn-ghost` takes the color of the link

@@ -1,0 +1,33 @@
+---
+import Breadcrumb from "../../components/Breadcrumb.astro";
+import { contactCrumbs, longCrumbs, postCrumbs } from "../samples";
+---
+
+<section id="a-breadcrumb" class="dev-section">
+  <h2>A案: パンくず</h2>
+  <div class="breadcrumb-samples">
+    <Breadcrumb lang="ja" items={postCrumbs} />
+    <Breadcrumb lang="en" items={contactCrumbs} />
+    <div class="breadcrumb-narrow">
+      <Breadcrumb lang="ja" items={longCrumbs} />
+    </div>
+  </div>
+</section>
+
+<style>
+/* The samples of the breadcrumb, one under another. */
+.breadcrumb-samples {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* The width of a phone, to see the breadcrumb wrap. */
+.breadcrumb-narrow {
+  box-sizing: border-box;
+  width: 320px;
+  max-width: 100%;
+  padding: 12px 16px;
+  border: 1px dashed var(--line2);
+}
+</style>

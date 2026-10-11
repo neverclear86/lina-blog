@@ -1,0 +1,31 @@
+---
+import SectionTitle from "../../components/SectionTitle.astro";
+---
+
+<section id="a-headings" class="dev-section">
+  <h2>A案: セクションの見出し</h2>
+  <div class="dev-stack">
+    <SectionTitle
+      no="02"
+      label="latest"
+      path="~/latest"
+      title="さいきんの配信"
+    />
+    <SectionTitle
+      no="01"
+      label="about"
+      path="~/about"
+      title={"はじめまして、\n創好リナです。"}
+    />
+    <SectionTitle no="03" label="blog" path="~/blog" title="さいきんの記事" />
+    <div lang="en">
+      <SectionTitle
+        no="04"
+        label="a-section-with-a-very-long-english-name"
+        path="~/long"
+        title="Supercalifragilisticexpialidocious-heading-without-any-space"
+        as="h3"
+      />
+    </div>
+  </div>
+</section>

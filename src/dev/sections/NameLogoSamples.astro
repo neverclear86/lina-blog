@@ -1,0 +1,67 @@
+---
+import NameLogo from "../../components/NameLogo.astro";
+---
+
+<section id="name-logo" class="dev-section">
+  <h2>ネームロゴ</h2>
+  <div class="dev-row">
+    <figure class="logo-sample logo-82">
+      <NameLogo variant="compact" label="/lina $_" />
+      <figcaption>compact 82px（スマホのヘッダー）</figcaption>
+    </figure>
+    <figure class="logo-sample logo-92">
+      <NameLogo variant="compact" label="/lina $_" />
+      <figcaption>compact 92px（PC のヘッダー）</figcaption>
+    </figure>
+  </div>
+  <div class="dev-row">
+    <figure class="logo-sample logo-296">
+      <NameLogo variant="full" label="/tsukusu/lina $_" />
+      <figcaption>full 296px（スラッシュ 32px）</figcaption>
+    </figure>
+    <figure class="logo-sample logo-420">
+      <NameLogo variant="full" label="/tsukusu/lina $_" />
+      <figcaption>full 420px（PC のフッター）</figcaption>
+    </figure>
+  </div>
+  <div class="dev-row">
+    <figure class="logo-sample logo-576 blink-on">
+      <NameLogo
+        variant="full-sub"
+        label="/tsukusu/lina $_ # 創好リナ ── VIRTUAL IKIRI PROGRAMMER"
+      />
+      <figcaption>full-sub 576px、カーソルは親の .blink-on で点滅</figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+.logo-sample {
+  margin: 0;
+}
+
+.logo-sample figcaption {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.logo-82 {
+  width: 82px;
+}
+
+.logo-92 {
+  width: 92px;
+}
+
+.logo-296 {
+  width: min(100%, 296px);
+}
+
+.logo-420 {
+  width: min(100%, 420px);
+}
+
+.logo-576 {
+  width: min(100%, 576px);
+}
+</style>

@@ -1,0 +1,45 @@
+<section id="a-labels" class="dev-section">
+  <h2>A案: ラベル・タグ・カテゴリのチップ</h2>
+  <div class="dev-row">
+    <span class="label">label</span>
+    <span class="label">[YYYY.MM.DD] · youtube</span>
+    <span class="label">最新動画のサムネイル</span>
+  </div>
+  <div class="dev-row">
+    <span class="tag">制作記</span>
+    <span class="tag">astro</span>
+    <span class="tag">cloudflare workers</span>
+    <span class="chip-acc">制作記</span>
+    <span class="chip-acc">NEW</span>
+  </div>
+  <div class="a-panel">
+    <span class="label">label</span>
+    <span class="tag">制作記</span>
+    <span class="chip-acc">制作記</span>
+  </div>
+  <div class="a-narrow">
+    <span class="tag">とても長いタグの名前がここに入る</span>
+    <span class="chip-acc">とても長いカテゴリの名前がここに入る</span>
+  </div>
+</section>
+
+<style>
+.a-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.a-narrow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 120px;
+  margin-top: 16px;
+}
+</style>

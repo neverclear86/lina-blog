@@ -1,0 +1,67 @@
+---
+import LatestVideoFeature from "../../components/LatestVideoFeature.astro";
+import LatestVideoList from "../../components/LatestVideoList.astro";
+import { sampleVideos } from "../samples";
+---
+
+<section id="latest-videos" class="dev-section">
+  <h2>最新の動画</h2>
+  <div class="dev-stack">
+    <div class="latest-video-sample">
+      <LatestVideoFeature lang="ja" video={sampleVideos[0]} />
+    </div>
+    <div class="latest-video-sample">
+      <LatestVideoFeature lang="ja" video={sampleVideos[0]} class="is-hover" />
+    </div>
+    <div class="latest-video-sample">
+      <LatestVideoFeature lang="ja" video={sampleVideos[0]} class="is-focus" />
+    </div>
+    <div class="latest-video-sample">
+      <LatestVideoFeature lang="ja" video={undefined} />
+    </div>
+    <div class="latest-video-narrow" lang="en">
+      <LatestVideoFeature lang="en" video={undefined} />
+    </div>
+    <div class="latest-video-narrow">
+      <LatestVideoFeature lang="ja" video={sampleVideos[2]} />
+    </div>
+    <div class="latest-list-sample">
+      <LatestVideoList lang="ja" videos={sampleVideos} />
+    </div>
+    <div class="latest-list-narrow" lang="en">
+      <LatestVideoList lang="en" videos={sampleVideos.slice(0, 1)} />
+    </div>
+    <div class="latest-list-sample">
+      <LatestVideoList lang="ja" videos={[]} />
+    </div>
+  </div>
+</section>
+
+<style>
+/*
+ * Widths of the large window (870px) and the list (536px) of #latest at 1440px, and of the list at
+ * 1024px (320px).
+ */
+.latest-video-sample {
+  max-width: 870px;
+}
+
+.latest-video-narrow {
+  max-width: 358px;
+}
+
+/* About the width of the right column of the Latest section at 1280px in the design. */
+.latest-list-sample {
+  max-width: 380px;
+}
+
+/* The column is hidden below 768px; the samples stay visible at any width. */
+.latest-list-sample :global(.latest-video-list),
+.latest-list-narrow :global(.latest-video-list) {
+  display: flex;
+}
+
+.latest-list-narrow {
+  max-width: 320px;
+}
+</style>
