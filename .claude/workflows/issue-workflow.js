@@ -472,10 +472,17 @@ ${portsNote(e)}- コミットのトレーラー: 作業ツリーの \`git log\` 
 ${ciNote(pr)}${SAFETY}
 返答（構造化出力）: status は fixed、対応コメントの URL、head のコミット、ciPassed。`,
   // 経緯（tier、ラウンド数、条件）は「## まとめ」の材料でもあるので、最終確認の依頼文でそのまま渡す。
-  // ラウンド数はこの実行で数えた分だけなので、planUrl で引き継いだ issue は前の実行のプランレビューが含まれない旨を添える
+  // ラウンド数はこの実行で数えた分だけなので、planUrl で引き継いだ issue は前の実行のプランレビューが含まれない旨を添える。
+  // 条件への対応の見方は対応の形で分ける（最終確認の定義の「条件への対応コメント」の項と同じ）。対応が PR 本文の修正だけなら
+  // head がレビューと同じ（applyPrConditions が reviewApprovedHead を取ってから head を進めるので、再確認でもこの比較で足りる）
+  // で、commits/<head> の patch は対応の差分にならないので PR 本文で見る指示にする。コミットがあるときは patch で見るが、
+  // 対応が rebase を含むと patch が PR 全体を示すので、そのときはレビューの head と対応後の head のファイルの内容を比べる指示を添える
   gateCourse: (state) => `- この実行の経緯: tier ${state.tier}、プランのラウンド数 ${state.planRounds}${state.planInherited ? '（承認済みのプランを引き継いだので、前の実行のプランレビューは含まない）' : ''}、PR レビューのラウンド数 ${state.prRounds}、APPROVE に付いた条件 ${state.prConditionCount} 件、実装起因の must ${state.implMusts} 件
 - PR レビューが APPROVE を出した head: ${state.reviewApprovedHead}
-${state.conditionsUrl ? `- 条件への対応コメント: ${state.conditionsUrl}（対応後の head ${state.head}）。対応コメントのマーカーの head のコミットを \`gh api repos/${REPO}/commits/<その head> --jq '.files[] | .filename, .patch'\` で見て、対応の差分が条件 ${state.prConditionCount} 件の範囲に収まっているかも見る。範囲を超える変更があれば must にする\n` : ''}`,
+${state.conditionsUrl ? state.head === state.reviewApprovedHead
+    ? `- 条件への対応コメント: ${state.conditionsUrl}（対応は PR 本文の修正だけでコミットは無く、head はレビューと同じ ${state.head}）。対応コメントが述べる本文の修正が条件 ${state.prConditionCount} 件の範囲に収まっているかを PR 本文で見る（\`commits/<head>\` の patch は対応の差分ではない）。範囲を超える変更があれば must にする\n`
+    : `- 条件への対応コメント: ${state.conditionsUrl}（対応後の head ${state.head}）。対応コメントのマーカーの head のコミットを \`gh api repos/${REPO}/commits/<その head> --jq '.files[] | .filename, .patch'\` で見て、対応の差分が条件 ${state.prConditionCount} 件の範囲に収まっているかも見る。対応が rebase を含み、その patch が PR 全体を示すときは、レビューの head ${state.reviewApprovedHead} と対応後の head のそれぞれから PR のファイルの内容を取って比べる（定義の「条件への対応コメント」の項）。範囲を超える変更があれば must にする\n`
+  : ''}`,
   gate1: (e, state, issue) => `PR #${state.pr}（issue #${e.n}、head ${state.head}）の最終確認をしてほしい。
 - 最終確認のラウンド: ${state.gateRounds}（コメントのマーカーの round に使う）
 - ${state.postUrl ? `承認済みのプラン: ${state.postUrl}` : `承認済みのプランは無い（tier none）。照合の相手は issue #${e.n} の受け入れ条件と、PR 本文の「## 設計メモ」である`}
@@ -1050,6 +1057,8 @@ function fake(label, opts, prompt) {
     // rebase の後の head は回ごとに変える（再確認の後の rebase は -rr。マージの依頼文の range の起点と終点が区別できる）
     if (label.startsWith('Rebase')) return { status: 'rebased', head: `head-${n}-rebased${label.includes('re-review') ? '-rr' : ''}${Number((label.match(/(\d+)\)$/) || [])[1]) > 1 ? `-${(label.match(/(\d+)\)$/) || [])[1]}` : ''}`, ciPassed: true }
     if (sc === 'ci-fail') return { status: 'pr', pr: Number(n) + 1000, prUrl: `https://example/pr/${Number(n) + 1000}`, head: `head-${n}-1`, ciPassed: false, reason: 'test が fail' }
+    // pr-conditions-nocommit: 条件への対応が PR 本文の修正だけで、head が実装の head のまま（最終確認の依頼文が PR 本文で見る指示になる）
+    if (label.startsWith('Fix conditions') && sc === 'pr-conditions-nocommit') return { status: 'fixed', commentUrl: `https://example/pr/${n}#fix-${label}`, head: `head-${n}-1`, ciPassed: true }
     if (label.startsWith('Fix')) return sc === 'fix-blocked' ? { status: 'blocked', reason: '指摘がプランと矛盾する', head: `head-${n}-wip`, ciPassed: false } : { status: 'fixed', commentUrl: `https://example/pr/${n}#fix-${label}`, head: `head-${n}-fixed-${r}`, ciPassed: true }
     if (sc === 'null') return null
     if (sc === 'status-only') return { status: 'pr' }
@@ -1064,7 +1073,7 @@ function fake(label, opts, prompt) {
     // 最終確認の段階が無い実行では、依頼文が「## まとめ」を頼んだ APPROVE だけが学びを返す
     const lessons = prompt.includes('「## まとめ」を別のコメントとして 1 本投稿し') ? ['PR レビューのまとめの学び'] : undefined
     // pr-conditions: r1 で APPROVE だが条件が 2 件付く（再レビュー無しで直して最終確認へ）
-    if (['pr-conditions', 'not-ready-fix'].includes(sc) && !inGate && r === 1) return { verdict: 'APPROVE', must: 0, should: 2, nit: 0, commentUrl: `https://example/pr#approve-r${r}`, conditions: ['`src/x` の Doc を「…」にする', 'README の表に 1 行足す'], lessons }
+    if (['pr-conditions', 'pr-conditions-nocommit', 'not-ready-fix'].includes(sc) && !inGate && r === 1) return { verdict: 'APPROVE', must: 0, should: 2, nit: 0, commentUrl: `https://example/pr#approve-r${r}`, conditions: ['`src/x` の Doc を「…」にする', 'README の表に 1 行足す'], lessons }
     if (inGate || r >= approveAt) return { verdict: 'APPROVE', must: 0, should: 0, nit: 0, commentUrl: `https://example/pr#approve-r${r}`, lessons }
     return { verdict: 'REQUEST CHANGES', must: 1, should: 0, nit: 0, commentUrl: `https://example/pr#review-r${r}`, designMust: ['design-must', 'tier-none-design-must'].includes(sc) }
   }
