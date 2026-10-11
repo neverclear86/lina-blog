@@ -122,11 +122,49 @@ describe("SiteHeader の全幅", () => {
     expect(markup).toContain('stroke-linecap="square"');
   });
 
-  it("テーマのボタンは .iconbtn の button で作る", () => {
+  it("テーマのボタンは variant を持たず、.iconbtn の button 1 つで作る", () => {
     const toggle = source("components/ThemeToggle.astro");
     expect(toggle).toContain(
       '<button class="theme-toggle iconbtn" type="button">',
     );
+    expect(toggle.match(/<button/g)).toHaveLength(1);
+    for (const gone of [
+      "variant",
+      "labeled",
+      "now-light",
+      "now-dark",
+      "theme.nameSeparator",
+    ]) {
+      expect(toggle).not.toContain(gone);
+    }
+  });
+
+  it("テーマのボタンは、ダークで月、ライトで太陽を出し、名前は切り替え先を言う", () => {
+    const toggle = source("components/ThemeToggle.astro");
+    const toggleStyle = toggle.slice(toggle.indexOf("<style>"));
+    const dark = ':global(:root[data-theme="dark"])';
+    expect(body(toggleStyle, ".moon, .to-light")).toBe("display: none;");
+    expect(body(toggleStyle, `${dark} .moon`)).toBe("display: block;");
+    expect(body(toggleStyle, `${dark} .sun, ${dark} .to-dark`)).toBe(
+      "display: none;",
+    );
+    expect(body(toggleStyle, `${dark} .to-light`)).toBe("display: inline;");
+    expect(rulesOf(toggleStyle).some((r) => r.selector === ".sun")).toBe(false);
+    expect(toggle).toContain(
+      '<span class="to-dark">{translate(lang, "theme.toDark")}</span>',
+    );
+    expect(toggle).toContain(
+      '<span class="to-light">{translate(lang, "theme.toLight")}</span>',
+    );
+  });
+
+  it("ヘッダーは ThemeToggle を言語の切り替えとお問い合わせの間に 1 つだけ置く", () => {
+    expect(markup.match(/<ThemeToggle/g)).toHaveLength(1);
+    const toggle = markup.indexOf("<ThemeToggle");
+    expect(toggle).toBeGreaterThan(markup.indexOf('class="languages"'));
+    expect(toggle).toBeLessThan(markup.indexOf('class="btn btn-acc contact"'));
+    expect(header).not.toContain("theme-wide");
+    expect(header).not.toContain("theme-narrow");
   });
 
   it("ヘッダーの下 61px から伸びる --bg の不透明なシートで、高さは残りまで", () => {
