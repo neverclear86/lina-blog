@@ -21,9 +21,10 @@
  * The message boxes of an article, `aside.note` and `aside.warning` under `.article-body`, take the
  * panel and the ring of `.win` and `.win::before` through the selector
  * `:where(.article-body aside:is(.note, .warning))`, so an article never writes `win`. They are
- * not links, so their ring does not turn. The `:where()` gives that selector no specificity, so
- * the rules in `src/markdown/article.css` that change them win whatever the order of the
- * stylesheets.
+ * not links, so their ring does not turn, but the `transition` of `.win::before` that they share
+ * stops under `prefers-reduced-motion: reduce` too. The `:where()` gives that selector no
+ * specificity, so the rules in `src/markdown/article.css` that change them win whatever the order
+ * of the stylesheets.
  *
  * `.ticks` draws four `--muted` L-shaped ticks, 16px long and 1.5px thick, at the corners of its
  * box with `background`, so it replaces the `background-color` of the element.
@@ -257,6 +258,7 @@ a.win:focus-visible::before,
 
   .win::before,
   .article-body details::before,
+  :where(.article-body aside:is(.note, .warning))::before,
   a.win:hover::before,
   a.win:focus-visible::before,
   .article-body details:has(> summary:hover)::before,
