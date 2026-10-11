@@ -13,8 +13,8 @@
  *
  * The three figures stand in a row from 1200px. Below 1200px the back is moved to the left so
  * that its name stays on the screen, and the figures are stacked until the script at the end of
- * the file has run. The images are 380px high below 768px (less on a narrower screen), 360px up
- * to 900px, 440px up to 1199px, and from 1200px as high as
+ * the file has run. The images are 380px high below 768px (less on a narrower screen), 360px
+ * below 900px, 440px up to 1199px, and from 1200px as high as
  * `min(520px, calc((100vw - 698px) * 0.8))`. Below 768px the stage extends 16px past the parent
  * on both sides, which is the edge of the screen when the parent has 16px of padding. The margin
  * above the component is its own: 16px below 768px, 52px from 768px.
@@ -432,7 +432,7 @@ figcaption {
   }
 }
 
-@media (min-width: 901px) {
+@media (min-width: 900px) {
   .fig.back {
     transform: translateX(-64px);
   }
