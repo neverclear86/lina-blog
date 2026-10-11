@@ -29,7 +29,7 @@
  * The date, the reading time and the author are a row of text below 768px, without the author,
  * and a table on the `--shade` background from 768px. A post that is on Nostr has one more item
  * after the author, `mirror`, the link `nostr ↗` to its article on njump (`nostrArticleUrl`),
- * which is in the row below 768px too. The page has the compact footer.
+ * which opens in a new tab and is in the row below 768px too. The page has the compact footer.
  *
  * After the body, in the same column and before `PostNav`, `ArticleEnd` is the window of the end of
  * the post, with the buttons that share the post's address on Twitter (self-proclaimed X) and
@@ -49,10 +49,12 @@ import {
 import ArticleBody from "../../components/ArticleBody.astro";
 import ArticleEnd from "../../components/ArticleEnd.astro";
 import ArticleToc from "../../components/ArticleToc.astro";
+import ExternalNote from "../../components/ExternalNote.astro";
 import PostNav from "../../components/PostNav.astro";
 import ReadingProgress from "../../components/ReadingProgress.astro";
 import SponsorNotice from "../../components/SponsorNotice.astro";
 import { homeSectionPath } from "../../components/site-nav";
+import { externalLinkAttrs } from "../../external-link";
 import { translate } from "../../i18n/ui";
 import Layout from "../../layouts/Layout.astro";
 import { nostrArticleUrl } from "../../nostr-address";
@@ -74,12 +76,13 @@ const { post, prev, next } = Astro.props;
 const { title, slug, date, tags, topics, sponsor, description } = post.data;
 const { Content, headings } = await render(post);
 const toc = blogPostToc(headings);
-if (!Astro.site) {
+const { site } = Astro;
+if (!site) {
   throw new Error(
     "`site` in astro.config.mjs is required to build the pages of posts.",
   );
 }
-const url = blogPostUrl(slug, Astro.site);
+const url = blogPostUrl(slug, site);
 const crumb = blogPostBreadcrumb(slug, date);
 const published = blogPostDate(date);
 const minutes = readingMinutes(post.body);
@@ -151,9 +154,9 @@ const nostrUrl = isNostrPublished(slug, nostrPublishedSlugs)
       mirror
     </dt>
     <dd>
-      <a href={nostrUrl} lang="en">
-        nostr<span aria-hidden="true"> ↗</span>
-        <span class="sr-only"> {translate("ja", "link.external")}</span>
+      <a href={nostrUrl} lang="en" {...externalLinkAttrs(nostrUrl, site)}>
+        nostr
+        <ExternalNote lang="ja" arrow />
       </a>
     </dd>
   </div>
@@ -304,14 +307,6 @@ h1 {
 }
 .author {
   display: none;
-}
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 .body {
   box-sizing: border-box;

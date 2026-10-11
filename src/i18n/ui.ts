@@ -150,8 +150,10 @@ const ja = {
   // Shown in the large window in place of the newest video when the feed gives none, such as when
   // it cannot be read.
   "latest.videos.empty": "最新の動画を表示できませんでした。",
-  // Text hidden from the eyes after a link to another site, such as the mirror link of a post.
-  "link.external": "（外部サイト）",
+  // Hidden text after the name of a link that leaves the site (src/external-link.ts), and the
+  // text between the name and it: none in Japanese.
+  "link.external": "（外部サイト・新しいタブで開く）",
+  "link.externalSeparator": "",
   // Name of the menu button of the site header; whether the menu is open is its expanded state.
   "menu.label": "メニュー",
   // "nav.label" names the <nav> of the site header and "nav.contact" is the text of its contact
@@ -303,7 +305,8 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "latest.title": "Recent streams",
     "latest.videos.channel": "Visit the YouTube channel",
     "latest.videos.empty": "Couldn't show the latest videos.",
-    "link.external": "(external site)",
+    "link.external": "(external site, opens in a new tab)",
+    "link.externalSeparator": " ",
     "menu.label": "Menu",
     "nav.about": "About",
     "nav.blog": "Blog",
