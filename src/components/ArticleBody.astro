@@ -2,23 +2,18 @@
 /**
  * Wraps rendered Markdown (an article's `<Content />`). The type of body text, headings,
  * paragraphs, `strong`, inline code, lists, block quotes, images, horizontal rules, tables, task
- * lists, footnotes, YouTube embeds and links is in `src/markdown/article.css`, and the windows of
- * code blocks are in `src/markdown/highlight.css`, whose rules match `figure.code-window` and
- * `pre.shiki`. This file imports both.
+ * lists, footnotes, YouTube embeds, links, accordions and message boxes is in
+ * `src/markdown/article.css`, and the windows of code blocks are in `src/markdown/highlight.css`,
+ * whose rules match `figure.code-window` and `pre.shiki`. This file imports both and has no style
+ * of its own.
  * A link to another site (see `externalLinks` in src/markdown/external-links.ts), except one in a
  * heading or written as raw HTML, opens in a new tab and ends with an arrow `↗`, which takes the
  * color and the underline of the link, and a text hidden from the eyes (`.sr-only`) that says so.
- * It styles the accordion, a `<details>` with its `<summary>` that an article writes as raw
- * HTML: the window of `.win` (shared in `window.css`) with a `<summary>` of at least 48px in
- * JetBrains Mono, whose mark is a plus while the accordion is closed and a minus while it is
- * open. The browser opens and closes it, without script. It styles the message boxes too,
- * `<aside class="note">` and `<aside class="warning">` written as raw HTML, which take the ground
- * and the ring of `.win` from `window.css` and the look of their label from `labels.css`. A box
- * with the class `face` too shows the thinking face of `src/assets/hate.webp` at its left, as a
- * CSS background, so it adds no `<img>` and screen readers skip it: 52 by 70px with a 12px gap
- * below 768px, and 72 by 96px with a 16px gap from 768px. The rules of the accordion and the
- * message boxes reach those elements through `:global()` under `.article-body`, so they apply
- * only inside this wrapper. The wrapper sets no width: the page around it decides the column.
+ * An accordion (a `<details>` with its `<summary>`) and a message box (`aside.note` or
+ * `aside.warning`) are written as raw HTML in an article. The browser opens and closes an
+ * accordion, without script. Both take the ground and the ring of `.win` from `window.css`, and a
+ * message box the look of its label from `labels.css`. The wrapper sets no width: the page around
+ * it decides the column.
  * An `h2` that a link scrolls to stops 72px below the top of the viewport, below the sticky
  * site header, through the `scroll-padding` of the page in `global.css`.
  * A script in this file puts a copy button last in each `figure.code-window` when the browser
@@ -30,8 +25,8 @@ import type { Locale } from "../i18n/locales";
 import { translate } from "../i18n/ui";
 import "../markdown/highlight.css";
 import "../markdown/article.css";
-// The `face` background below is a `url()` in CSS, which Astro does not count as a use of the
-// image, so the build would delete the original file. This import keeps it.
+// The `face` background in `article.css` is a `url()` in CSS, which Astro does not count as a use
+// of the image, so the build would delete the original file. This import keeps it.
 import "../assets/hate.webp?url";
 
 interface Props {
@@ -53,162 +48,6 @@ const copyLabels: CopyLabels = {
 <div class="article-body" data-code-copy={JSON.stringify(copyLabels)}>
   <slot />
 </div>
-
-<style>
-.article-body :global(details) {
-  box-sizing: border-box;
-  margin: 0 0 1.4em;
-  padding: 0 16px;
-}
-
-.article-body :global(details[open]) {
-  padding-bottom: 12px;
-}
-
-.article-body :global(summary) {
-  position: relative;
-  display: block;
-  box-sizing: border-box;
-  min-height: 48px;
-  margin-inline: -16px;
-  padding: 14px 44px 14px 16px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 20px;
-  cursor: pointer;
-  list-style: none;
-}
-
-.article-body :global(summary::-webkit-details-marker) {
-  display: none;
-}
-
-.article-body :global(summary::after) {
-  content: "+" / "";
-  position: absolute;
-  top: 50%;
-  right: 16px;
-  translate: 0 -50%;
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1;
-}
-
-.article-body :global(details[open] > summary::after) {
-  content: "\2212" / "";
-}
-
-.article-body :global(details > summary + *) {
-  margin-top: 0;
-}
-
-.article-body :global(details > :last-child) {
-  margin-bottom: 0;
-}
-
-/* From 768px the accordion leaves more room below. */
-@media (min-width: 768px) {
-  .article-body :global(details) {
-    margin-bottom: 1.6em;
-  }
-}
-
-/* An accordion that ends a list item or a block quote has no margin below, as the other last
-   children there do. */
-.article-body :global(:is(blockquote, li) > details:last-child) {
-  margin-bottom: 0;
-}
-
-/* Message boxes: `<aside class="note">` and `<aside class="warning">`. The ground and ring come
-   from window.css and the look of the label from labels.css. */
-.article-body :global(aside:is(.note, .warning)) {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  margin: 0 0 1.4em;
-  padding: 12px 14px;
-  font-weight: 700;
-}
-
-.article-body :global(aside:is(.note, .warning) > *) {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.article-body :global(aside:is(.note, .warning) > * + *) {
-  margin-top: 0.6em;
-}
-
-/* The label is a generated `::after`, because `.win::before` draws the ring. */
-.article-body :global(aside.note::after) {
-  content: "# note" / "note";
-}
-
-.article-body :global(aside.warning::after) {
-  content: "# warning" / "warning";
-}
-
-.article-body :global(aside:is(.note, .warning)::after) {
-  order: -1;
-  color: var(--acc-text);
-  font-weight: 400;
-}
-
-/* A warning has diagonal stripes at the top, as `.stripes` in window.css does (a 40px period
-   across), and 6px of padding more to keep the text under them. */
-.article-body :global(aside.warning) {
-  --stripes:
-    repeating-linear-gradient(
-      -45deg,
-      var(--keyword) 0 14.14px,
-      var(--ink) 14.14px 28.28px
-    )
-    top / 100% 6px no-repeat;
-
-  padding-top: 18px;
-  background: var(--stripes), var(--panel);
-}
-
-/* The face of `face`: a background layer above the ground, centered on the box. A warning keeps
-   its stripes above the face. The image is 453 by 600px, so the 3:4 box scales it by 0.7%. */
-.article-body :global(aside:is(.note, .warning).face) {
-  --face: url("../assets/hate.webp") 14px center / 52px 70px no-repeat;
-
-  justify-content: center;
-  min-height: 70px;
-  padding-left: 78px;
-  background: var(--face), var(--panel);
-}
-
-.article-body :global(aside.warning.face) {
-  background: var(--stripes), var(--face), var(--panel);
-}
-
-@media (min-width: 768px) {
-  .article-body :global(aside:is(.note, .warning).face) {
-    --face: url("../assets/hate.webp") 20px center / 72px 96px no-repeat;
-
-    min-height: 96px;
-    padding-left: 108px;
-  }
-
-  .article-body :global(aside:is(.note, .warning)) {
-    margin-bottom: 1.6em;
-    padding: 16px 20px;
-  }
-
-  .article-body :global(aside:is(.note, .warning) > *) {
-    font-size: 15px;
-    line-height: 1.8;
-  }
-
-  .article-body :global(aside.warning) {
-    padding-top: 22px;
-  }
-}
-</style>
 
 <script>
 import {

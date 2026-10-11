@@ -13,8 +13,8 @@
  * focus, for `src/dev/components.astro`. Under `prefers-reduced-motion: reduce` the angle changes
  * without a transition.
  *
- * `.article-body details`, the accordion of an article (see `ArticleBody.astro`), has the same
- * panel and ring as `.win` without a class. Its ring turns like the one of `a.win` while its
+ * `.article-body details`, the accordion of an article (see `src/markdown/article.css`), has the
+ * same panel and ring as `.win` without a class. Its ring turns like the one of `a.win` while its
  * direct `<summary>` is hovered or has keyboard focus, and its transition stops under
  * `prefers-reduced-motion: reduce` too.
  *
@@ -22,7 +22,7 @@
  * panel and the ring of `.win` and `.win::before` through the selector
  * `:where(.article-body aside:is(.note, .warning))`, so an article never writes `win`. They are
  * not links, so their ring does not turn. The `:where()` gives that selector no specificity, so
- * the rules in `src/components/ArticleBody.astro` that change them win whatever the order of the
+ * the rules in `src/markdown/article.css` that change them win whatever the order of the
  * stylesheets.
  *
  * `.ticks` draws four `--muted` L-shaped ticks, 16px long and 1.5px thick, at the corners of its

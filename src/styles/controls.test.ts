@@ -46,7 +46,6 @@ const GLOBAL = cssFile("global.css");
 const CONTROLS = cssFile("controls.css");
 const WINDOW = cssFile("window.css");
 const LABELS = cssFile("labels.css");
-const ARTICLE = astroStyle("components/ArticleBody.astro");
 const ARTICLE_CSS = parseCss(read("markdown/article.css"));
 
 /** A color written as one token, such as `var(--text)`. */
@@ -309,16 +308,13 @@ describe("記事のメッセージボックス", () => {
 
   it("ラベルの語は ::after の content で、読み上げには # を除いた同じ語を渡す", () => {
     for (const kind of ["note", "warning"]) {
-      const label = only(
-        ARTICLE,
-        `.article-body :global(aside.${kind}::after)`,
-      );
+      const label = only(ARTICLE_CSS, `.article-body aside.${kind}::after`);
       expect(valueIn(label, "content"), kind).toMatch(/^"#+ (.+)" \/ "\1"$/);
     }
   });
 
   it("背景は縞や顔を重ねても、最後の層が地の --panel になる", () => {
-    const boxes = ARTICLE.filter(
+    const boxes = ARTICLE_CSS.filter(
       (rule) =>
         selectorText(rule).includes("aside") &&
         valueIn(rule, "background") !== undefined,
