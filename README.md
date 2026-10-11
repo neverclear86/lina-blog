@@ -64,6 +64,7 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   │   └── name-logo/      # Name logo of the brand kit (t3_full_for-dark.svg), kept as it is and drawn by og-image.ts
 │   ├── components/
 │   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
+│   │   ├── article-reading.ts    # Script of a post's page: sets --reading-progress, marks the h2 being read in the table of contents and reveals the progress line and bar
 │   │   ├── ArticleBody.astro     # Wraps rendered Markdown: imports article.css (body text, accordions, message boxes) and highlight.css (code blocks), and puts the copy button on code blocks
 │   │   ├── ArticleEnd.astro      # End window of a post: share links, copy-link button, thumbs-up
 │   │   ├── ArticleToc.astro      # Table of contents of a post: the neo-tree window in the left column from 1024px, a closed <details> before the body below it; the h2 being read is marked
@@ -85,6 +86,7 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   │   ├── LatestVideoFeature.astro # Latest section: newest video as a large window with a NEW chip, or a no-signal window that links to the channel
 │   │   ├── LatestVideoList.astro # Latest section: the next videos as small windows with JST dates, and the YouTube channel button; hidden below 768px
 │   │   ├── NameLogo.astro        # Name logo of the brand kit as inline SVG: compact, full and full-sub, painted with the --lg-* tokens
+│   │   ├── once-per-frame.ts     # Runs a function once in the next animation frame, for the scroll and resize handlers of the site header and a post's page, unit-tested
 │   │   ├── PageHead.astro        # Head of the blog pages and the contact page: grid background, diagonal band and the slot with an h1
 │   │   ├── PostNav.astro         # Links to the posts one step older (prev) and newer (next) at the end of a post's page; nothing when there are none
 │   │   ├── PostRows.astro        # Window of blog posts: ls -lt command line with a command slot, rows with JST date, tags, PR and title, or one empty line
