@@ -65,7 +65,7 @@ let status: HTMLElement | undefined;
 function liveRegion(): HTMLElement {
   if (!status) {
     status = document.createElement("div");
-    status.className = "code-copy-status";
+    status.className = "sr-only";
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
     document.body.append(status);

@@ -58,7 +58,9 @@ const twitter = labelSegments(translate("ja", "social.twitter"));
     {index > 0 && <wbr />}
     <span class="segment">{segment}</span>
   </>
-))}<span class="part">{translate("ja", "articleEnd.shareSuffix")}</span></span
+))}<span class="sr-only-narrow"
+            >{translate("ja", "articleEnd.shareSuffix")}</span
+          ></span
         ><ExternalNote lang="ja" /></a
       >
       <a
@@ -66,7 +68,7 @@ const twitter = labelSegments(translate("ja", "social.twitter"));
         href={nostrUrl}
         {...externalLinkAttrs(nostrUrl, site, "noopener noreferrer")}
         ><span class="name"
-          >{translate("ja", "articleEnd.nostr")}<span class="part"
+          >{translate("ja", "articleEnd.nostr")}<span class="sr-only-narrow"
             >{translate("ja", "articleEnd.shareSuffix")}</span
           ></span
         ><ExternalNote lang="ja" /></a
@@ -80,7 +82,9 @@ const twitter = labelSegments(translate("ja", "social.twitter"));
         hidden
       >
         <span class="name"
-          ><span class="part">{translate("ja", "articleEnd.copyPrefix")}</span>
+          ><span class="sr-only-narrow"
+            >{translate("ja", "articleEnd.copyPrefix")}</span
+          >
           {translate("ja", "articleEnd.copy")}</span
         >
       </button>
@@ -181,14 +185,6 @@ for (const root of document.querySelectorAll<HTMLElement>(
 .segment {
   white-space: nowrap;
 }
-.part {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
 .status {
   min-height: 20px;
   margin: 0;
@@ -238,14 +234,6 @@ for (const root of document.querySelectorAll<HTMLElement>(
   .btn {
     flex: 0 0 auto;
     padding: 0 20px;
-  }
-  .part {
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip-path: none;
-    white-space: normal;
   }
   .thumb-col {
     justify-self: end;
