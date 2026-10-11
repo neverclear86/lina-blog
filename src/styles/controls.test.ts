@@ -47,6 +47,7 @@ const CONTROLS = cssFile("controls.css");
 const WINDOW = cssFile("window.css");
 const LABELS = cssFile("labels.css");
 const ARTICLE = astroStyle("components/ArticleBody.astro");
+const ARTICLE_CSS = parseCss(read("markdown/article.css"));
 
 /** A color written as one token, such as `var(--text)`. */
 const TOKEN = /^var\(--[\w-]+\)$/;
@@ -208,7 +209,7 @@ describe("配線", () => {
 
 describe("記事の本文のリンク", () => {
   it("記事の本文のリンクには下線が付く", () => {
-    const link = only(ARTICLE, ".article-body :global(a)");
+    const link = only(ARTICLE_CSS, ".article-body a");
     expect(valueIn(link, "text-decoration-line")).toBe("underline");
   });
 });

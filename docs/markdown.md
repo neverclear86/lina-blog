@@ -1,7 +1,7 @@
 # 記事の本文の書き方
 
 記事の本文は Markdown（GFM）で書き、メッセージボックスとアコーディオンは生の HTML で書く。
-Markdown は Sätteri が HTML にし、`src/components/ArticleBody.astro` が見た目を付ける。
+Markdown は Sätteri が HTML にし、`src/components/ArticleBody.astro` と、それが読み込む `src/markdown/article.css`・`src/markdown/highlight.css` が見た目を付ける。
 書いた記法の見た目は、`astro dev` を立てて `/dev/markdown/`（`src/markdown/sample.md` の例）で確かめられる。
 
 ## 共通の決まり

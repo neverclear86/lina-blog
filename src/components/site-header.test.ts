@@ -171,6 +171,7 @@ describe("global.css の scroll-padding", () => {
     expect(source("components/ArticleBody.astro")).not.toContain(
       "scroll-margin",
     );
+    expect(source("markdown/article.css")).not.toContain("scroll-margin");
   });
 });
 
