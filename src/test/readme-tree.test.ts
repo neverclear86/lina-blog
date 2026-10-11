@@ -46,12 +46,28 @@ function treeEntries(): { name: string; path: string }[] {
  * directory is a part of a URL and is left out.
  */
 function directoriesWithFiles(): Set<string> {
-  const files = execFileSync("git", ["ls-files", "-co", "--exclude-standard"], {
-    cwd: ROOT,
-    encoding: "utf8",
-  })
+  const files = execFileSync(
+    "git",
+    ["-c", "core.quotePath=false", "ls-files", "-co", "--exclude-standard"],
+    {
+      cwd: ROOT,
+      encoding: "utf8",
+    },
+  )
     .split("\n")
-    .filter((file) => file && existsSync(new URL(file, ROOT)));
+    .filter(
+      (file) =>
+        file &&
+        existsSync(
+          new URL(
+            file
+              .replaceAll("%", "%25")
+              .replaceAll("#", "%23")
+              .replaceAll("?", "%3F"),
+            ROOT,
+          ),
+        ),
+    );
   const directories = new Set<string>(WRITTEN_BY_THE_WORKER);
   for (const file of files) {
     const parts = file.split("/").slice(0, -1);
