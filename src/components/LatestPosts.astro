@@ -22,7 +22,10 @@ interface Props {
   lang: Locale;
   /** Posts of the `blog` collection, in any order. */
   posts: ComponentProps<typeof PostRows>["posts"];
-  /** `id` of the root. A page that shows the section more than once gives each its own. */
+  /**
+   * `id` of the root, `blog` by default. Sample only (見本用): the home page leaves it out, and
+   * the sample page gives each of its sections its own, so that no `id` repeats.
+   */
   id?: string;
 }
 

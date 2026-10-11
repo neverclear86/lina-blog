@@ -90,7 +90,7 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   │   ├── PostRows.astro        # Window of blog posts: ls -lt command line with a command slot, rows with JST date, tags, PR and title, or one empty line
 │   │   ├── reading-progress.ts   # How far the reader is in a post and which h2 they are in, unit-tested
 │   │   ├── ReadingProgress.astro # How far the reader is in a post: a bar with a label, or a line under the site header
-│   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line drawn on scroll, path and link, and the Japanese heading; the size is a prop
+│   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line drawn on scroll, path, and the Japanese heading
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, the path of the contact page, and which section the reader is in, on the top page and in a post, unit-tested
 │   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
 │   │   ├── SiteHeader.astro      # Site header, sticky: compact name logo; from 1024px the navigation 00 top to 03 blog with an indicator on the top page that follows the section being read, JA / EN, theme switch and contact button, below 1024px the theme switch and a menu button that opens a popover sheet; on a post's page a line under it for how far the reader is

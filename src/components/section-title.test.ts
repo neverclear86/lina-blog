@@ -63,3 +63,27 @@ describe("見出しの線の描画", () => {
     }
   });
 });
+
+describe("見出しの大きさ", () => {
+  const sizeAt = (condition?: string) => {
+    const rule = rulesFor(RULES, ".section-title .title").find((r) =>
+      condition === undefined
+        ? r.conditions.length === 0
+        : hasCondition(r, condition),
+    );
+    return rule && valueIn(rule, "font-size");
+  };
+
+  it("文字の大きさは .section-title .title に、幅の境ごとに 30px、40px、52px で書く", () => {
+    expect(sizeAt()).toBe("30px");
+    expect(sizeAt("@media (min-width: 768px)")).toBe("40px");
+    expect(sizeAt("@media (min-width: 900px)")).toBe("52px");
+  });
+
+  it("見出しの規則は .lg・.md・.link のクラスを使わない", () => {
+    const stale = RULES.flatMap((rule) => rule.selectors).filter((selector) =>
+      /\.(lg|md|link)\b/.test(selector),
+    );
+    expect(stale).toEqual([]);
+  });
+});

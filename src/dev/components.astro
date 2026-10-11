@@ -280,13 +280,13 @@ const sampleVideos: YouTubeVideo[] = [
           label="about"
           path="~/about"
           title={"はじめまして、\n創好リナです。"}
-          size="md"
         />
-        <SectionTitle no="03" label="blog" path="~/blog" title="さいきんの記事">
-          <a slot="link" href="#a-headings"
-            >記事一覧 <span aria-hidden="true">→</span></a
-          >
-        </SectionTitle>
+        <SectionTitle
+          no="03"
+          label="blog"
+          path="~/blog"
+          title="さいきんの記事"
+        />
         <div lang="en">
           <SectionTitle
             no="04"
@@ -294,17 +294,8 @@ const sampleVideos: YouTubeVideo[] = [
             path="~/long"
             title="Supercalifragilisticexpialidocious-heading-without-any-space"
             as="h3"
-          >
-            <a slot="link" href="#a-headings"
-              >ls ~/long <span aria-hidden="true">→</span></a
-            >
-          </SectionTitle>
+          />
         </div>
-        <SectionTitle no="06" label="focus" title="フォーカスの表示">
-          <a slot="link" class="is-focus" href="#a-headings"
-            >ls ~/focus <span aria-hidden="true">→</span></a
-          >
-        </SectionTitle>
       </div>
     </section>
 
