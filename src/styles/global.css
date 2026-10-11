@@ -1,8 +1,9 @@
 /*
  * Global element styles for every page, imported by `src/layouts/Layout.astro` after
  * `tokens.css`: the frame of the page (`html`, `body` and `.site-content`), the side padding and
- * the width of the content (`--page-gutter` and `.page-width`), the colors, the links, the
- * keyboard focus outline, the scroll padding and the classes that hide text from the eyes.
+ * the width of the content (`--page-gutter` and `.page-width`), the variables of `html` that
+ * several components share, the colors, the links, the keyboard focus outline, the scroll padding
+ * and the classes that hide text from the eyes.
  * Colors come only from the tokens in `tokens.css`.
  */
 
@@ -71,6 +72,18 @@ body {
  */
 html {
   --font-mono: var(--font-mono-latin), var(--font-body);
+  /*
+   * The height of the site header: the 44px content of `.bar` (the `.brand` logo, the `.iconbtn`
+   * buttons and, from 1024px, the `.bar .contact` button) with 8px of padding above and below,
+   * and the 1px line under it. `.site-header` sets no `height`; its content gives it this height.
+   */
+  --header-h: 61px;
+  /*
+   * The easing of the movements of the page (the appearance of its parts when it opens and of a
+   * figure when its tab is chosen, the turn of the border of a window, the spread of its ticks,
+   * the slide of the mark of the navigation).
+   */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   font-family: var(--font-body);
   /* Only the loaded faces are drawn: the browser never fakes a heavier weight. */
   font-synthesis-weight: none;
@@ -148,14 +161,14 @@ main[tabindex="-1"]:focus {
 }
 
 /*
- * The site header sticks to the top of the viewport and is 61px high (see `SiteHeader.astro`),
- * so the page scrolls an element into view 72px below the top, as `section[id],#blog` does in
- * `design/Main.dc.html`: a section or a heading that a link jumps to, `#main` that the skip link
+ * The site header sticks to the top of the viewport and is `--header-h` high, so the page scrolls
+ * an element into view 11px below the header (72px, as `section[id],#blog` does in
+ * `design/Main.dc.html`): a section or a heading that a link jumps to, `#main` that the skip link
  * jumps to, and an element that Shift+Tab focuses all stay below the header. The 8px at the
  * bottom keeps the focus outline of an element that Tab focuses at the bottom in view.
  */
 html {
-  scroll-padding: 72px 0 8px;
+  scroll-padding: calc(var(--header-h) + 11px) 0 8px;
 }
 
 /*

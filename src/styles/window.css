@@ -103,8 +103,8 @@
   mask-composite: exclude;
   pointer-events: none;
   transition:
-    --wa 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
-    --wb 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+    --wa 0.7s var(--ease-out),
+    --wb 0.7s var(--ease-out);
 }
 
 a.win:hover::before,
@@ -117,7 +117,7 @@ a.win:focus-visible::before,
   --wb: 0deg;
 
   transition:
-    --wa 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+    --wa 0.7s var(--ease-out),
     --wb 0s;
 }
 
@@ -204,7 +204,7 @@ a.win:focus-visible::before,
     no-repeat,
     linear-gradient(var(--keyword), var(--keyword)) bottom right / 2px 14px
     no-repeat;
-  transition: inset 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: inset 0.28s var(--ease-out);
 }
 
 .acct:hover .ticks-acc::after,
