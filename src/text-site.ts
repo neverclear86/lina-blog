@@ -1,6 +1,6 @@
 /**
  * Builds the text version of the site for command-line clients such as curl: the about text,
- * the works, the latest blog posts, the profile links and how to get in touch. Every line fits
+ * the latest blog posts, the profile links and how to get in touch. Every line fits
  * in 80 terminal columns. `src/pages/text/[lang].txt.ts` calls it for each locale, so every
  * build writes `/text/ja.txt` and `/text/en.txt`.
  */
@@ -28,27 +28,23 @@ const POST_DATE_FORMAT = new Intl.DateTimeFormat("en-CA", {
 interface TextSiteStrings {
   headings: {
     about: string;
-    works: string;
     latest: string;
     links: string;
     contact: string;
   };
   about: readonly string[];
-  works: readonly { name: string; lines: readonly string[] }[];
   noPosts: string;
   /** The contact section: the line that invites contact and the label before the form's URL. */
   contact: { lead: string; formLabel: string };
 }
 
-// Provisional: the wording of the about text and the works to list are not decided yet. The
-// about text uses the design's sentences, and the works are the design's first two cards. The
-// contact lines point to the contact page.
+// Provisional: the wording of the about text is not decided yet. It uses the design's
+// sentences. The contact lines point to the contact page.
 /** Text of the text version in each locale. The type requires every locale. */
 const STRINGS: Record<Locale, TextSiteStrings> = {
   ja: {
     headings: {
       about: "$ whoami  # 自己紹介",
-      works: "$ ls ~/works  # つくったもの",
       latest: "$ ls ~/blog  # 最新記事",
       links: "$ cat ~/links  # リンク",
       contact: "$ mail lina  # お問い合わせ",
@@ -59,19 +55,6 @@ const STRINGS: Record<Locale, TextSiteStrings> = {
       "配信もするし、開発もする。",
       "ITで遊ぶ動画と配信を、Resoniteを中心に届けています。",
     ],
-    works: [
-      {
-        name: "ikili.pro",
-        lines: [
-          "このサイト。Obsidianで書いた記事が、ボタン1つで公開されます。",
-          "astro / hono / cloudflare workers",
-        ],
-      },
-      {
-        name: "nostr-no-su",
-        lines: ["Nostrの鍵を預かって署名するbunker。", "nostr / nip-46"],
-      },
-    ],
     noPosts: "まだ記事はありません。",
     contact: {
       lead: "お仕事のご相談やコラボのお誘いなどはこちらから。",
@@ -81,7 +64,6 @@ const STRINGS: Record<Locale, TextSiteStrings> = {
   en: {
     headings: {
       about: "$ whoami  # About",
-      works: "$ ls ~/works  # Works",
       latest: "$ ls ~/blog  # Latest posts (in Japanese)",
       links: "$ cat ~/links  # Links",
       contact: "$ mail lina  # Contact",
@@ -91,22 +73,6 @@ const STRINGS: Record<Locale, TextSiteStrings> = {
       'A virtual "ikiri" programmer, named after Linux.',
       "Streams and builds software.",
       "Makes videos and streams about playing with IT, mostly in Resonite.",
-    ],
-    works: [
-      {
-        name: "ikili.pro",
-        lines: [
-          "This site. Posts written in Obsidian go live with one button.",
-          "astro / hono / cloudflare workers",
-        ],
-      },
-      {
-        name: "nostr-no-su",
-        lines: [
-          "A bunker that keeps Nostr keys and signs with them.",
-          "nostr / nip-46",
-        ],
-      },
     ],
     noPosts: "No posts yet.",
     contact: {
@@ -211,12 +177,6 @@ export function buildTextSite(
     "",
     strings.headings.about,
     ...strings.about,
-    "",
-    strings.headings.works,
-    ...strings.works.flatMap(({ name, lines }) => [
-      name,
-      ...lines.map((line) => `  ${line}`),
-    ]),
     "",
     strings.headings.latest,
     ...postLines,

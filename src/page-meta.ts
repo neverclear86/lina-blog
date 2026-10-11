@@ -53,7 +53,7 @@ export interface TwitterTag {
  * uses.
  *
  * @param lang Language of the page.
- * @param description The page's own description, such as the description of a work.
+ * @param description The page's own description, such as the description of a post.
  */
 export function pageDescription(
   lang: Locale,

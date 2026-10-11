@@ -37,7 +37,7 @@ bun create astro@latest -- --template basics
 │   ├── code-copy.ts      # Copy buttons of a post's page: texts and logic of the code-block button, and the clipboard check and write that the end window shares, unit-tested
 │   ├── contact-form.ts   # Contact form states before and after sending, their UI strings and the widget size, unit-tested
 │   ├── contact-mail.ts   # Builds the contact notification mail for the send_email binding
-│   ├── content.config.ts # blog and works collections: src/content/blog/ (and blog-dev/ in astro dev or with LINA_DEV_PAGES=1) checked by blog-schema.ts, src/content/works/ checked by work-schema.ts
+│   ├── content.config.ts # blog collection: src/content/blog/ (and blog-dev/ in astro dev or with LINA_DEV_PAGES=1) checked by blog-schema.ts
 │   ├── fetch.ts          # Worker entry (advanced routing): api.ts, then the Astro handlers
 │   ├── latest-videos.ts  # Splits the YouTube videos into the Latest card and list, JST dates, unit-tested
 │   ├── llms.ts           # Builds /llms.txt (site summary and links for LLMs), unit-tested
@@ -57,9 +57,6 @@ bun create astro@latest -- --template basics
 │   ├── theme.ts          # Theme key and values, the inline script that sets <html data-theme> and the toggle, unit-tested
 │   ├── turnstile.ts      # Turnstile token check with siteverify (injectable fetch), unit-tested
 │   ├── user-agent.ts     # Tells curl and other command-line clients from browsers, unit-tested
-│   ├── work-card.ts      # Order and link target of the work cards on the top page, unit-tested
-│   ├── work-pages.ts     # Paths of the pages of works and the rows of their links, unit-tested
-│   ├── work-schema.ts    # Schema of the works data (ja and en in one entry, no astro:content), unit-tested
 │   ├── youtube-feed.ts   # Channel RSS feed to the newest videos at build time (WebP or JPEG thumbnails), unit-tested
 │   ├── assets/           # Images processed by astro:assets
 │   │   ├── <avatar>.webp   # Nine avatars of v2.1 (rohan, lgtm-fullbody, happy-fullbody, main-visual, threeview-front/side/back, lgtm-bastup, hate), made by scripts/avatars/ (see "Images and caching")
@@ -95,17 +92,14 @@ bun create astro@latest -- --template basics
 │   │   ├── SectionTitle.astro    # Section heading of plan A: number chip, English name, line drawn on scroll, path and link, and the Japanese heading; the size is a prop
 │   │   ├── site-nav.ts           # Link targets of the header navigation and language switch, the path of the contact page, and which section the reader is in, on the top page and in a post, unit-tested
 │   │   ├── SiteFooter.astro      # Footer on --bg: full (name logo, site and links columns, © year and name, face mark) or compact (face mark and © only)
-│   │   ├── SiteHeader.astro      # Site header, sticky: compact name logo; from 1024px the navigation 00 top to 04 works with an indicator on the top page that follows the section being read, JA / EN, theme switch and contact button, below 1024px the theme switch and a menu button that opens a popover sheet; on a post's page a line under it for how far the reader is
+│   │   ├── SiteHeader.astro      # Site header, sticky: compact name logo; from 1024px the navigation 00 top to 03 blog with an indicator on the top page that follows the section being read, JA / EN, theme switch and contact button, below 1024px the theme switch and a menu button that opens a popover sheet; on a post's page a line under it for how far the reader is
 │   │   ├── SkipLink.astro        # Skip link, first in <body>: hidden until it has the focus, then a .btn-acc fixed at the top left above the header; jumps to <main id="main">
 │   │   ├── SponsorNotice.astro   # PR window above the body of a sponsored blog post: orange PR chip and the sponsor's name
 │   │   ├── ThemeToggle.astro     # Theme switch: an .iconbtn that shows the moon or the sun with a name that says the next theme, or a button with a sun and the current theme
 │   │   ├── three-view-tabs.ts    # Which view of the avatar a key, a swipe or a tap selects, and the swipe gesture, unit-tested
-│   │   ├── WorkTile.astro        # Window tile of a work: ~/works/<title>, a line of description and the technology tags; a link or a plain box
-│   │   ├── Works.astro           # Works section of the top page (04 works): the heading and a WorkTile per work, from the works collection
 │   │   └── icons/                # Service icons for HeroAccount; sources and terms in icons/README.md
 │   ├── content/
-│   │   ├── blog-dev/     # Posts for checking how pages look, and published.json, their published record; loaded by astro dev (or with LINA_DEV_PAGES=1)
-│   │   └── works/        # Works, one YAML file per work (placeholder data), with placeholder.png
+│   │   └── blog-dev/     # Posts for checking how pages look, and published.json, their published record; loaded by astro dev (or with LINA_DEV_PAGES=1)
 │   ├── dev/
 │   │   ├── components.astro  # /dev/components/: samples of the plan A styles, components and avatar images
 │   │   ├── dev-pages.ts      # Adds the dev pages in astro dev (or with LINA_DEV_PAGES=1), unit-tested
@@ -131,9 +125,7 @@ bun create astro@latest -- --template basics
 │   │   ├── [lang]/
 │   │   │   ├── contact/
 │   │   │   │   └── index.astro   # /ja/contact/ and /en/contact/: the contact form
-│   │   │   ├── index.astro   # /ja/ and /en/
-│   │   │   └── works/
-│   │   │       └── [slug].astro  # /ja/works/<slug>/ and /en/works/<slug>/ for the works with hasPage
+│   │   │   └── index.astro   # /ja/ and /en/
 │   │   ├── ansi/
 │   │   │   ├── color.txt.ts  # /ansi/color.txt: the avatar main-visual as 24-bit color text art
 │   │   │   └── plain.txt.ts  # /ansi/plain.txt: the same art without escape sequences
@@ -199,7 +191,7 @@ Whether a post is on Nostr is decided at build time from `src/content/published.
 
 Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are highlighted at build time by `src/markdown/highlight.ts`, which gives tokens role classes such as `hl-keyword` instead of inline styles; `markdown.syntaxHighlight` is off so Astro's own Shiki does not run. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player. An accordion is written as raw HTML (`<details>` and `<summary>`), and how to write one is in `docs/markdown.md`. An `<aside class="note">` or `<aside class="warning">` written as raw HTML in an article is styled as a message box (`docs/markdown.md` shows how to write one). The checkbox of a task list item gets an `aria-label` with the text of the item, and every table gets `tabindex="0"` so that a table wider than the article can be scrolled with the keyboard (`src/markdown/a11y.ts`).
 
-`astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the works, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt`, the Latest section of the home page, the account window of the hero and the links column of the site footer use as well.
+`astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the five latest posts, the profile links and how to get in touch, with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt`, the Latest section of the home page, the account window of the hero and the links column of the site footer use as well.
 
 Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema, the RSS items and the Markdown plugins; `src/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`, and the plugins in `src/markdown/` with Sätteri's `markdownToHtml()`. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet). What still moves under `prefers-reduced-motion: reduce` is measured the same way: `node scripts/audit/reduced-motion.mjs --root . --port 4612` opens every page in `dist/client` and `/404` at 1440px and 390px in both themes, counts the running animations and transitions after the page opens, a Tab, hovers, a scroll and clicks, and exits with 1 when any is left (build with `LINA_DEV_PAGES=1` to include the sample posts and the dev pages); `--motion no-preference` only lists them.

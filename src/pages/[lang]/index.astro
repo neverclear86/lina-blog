@@ -8,7 +8,6 @@ import LatestPosts from "../../components/LatestPosts.astro";
 import LatestSection from "../../components/LatestSection.astro";
 import LatestVideoFeature from "../../components/LatestVideoFeature.astro";
 import LatestVideoList from "../../components/LatestVideoList.astro";
-import Works from "../../components/Works.astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
 import { LATEST_VIDEOS_SHOWN, latestVideos } from "../../latest-videos";
 import Layout from "../../layouts/Layout.astro";
@@ -44,7 +43,6 @@ const { feature, list } = latestVideos(result);
       <LatestVideoList slot="video-list" lang={lang} videos={list} />
       <LatestPosts slot="blog" lang={lang} posts={posts} />
     </LatestSection>
-    <Works lang={lang} />
     <ContactBand lang={lang} />
   </main>
 </Layout>
