@@ -430,6 +430,24 @@ All commands are run from the root of the project, from a terminal:
 | `bun run import:avatars <dir>` | Makes the nine avatar images in `src/assets/` from the v2.1 originals in `<dir>` |
 | `bun astro ...`       | Runs CLI commands like `astro add`, `astro check`   |
 
+Biome does not report the indentation inside the expressions of an `.astro` file (`{items.map((item) => (…))}`): `biome ci`, `biome check` and `biome format` leave it as written.
+Only `biome check --write` re-prints each top-level expression (one that is not inside another expression), as if it began in column 0 of the file instead of at its `{`.
+It indents the elements by 2 spaces per level from column 0 and puts the closing `))}` of the top-level expression in column 0; an expression nested inside it is indented by its level, and its `))}` lines up with the line that opens it.
+It also joins an expression that fits on one line, and puts sibling elements that do not fit on one line on separate lines.
+Write expressions in that form:
+
+```astro
+<ul>
+  {items.map((item) => (
+  <li>
+    <a href={item.href}>{item.label}</a>
+  </li>
+))}
+</ul>
+```
+
+The Claude Code hook (`.claude/hooks/biome-check.sh`) and the implementer of the issue workflow run `biome check --write` on the files they change, so any other form is rewritten the next time a file is edited.
+
 ## 🚢 CI and deployment
 
 GitHub Actions runs four workflows:
