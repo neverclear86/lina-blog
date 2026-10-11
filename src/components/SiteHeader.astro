@@ -507,6 +507,7 @@ document.addEventListener("focusin", (event) => {
 <script>
 // On the top page, moves `.nav-ind` and `aria-current="location"` to the item of the section
 // that the reader is in. The sections are the ids in the fragments of the navigation links.
+import { oncePerFrame } from "./once-per-frame";
 import { currentSectionIndex } from "./site-nav";
 
 const nav = document.querySelector<HTMLElement>(".site-nav[data-follow]");
@@ -529,15 +530,7 @@ if (nav) {
       }
     }
   };
-  let queued = false;
-  const schedule = () => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      update();
-    });
-  };
+  const schedule = oncePerFrame(update);
   for (const link of nav.querySelectorAll("a.on")) link.classList.remove("on");
   nav.classList.add("following");
   update();
