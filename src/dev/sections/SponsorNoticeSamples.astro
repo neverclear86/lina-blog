@@ -1,0 +1,11 @@
+---
+import SponsorNotice from "../../components/SponsorNotice.astro";
+import { sampleNotices } from "../samples";
+---
+
+<section id="sponsor-notice" class="dev-section">
+  <h2>PR 表示</h2>
+  <div class="dev-stack">
+    {sampleNotices.map((notice) => <SponsorNotice notice={notice} />)}
+  </div>
+</section>

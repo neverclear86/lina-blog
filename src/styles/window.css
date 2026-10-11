@@ -10,8 +10,8 @@
  * On `a.win`, on hover and on keyboard focus, `--wa` goes to 180deg and `--wb` to 0deg: `--wb`
  * jumps at once and `--wa` turns for 0.7s, so the ring turns forward, and turns forward again
  * when the hover ends. `.win.is-hover` and `.win.is-focus` show that state without hover or
- * focus, for `src/dev/components.astro`. Under `prefers-reduced-motion: reduce` the angle changes
- * without a transition.
+ * focus, for the samples in `src/dev/sections/`. Under `prefers-reduced-motion: reduce` the angle
+ * changes without a transition.
  *
  * `.article-body details`, the accordion of an article (see `src/markdown/article.css`), has the
  * same panel and ring as `.win` without a class. Its ring turns like the one of `a.win` while its

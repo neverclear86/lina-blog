@@ -1,0 +1,36 @@
+/*
+ * The layout that more than one section of `/dev/components/` uses: a section (`.dev-section`), a
+ * row of samples (`.dev-row`), a column of samples (`.dev-stack`) and a grid of samples
+ * (`.dev-samples`). The classes of one section are in the `<style>` of its file in
+ * `src/dev/sections/`. The names start with `dev-` because these rules are not scoped, and a name
+ * such as `.row`, which `PostRows.astro` also has, would reach the components under test.
+ */
+
+.dev-samples {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.dev-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.dev-section {
+  margin-top: 40px;
+}
+
+.dev-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.dev-row + .dev-row {
+  margin-top: 24px;
+}

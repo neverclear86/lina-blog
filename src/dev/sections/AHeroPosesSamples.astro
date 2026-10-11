@@ -1,0 +1,20 @@
+---
+import HeroPoses from "../../components/HeroPoses.astro";
+---
+
+<section id="a-hero-poses" class="dev-section">
+  <h2>A案: Hero のポーズの切り替え</h2>
+  <div class="pose-sample"><HeroPoses lang="ja" /></div>
+  <div class="pose-sample" lang="en"><HeroPoses lang="en" /></div>
+</section>
+
+<style>
+.pose-sample {
+  position: relative;
+  max-width: 640px;
+  height: 840px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border: 1px dashed var(--line2);
+}
+</style>

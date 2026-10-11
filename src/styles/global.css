@@ -103,7 +103,7 @@ body {
  * keyboard it turns `--keyword` in the dark theme, and in the light theme it keeps its color and
  * gets a 2px `--keyword` underline, because `--keyword` is below 3:1 on the light `--bg`.
  * `.is-hover` and `.is-focus` show the two states without the pointer or the keyboard, for the
- * samples in `src/dev/components.astro`.
+ * samples in `src/dev/sections/`.
  *
  * A card whose link has `text-decoration: none` marks its title with `.link-title`: in the light
  * theme the title, and not the whole card, gets the same underline while the link is hovered or

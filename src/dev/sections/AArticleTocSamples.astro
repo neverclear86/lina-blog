@@ -1,0 +1,31 @@
+---
+import ArticleToc from "../../components/ArticleToc.astro";
+import { sampleToc } from "../samples";
+---
+
+<section id="a-article-toc" class="dev-section">
+  <h2>A案: 記事の目次</h2>
+  <div class="a-toc a-toc-window">
+    <ArticleToc items={sampleToc} lang="ja" variant="window" />
+  </div>
+  <div class="a-toc a-toc-window">
+    <ArticleToc items={sampleToc} lang="ja" variant="window" current={1} />
+  </div>
+  <div class="a-toc a-toc-sheet">
+    <ArticleToc items={sampleToc} lang="ja" variant="sheet" />
+  </div>
+</section>
+
+<style>
+.a-toc {
+  margin-top: 16px;
+}
+
+.a-toc-window {
+  max-width: 240px;
+}
+
+.a-toc-sheet {
+  max-width: 358px;
+}
+</style>

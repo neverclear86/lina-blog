@@ -1,0 +1,13 @@
+---
+import PostNav from "../../components/PostNav.astro";
+import { sampleNextPost, samplePrevPost } from "../samples";
+---
+
+<section id="post-nav" class="dev-section">
+  <h2>前後の記事</h2>
+  <div class="dev-stack">
+    <PostNav prev={samplePrevPost} next={sampleNextPost} />
+    <PostNav prev={samplePrevPost} next={undefined} />
+    <PostNav prev={undefined} next={sampleNextPost} />
+  </div>
+</section>

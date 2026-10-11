@@ -1,0 +1,32 @@
+---
+import PostRows from "../../components/PostRows.astro";
+import { translate } from "../../i18n/ui";
+import { sampleListPosts } from "../samples";
+---
+
+<section id="post-list" class="dev-section">
+  <h2>記事の一覧</h2>
+  <div class="dev-stack">
+    <PostRows
+      path="~/blog"
+      posts={sampleListPosts}
+      emptyText={translate("ja", "latest.blog.noPosts")}
+    />
+    <PostRows
+      path="~/blog/tags/tech"
+      posts={[]}
+      emptyText={translate("ja", "blog.tagPage.tech.noPosts")}
+    />
+    <PostRows
+      path="~/blog"
+      posts={sampleListPosts}
+      emptyText={translate("en", "latest.blog.noPosts")}
+      lang="en"
+    >
+      <a slot="action" href="/blog/" hreflang="ja"
+        >{translate("en", "latest.blog.all")}{" "}
+        <span aria-hidden="true">→</span></a
+      >
+    </PostRows>
+  </div>
+</section>

@@ -1,0 +1,26 @@
+---
+import ArticleHead from "../../components/ArticleHead.astro";
+import { sampleSite } from "../samples";
+---
+
+<section id="a-article-head" class="dev-section">
+  <h2>A案: 記事の頭</h2>
+  <ArticleHead
+    title="サイトを Astro で作り直して、ブログと作品の置き場を一つにまとめた話と、そのあとに直したところと、まだ直していないところ"
+    slug="my-first-article"
+    date={new Date("2026-05-01T00:00:00Z")}
+    tags={["制作記"]}
+    topics={["Astro", "Cloudflare", "デザイン"]}
+    minutes={8}
+    nostrUrl="https://njump.me/naddr1sample"
+    site={sampleSite}
+  />
+  <ArticleHead
+    title="短い題の記事"
+    slug="a-short-post"
+    date={new Date("2026-05-01T00:00:00Z")}
+    tags={["日記"]}
+    minutes={1}
+    site={sampleSite}
+  />
+</section>

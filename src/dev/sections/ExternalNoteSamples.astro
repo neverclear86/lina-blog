@@ -1,0 +1,19 @@
+---
+import ExternalNote from "../../components/ExternalNote.astro";
+---
+
+<section id="external-note" class="dev-section">
+  <h2>外部リンクの注記</h2>
+  <p>見えない文は読み上げ用。↗ は <code>arrow</code> のときだけ出る。</p>
+  <div class="dev-row">
+    <a href="https://example.com/" target="_blank" rel="noopener"
+      >矢印なし<ExternalNote lang="ja" /></a
+    >
+    <a href="https://example.com/" target="_blank" rel="noopener"
+      >矢印あり<ExternalNote lang="ja" arrow /></a
+    >
+    <a href="https://example.com/" target="_blank" rel="noopener"
+      >With arrow<ExternalNote lang="en" arrow /></a
+    >
+  </div>
+</section>

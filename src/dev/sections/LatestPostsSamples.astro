@@ -1,0 +1,22 @@
+---
+import LatestPosts from "../../components/LatestPosts.astro";
+import { samplePosts } from "../samples";
+---
+
+<section id="latest-posts" class="dev-section">
+  <h2>最新記事</h2>
+  <div class="latest-samples">
+    <LatestPosts id="blog-ja" lang="ja" posts={samplePosts} />
+    <div lang="en">
+      <LatestPosts id="blog-en" lang="en" posts={samplePosts} />
+    </div>
+    <LatestPosts id="blog-empty" lang="ja" posts={[]} />
+  </div>
+</section>
+
+<style>
+/* The blog section takes the whole width of the page, like `#blog` of the home page. */
+.latest-samples {
+  display: grid;
+}
+</style>

@@ -1,0 +1,39 @@
+---
+import FaceIcon from "../../components/FaceIcon.astro";
+---
+
+<section id="face-icon" class="dev-section">
+  <h2>顔アイコン</h2>
+  <div class="dev-row">
+    <FaceIcon kind="mark" size={27} alt="" />
+    <FaceIcon kind="mark" size={28} alt="" />
+    <FaceIcon kind="mark" size={44} alt="" />
+    <FaceIcon kind="mark" size={45} alt="" />
+    <FaceIcon kind="mark" size={96} alt="" />
+  </div>
+  <div class="dev-row">
+    <div class="inv-face">
+      <FaceIcon kind="mark" size={28} alt="" tone="inverse" />
+    </div>
+    <div class="inv-face">
+      <FaceIcon kind="mark" size={45} alt="" tone="inverse" />
+    </div>
+    <div class="inv-face">
+      <FaceIcon kind="mark" size={96} alt="" tone="inverse" />
+    </div>
+  </div>
+  <div class="dev-row">
+    <FaceIcon kind="avatar" size={24} alt="" />
+    <FaceIcon kind="avatar" size={39} alt="" />
+    <FaceIcon kind="avatar" size={40} alt="" />
+    <FaceIcon kind="avatar" size={96} alt="創好リナ アイコン" />
+  </div>
+</section>
+
+<style>
+.inv-face {
+  display: inline-flex;
+  padding: 16px;
+  background: var(--text);
+}
+</style>
