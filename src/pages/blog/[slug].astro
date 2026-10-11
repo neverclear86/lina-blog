@@ -15,11 +15,13 @@
  * without an `h2` of its own has no table of contents, and `.toc-col` stays empty so that the
  * body keeps its place.
  *
- * A script of the page sets `--reading-progress` on `<html>` while the reader scrolls (0 at the
- * top of the page, 1 when the bottom of `.article-body` reaches the bottom of the viewport), which
- * the line under the site header (`readingProgress` of `Layout`) and the bar under the window of
- * the table of contents (`ReadingProgress`) draw, and marks the item of the `h2` that the reader
- * is in with `aria-current="location"`. The line and the bar are hidden until it runs.
+ * A script of the page sets `--reading-progress` on `<html>` while the reader scrolls (0 until
+ * the top of `.article-body` reaches the bottom of the site header, 1 when its bottom reaches
+ * the middle of the viewport, or at the bottom of the page when it cannot or when it passes the
+ * middle before its top reaches the header), which the line under the site header
+ * (`readingProgress` of `Layout`) and the bar under the window of the table of contents
+ * (`ReadingProgress`) draw, and marks the item of the `h2` that the reader is in with
+ * `aria-current="location"`. The line and the bar are hidden until it runs.
  *
  * A diagonal band at the right of the head is drawn with `::before`. It is 64px wide below 768px,
  * where the rows of the head keep clear of it with a right padding, and 120px wide from 1280px,
@@ -488,13 +490,17 @@ if (body) {
   ];
   // `a.hash` percent-encodes a Japanese id, which `getElementById` does not find.
   const ids = links.map((link) => link.getAttribute("href")?.slice(1) ?? "");
+  const header = document.querySelector<HTMLElement>(".site-header");
   const update = () => {
     const scrollY = window.scrollY;
-    const progress = readingProgress(
-      scrollY,
-      body.getBoundingClientRect().bottom + scrollY,
-      window.innerHeight,
-    );
+    const rect = body.getBoundingClientRect();
+    const progress = readingProgress(scrollY, {
+      bodyTop: rect.top + scrollY,
+      bodyBottom: rect.bottom + scrollY,
+      headerBottom: header?.getBoundingClientRect().bottom ?? 0,
+      viewportHeight: window.innerHeight,
+      maxScroll: document.documentElement.scrollHeight - window.innerHeight,
+    });
     document.documentElement.style.setProperty(
       "--reading-progress",
       progress.toFixed(3),
