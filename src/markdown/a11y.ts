@@ -56,7 +56,7 @@ export const taskItemLabel = defineHastPlugin({
  * Hast plugin that makes every table reachable with the keyboard.
  *
  * A table scrolls sideways when it is wider than the article (`display: block` and
- * `overflow-x: auto` in `src/components/ArticleBody.astro`), and a scrolling region that cannot
+ * `overflow-x: auto` in `src/markdown/article.css`), and a scrolling region that cannot
  * take focus cannot be scrolled with the keyboard. Every `table` gets `tabindex="0"`, whether or
  * not it scrolls at the width of the viewer.
  */

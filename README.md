@@ -65,7 +65,7 @@ bun create astro@latest -- --template basics
 │   │   └── name-logo/      # Name logo of the brand kit (t3_full_for-dark.svg), kept as it is and drawn by og-image.ts
 │   ├── components/
 │   │   ├── About.astro           # About section: heading bar, intro, two window tiles and the lina.spec window of plan A
-│   │   ├── ArticleBody.astro     # Styles rendered Markdown (body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code, code blocks, YouTube embeds, accordions, message boxes) and puts the copy button on code blocks
+│   │   ├── ArticleBody.astro     # Wraps rendered Markdown: imports article.css (body text) and highlight.css (code blocks), styles accordions and message boxes, and puts the copy button on code blocks
 │   │   ├── ArticleEnd.astro      # End window of a post: share links, copy-link button, thumbs-up
 │   │   ├── ArticleToc.astro      # Table of contents of a post: the neo-tree window in the left column from 1024px, a closed <details> before the body below it; the h2 being read is marked
 │   │   ├── AvatarThreeView.astro # Three views of the avatar v2.1 with lines and names of the parts: in a row from 1200px, below it stacked or one at a time with tabs
@@ -115,6 +115,7 @@ bun create astro@latest -- --template basics
 │   │   └── Layout.astro       # <head> with the page title (title prop), the theme script, the <Font /> tags, the RSS link, the canonical and hreflang links (src/i18n/paths.ts), the description, Open Graph and Twitter card tags (description and image props, src/page-meta.ts) and a "head" slot; imports tokens.css, global.css, controls.css, window.css, labels.css and motion.css; sets --font-body and --font-mono on html; puts the skip link (SkipLink.astro) and the site header (SiteHeader.astro, with the line of how far the reader is in a post when the readingProgress prop is set) at the top of <body> and the site footer (the `footer` prop is "full" or "compact") at the end of <body>, at the bottom of the viewport on a short page
 │   ├── markdown/
 │   │   ├── a11y.ts           # Sätteri hast plugins: aria-label on task list checkboxes, tabindex="0" on tables, unit-tested
+│   │   ├── article.css       # Type of an article under .article-body: links, body text, headings, lists, quotes, images, tables, task lists, footnotes, inline code and YouTube embeds
 │   │   ├── code-filename.ts  # Sätteri mdast plugin: code blocks as a window <figure> with a title (file name, language or text), unit-tested
 │   │   ├── external-links.ts # Sätteri hast plugin: links to other sites in a new tab, unit-tested
 │   │   ├── highlight.css     # Code block window (frame, title and copy button) and role colors
@@ -226,6 +227,7 @@ Styles that belong to one component go in that component's scoped `<style>`.
 Color values are written only in `tokens.css`; other CSS, global or scoped, uses the tokens with `var(--…)`. The one exception is `black` in the masks of `window.css`, which sets only the opacity and is never drawn.
 A component that must style an element outside its own markup, such as `<html data-theme>`,
 wraps only that selector in `:global()`.
+The elements that rendered Markdown outputs are styled by plain CSS files in `src/markdown/`: `article.css`, whose rules sit under `.article-body` instead of in `:global()`, and `highlight.css` for the windows of code blocks.
 
 The inline script in the `<head>` of `src/layouts/Layout.astro` (`THEME_SCRIPT` in `src/theme.ts`) sets `<html data-theme>` before the first paint.
 It sets the light theme when `localStorage` holds `light` under the key `theme`, and the dark theme in every other case: nothing saved, any other value, or `localStorage` throwing. It does not read `prefers-color-scheme` and does not follow changes of the OS setting.
