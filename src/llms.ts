@@ -4,7 +4,7 @@
  * from the locales in `src/i18n/locales.ts` and the Japanese labels of `PROFILE_LINKS` in
  * `src/profile-links.ts`.
  */
-import { contactPagePath } from "./components/site-nav";
+import { contactPagePath } from "./components/site/site-nav";
 import { LOCALES, type Locale } from "./i18n/locales";
 import { PROFILE_LINKS } from "./profile-links";
 

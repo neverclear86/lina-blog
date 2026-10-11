@@ -238,9 +238,9 @@ const FOCUS_PAIRS: readonly (readonly [
 ])[] = A_FILLS.map((fill) => ["--focus-ring", fill]);
 
 /**
- * Borders of the fields of the contact form (`src/components/ContactForm.astro`) on the fills
- * they sit between: a field's border is `--muted`, or `--acc-text` while `aria-invalid`, and a
- * field is `--bg` inside a `--panel` window. A border is a graphical object, so it must reach 3:1
+ * Borders of the fields of the contact form (`src/components/contact/ContactForm.astro`) on the
+ * fills they sit between: a field's border is `--muted`, or `--acc-text` while `aria-invalid`, and
+ * a field is `--bg` inside a `--panel` window. A border is a graphical object, so it must reach 3:1
  * (WCAG 2.2 SC 1.4.11) on both. Every pair is also in `A_TEXT_PAIRS`, whose 4.5:1 fails first.
  */
 const FIELD_BORDER_PAIRS: readonly (readonly [

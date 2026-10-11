@@ -8,11 +8,11 @@ import { describe, expect, it } from "vitest";
  * and `accountLinks` instead.
  */
 const WIRED = [
-  ["components/LatestVideoFeature.astro", 2],
-  ["components/LatestVideoList.astro", 2],
-  ["components/ArticleEnd.astro", 2],
-  ["components/SponsorNotice.astro", 1],
-  ["components/ContactBand.astro", 1],
+  ["components/home/LatestVideoFeature.astro", 2],
+  ["components/home/LatestVideoList.astro", 2],
+  ["components/article/ArticleEnd.astro", 2],
+  ["components/article/SponsorNotice.astro", 1],
+  ["components/home/ContactBand.astro", 1],
   ["pages/[lang]/contact/index.astro", 1],
 ] as const;
 
@@ -37,7 +37,7 @@ describe("外部リンクの配線", () => {
   );
 
   it("SiteFooter は links の列の <a> に target と rel を渡し、external のときだけ ExternalNote を置く", () => {
-    const text = source("components/SiteFooter.astro");
+    const text = source("components/site/SiteFooter.astro");
     expect(text).toMatch(/<a href=\{href\} target=\{target\} rel=\{rel\}>/);
     expect(text).toMatch(/\{external && <ExternalNote lang=\{lang\} \/>\}/);
   });

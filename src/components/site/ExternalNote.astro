@@ -1,0 +1,23 @@
+---
+/**
+ * The end of the name of a link that leaves the site: a text hidden from the eyes that says it
+ * is another site and opens in a new tab (`externalNote`), and with `arrow` an arrow `↗` that
+ * assistive technology skips. It goes at the end of the `<a>`, after the visible name, so that
+ * the name read out starts with the visible text. The caller sets `target` on the `<a>`.
+ */
+import { externalNote } from "../../external-link";
+import type { Locale } from "../../i18n/locales";
+
+interface Props {
+  /** Language of the page, which picks the text. */
+  lang: Locale;
+  /** Whether to show the arrow `↗` after the name. Defaults to false. */
+  arrow?: boolean;
+}
+
+const { lang, arrow = false } = Astro.props;
+---
+
+{arrow && <span aria-hidden="true"> ↗</span>}<span class="sr-only"
+  >{externalNote(lang)}</span
+>

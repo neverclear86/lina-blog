@@ -6,7 +6,7 @@
  */
 import type { MarkdownHeading } from "astro";
 import { type BlogFrontmatter, blogSchema } from "./blog-schema";
-import { homeSectionPath } from "./components/site-nav";
+import { homeSectionPath } from "./components/site/site-nav";
 import { translate, type UiKey } from "./i18n/ui";
 import { formatJstDate } from "./jst-date";
 import {

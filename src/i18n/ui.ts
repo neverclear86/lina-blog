@@ -20,7 +20,7 @@ const ja = {
     "フリーランスのエンジニア。このサイトやNostrまわりの道具も自作しています。",
   "about.spec.job": "エンジニア兼VTuber",
   "about.spec.like": "[好きなもの]",
-  // End window of an article (src/components/ArticleEnd.astro).
+  // End window of an article (src/components/article/ArticleEnd.astro).
   "articleEnd.heading": "読んでくれてありがと！",
   "articleEnd.nostr": "Nostr",
   "articleEnd.shareSuffix": "で共有",
@@ -36,7 +36,7 @@ const ja = {
   "avatar.thumbsUpAlt": "サムズアップする創好リナ",
   "avatar.thinkingAlt": "考えこむ創好リナ",
   // Names of the parts that the lines on the three views of the avatar point at
-  // (src/components/AvatarThreeView.astro). The codes under the names are not translated.
+  // (src/components/home/AvatarThreeView.astro). The codes under the names are not translated.
   "avatar.note.ahoge": "アホ毛",
   "avatar.note.tie": "ネクタイ",
   "avatar.note.zettai": "絶対領域",
@@ -44,7 +44,8 @@ const ja = {
   "avatar.note.qr": "袖のQRコード",
   "avatar.note.nail": "ネイル",
   "avatar.note.nametag": "ネームタグ",
-  // Name of the tab list of the three views of the avatar (src/components/AvatarThreeView.astro).
+  // Name of the tab list of the three views of the avatar
+  // (src/components/home/AvatarThreeView.astro).
   "avatar.tabsLabel": "アバターの向き",
   // Name of the author in the head of a post.
   "blog.author": "創好リナ",
@@ -64,11 +65,12 @@ const ja = {
   "blog.tagPage.diary.subtitle": "日記の記事",
   "blog.tagPage.tech.noPosts": "技術の記事はまだありません。",
   "blog.tagPage.tech.subtitle": "技術の記事",
-  // Table of contents of a post (src/components/ArticleToc.astro): the name of its `<nav>` and the
-  // `<summary>` of the closed one below 1024px.
+  // Table of contents of a post (src/components/article/ArticleToc.astro): the name of its `<nav>`
+  // and the `<summary>` of the closed one below 1024px.
   "blog.toc.label": "目次",
   "blog.toc.summary": "toc — 目次",
-  // Copy button of a code block (src/code-copy.ts): its name, its three texts and two messages.
+  // Copy button of a code block (src/components/article/code-copy.ts): its name, its three texts
+  // and two messages.
   "code.copy.name": "コードをコピー",
   "code.copy.idle": "copy",
   "code.copy.done": "copied",
@@ -99,7 +101,8 @@ const ja = {
   "contact.error.newline": "改行を入れずに入力してください。",
   "contact.error.required": "入力してください。",
   "contact.error.requiredChoice": "選んでください。",
-  // "{max}" is replaced with the limit by contactFieldMessage in src/contact-form.ts.
+  // "{max}" is replaced with the limit by contactFieldMessage in
+  // src/components/contact/contact-form.ts.
   "contact.error.tooLong": "{max} 文字以内で入力してください。",
   "contact.noscript": "送信には JavaScript が必要です。",
   "contact.status.failed":
@@ -131,7 +134,8 @@ const ja = {
   "hero.latestVideo": "最新の動画を見る",
   "hero.links": "リンク",
   // Name of the button that switches the pose of the avatar in the hero. "{n}" is the number of
-  // the pose on show and "{total}" the number of poses (poseLabel in src/components/hero-poses.ts).
+  // the pose on show and "{total}" the number of poses (poseLabel in
+  // src/components/home/hero-poses.ts).
   "hero.poseButton": "アバターのポーズを切り替える（いま {n}/{total}）",
   "home.comingSoon": "準備中です。",
   // Hidden text after "JA" of the language switch on a page only in Japanese.
@@ -157,8 +161,8 @@ const ja = {
   // Name of the menu button of the site header; whether the menu is open is its expanded state.
   "menu.label": "メニュー",
   // "nav.label" names the <nav> of the site header and "nav.contact" is the text of its contact
-  // button. The items of the navigation are written in `src/components/site-nav.ts` in English in
-  // every locale and do not use the "nav.*" keys. "nav.breadcrumb" names the <nav> of the
+  // button. The items of the navigation are written in `src/components/site/site-nav.ts` in English
+  // in every locale and do not use the "nav.*" keys. "nav.breadcrumb" names the <nav> of the
   // breadcrumb at the top of a page.
   // "nav.skip" is the text of the skip link at the top of every page.
   "nav.about": "プロフィール",

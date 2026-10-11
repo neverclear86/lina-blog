@@ -1,11 +1,12 @@
 /**
  * Links to the profiles on other services, shared by `/llms.txt` (`src/llms.ts`), the text
  * version of the site (`src/text-site.ts`), the large window and the video list of the Latest
- * section (`src/components/LatestVideoFeature.astro`, `src/components/LatestVideoList.astro`),
- * the account window of the hero (`src/components/hero-account.ts`), the links column of the
- * site footer (`src/components/footer-links.ts`) and the line about a DM on Twitter
- * (self-proclaimed X) in the contact page and the contact band
- * (`src/pages/[lang]/contact/index.astro`, `src/components/ContactBand.astro`).
+ * section (`src/components/home/LatestVideoFeature.astro`,
+ * `src/components/home/LatestVideoList.astro`), the account window of the hero
+ * (`src/components/home/hero-account.ts`), the links column of the site footer
+ * (`src/components/site/footer-links.ts`) and the line about a DM on Twitter (self-proclaimed X) in
+ * the contact page and the contact band (`src/pages/[lang]/contact/index.astro`,
+ * `src/components/home/ContactBand.astro`).
  */
 import type { Locale } from "./i18n/locales";
 

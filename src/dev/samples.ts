@@ -5,12 +5,12 @@
  */
 import type { ComponentProps } from "astro/types";
 import { blogCrumbs, blogPostBreadcrumb } from "../blog-pages";
-import type ArticleToc from "../components/ArticleToc.astro";
-import type LatestPosts from "../components/LatestPosts.astro";
-import type PostNav from "../components/PostNav.astro";
-import type PostRows from "../components/PostRows.astro";
+import type ArticleToc from "../components/article/ArticleToc.astro";
+import type PostNav from "../components/article/PostNav.astro";
+import { sponsorNotice } from "../components/article/sponsor-notice";
+import type PostRows from "../components/blog/PostRows.astro";
+import type LatestPosts from "../components/home/LatestPosts.astro";
 import { translate } from "../i18n/ui";
-import { sponsorNotice } from "../sponsor-notice";
 import type { YouTubeVideo } from "../youtube-feed";
 
 export const tagCrumbs = blogCrumbs("技術");

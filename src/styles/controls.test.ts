@@ -187,7 +187,7 @@ describe("ボタンとアイコンのリンク", () => {
 
 describe("配線", () => {
   it("記事一覧の頭は PageHead の中にパンくずと h1 と絞り込みを置き、絞り込みのリンクに .ws と現在地の .on を付ける", () => {
-    const index = read("components/BlogIndex.astro");
+    const index = read("components/blog/BlogIndex.astro");
     const head = index.slice(
       index.indexOf("<PageHead>"),
       index.indexOf("</PageHead>"),
@@ -222,9 +222,9 @@ describe("記事の本文のリンク", () => {
 
 /** The files of the cards whose title is underlined, with the selector of the card's link. */
 const CARDS = [
-  ["components/PostRows.astro", ".row"],
-  ["components/PostNav.astro", ".item"],
-  ["components/LatestVideoFeature.astro", ".feature"],
+  ["components/blog/PostRows.astro", ".row"],
+  ["components/article/PostNav.astro", ".item"],
+  ["components/home/LatestVideoFeature.astro", ".feature"],
 ] as const;
 
 describe("カードのタイトル", () => {
@@ -286,8 +286,8 @@ describe("カテゴリのチップ", () => {
 
   it("使い手は寸法を写さない", () => {
     for (const path of [
-      "components/ArticleHead.astro",
-      "components/SponsorNotice.astro",
+      "components/article/ArticleHead.astro",
+      "components/article/SponsorNotice.astro",
     ]) {
       const sizes = rulesFor(astroStyle(path), ".chip-acc").flatMap((rule) =>
         rule.declarations.filter(
@@ -325,7 +325,7 @@ describe("記事のアコーディオン", () => {
 
   it("開閉は <details> に任せ、ArticleBody のスクリプトは details に触れない", () => {
     const scripts =
-      read("components/ArticleBody.astro").match(
+      read("components/article/ArticleBody.astro").match(
         /<script>[\s\S]*?<\/script>/g,
       ) ?? [];
     expect(scripts).toHaveLength(1);

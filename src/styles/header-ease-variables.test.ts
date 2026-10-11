@@ -60,7 +60,7 @@ describe("--header-h と --ease-out", () => {
   });
 
   it("scroll-padding、目次の top、開いたメニューの inset と max-height は --header-h から決める", () => {
-    const menu = "components/SiteHeader.astro";
+    const menu = "components/site/SiteHeader.astro";
     expect(readsHeight("styles/global.css", "html", "scroll-padding")).toBe(
       true,
     );

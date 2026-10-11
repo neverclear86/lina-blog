@@ -1,0 +1,522 @@
+---
+/**
+ * The hero of the top page, copied from `#top` of `design/Main.dc.html`: on the grid background
+ * (`.gridbg`), the prompt, the full name logo with the sub line (`NameLogo`, `full-sub`) in a box
+ * with corner ticks (`.ticks`), the heading (`<h1>`), the intro, the button to the latest video
+ * (`#latest`), the account window (`HeroAccount`) and, in the right column, the poses of the
+ * avatar (`HeroPoses`). A band of stripes (`.stripes`) closes the hero.
+ *
+ * The strings come from the `hero.*` keys of `src/i18n/ui.ts`. The prompt, the name of the logo,
+ * `/tsukusu/lina $_ # 創好リナ ── VIRTUAL IKIRI PROGRAMMER`, and the text of the orange band are
+ * the same in every locale. The prompt, the decorations behind the text (the tilted orange band
+ * with its vertical text, the hatch, the two lines and the five crosses) and the stripes are
+ * hidden from assistive technology.
+ *
+ * The vertical text of the band flows up, the hatch flows up and the stripes flow right, each in
+ * a loop whose end looks like its start. The text moves up by a quarter of its length, which is
+ * 2 of the 8 repeats in `BAND_TEXT`. The hatch and the stripes (`.stripes` in `window.css`) draw
+ * their pattern on a `::before` one period longer than the box, and `translate` moves it by one
+ * period (`--hatch-period`, `--stripes-period`) inside the box, which clips it. The text takes
+ * 56s a loop, the hatch 1.2s and the stripes 1.6s; up to 767px they take 44s, 1s and 1.4s.
+ * Under `prefers-reduced-motion: reduce` all three stand still.
+ *
+ * From 900px the content is a grid of two columns, 1.08fr and 0.92fr, 64px from the sides and at
+ * least 820px high. The left column holds the prompt, the logo, the heading, the intro and the
+ * button, and ends with `.hero-account`, which holds the account window (`HeroAccount`).
+ * `.hero-right` holds `HeroPoses`, the poses of the avatar with the ruler and the table of its
+ * parts. Below 900px the grid is one column, `--page-gutter` from the sides (20px from 768px), the
+ * heading is 40px, the band is 150px wide and the two lines are left out. The band, the hatch and
+ * the lines keep clear of the text: from 900px the band starts at 57% of the width, or further
+ * right where the intro would reach it, and from 768px to 899px at 46% or 390px, whichever is
+ * further right.
+ *
+ * Up to 767px the hero is stacked, as in `design/AMobile.dc.html`. The right column has no box of
+ * its own, so `HeroPoses` covers the whole hero. The left column starts 330px from the top, 16px
+ * from the sides, and lies over it; a tap reaches the pose button below unless it is on the text
+ * or on the ground of the column, which fades into `--ov` over 110px. The prompt is at the top
+ * left, the band is 140px wide at 52%, the hatch is 22px wide, the crosses are left out, the
+ * heading is 36px and the intro is 15px in `--text`. The logo box has neither the ticks nor the
+ * ground, and the button fills the column, 48px high, without the triangle.
+ *
+ * When the page opens, the elements of the left column rise from 18px below in turn (`.rv` in
+ * `src/styles/motion.css`): the prompt after 0.2s, the logo after 0.35s, the heading after 0.5s,
+ * the intro after 0.6s, the button after 0.7s and the account window after 0.8s. Up to 767px the
+ * rise is 16px, the logo starts after 0.4s, the heading after 0.55s and the account window after
+ * 0.7s, and the prompt stays still. The band and the hatch open upwards from their lower ends in
+ * 0.9s (`band-in`), the band after 0.1s. They are set on `.band` and `.hatch`, and the loops above on
+ * `.band-text` and `.hatch::before`, so the two do not replace each other. The two lines and the
+ * crosses stand still. The animations play once when the page opens and not
+ * when the theme changes, which sets only `data-theme` on `<html>`. Under
+ * `prefers-reduced-motion: reduce` everything is shown at once.
+ *
+ * The cursor of the logo blinks (`.blink-on` in `src/styles/motion.css`) while some part of the
+ * logo is in the viewport, starting 1.6s after the page opens or the logo comes back into it. A
+ * script sets `data-offscreen` on the logo while no part of it is; the cursor of the logo then
+ * stops and the one of the logo in `SiteHeader` blinks in its place, so that one cursor blinks on
+ * a screen. Without the script the logo keeps blinking and the header stays still.
+ */
+import type { Locale } from "../../i18n/locales";
+import { translate } from "../../i18n/ui";
+import NameLogo from "../site/NameLogo.astro";
+import HeroAccount from "./HeroAccount.astro";
+import HeroPoses from "./HeroPoses.astro";
+
+interface Props {
+  /** Language of the page, which picks the strings. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+
+/**
+ * The text of the orange band, repeated 8 times. `band-flow` moves it up by a quarter of its
+ * length, which is 2 repeats, so the end of a loop looks like its start and the 6 repeats that
+ * remain still fill the band. `\xa0` joins the repeats.
+ */
+const BAND_TEXT = "LINA TSUKUSU // VIRTUAL IKIRI PROGRAMMER //\xa0".repeat(8);
+---
+
+<section id="top" class="hero gridbg">
+  <div class="decor" aria-hidden="true">
+    <div class="hatch"></div>
+    <div class="band"><span class="band-text">{BAND_TEXT}</span></div>
+    <div class="ln ln-thick"></div>
+    <div class="ln ln-thin"></div>
+    <span class="cross c1">+</span>
+    <span class="cross c2">+</span>
+    <span class="cross c3">+</span>
+    <span class="cross c4">+</span>
+    <span class="cross c5">+</span>
+  </div>
+  <div class="hero-grid page-width">
+    <div class="hero-left">
+      <p class="whoami rv" aria-hidden="true">
+        lina@tsukusu:~$ <span>whoami</span>
+      </p>
+      <div class="ticks hero-logo rv blink-on">
+        <NameLogo
+          variant="full-sub"
+          label="/tsukusu/lina $_ # 創好リナ ── VIRTUAL IKIRI PROGRAMMER"
+        />
+      </div>
+      <h1 class="heading rv">
+        {translate(lang, "hero.headingLead")}<br>
+        <span class="mark">{translate(lang, "hero.headingMark")}</span>
+      </h1>
+      <p class="intro rv">{translate(lang, "hero.intro")}</p>
+      <a class="btn btn-acc latest rv" href="#latest">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M7 4l13 8-13 8z"></path>
+        </svg>{translate(lang, "hero.latestVideo")}
+      </a>
+      <div class="hero-account rv"><HeroAccount lang={lang} /></div>
+    </div>
+    <div class="hero-right"><HeroPoses lang={lang} /></div>
+  </div>
+</section>
+<div class="stripes" aria-hidden="true"></div>
+
+<style>
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.decor {
+  --band-left: max(57%, calc(64px + min(520px, (100% - 128px) * 0.54) + 187px));
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.band {
+  position: absolute;
+  top: -35%;
+  left: var(--band-left);
+  display: flex;
+  justify-content: center;
+  width: 230px;
+  height: 175%;
+  overflow: hidden;
+  background: var(--keyword);
+  transform: rotate(22deg);
+  animation: band-in 0.9s var(--ease-out) 0.1s backwards;
+}
+
+.band-text {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.42em;
+  color: var(--ink);
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  animation: band-flow 56s linear infinite;
+}
+
+@keyframes band-flow {
+  to {
+    translate: 0 -25%;
+  }
+}
+
+.hatch {
+  --hatch-on: 5px;
+  --hatch-period: 15px;
+  position: absolute;
+  top: -35%;
+  left: calc(var(--band-left) - 110px);
+  width: 36px;
+  height: 175%;
+  overflow: hidden;
+  opacity: 0.7;
+  transform: rotate(22deg);
+  animation: band-in 0.9s var(--ease-out) backwards;
+}
+
+/* The pattern is one period longer than the hatch; `translate` moves it up by one period, and
+   `.hatch` clips it. */
+.hatch::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 calc(-1 * var(--hatch-period));
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--keyword) 0 var(--hatch-on),
+    transparent var(--hatch-on) var(--hatch-period)
+  );
+  animation: hatch-up 1.2s linear infinite;
+}
+
+@keyframes hatch-up {
+  to {
+    translate: 0 calc(-1 * var(--hatch-period));
+  }
+}
+
+.ln {
+  position: absolute;
+  top: -35%;
+  height: 175%;
+  background: var(--text);
+  transform: rotate(22deg);
+}
+
+.ln-thick {
+  left: calc(var(--band-left) + 300px);
+  width: 5px;
+}
+
+.ln-thin {
+  left: calc(var(--band-left) + 340px);
+  width: 1px;
+  opacity: 0.45;
+}
+
+.cross {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  line-height: 1;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.c1 {
+  left: 6%;
+  top: 9%;
+}
+
+.c2 {
+  left: 34%;
+  top: 22%;
+}
+
+.c3 {
+  left: 29%;
+  top: 70%;
+}
+
+.c4 {
+  right: 4%;
+  top: 40%;
+}
+
+.c5 {
+  right: 11%;
+  top: 86%;
+}
+
+.hero-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  min-height: 820px;
+}
+
+.hero-left {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+  padding: 96px 0 72px;
+}
+
+.whoami {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--muted);
+  animation-delay: 0.2s;
+}
+
+.whoami span {
+  color: var(--text);
+}
+
+.hero-logo {
+  box-sizing: border-box;
+  max-width: 640px;
+  padding: 30px 32px;
+  background-color: var(--shade);
+  animation-delay: 0.35s;
+}
+
+.hero-logo :global(.cur) {
+  animation-delay: 1.6s;
+}
+
+.hero-logo[data-offscreen] :global(.cur) {
+  animation: none;
+}
+
+.heading {
+  margin: 8px 0 0;
+  font-size: 60px;
+  font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+  animation-delay: 0.5s;
+}
+
+.mark {
+  background: linear-gradient(
+    transparent 62%,
+    color-mix(in srgb, var(--keyword) 55%, transparent) 62%
+  );
+}
+
+.intro {
+  max-width: 520px;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.9;
+  color: var(--muted);
+  text-wrap: pretty;
+  animation-delay: 0.6s;
+}
+
+.latest {
+  align-self: flex-start;
+  animation-delay: 0.7s;
+}
+
+.hero-account {
+  max-width: 520px;
+  margin-top: 8px;
+  animation-delay: 0.8s;
+}
+
+.hero-right {
+  position: relative;
+  min-height: 560px;
+}
+
+@media (max-width: 899px) {
+  .decor {
+    --band-left: max(46%, 390px);
+  }
+
+  .band {
+    top: 30%;
+    width: 150px;
+    height: 120%;
+  }
+
+  .hatch {
+    top: 30%;
+    left: calc(var(--band-left) - 70px);
+    height: 120%;
+  }
+
+  .ln {
+    display: none;
+  }
+
+  .hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .heading {
+    font-size: 40px;
+  }
+
+  .hero-right {
+    height: 560px;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-logo {
+    padding: 0;
+    background: none;
+    animation-delay: 0.4s;
+  }
+
+  .intro {
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .latest {
+    align-self: stretch;
+    justify-content: center;
+    min-height: 48px;
+  }
+
+  .latest svg {
+    display: none;
+  }
+
+  .decor {
+    --band-left: 52%;
+  }
+
+  .band {
+    top: -6%;
+    width: 140px;
+    height: 80%;
+  }
+
+  .band-text {
+    font-size: 12px;
+    letter-spacing: 0.4em;
+    animation-duration: 44s;
+  }
+
+  .hatch {
+    top: -6%;
+    left: calc(var(--band-left) - 64px);
+    width: 22px;
+    height: 80%;
+    --hatch-on: 4px;
+    --hatch-period: 12px;
+  }
+
+  .hatch::before {
+    animation-duration: 1s;
+  }
+
+  .cross {
+    display: none;
+  }
+
+  .hero-grid {
+    position: static;
+    min-height: 0;
+    padding-inline: 0;
+  }
+
+  .hero-right {
+    display: contents;
+  }
+
+  .hero-left {
+    gap: 18px;
+    padding: 440px var(--page-gutter) 32px;
+    pointer-events: none;
+  }
+
+  .hero-left::before {
+    content: "";
+    position: absolute;
+    inset: 330px 0 0;
+    z-index: -1;
+    pointer-events: auto;
+    background: linear-gradient(
+      to bottom,
+      transparent 0,
+      var(--ov) 110px,
+      var(--ov) 100%
+    );
+  }
+
+  .hero-left > * {
+    pointer-events: auto;
+  }
+
+  .whoami {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 2;
+    padding: 4px 8px;
+    font-size: 12px;
+    background: var(--shade);
+    animation: none;
+  }
+
+  .heading {
+    margin-top: 6px;
+    font-size: 36px;
+    line-height: 1.18;
+    animation-delay: 0.55s;
+  }
+
+  .hero-account {
+    margin-top: 0;
+    animation-delay: 0.7s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .band,
+  .hatch {
+    animation: none;
+  }
+
+  .band-text,
+  .hatch::before {
+    animation: none;
+  }
+}
+</style>
+
+<script>
+// While no part of the logo of the hero is in the viewport, mark it with `data-offscreen`: its
+// cursor stops, and the cursor of the logo in the site header blinks in its place (see
+// `.hero-logo` in `SiteHeader.astro`).
+const logo = document.querySelector<HTMLElement>(".hero-logo");
+if (logo && "IntersectionObserver" in window) {
+  new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      logo.toggleAttribute("data-offscreen", !entry.isIntersecting);
+    }
+  }).observe(logo);
+}
+</script>

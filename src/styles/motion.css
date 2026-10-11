@@ -15,7 +15,8 @@
  * ends, so the element keeps its own style. It sets `translate`, so an effect that sets
  * `transform` can go on the same element. `band-in` opens a box from its lower edge upwards with
  * `clip-path`; the caller writes the `animation` (see `.band` and `.hatch` in
- * `src/components/Hero.astro`). Neither reads the theme, so switching it does not play them again.
+ * `src/components/home/Hero.astro`). Neither reads the theme, so switching it does not play them
+ * again.
  *
  * Under `prefers-reduced-motion: reduce` the two do not move: the cursor stays shown and the
  * elements with `.rv` are shown whole at once. The callers of `band-in` stop it the same way.
