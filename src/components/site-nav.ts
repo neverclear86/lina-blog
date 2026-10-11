@@ -7,7 +7,7 @@ import { LOCALES, type Locale } from "../i18n/locales";
 import { localizedPath } from "../i18n/paths";
 
 /** A section of the top page that the header links to, used as the fragment of the link. */
-export type HomeSection = "top" | "about" | "latest" | "blog" | "works";
+export type HomeSection = "top" | "about" | "latest" | "blog";
 
 /** Path of the blog, which has no locale prefix. */
 const BLOG_PATH = "/blog/";
@@ -53,21 +53,20 @@ export interface NavLink {
 }
 
 /**
- * Returns the items of the main navigation in order: `00 top`, `01 about`, `02 latest`,
- * `03 blog` and `04 works`.
+ * Returns the items of the main navigation in order: `00 top`, `01 about`, `02 latest` and
+ * `03 blog`.
  *
  * Each item links to its section of the top page of `lang`, such as `/ja/#about`, except `03 blog`
  * on a page other than the top page (`/ja/` or `/ja`), which links to `/blog/`.
  *
  * `03 blog` is current with "page" on `/blog/` itself and with "true" on the pages under it, such
- * as an article or a list of a tag. `04 works` is current with "true" on the pages under
- * `/ja/works/`. No other page has a current item from this function; on the top page the
- * header marks the section that the reader is in instead (`currentSectionIndex`).
+ * as an article or a list of a tag. No other page has a current item from this function; on
+ * the top page the header marks the section that the reader is in instead
+ * (`currentSectionIndex`).
  */
 export function navLinks(lang: Locale, pathname: string): NavLink[] {
   const isTop = isTopPath(lang, pathname);
   const isBlogIndex = pathname === BLOG_PATH || pathname === "/blog";
-  const isWork = pathname.startsWith(`/${lang}/works/`);
   const blogCurrent: NavCurrent | undefined = isBlogIndex
     ? "page"
     : isBlogPath(pathname)
@@ -89,11 +88,6 @@ export function navLinks(lang: Locale, pathname: string): NavLink[] {
       label: "03 blog",
       href: isTop ? homeSectionPath(lang, "blog") : BLOG_PATH,
       current: blogCurrent,
-    },
-    {
-      label: "04 works",
-      href: homeSectionPath(lang, "works"),
-      current: isWork ? "true" : undefined,
     },
   ];
 }

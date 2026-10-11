@@ -39,8 +39,8 @@ describe("absoluteUrl", () => {
 
 describe("canonicalUrl", () => {
   it("ページのパスを site の絶対 URL にする", () => {
-    expect(canonicalUrl("/ja/works/ikili-pro/", site)).toBe(
-      "https://example.com/ja/works/ikili-pro/",
+    expect(canonicalUrl("/ja/contact/", site)).toBe(
+      "https://example.com/ja/contact/",
     );
   });
 
@@ -51,9 +51,9 @@ describe("canonicalUrl", () => {
 
 describe("alternateLinks", () => {
   it("/ja/ で始まるページは自分を含む ja と en、x-default の / をこの順に返す", () => {
-    expect(alternateLinks("/ja/works/ikili-pro/", site)).toEqual([
-      { hreflang: "ja", href: "https://example.com/ja/works/ikili-pro/" },
-      { hreflang: "en", href: "https://example.com/en/works/ikili-pro/" },
+    expect(alternateLinks("/ja/contact/", site)).toEqual([
+      { hreflang: "ja", href: "https://example.com/ja/contact/" },
+      { hreflang: "en", href: "https://example.com/en/contact/" },
       { hreflang: "x-default", href: "https://example.com/" },
     ]);
   });

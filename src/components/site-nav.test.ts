@@ -13,7 +13,7 @@ import {
 describe("homeSectionPath", () => {
   it("言語のトップのページの節を指すパスを返す", () => {
     expect(homeSectionPath("ja", "about")).toBe("/ja/#about");
-    expect(homeSectionPath("en", "works")).toBe("/en/#works");
+    expect(homeSectionPath("en", "latest")).toBe("/en/#latest");
     expect(homeSectionPath("ja", "blog")).toBe("/ja/#blog");
   });
 });
@@ -44,7 +44,7 @@ describe("isContactPage", () => {
       "/ja/",
       "/ja/contact/thanks/",
       "/ja/contacts/",
-      "/ja/works/contact/",
+      "/ja/about/contact/",
       "/blog/",
     ]) {
       expect(isContactPage("ja", pathname)).toBe(false);
@@ -60,7 +60,7 @@ function currents(lang: "ja" | "en", pathname: string): string[] {
 }
 
 describe("navLinks", () => {
-  it("00 top から 04 works の順に並べ、トップ以外のページでは 03 blog が /blog/、他が言語のトップの節を指す", () => {
+  it("00 top から 03 blog の順に並べ、トップ以外のページでは 03 blog が /blog/、他が言語のトップの節を指す", () => {
     expect(
       navLinks("en", "/en/about/").map(({ label, href }) => [label, href]),
     ).toEqual([
@@ -68,7 +68,6 @@ describe("navLinks", () => {
       ["01 about", "/en/#about"],
       ["02 latest", "/en/#latest"],
       ["03 blog", "/blog/"],
-      ["04 works", "/en/#works"],
     ]);
   });
 
@@ -102,21 +101,8 @@ describe("navLinks", () => {
     expect(currents("ja", "/blog/tags/tech/")).toEqual(["03 blog=true"]);
   });
 
-  it("/blog/ 以下の works を含むパスでは 04 works を現在地にしない", () => {
-    expect(currents("ja", "/blog/works/")).toEqual(["03 blog=true"]);
-  });
-
   it("/blogroll は /blog/ 以下とみなさない", () => {
     expect(currents("ja", "/blogroll/")).toEqual([]);
-  });
-
-  it("作品のページでは 04 works だけを true にする（英語でも同じ）", () => {
-    expect(currents("ja", "/ja/works/ikili-pro/")).toEqual(["04 works=true"]);
-    expect(currents("en", "/en/works/ikili-pro/")).toEqual(["04 works=true"]);
-  });
-
-  it("別の言語の作品のパスでは 04 works を現在地にしない", () => {
-    expect(currents("ja", "/en/works/ikili-pro/")).toEqual([]);
   });
 
   it("別の言語のトップのパスでは 03 blog が /blog/ を指す", () => {
@@ -155,7 +141,7 @@ describe("isTopPath", () => {
     expect(isTopPath("ja", "/ja/")).toBe(true);
     expect(isTopPath("ja", "/ja")).toBe(true);
     expect(isTopPath("ja", "/en/")).toBe(false);
-    expect(isTopPath("ja", "/ja/works/ikili-pro/")).toBe(false);
+    expect(isTopPath("ja", "/ja/contact/")).toBe(false);
     expect(isTopPath("ja", "/blog/")).toBe(false);
   });
 });

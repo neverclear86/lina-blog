@@ -149,6 +149,8 @@ const ja = {
   // Shown in the large window in place of the newest video when the feed gives none, such as when
   // it cannot be read.
   "latest.videos.empty": "最新の動画を表示できませんでした。",
+  // Text hidden from the eyes after a link to another site, such as the mirror link of a post.
+  "link.external": "（外部サイト）",
   // Name of the menu button of the site header; whether the menu is open is its expanded state.
   "menu.label": "メニュー",
   // "nav.label" names the <nav> of the site header and "nav.contact" is the text of its contact
@@ -163,7 +165,6 @@ const ja = {
   "nav.latest": "さいきん",
   "nav.skip": "本文へ移動",
   "nav.top": "トップ",
-  "nav.works": "つくったもの",
   // The 404 page, which is in Japanese and shows the English message and link under the heading.
   "notFound.back": "トップへもどる",
   "notFound.message": "このページは存在しないよ。",
@@ -181,14 +182,6 @@ const ja = {
   "theme.nameSeparator": "：",
   "theme.toDark": "ダークテーマに切り替え",
   "theme.toLight": "ライトテーマに切り替え",
-  // Name of the breadcrumb on the page of a work.
-  "works.breadcrumb": "パンくず",
-  // Text hidden from the eyes after a link to another site: the title of a work tile or a link of a work's page.
-  "works.external": "（外部サイト）",
-  // Heading of the videos and posts related to a work, on its page.
-  "works.related": "関連する動画と記事",
-  // Name of the list of the technologies of a work.
-  "works.tech": "使用技術",
 } as const;
 
 /** Key of a UI string. */
@@ -309,6 +302,7 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "latest.title": "Recent streams",
     "latest.videos.channel": "Visit the YouTube channel",
     "latest.videos.empty": "Couldn't show the latest videos.",
+    "link.external": "(external site)",
     "menu.label": "Menu",
     "nav.about": "About",
     "nav.blog": "Blog",
@@ -318,7 +312,6 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "nav.latest": "Latest",
     "nav.skip": "Skip to main content",
     "nav.top": "Top",
-    "nav.works": "Works",
     "notFound.back": "Back to top",
     "notFound.message": "This page doesn't exist.",
     "notFound.subtitle": "Page not found",
@@ -330,10 +323,6 @@ export const ui: Record<Locale, Record<UiKey, string>> = {
     "theme.nameSeparator": ": ",
     "theme.toDark": "Switch to dark theme",
     "theme.toLight": "Switch to light theme",
-    "works.breadcrumb": "Breadcrumb",
-    "works.external": "(external site)",
-    "works.related": "Related videos and posts",
-    "works.tech": "Tech stack",
   },
 };
 

@@ -4,7 +4,7 @@ import { openGraphTags, pageDescription, twitterTags } from "./page-meta";
 
 describe("pageDescription", () => {
   it("説明文を渡すとそのまま返す", () => {
-    expect(pageDescription("ja", "作品の説明")).toBe("作品の説明");
+    expect(pageDescription("ja", "ページの説明")).toBe("ページの説明");
   });
 
   it("説明文を省略すると、その言語のサイトの説明文を返す", () => {
@@ -23,15 +23,15 @@ describe("openGraphTags", () => {
       openGraphTags({
         lang: "ja",
         title: "ikili.pro",
-        description: "作品の説明",
-        url: "https://example.com/ja/works/ikili-pro/",
+        description: "ページの説明",
+        url: "https://example.com/ja/contact/",
       }),
     ).toEqual([
       { property: "og:title", content: "ikili.pro" },
-      { property: "og:description", content: "作品の説明" },
+      { property: "og:description", content: "ページの説明" },
       {
         property: "og:url",
-        content: "https://example.com/ja/works/ikili-pro/",
+        content: "https://example.com/ja/contact/",
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "ikili.pro" },

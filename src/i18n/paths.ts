@@ -54,7 +54,7 @@ export function absoluteUrl(path: string, site: URL | undefined): string {
 
 /**
  * Returns the canonical URL of the page at `pathname`: the page itself as an absolute URL under
- * `site`, such as `https://ikili.pro/ja/works/ikili-pro/`.
+ * `site`, such as `https://ikili.pro/ja/contact/`.
  *
  * @param pathname Path of the page, `Astro.url.pathname` in the layout.
  * @param site Astro's `site`, the origin of the absolute URLs.

@@ -4,7 +4,7 @@
  * category chip of `design/AArticle.dc.html`.
  *
  * `.label` is a caption in JetBrains Mono: 11px, upper case, letter-spaced, in `--muted`. `.tag`
- * is a 22px box with a `--line2` border, for the tags of posts and works. `.chip-acc` is the
+ * is a 22px box with a `--line2` border, for the tags of posts. `.chip-acc` is the
  * category chip: `--ink` on `--keyword`, 12px, weight 800.
  *
  * `.tag` and `.chip-acc` stay on one line, at most as wide as their container, and end a longer

@@ -21,15 +21,14 @@ export interface FooterSiteLink {
 
 /**
  * Returns the links of the site column in order: the top page of `lang`, then its profile
- * section, the blog (`/blog/`, which has no locale prefix), its works section and the contact
- * page (`contactPagePath`).
+ * section, the blog (`/blog/`, which has no locale prefix) and the contact page
+ * (`contactPagePath`).
  */
 export function footerSiteLinks(lang: Locale): FooterSiteLink[] {
   return [
     { key: "nav.top", href: `/${lang}/` },
     { key: "nav.about", href: homeSectionPath(lang, "about") },
     { key: "nav.blog", href: "/blog/" },
-    { key: "nav.works", href: homeSectionPath(lang, "works") },
     { key: "nav.contact", href: contactPagePath(lang) },
   ];
 }

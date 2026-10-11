@@ -27,14 +27,12 @@ const longTitlePosts = [
 const HEADINGS = {
   ja: [
     "$ whoami  # 自己紹介",
-    "$ ls ~/works  # つくったもの",
     "$ ls ~/blog  # 最新記事",
     "$ cat ~/links  # リンク",
     "$ mail lina  # お問い合わせ",
   ],
   en: [
     "$ whoami  # About",
-    "$ ls ~/works  # Works",
     "$ ls ~/blog  # Latest posts (in Japanese)",
     "$ cat ~/links  # Links",
     "$ mail lina  # Contact",
@@ -45,7 +43,7 @@ const POST_LINE = /^\d{4}-\d\d-\d\d {2}/;
 
 describe("buildTextSite", () => {
   it.each(["ja", "en"] as const)(
-    "%s: 5 つの節の見出しをこの順に出す",
+    "%s: 4 つの節の見出しをこの順に出す",
     (locale) => {
       const lines = buildTextSite(locale, posts, site).split("\n");
       expect(lines.filter((line) => line.startsWith("$ "))).toEqual(
@@ -75,15 +73,6 @@ describe("buildTextSite", () => {
     expect(text).toContain(`\n${name}\n`);
     expect(text).toContain(`\n${title}`);
   });
-
-  it.each(["ja", "en"] as const)(
-    "%s: 作品の節に ikili.pro と nostr-no-su を載せる",
-    (locale) => {
-      const text = buildTextSite(locale, [], site);
-      expect(text).toContain("\nikili.pro\n  ");
-      expect(text).toContain("\nnostr-no-su\n  ");
-    },
-  );
 
   it("最新記事は日付の新しい順に 5 件まで、日付とタイトルと記事の絶対 URL を載せる", () => {
     const lines = buildTextSite("ja", posts, site).split("\n");
@@ -159,8 +148,8 @@ describe("buildTextSite", () => {
     (locale, twitter) => {
       const text = buildTextSite(locale, [], site);
       const lines = text.split("\n");
-      const start = lines.indexOf(HEADINGS[locale][3]);
-      const end = lines.indexOf(HEADINGS[locale][4]);
+      const start = lines.indexOf(HEADINGS[locale][2]);
+      const end = lines.indexOf(HEADINGS[locale][3]);
       const labels = lines
         .slice(start + 1, end)
         .filter((line) => line.includes(" - ") && !line.startsWith(" "))

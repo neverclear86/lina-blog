@@ -28,7 +28,6 @@ import SiteFooter from "../components/SiteFooter.astro";
 import SkipLink from "../components/SkipLink.astro";
 import SponsorNotice from "../components/SponsorNotice.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
-import WorkTile from "../components/WorkTile.astro";
 import { translate } from "../i18n/ui";
 import Layout from "../layouts/Layout.astro";
 import { sponsorNotice } from "../sponsor-notice";
@@ -284,21 +283,16 @@ const sampleVideos: YouTubeVideo[] = [
             >記事一覧 <span aria-hidden="true">→</span></a
           >
         </SectionTitle>
-        <SectionTitle no="04" label="works" as="h2">
-          <a slot="link" href="#a-headings"
-            >ls ~/works <span aria-hidden="true">→</span></a
-          >
-        </SectionTitle>
         <div lang="en">
           <SectionTitle
-            no="05"
+            no="04"
             label="a-section-with-a-very-long-english-name"
             path="~/long"
             title="Supercalifragilisticexpialidocious-heading-without-any-space"
             as="h3"
           >
             <a slot="link" href="#a-headings"
-              >ls ~/works <span aria-hidden="true">→</span></a
+              >ls ~/long <span aria-hidden="true">→</span></a
             >
           </SectionTitle>
         </div>
@@ -364,58 +358,6 @@ const sampleVideos: YouTubeVideo[] = [
         <div class="a-progress a-progress-full">
           <ReadingProgress variant="line" />
         </div>
-      </div>
-    </section>
-
-    <section id="a-works">
-      <h2>A案: 作品のタイル</h2>
-      <div class="a-tiles">
-        <WorkTile
-          lang="ja"
-          title="ikili.pro"
-          description="創好リナの個人サイト兼ブログ。Astro と Cloudflare Workers で作っている。"
-          tech={["astro", "typescript", "cloudflare"]}
-          link={{ href: "#a-works", external: false }}
-        />
-        <WorkTile
-          lang="ja"
-          title="placeholder-work"
-          description="外部のサイトへのリンクになる作品。名前の後ろに ↗ が付く。"
-          tech={["typescript"]}
-          link={{ href: "#a-works", external: true }}
-        />
-        <WorkTile
-          lang="ja"
-          class="is-hover"
-          title="is-hover"
-          description="ホバーのとき。枠が回った後の角度になる。"
-          tech={["astro"]}
-          link={{ href: "#a-works", external: false }}
-        />
-        <WorkTile
-          lang="ja"
-          class="is-focus"
-          title="is-focus"
-          description="キーボードのフォーカスのとき。枠が回った後の角度になり、輪が付く。"
-          tech={["astro"]}
-          link={{ href: "#a-works", external: false }}
-        />
-        <WorkTile
-          lang="ja"
-          title="a-work-with-a-very-long-name-that-has-no-break-in-it-at-all-1234567890"
-          description="Averyveryverylongwordwithoutanybreakinthedescriptionthatmustwrapinsidethewindow"
-          tech={[
-  "a-technology-with-a-very-long-name-that-the-tag-cuts-with-an-ellipsis",
-  "astro",
-]}
-        />
-        <WorkTile
-          lang="en"
-          title="no-tags"
-          description="A work without technologies, with a link to another site."
-          tech={[]}
-          link={{ href: "#a-works", external: true }}
-        />
       </div>
     </section>
 
@@ -873,13 +815,6 @@ const sampleVideos: YouTubeVideo[] = [
 
 .latest-list-narrow {
   max-width: 320px;
-}
-
-.a-tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-  gap: 14px;
-  margin-top: 16px;
 }
 
 .a-toc {
