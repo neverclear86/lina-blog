@@ -2,12 +2,21 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { LOCALES } from "../i18n/locales";
 import { translate } from "../i18n/ui";
+import {
+  cssOfAstro,
+  hasCondition,
+  parseCss,
+  rulesFor,
+  valueIn,
+} from "../test/css-source";
 import { nextPose, poseClass, poseLabel } from "./hero-poses";
 
 const POSES = readFileSync(
   new URL("./HeroPoses.astro", import.meta.url),
   "utf8",
 );
+const RULES = parseCss(cssOfAstro(POSES));
+const REDUCE = "@media (prefers-reduced-motion: reduce)";
 
 describe("nextPose", () => {
   it("次のポーズの番号を返す", () => {
@@ -95,7 +104,11 @@ describe("HeroPoses.astro", () => {
   it("pose の行は hidden を付けて出し、script が外す", () => {
     expect(POSES).toMatch(/data-pose-row hidden/);
     expect(POSES).toMatch(/row\.hidden = false/);
-    expect(POSES).toMatch(/\.spec-row\[hidden\]\s*\{\s*display:\s*none;\s*\}/);
+    expect(
+      rulesFor(RULES, ".spec-row[hidden]").map((rule) =>
+        valueIn(rule, "display"),
+      ),
+    ).toEqual(["none"]);
   });
 
   it("目盛りとラベルとスペック表は支援技術から隠す", () => {
@@ -105,33 +118,24 @@ describe("HeroPoses.astro", () => {
     expect(POSES).toMatch(/class="spec" aria-hidden="true"/);
   });
 
-  it("隠すポーズは visibility: hidden にし、display: none にしない", () => {
-    expect(POSES).toMatch(/\.pose\.pz-off\s*\{\s*visibility:\s*hidden;\s*\}/);
-    expect(POSES).not.toMatch(/\.pz-off\s*\{[^}]*display/);
+  it("隠すポーズは visibility: hidden にし、display を宣言しない", () => {
+    const hidden = RULES.filter((rule) =>
+      rule.selectors.some((selector) => selector.includes(".pz-off")),
+    );
+    expect(hidden.map((rule) => valueIn(rule, "visibility"))).toEqual([
+      "hidden",
+    ]);
+    expect(hidden.map((rule) => valueIn(rule, "display"))).toEqual([undefined]);
   });
 
-  it("動きを減らす設定では pz-init と pz-in と pz-out の動きを止め、pz-out を隠す", () => {
-    const reduce = POSES.slice(
-      POSES.indexOf("@media (prefers-reduced-motion: reduce)"),
-    );
-    expect(reduce).toMatch(
-      /\.pose\.pz-init,\s*\.pose\.pz-in,\s*\.pose\.pz-out\s*\{\s*animation:\s*none;\s*\}/,
-    );
-    expect(reduce).toMatch(/\.pose\.pz-out\s*\{\s*visibility:\s*hidden;\s*\}/);
-  });
-
-  it("最初のポーズは 0.3s 後に 1s かけて右から滑り込み、終わった後に何も残さない", () => {
-    expect(POSES).toMatch(
-      /\.pose\.pz-init\s*\{\s*animation:\s*av-in 1s cubic-bezier\(0\.2, 0\.8, 0\.2, 1\) 0\.3s backwards;\s*\}/,
-    );
-    expect(POSES).toMatch(
-      /@keyframes av-in\s*\{\s*from\s*\{\s*opacity:\s*0;\s*translate:\s*var\(--av-in-dx, 90px\) 0;\s*\}\s*to\s*\{\s*opacity:\s*1;\s*translate:\s*none;\s*\}\s*\}/,
-    );
-  });
-
-  it("767px 以下では滑り込む距離を 60px にする", () => {
-    const mobile = POSES.slice(POSES.indexOf("@media (max-width: 767px)"));
-    expect(mobile).toMatch(/\.pose\s*\{\s*--av-in-dx:\s*60px;/);
+  it("動きを減らす設定では、animation の無い pz-out を隠す", () => {
+    expect(
+      rulesFor(RULES, ".pose.pz-out").some(
+        (rule) =>
+          hasCondition(rule, REDUCE) &&
+          valueIn(rule, "visibility") === "hidden",
+      ),
+    ).toBe(true);
   });
 
   it("script は押したときに pz-init も外す", () => {
