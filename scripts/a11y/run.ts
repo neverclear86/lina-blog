@@ -215,6 +215,8 @@ async function auditCase(
     viewport: { width, height: VIEWPORT_HEIGHT },
     colorScheme: theme === "light" ? "light" : "dark",
     reducedMotion: "reduce",
+    // The pages send a CSP, which blocks the style tag that hides the text for the pixel check.
+    bypassCSP: true,
   });
   try {
     // The pages take the theme from localStorage and ignore prefers-color-scheme.
