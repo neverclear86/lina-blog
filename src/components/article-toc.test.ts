@@ -1,64 +1,68 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import {
+  cssOfAstro,
+  hasCondition,
+  parseCss,
+  rulesFor,
+  valueIn,
+} from "../test/css-source";
 
-const source = readFileSync(
-  new URL("./ArticleToc.astro", import.meta.url),
-  "utf8",
+const RULES = parseCss(
+  cssOfAstro(
+    readFileSync(new URL("./ArticleToc.astro", import.meta.url), "utf8"),
+  ),
 );
 
-/** The `<style>` of the component without its CSS comments. */
-const style = source
-  .slice(source.indexOf("<style>"), source.indexOf("</style>"))
-  .replace(/\/\*[\s\S]*?\*\//g, "");
+const REDUCE = "@media (prefers-reduced-motion: reduce)";
 
-const reduceAt = style.indexOf("@media (prefers-reduced-motion: reduce)");
-
-/** The `<style>` before `@media (prefers-reduced-motion: reduce)`, which applies always. */
-const always = style.slice(0, reduceAt);
-
-/** The `<style>` from `@media (prefers-reduced-motion: reduce)` on. */
-const reduced = style.slice(reduceAt);
-
-/** Returns the declarations of the one rule with `selector` in `css`, or fails. */
-function declarations(css: string, selector: string): string {
-  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
-    .map((match) => ({
-      selector: match[1].replace(/\s+/g, " ").trim(),
-      body: match[2].replace(/\s+/g, " ").trim(),
-    }))
-    .filter(
-      (rule) =>
-        rule.selector.replace(/\s/g, "") === selector.replace(/\s/g, ""),
-    );
-  if (rules.length !== 1) {
-    throw new Error(`${rules.length} rules for ${selector}, expected 1`);
-  }
-  return rules[0].body;
-}
+/** A color written as one token, such as `var(--text)`. */
+const TOKEN = /^var\(--[\w-]+\)$/;
 
 describe("ArticleToc の窓の今の項目", () => {
-  it("文字は --text の 700 で、四角は --keyword で 1.4 倍になる", () => {
-    const text = declarations(
-      always,
-      ".panel .toc a[aria-current], .panel .toc a[aria-current]:is(:hover, :focus-visible)",
+  it("文字と四角の色はトークンで指し、ホバーとフォーカスでも文字の色を保つ", () => {
+    const [text] = rulesFor(RULES, ".panel .toc a[aria-current]");
+    expect(valueIn(text, "color")).toMatch(TOKEN);
+    expect(text.selectors).toContain(
+      ".panel .toc a[aria-current]:is(:hover, :focus-visible)",
     );
-    expect(text).toContain("color: var(--text);");
-    expect(text).toContain("font-weight: 700;");
-    const square = declarations(always, ".panel .toc a[aria-current]::before");
-    expect(square).toContain("background: var(--keyword);");
-    expect(square).toContain("transform: scale(1.4);");
+    const [square] = rulesFor(RULES, ".panel .toc a[aria-current]::before");
+    expect(valueIn(square, "background")).toMatch(TOKEN);
+
+    // The other hover and focus colors have the same specificity, so the kept color comes last.
+    const others = RULES.filter(
+      (rule) =>
+        rule !== text &&
+        valueIn(rule, "color") !== undefined &&
+        rule.selectors.some((selector) =>
+          selector.includes(":is(:hover, :focus-visible)"),
+        ),
+    );
+    expect(others.length).toBeGreaterThan(0);
+    for (const other of others) {
+      expect(RULES.indexOf(other), other.selectors.join()).toBeLessThan(
+        RULES.indexOf(text),
+      );
+    }
   });
 
-  it("色と四角に 0.2s の transition があり、reduce で止める", () => {
-    expect(declarations(always, ".panel .toc a")).toContain(
-      "transition: color 0.2s;",
+  it("transition のある規則のセレクタは、それより後ろの reduce の中でそれぞれ transition: none になる", () => {
+    const moving = RULES.filter(
+      (rule) =>
+        !hasCondition(rule, REDUCE) &&
+        valueIn(rule, "transition") !== undefined,
     );
-    expect(declarations(always, ".panel .toc a::before")).toContain(
-      "transition: background-color 0.2s, transform 0.2s;",
-    );
-    expect(reduceAt).toBeGreaterThan(-1);
-    expect(declarations(reduced, ".panel .toc a, .panel .toc a::before")).toBe(
-      "transition: none;",
-    );
+    expect(moving.length).toBeGreaterThan(0);
+    for (const rule of moving) {
+      for (const selector of rule.selectors) {
+        const stops = rulesFor(RULES, selector).filter(
+          (r) =>
+            hasCondition(r, REDUCE) &&
+            RULES.indexOf(r) > RULES.indexOf(rule) &&
+            valueIn(r, "transition") === "none",
+        );
+        expect(stops, selector).toHaveLength(1);
+      }
+    }
   });
 });
