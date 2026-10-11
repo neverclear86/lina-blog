@@ -6,7 +6,7 @@
  */
 import { FEED_PATH, rssItemTitle } from "./blog-rss";
 import type { BlogFrontmatter } from "./blog-schema";
-import { contactPagePath } from "./components/site-nav";
+import { contactPagePath } from "./components/site/site-nav";
 import type { Locale } from "./i18n/locales";
 import { PROFILE_LINKS, profileLink } from "./profile-links";
 

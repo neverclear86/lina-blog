@@ -1,10 +1,10 @@
 ---
 import { Font } from "astro:assets";
 import { FEED_PATH, FEED_TITLE } from "../blog-rss";
-import type { FooterVariant } from "../components/footer-links";
-import SiteFooter from "../components/SiteFooter.astro";
-import SiteHeader from "../components/SiteHeader.astro";
-import SkipLink from "../components/SkipLink.astro";
+import type { FooterVariant } from "../components/site/footer-links";
+import SiteFooter from "../components/site/SiteFooter.astro";
+import SiteHeader from "../components/site/SiteHeader.astro";
+import SkipLink from "../components/site/SkipLink.astro";
 import { DEFAULT_LOCALE, type Locale } from "../i18n/locales";
 import { absoluteUrl, alternateLinks, canonicalUrl } from "../i18n/paths";
 import { openGraphTags, pageDescription, twitterTags } from "../page-meta";

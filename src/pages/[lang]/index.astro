@@ -1,13 +1,13 @@
 ---
 import { getCollection } from "astro:content";
 import type { GetStaticPaths } from "astro";
-import About from "../../components/About.astro";
-import ContactBand from "../../components/ContactBand.astro";
-import Hero from "../../components/Hero.astro";
-import LatestPosts from "../../components/LatestPosts.astro";
-import LatestSection from "../../components/LatestSection.astro";
-import LatestVideoFeature from "../../components/LatestVideoFeature.astro";
-import LatestVideoList from "../../components/LatestVideoList.astro";
+import About from "../../components/home/About.astro";
+import ContactBand from "../../components/home/ContactBand.astro";
+import Hero from "../../components/home/Hero.astro";
+import LatestPosts from "../../components/home/LatestPosts.astro";
+import LatestSection from "../../components/home/LatestSection.astro";
+import LatestVideoFeature from "../../components/home/LatestVideoFeature.astro";
+import LatestVideoList from "../../components/home/LatestVideoList.astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
 import { LATEST_VIDEOS_SHOWN, latestVideos } from "../../latest-videos";
 import Layout from "../../layouts/Layout.astro";

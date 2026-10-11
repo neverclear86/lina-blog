@@ -1,5 +1,5 @@
-/* The type of an article, which src/components/ArticleBody.astro wraps around the Markdown it
-   renders. Every rule is under `.article-body`, so it applies only inside that wrapper. It sets
+/* The type of an article, which src/components/article/ArticleBody.astro wraps around the Markdown
+   it renders. Every rule is under `.article-body`, so it applies only inside that wrapper. It sets
    links, body text, headings (h2 to h4, with the marks `##` and `###` before h2 and h3),
    paragraphs, `strong`, inline code, lists, block quotes, images and horizontal rules, and the
    other elements that Sätteri and the plugins in src/markdown/ output: GFM tables, task lists,

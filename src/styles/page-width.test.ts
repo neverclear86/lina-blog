@@ -21,16 +21,16 @@ const cssOf = (path: string) =>
 
 /** The containers that put `page-width` on themselves: `[file under src/, class]`. */
 const CONTAINERS: [string, string][] = [
-  ["components/SiteHeader.astro", "bar"],
-  ["components/SiteFooter.astro", "main"],
-  ["components/SiteFooter.astro", "band"],
-  ["components/SiteFooter.astro", "solo"],
-  ["components/Hero.astro", "hero-grid"],
-  ["components/About.astro", "about"],
-  ["components/LatestSection.astro", "inner"],
-  ["components/ContactBand.astro", "inner"],
-  ["components/PageHead.astro", "inner"],
-  ["components/BlogIndex.astro", "list"],
+  ["components/site/SiteHeader.astro", "bar"],
+  ["components/site/SiteFooter.astro", "main"],
+  ["components/site/SiteFooter.astro", "band"],
+  ["components/site/SiteFooter.astro", "solo"],
+  ["components/home/Hero.astro", "hero-grid"],
+  ["components/home/About.astro", "about"],
+  ["components/home/LatestSection.astro", "inner"],
+  ["components/home/ContactBand.astro", "inner"],
+  ["components/site/PageHead.astro", "inner"],
+  ["components/blog/BlogIndex.astro", "list"],
   ["pages/blog/[slug].astro", "body"],
   ["pages/[lang]/contact/index.astro", "content"],
   ["pages/404.astro", "not-found"],
@@ -52,9 +52,9 @@ const OWNED = [
 
 /** The declarations of `OWNED` that a container may still make: `file class property: value`. */
 const ALLOWED = [
-  "components/Hero.astro hero-grid padding-inline: 0",
-  "components/ContactBand.astro inner padding-right: 0",
-  "components/ContactBand.astro inner padding-right: 16px",
+  "components/home/Hero.astro hero-grid padding-inline: 0",
+  "components/home/ContactBand.astro inner padding-right: 0",
+  "components/home/ContactBand.astro inner padding-right: 16px",
 ];
 
 /** Returns `[conditions, value]` of every rule of `rules` that declares `property`. */
@@ -106,14 +106,14 @@ describe("ページの幅と左右の余白", () => {
 
   it("許す宣言は、Hero の 767px まで、ContactBand の 899px までと 359px までにだけある", () => {
     const hero = rulesFor(
-      parseCss(cssOf("components/Hero.astro")),
+      parseCss(cssOf("components/home/Hero.astro")),
       ".hero-grid",
     );
     expect(valuesOf(hero, "padding-inline")).toEqual([
       [["@media (max-width: 767px)"], "0"],
     ]);
     const band = rulesFor(
-      parseCss(cssOf("components/ContactBand.astro")),
+      parseCss(cssOf("components/home/ContactBand.astro")),
       ".inner",
     );
     expect(valuesOf(band, "padding-right")).toEqual([
@@ -123,18 +123,22 @@ describe("ページの幅と左右の余白", () => {
   });
 
   it.each([
-    ["components/SiteHeader.astro", ".menu-nav a", "0 var(--page-gutter)"],
+    ["components/site/SiteHeader.astro", ".menu-nav a", "0 var(--page-gutter)"],
     [
-      "components/SiteHeader.astro",
+      "components/site/SiteHeader.astro",
       ".menu-languages",
       "8px calc(var(--page-gutter) - 12px)",
     ],
     [
-      "components/SiteHeader.astro",
+      "components/site/SiteHeader.astro",
       ".menu-contact",
       "4px var(--page-gutter) 16px",
     ],
-    ["components/Hero.astro", ".hero-left", "440px var(--page-gutter) 32px"],
+    [
+      "components/home/Hero.astro",
+      ".hero-left",
+      "440px var(--page-gutter) 32px",
+    ],
   ])(
     "%s の %s は %s の左右に --page-gutter を使う",
     (path, selector, padding) => {
@@ -147,7 +151,9 @@ describe("ページの幅と左右の余白", () => {
   );
 
   it("SiteHeader.astro は --gutter を宣言も参照もしない", () => {
-    expect(source("components/SiteHeader.astro")).not.toMatch(/--gutter\b/);
+    expect(source("components/site/SiteHeader.astro")).not.toMatch(
+      /--gutter\b/,
+    );
   });
 
   it("global.css のほかに max-width: 1440px を宣言する CSS と <style> は無い", () => {
@@ -159,7 +165,7 @@ describe("ページの幅と左右の余白", () => {
         (path.endsWith(".css") || path.endsWith(".astro")) &&
         path !== "styles/global.css",
     );
-    expect(paths).toContain("components/Hero.astro");
+    expect(paths).toContain("components/home/Hero.astro");
     const found = paths.filter((path) =>
       parseCss(cssOf(path)).some((rule) =>
         rule.declarations.some(

@@ -79,23 +79,23 @@ describe("視覚的に隠す CSS", () => {
   });
 
   it("隠す文は共通のクラスを付ける: SkipLink は .sr-only-focusable、コピーボタンの状態は .sr-only", () => {
-    expect(source("components/SkipLink.astro")).toMatch(
+    expect(source("components/site/SkipLink.astro")).toMatch(
       /class:list=\{\[[^\]]*"sr-only-focusable"/,
     );
-    expect(source("components/ArticleBody.astro")).toContain(
+    expect(source("components/article/ArticleBody.astro")).toContain(
       'status.className = "sr-only";',
     );
   });
 
   it("記事の頭の dt と ArticleEnd の続きの文は .sr-only-narrow で、部品に隠す規則は無い", () => {
-    const head = source("components/ArticleHead.astro");
+    const head = source("components/article/ArticleHead.astro");
     const dts = head.match(/<dt\b[^>]*>/g) ?? [];
     expect(dts.length).toBeGreaterThan(0);
     for (const tag of dts) {
       expect(tag).toContain("sr-only-narrow");
     }
     expect(
-      source("components/ArticleEnd.astro").match(
+      source("components/article/ArticleEnd.astro").match(
         /<span class="sr-only-narrow"/g,
       ),
     ).toHaveLength(3);

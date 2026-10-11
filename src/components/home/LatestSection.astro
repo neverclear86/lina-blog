@@ -1,0 +1,84 @@
+---
+/**
+ * The Latest section of the home page, on the `--bg2` ground of plan A: the heading bar
+ * (`02` / `latest` / `~/latest`) with the heading `latest.title`, then a grid of the
+ * `video-feature` slot and the `video-list` slot, then the `blog` slot.
+ *
+ * The grid is one column below 1280px. From 1280px the `video-feature` slot takes two thirds
+ * and the `video-list` slot one third. The slots are the grid items themselves, so the root
+ * element of a slot can hide itself and leave no gap. The `blog` slot sits under the grid; the
+ * section in it keeps its own distance from the grid. A slot left empty leaves the heading and
+ * the rest in place.
+ *
+ * The content is `.page-width` and the ground fills the width.
+ */
+import type { Locale } from "../../i18n/locales";
+import { translate } from "../../i18n/ui";
+import SectionTitle from "../site/SectionTitle.astro";
+
+interface Props {
+  /** Locale of the page, which chooses the heading. */
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+---
+
+<section id="latest">
+  <div class="inner page-width">
+    <div class="head">
+      <SectionTitle
+        no="02"
+        label="latest"
+        path="~/latest"
+        title={translate(lang, "latest.title")}
+      />
+    </div>
+    <div class="windows">
+      <slot name="video-feature" />
+      <slot name="video-list" />
+    </div>
+    <slot name="blog" />
+  </div>
+</section>
+
+<style>
+#latest {
+  border-top: 1px solid var(--line);
+  background: var(--bg2);
+}
+
+.inner {
+  padding-block: 48px;
+}
+
+.head {
+  margin-bottom: 16px;
+}
+
+.windows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.windows > :global(*) {
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .inner {
+    padding-block: 100px;
+  }
+
+  .head {
+    margin-bottom: 40px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .windows {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+</style>

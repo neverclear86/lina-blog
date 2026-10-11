@@ -81,7 +81,7 @@ function astroFiles(): [string, string][] {
   const paths = readdirSync(SRC, { recursive: true, encoding: "utf8" }).filter(
     (path) => path.endsWith(".astro"),
   );
-  expect(paths).toContain("components/ArticleToc.astro");
+  expect(paths).toContain("components/article/ArticleToc.astro");
   return paths.map((path) => [path, read(path)]);
 }
 

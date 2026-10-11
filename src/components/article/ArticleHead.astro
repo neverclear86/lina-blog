@@ -1,0 +1,192 @@
+---
+/**
+ * The head of the page of a blog post: `PageHead` (the grid background and the diagonal band)
+ * with the breadcrumb (`Breadcrumb`), the chips, the `h1` and the facts of the post. The chips
+ * are the categories (`tags`) and then the topic tags (`topics`), of which there may be none.
+ * The facts, in a `dl`, are the date, the reading time in minutes, the author and, for a post
+ * that is on Nostr (`nostrUrl`), `mirror`, the link `nostr ↗` to its article, which opens in a
+ * new tab. Below 768px they are a row of text, without the author, and their terms (`dt`) are
+ * hidden from the eyes; from 768px they are a table on the `--shade` background, with the
+ * author, and the terms are shown.
+ *
+ * Below 768px the rows have a right padding at the side of the band: the chips 24px, the facts
+ * 64px and the `h1` 56px, more than `PageHead` gives it, because the title of a post can be
+ * long. The `h1` breaks anywhere. From 768px the chips and the facts may reach the band and are
+ * painted above it, as on the other pages that use `PageHead`; from 900px to 1279px the `h1`
+ * has a right padding of 240px, which keeps it clear of the band and the hatched line.
+ */
+import { blogPostBreadcrumb, blogPostDate } from "../../blog-pages";
+import { externalLinkAttrs } from "../../external-link";
+import { translate } from "../../i18n/ui";
+import Breadcrumb from "../site/Breadcrumb.astro";
+import ExternalNote from "../site/ExternalNote.astro";
+import PageHead from "../site/PageHead.astro";
+
+interface Props {
+  /** Title of the post, the `h1`. */
+  title: string;
+  /** Slug of the post, for the file name in the breadcrumb. */
+  slug: string;
+  /** Date of the post, for the year in the breadcrumb and the date of the facts. */
+  date: Date;
+  /** Categories of the post. */
+  tags: string[];
+  /** Topic tags of the post, if it has any. */
+  topics?: string[];
+  /** Reading time of the post in minutes. */
+  minutes: number;
+  /** Address of the article of the post on Nostr, for a post that is on Nostr. */
+  nostrUrl?: string;
+  /** Origin of the site, to tell that `nostrUrl` leaves it. */
+  site: URL;
+}
+
+const {
+  title,
+  slug,
+  date,
+  tags,
+  topics = [],
+  minutes,
+  nostrUrl,
+  site,
+} = Astro.props;
+const published = blogPostDate(date);
+---
+
+<PageHead>
+  <Breadcrumb lang="ja" items={blogPostBreadcrumb(slug, date)} />
+  <ul class="chips">
+    {tags.map((tag) => (
+  <li>
+    <span class="chip-acc">{tag}</span>
+  </li>
+))}
+    {topics.map((topic) => (
+  <li>
+    <span class="tag">{topic}</span>
+  </li>
+))}
+  </ul>
+  <h1 class="title">{title}</h1>
+  <dl class="meta">
+    <div class="cell">
+      <dt class="label sr-only-narrow" lang="en">date</dt>
+      <dd><time datetime={published.dateTime}>{published.text}</time></dd>
+    </div>
+    <div class="cell">
+      <dt class="label sr-only-narrow" lang="en">read</dt>
+      <dd lang="en">{minutes} min</dd>
+    </div>
+    <div class="cell author">
+      <dt class="label sr-only-narrow" lang="en">author</dt>
+      <dd>{translate("ja", "blog.author")}</dd>
+    </div>
+    {nostrUrl && (
+  <div class="cell">
+    <dt class="label sr-only-narrow" lang="en">
+      mirror
+    </dt>
+    <dd>
+      <a href={nostrUrl} lang="en" {...externalLinkAttrs(nostrUrl, site)}>
+        nostr
+        <ExternalNote lang="ja" arrow />
+      </a>
+    </dd>
+  </div>
+)}
+  </dl>
+</PageHead>
+
+<style>
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0 24px 0 0;
+  list-style: none;
+}
+.chips li {
+  display: flex;
+  min-width: 0;
+}
+.title {
+  overflow-wrap: anywhere;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 0;
+  padding-right: 64px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.meta dd {
+  margin: 0;
+}
+.meta dt {
+  white-space: nowrap;
+}
+.cell {
+  min-width: 0;
+}
+.author {
+  display: none;
+}
+
+/* Twice the class, to win over the rule `.inner h1` of `PageHead`, which has one more element. */
+@media (max-width: 767px) {
+  .title.title {
+    padding-right: 56px;
+  }
+}
+
+/* From 900px to 1279px a long title would reach the band and the hatched line. */
+@media (min-width: 900px) and (max-width: 1279px) {
+  .title.title {
+    padding-right: 240px;
+  }
+}
+
+@media (min-width: 768px) {
+  .chips {
+    gap: 8px;
+    padding: 0;
+  }
+  .chips .tag {
+    height: 24px;
+    padding: 0 9px;
+    line-height: 22px;
+  }
+  .meta {
+    gap: 0;
+    max-width: 900px;
+    padding-right: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--shade);
+    font-size: 14px;
+    color: var(--text);
+  }
+  .cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 20px;
+  }
+  .cell:first-child {
+    padding-left: 0;
+  }
+  .cell:not(:last-child) {
+    border-right: 1px solid var(--line);
+  }
+  .author {
+    display: flex;
+    font-family: var(--font-body);
+    font-weight: 700;
+  }
+}
+</style>

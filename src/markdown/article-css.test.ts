@@ -22,12 +22,14 @@ describe("article.css", () => {
   });
 
   it("ArticleBody.astro は :global() を使わない", () => {
-    expect(read("../components/ArticleBody.astro")).not.toContain(":global");
+    expect(read("../components/article/ArticleBody.astro")).not.toContain(
+      ":global",
+    );
   });
 
   it("ArticleBody.astro は article.css を読み込む", () => {
-    expect(read("../components/ArticleBody.astro")).toContain(
-      'import "../markdown/article.css";',
+    expect(read("../components/article/ArticleBody.astro")).toContain(
+      'import "../../markdown/article.css";',
     );
   });
 });

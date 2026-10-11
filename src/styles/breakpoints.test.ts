@@ -40,7 +40,7 @@ function sourcesEndingWith(...suffixes: string[]): string[] {
 describe("ブレークポイントの境界", () => {
   it("src の @media の幅は min-width: N か max-width: N-1 で、N は一覧の幅", () => {
     const paths = sourcesEndingWith(".astro", ".css");
-    expect(paths).toContain("components/Hero.astro");
+    expect(paths).toContain("components/home/Hero.astro");
     expect(paths).toContain("styles/global.css");
     const media = paths.flatMap((path) => {
       const text = readFileSync(new URL(path, SRC), "utf8");
@@ -64,7 +64,7 @@ describe("ブレークポイントの境界", () => {
   it("src の sizes と matchMedia の幅も同じ書き方で、<style> の外にある", () => {
     const paths = sourcesEndingWith(".astro", ".ts");
     expect(paths).toContain("avatar-images.ts");
-    expect(paths).toContain("components/AvatarThreeView.astro");
+    expect(paths).toContain("components/home/AvatarThreeView.astro");
     const outside = paths.map((path) => ({
       path,
       text: readFileSync(new URL(path, SRC), "utf8").replace(

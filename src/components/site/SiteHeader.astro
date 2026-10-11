@@ -1,0 +1,538 @@
+---
+/**
+ * The site header of every page. It sticks to the top of the viewport, `--header-h` high, on
+ * `--hdr` blurred with a `--line` line under it, and its content is at most 1440px wide.
+ *
+ * From 1024px it is the header of `design/Main.dc.html`: the name logo (`NameLogo`, `compact`)
+ * linking to the top of the top page, the main navigation `00 top` to `03 blog`, the language
+ * switch, the theme toggle, and the contact button
+ * (`.btn-acc`). The items come from `navLinks` in `./site-nav`, and the item of the current
+ * page has `aria-current` and a `--keyword` face. The language switch shows the language of the
+ * page as text and links to the others; a page that exists only in Japanese shows `JA` alone.
+ *
+ * The theme toggle (`ThemeToggle`) is one icon button at every width: between the language switch
+ * and the contact button from 1024px, between the logo and the menu button below it. It shows the
+ * moon in the dark theme and the sun in the light theme, in a box of the same size. This differs
+ * from `design/Main.dc.html` and `design/AMobile.dc.html`, which show a sun in either theme
+ * (`design/Main.dc.html` with the name of the theme).
+ *
+ * The contact button, in the header and in the menu, links to the contact page
+ * (`contactPagePath`) and has `aria-current="page"` on that page (`isContactPage`); its look
+ * does not change.
+ *
+ * With `readingProgress`, the lower edge of the header shows at every width a 3px line in
+ * `--keyword` with a glow, over the border under the header (`ReadingProgress`, `line`): its
+ * length is how far the reader is in the post (`--reading-progress`, set by the page). The line
+ * is hidden until the script of the page shows it, so a page without script has none.
+ *
+ * On the top page (`isTopPath` in `./site-nav`) the navigation follows the scroll: the item of
+ * the section that the reader is in (`currentSectionIndex` in `./site-nav`) has
+ * `aria-current="location"`, and its `--keyword` face is the block `.nav-ind`, which slides
+ * to it unless reduced motion is preferred. The menu gets the same `aria-current`. Without
+ * script the block is hidden and `00 top` has the face as `.ws.on`.
+ *
+ * The cursor of the logo blinks (`.blink-on` in `src/styles/motion.css`), except while the logo of
+ * the hero of the top page (`.hero-logo` in `Hero`) is in the viewport, that is, has no
+ * `data-offscreen`: that logo blinks in its place, so that one cursor blinks on a screen.
+ *
+ * Below 1024px it is the header of `design/AMobile.dc.html`: the logo, the theme toggle and the
+ * menu button (`.iconbtn-acc`), with `--page-gutter` beside them (16px, 20px from 768px and
+ * 64px from 900px).
+ * The menu button shows and hides the menu without script. The menu is a popover sheet on
+ * `--bg` under the header, with the items of the navigation as rows 48px high, the language
+ * switch and the contact button. The button shows three bars, and a cross while the menu is
+ * open. While the menu is open, the page behind it does not scroll. A script closes it when a
+ * link in it is clicked and when the focus moves to an element of the page outside the header,
+ * and sets `aria-expanded` of the menu button to whether the menu is open.
+ */
+import type { Locale } from "../../i18n/locales";
+import { translate } from "../../i18n/ui";
+import ReadingProgress from "../article/ReadingProgress.astro";
+import NameLogo from "./NameLogo.astro";
+import {
+  contactPagePath,
+  homeSectionPath,
+  isContactPage,
+  isTopPath,
+  languageLinks,
+  navLinks,
+} from "./site-nav";
+import ThemeToggle from "./ThemeToggle.astro";
+
+interface Props {
+  /** Language of the text and of the links to the top page. */
+  lang: Locale;
+  /** Whether the lower edge of the header shows how far the reader is in a post. */
+  readingProgress?: boolean;
+}
+
+const { lang, readingProgress = false } = Astro.props;
+const pathname = Astro.url.pathname;
+const nav = navLinks(lang, pathname);
+const languages = languageLinks(lang, pathname);
+const contactCurrent = isContactPage(lang, pathname) ? "page" : undefined;
+const follow = isTopPath(lang, pathname);
+---
+
+<header class="site-header">
+  <div class="bar page-width">
+    <a
+      class="brand blink-on"
+      href={homeSectionPath(lang, "top")}
+      aria-label={translate(lang, "header.homeLabel")}
+    >
+      <NameLogo variant="compact" />
+    </a>
+    <nav
+      class="site-nav"
+      aria-label={translate(lang, "nav.label")}
+      data-follow={follow ? "" : undefined}
+    >
+      {follow && <span class="nav-ind" aria-hidden="true"></span>}
+      {nav.map((item, index) => (
+  <a
+    class:list={["ws", { on: follow && index === 0 }]}
+    href={item.href}
+    aria-current={item.current}
+  >
+    {item.label}
+  </a>
+))}
+    </nav>
+    <div class="actions">
+      <div class="languages">
+        {languages.map((link, index) => (
+  <>
+    {index > 0 && (
+      <span class="separator" aria-hidden="true">
+        /
+      </span>
+    )}
+    {link.current ? (
+      <span class="lang-now" lang={link.locale} aria-current="page">
+        {link.locale.toUpperCase()}
+        {languages.length === 1 && (
+          <span class="sr-only">{translate(lang, "lang.jaOnly")}</span>
+        )}
+      </span>
+    ) : (
+      <a class="ws" href={link.href} hreflang={link.locale} lang={link.locale}>
+        {link.locale.toUpperCase()}
+      </a>
+    )}
+  </>
+))}
+      </div>
+      <ThemeToggle lang={lang} />
+      <a
+        class="btn btn-acc contact"
+        href={contactPagePath(lang)}
+        aria-current={contactCurrent}
+      >
+        {translate(lang, "nav.contact")}
+      </a>
+      <button
+        class="iconbtn iconbtn-acc menu-toggle"
+        type="button"
+        aria-label={translate(lang, "menu.label")}
+        popovertarget="site-menu"
+      >
+        <svg
+          class="menu-open-icon"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="square"
+          aria-hidden="true"
+        >
+          <path d="M4 7h16M4 12h16M4 17h10"></path>
+        </svg>
+        <svg
+          class="menu-close-icon"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="square"
+          aria-hidden="true"
+        >
+          <path d="M6 6l12 12M18 6L6 18"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div id="site-menu" class="menu-panel" popover>
+    <nav class="menu-nav" aria-label={translate(lang, "nav.label")}>
+      {nav.map((item) => (
+  <a href={item.href} aria-current={item.current}>
+    {item.label}
+  </a>
+))}
+    </nav>
+    <div class="menu-languages">
+      {languages.map((link, index) => (
+  <>
+    {index > 0 && (
+      <span class="separator" aria-hidden="true">
+        /
+      </span>
+    )}
+    {link.current ? (
+      <span class="current-language" lang={link.locale} aria-current="page">
+        {link.locale.toUpperCase()}
+        {languages.length === 1 && (
+          <span class="sr-only">{translate(lang, "lang.jaOnly")}</span>
+        )}
+      </span>
+    ) : (
+      <a class="ws" href={link.href} hreflang={link.locale} lang={link.locale}>
+        {link.locale.toUpperCase()}
+      </a>
+    )}
+  </>
+))}
+    </div>
+    <div class="menu-contact">
+      <a
+        class="btn btn-acc"
+        href={contactPagePath(lang)}
+        aria-current={contactCurrent}
+      >
+        {translate(lang, "nav.contact")}
+      </a>
+    </div>
+  </div>
+  {readingProgress && (
+  <div class="reading-line">
+    <ReadingProgress variant="line" hidden />
+  </div>
+)}
+</header>
+
+<style>
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--line);
+  background: var(--hdr);
+  backdrop-filter: blur(10px);
+}
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 8px;
+}
+.reading-line {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  pointer-events: none;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  width: 82px;
+  height: 44px;
+  text-decoration: none;
+}
+/* The logo of the hero blinks while it is in the viewport (see `Hero.astro`), so this one stays. */
+:global(:root:has(.hero-logo:not([data-offscreen]))) .brand :global(.cur) {
+  animation: none;
+}
+.brand:hover {
+  opacity: 0.8;
+}
+.site-nav,
+.languages,
+.bar .contact {
+  display: none;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.menu-close-icon {
+  display: none;
+}
+.site-header:has(.menu-panel:popover-open) .menu-open-icon {
+  display: none;
+}
+.site-header:has(.menu-panel:popover-open) .menu-close-icon {
+  display: block;
+}
+/*
+ * Replaces the UA box of [popover] (centered, bordered, Canvas colors) with a sheet under the
+ * header. Leave display to the UA so that the closed menu stays hidden.
+ */
+.menu-panel {
+  position: fixed;
+  inset: var(--header-h) 0 auto;
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  max-height: calc(100dvh - var(--header-h));
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+}
+.menu-nav {
+  display: flex;
+  flex-direction: column;
+}
+.menu-nav a {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 var(--page-gutter);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  text-decoration: none;
+}
+.menu-nav a + a {
+  border-top: 1px solid var(--line);
+}
+.menu-nav a:is(:hover, :focus-visible) {
+  background: var(--panel);
+  color: var(--text);
+}
+.menu-nav a:focus-visible {
+  outline-offset: -2px;
+}
+.menu-nav a[aria-current],
+.menu-nav a[aria-current]:is(:hover, :focus-visible) {
+  background: var(--keyword);
+  color: var(--ink);
+  font-weight: 700;
+}
+.menu-nav a[aria-current]:focus-visible {
+  outline-color: var(--ink);
+}
+.menu-languages {
+  display: flex;
+  align-items: center;
+  padding: 8px calc(var(--page-gutter) - 12px);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+.menu-contact {
+  display: flex;
+  justify-content: center;
+  padding: 4px var(--page-gutter) 16px;
+}
+.menu-contact .btn {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+}
+.separator {
+  color: var(--muted);
+}
+.menu-languages .ws,
+.menu-languages .current-language {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+.menu-languages .current-language {
+  color: var(--text);
+  font-weight: 700;
+}
+@media (max-width: 1023px) {
+  :global(html:has(#site-menu:popover-open)) {
+    overflow: hidden;
+  }
+}
+/* From 1024px the navigation, the language switch and the contact button are in the bar. */
+@media (min-width: 1024px) {
+  .brand {
+    width: 92px;
+  }
+  .site-nav {
+    display: flex;
+    gap: 4px;
+    margin-left: 20px;
+  }
+  .languages {
+    display: flex;
+    align-items: center;
+  }
+  .bar .contact {
+    display: inline-flex;
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .menu-toggle,
+  .menu-panel {
+    display: none;
+  }
+  .site-nav .ws {
+    width: 92px;
+  }
+  .languages .ws,
+  .lang-now {
+    min-width: 28px;
+    padding: 0 6px;
+  }
+  .lang-now {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 30px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .separator {
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .bar .ws:is(:hover, :focus-visible) {
+    color: var(--text);
+  }
+  .site-nav .ws[aria-current],
+  .site-nav .ws[aria-current]:is(:hover, :focus-visible),
+  .site-nav .ws.on:is(:hover, :focus-visible) {
+    background: var(--keyword);
+    color: var(--ink);
+    font-weight: 700;
+  }
+}
+/* `.nav-ind` is 92px, the width of a `.ws`, and moves 96px per item, with the 4px `gap`. */
+.site-nav[data-follow] {
+  position: relative;
+}
+.site-nav[data-follow] .ws {
+  position: relative;
+  z-index: 1;
+  transition: color 0.25s;
+}
+.nav-ind {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 92px;
+  height: 30px;
+  margin-top: -15px;
+  border-radius: 4px;
+  background: var(--keyword);
+  pointer-events: none;
+  transform: translateX(calc(var(--nav-index, 0) * 96px));
+}
+.site-nav.following .nav-ind {
+  display: block;
+}
+.site-nav.ready .nav-ind {
+  transition: transform 0.4s var(--ease-out);
+}
+.site-nav.following .ws[aria-current] {
+  background: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-nav.ready .nav-ind,
+  .site-nav[data-follow] .ws {
+    transition: none;
+  }
+}
+</style>
+
+<script>
+// A link to a section of the current page moves within the document and leaves the popover
+// open over it, so close the menu on every link click. Without script the menu stays open until
+// the menu button, Escape or a tap outside closes it.
+const menu = document.getElementById("site-menu");
+for (const link of menu?.querySelectorAll("a") ?? []) {
+  link.addEventListener("click", () => {
+    if (menu && "hidePopover" in menu) menu.hidePopover();
+  });
+}
+
+// The menu button tells whether the menu is open: `aria-expanded` follows the popover. It is set
+// here, also at load, so that without script the browser keeps reporting the state itself.
+const toggle = document.querySelector(".menu-toggle");
+const syncExpanded = () =>
+  toggle?.setAttribute(
+    "aria-expanded",
+    String(menu?.matches(":popover-open") ?? false),
+  );
+menu?.addEventListener("toggle", syncExpanded);
+syncExpanded();
+
+// Focus that moves to the page leaves the open menu over it, so close the menu then. Focus that
+// leaves the document, such as to the address bar, keeps it open.
+const header = menu?.closest("header");
+document.addEventListener("focusin", (event) => {
+  if (
+    event.target instanceof Node &&
+    !header?.contains(event.target) &&
+    menu?.matches(":popover-open")
+  ) {
+    menu.hidePopover();
+  }
+});
+</script>
+
+<script>
+// On the top page, moves `.nav-ind` and `aria-current="location"` to the item of the section
+// that the reader is in. The sections are the ids in the fragments of the navigation links.
+import { oncePerFrame } from "./once-per-frame";
+import { currentSectionIndex } from "./site-nav";
+
+const nav = document.querySelector<HTMLElement>(".site-nav[data-follow]");
+if (nav) {
+  const ids = [...nav.querySelectorAll("a")].map((a) => a.hash.slice(1));
+  const links = document.querySelectorAll<HTMLAnchorElement>(
+    ".site-nav a, .menu-nav a",
+  );
+  const update = () => {
+    const tops = ids.map(
+      (id) => document.getElementById(id)?.getBoundingClientRect().top ?? null,
+    );
+    const index = currentSectionIndex(tops);
+    nav.style.setProperty("--nav-index", String(index));
+    for (const link of links) {
+      if (link.hash.slice(1) === ids[index]) {
+        link.setAttribute("aria-current", "location");
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    }
+  };
+  const schedule = oncePerFrame(update);
+  for (const link of nav.querySelectorAll("a.on")) link.classList.remove("on");
+  nav.classList.add("following");
+  update();
+  addEventListener("scroll", schedule, { passive: true });
+  addEventListener("resize", schedule);
+  addEventListener("load", () => {
+    update();
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => nav.classList.add("ready")),
+    );
+  });
+}
+</script>

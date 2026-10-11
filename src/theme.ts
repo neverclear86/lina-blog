@@ -7,7 +7,7 @@
  * (`prefers-color-scheme`) and does not follow changes of it. Without JavaScript, `<html>` keeps
  * the dark theme that the layout renders.
  *
- * `toggleTheme` is what the theme toggle (`src/components/ThemeToggle.astro`) runs on a click:
+ * `toggleTheme` is what the theme toggle (`src/components/site/ThemeToggle.astro`) runs on a click:
  * it switches `<html data-theme>` and saves the new theme under the same key.
  */
 

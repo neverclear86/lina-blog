@@ -5,8 +5,8 @@
    site theme, and the text colors and the line under the title are the `--code-*` properties in
    src/styles/tokens.css, which are the same in both themes. The type of the title and the code
    is 11px and 12.5px, and 12px and 14px from 768px. It also styles the copy button that the
-   script of src/components/ArticleBody.astro puts last in a window. The live region that reads
-   out its result is hidden by `.sr-only` of src/styles/global.css. */
+   script of src/components/article/ArticleBody.astro puts last in a window. The live region
+   that reads out its result is hidden by `.sr-only` of src/styles/global.css. */
 
 figure.code-window {
   margin: 0 0 1.4em;

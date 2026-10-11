@@ -36,7 +36,7 @@ function summarySelectors(rules: CssRule[]): string[] {
 
 const WINDOW = parseCss(read("styles/window.css"));
 const ARTICLE = parseCss(read("markdown/article.css"));
-const TOC_SOURCE = read("components/ArticleToc.astro");
+const TOC_SOURCE = read("components/article/ArticleToc.astro");
 const TOC = parseCss(cssOfAstro(TOC_SOURCE));
 
 const SUMMARY = ":where(details.win, .article-body details) > summary";
@@ -98,10 +98,10 @@ describe("窓のタイトル行", () => {
 
   it("お問い合わせの窓、404 の窓、目次の窓のタイトル行は win-title を付け、window-title の写しは残らない", () => {
     const marks = [
-      ["components/ContactForm.astro", '<p class="win-title">'],
+      ["components/contact/ContactForm.astro", '<p class="win-title">'],
       ["pages/404.astro", '<p class="win-title">'],
       [
-        "components/ArticleToc.astro",
+        "components/article/ArticleToc.astro",
         '<div class="win-title title" lang="en">',
       ],
     ];
