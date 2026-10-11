@@ -730,6 +730,16 @@ const sampleVideos: YouTubeVideo[] = [
         <a class="is-focus" href="#plan-a-controls">フォーカスのリンク</a>
       </div>
       <div class="row">
+        <a class="a-link-card is-hover" href="#plan-a-controls">
+          <span class="label">.link-title</span>
+          <strong class="link-title">ホバーのカードのタイトル</strong>
+        </a>
+        <a class="a-link-card is-focus" href="#plan-a-controls">
+          <span class="label">.link-title</span>
+          <strong class="link-title">フォーカスのカードのタイトル</strong>
+        </a>
+      </div>
+      <div class="row">
         <ArticleBody lang="ja"
           ><p>
             記事の本文の中の<a href="#plan-a-controls">リンク</a
@@ -886,6 +896,14 @@ const sampleVideos: YouTubeVideo[] = [
   min-height: 112px;
   padding: 16px;
   color: var(--text);
+  text-decoration: none;
+}
+
+.a-link-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 240px;
   text-decoration: none;
 }
 
