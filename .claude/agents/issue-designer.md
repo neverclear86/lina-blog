@@ -54,3 +54,9 @@ disallowedTools: Agent, Skill, Artifact, SendFeedback, EnterWorktree, ListAgents
 
 返すもの: 構造化出力で、投稿したコメントの URL。
 
+## 学びの表の候補
+
+ユーザーレベルの学びの表（issue-workflow-kit）にあり、まだ本文に入っていない学びである。条件の付いたものは、当てはまるときだけ守る。
+
+- L090: デザインの方針のコメントに式や実測値を書くときは、境界の具体値（最小・最大の入力）で式と本文の決めごとを突き合わせ、測った土台を添え、他の open な PR が触る部品の条件は数値でなく関係で書く。
+
