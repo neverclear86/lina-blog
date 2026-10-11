@@ -43,6 +43,7 @@ disallowedTools: Agent, Skill, Artifact, SendFeedback, EnterWorktree, ListAgents
   - 対応が rebase を含み、`kind=fix` の head のコミットの patch が対応の差分を示さないときは、レビューの head と対応後の head のそれぞれから PR のファイルの内容を `gh api -H 'Accept: application/vnd.github.raw' 'repos/neverclear86/lina-blog/contents/<path>?ref=<head>'` で取って比べる
 - レビューで REQUEST CHANGES になった指摘が、対応コミットで実際に直っているか。PR レビューの nit が未対応でも指摘しない（nit を扱う段階は無い）。マージ後に誤った記録として残るときだけ nit で触れる
 - 指摘に書く事実（件数、上流のライセンスや規約の内容、ファイルの行）は、出どころのファイルを取得して引いたものだけにし、記憶から書かない
+- 詳細度など計算に依る指摘は、規則ごとの計算値（`:is()` は引数の最大で数える）を書く。勝ち負けの断定は、土台と head の computed style を比べた根拠（PR レビューの probe の結果）が無い限り must にしない
 
 ## rebase の差分の再確認（依頼文が「rebase の差分を再確認」と言うとき）
 マージ担当が、最終確認の APPROVE の後の rebase に衝突の解消を超える変更がある、または PR レビューの APPROVE の後のコミットが `kind=fix` の対応コメントと一致しないと判断したときに頼まれる。
