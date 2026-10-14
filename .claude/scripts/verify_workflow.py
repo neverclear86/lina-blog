@@ -48,6 +48,7 @@ def cases(mods):
         ('tier-none-design-must', {'1': 'tier-none-design-must'}, one(), ['merged'], None),
         ('tier-none-deviation', {'1': 'tier-none-deviation'}, one(), ['merged'], None),
         ('pr-conditions', {'1': 'pr-conditions'}, one(), ['merged'], None),
+        ('pr-conditions-nocommit', {'1': 'pr-conditions-nocommit'}, one(), ['merged'], None),
         ('approve-with-conditions', {'1': 'approve-with-conditions'}, one(), ['merged'], None),
         ('plan2', {'1': 'plan2'}, one(), ['merged'], None),
         ('plan-stall', {'1': 'plan-stall'}, one(), ['stalled'], None),
