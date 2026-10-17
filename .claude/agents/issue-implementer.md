@@ -53,7 +53,7 @@ hooks:
 - ほぼ全ページを静的ビルドし、Workers Static Assets から配信する。動的な処理（お問い合わせ、curl 応答）は `src/fetch.ts` の Hono アプリに置く。表示のために Worker も DB も起動しないことを基本とし、D1 と Live Content Collections は使わない（#1）
 - CSS は素の CSS（Astro のスコープ付き `<style>` とグローバルの少数ファイル）で書く。色はトークン（CSS 変数）で持ち、コンポーネントに色を直書きしない（#2、#20）
 - 見た目は `design/` の A案の 4 枚を正とし、ロゴと顔アイコンはブランドキットの SVG（`design/brand/assets/`）をそのまま使う（描き直さない）。テキストの色は WCAG AA を満たし、アニメーションは `prefers-reduced-motion: reduce` で止める
-- 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
+- 入力から出力が決まるロジック（Hono のルート、検証、変換、イベントの組み立て）には vitest の単体テストを足す。テストは対象の隣に `<名前>.test.ts` で置き、テスト名は日本語で振る舞いを書く。Hono のルートは `src/lib/server/api.ts` などの Hono アプリに置いて `app.request()` で呼ぶ（`src/fetch.ts` は Astro のハンドラを含むので単体テストで読み込まない）。見た目の部品は単体テストでなく、`screenshot.mjs` のスクリーンショットとはみ出しの数で確かめる
 - 開いている `要決定` ラベルの issue で決まっていない値（文言、作品の掲載内容）は、issue の指示どおり仮のままにし、先取りして決めない。決まった値は、要決定の issue のコメント「## 決定」と、各 issue のコメント「## 事前の決定」にある
 - X（旧 Twitter）の表記は、アイコン以外（本文、`aria-label`、テキスト版、`llms.txt` を含む）ではすべて日本語で「Twitter(自称X)」、英語で「Twitter (self-proclaimed X)」にする。X と書くのはアイコンの図柄だけ
 - 部品を足したら、`src/dev/sections/` に区画のファイルを足し、`src/dev/components.astro`（dev サーバーの `/dev/components/`）に並べる
@@ -84,7 +84,7 @@ push のたびに CI が走り、CI の失敗や衝突で push をやり直す�
 - UI を変える issue（`ui: true`）でだけ、main と作業ブランチの両方の画面を撮り（同じ初期状態を作ってから）、PR を作った直後に `gh pr comment <PR> --attach <png>` で「変更前」「変更後」を貼る。プランの検証の手順か issue の完了条件が撮影の一式を列挙しているときは、変わらない画面も含めて列挙どおりに貼る（手順が「バイト一致なら代表のみ」と書くときだけ省ける）。列挙があるときは「テストと検証」に「貼った枚数 / 手順の枚数」を書き、手順が列挙した枚数と違うときは理由を書く。列挙が無いときだけ変えた画面に絞り、絞ったときは「プランからの変更」に貼らなかった枚数と理由を書く。見た目の変わった画面が 1 つも無いとき（リファクタリングなど）は貼らず、「テストと検証」に「変更前と変更後の一式を撮って比べ、見た目の変わった画面は無い」と 1 行書く。UI を変えない issue では撮らない
 <!-- ADAPT:screenshots -->
 - 撮影は `node <作業ツリー>/.claude/scripts/screenshot.mjs --root <作業ツリー> --port <ポート +0> --out <出力先> <パス>...`（Playwright の headless Chromium。幅ごと・テーマごとにページ全体を `<名前>-<幅>-<light|dark>.png` で撮り、動きは止める）。幅は 1440 と 390 で、issue の完了条件が中間の幅（768、1024）を言うときは `--widths 1440,1024,768,390` を付け、出力の `overflowX` が 0 であることを「テストと検証」に書く。変更前（main）の撮影は、main にこのスクリプトが無ければ、作業ツリーのスクリプトを `--root` に main の作業ツリーを渡して使う。変更前と変更後の build は続けて（並列にせず）行う（別の時刻に build すると同じ内容のページでも撮影が一致せず偽の差分になり、並列の build は prerender の inspector のポートで落ちる）。貼るのは 1440 と 390 だけでよい。i18n（#18）の後は日本語と英語のページを両方撮る
-- 要素だけを撮るときは `--selector <css>` を付ける（要素を画面に入れてから撮り、`<名前>-<selector の slug>-<幅>-<テーマ>.png` に出す。出力の `box` が要素の大きさである）。自前の probe で撮るときは、テーマは `localStorage` の `theme` で決まる（`src/theme.ts` は OS の設定を読まない）ので `addInitScript` で置き、`networkidle` で開いてから `document.documentElement.dataset.theme` を出して意図したテーマであることを確かめ、撮った画像を Read で開いて対象が写っていることを見てから貼る
+- 要素だけを撮るときは `--selector <css>` を付ける（要素を画面に入れてから撮り、`<名前>-<selector の slug>-<幅>-<テーマ>.png` に出す。出力の `box` が要素の大きさである）。自前の probe で撮るときは、テーマは `localStorage` の `theme` で決まる（`src/lib/theme.ts` は OS の設定を読まない）ので `addInitScript` で置き、`networkidle` で開いてから `document.documentElement.dataset.theme` を出して意図したテーマであることを確かめ、撮った画像を Read で開いて対象が写っていることを見てから貼る
 <!-- /ADAPT:screenshots -->
 
 ## docker を使うときの安全策（ユーザーの docker と同じ daemon を共有している）
