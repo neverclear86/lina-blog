@@ -33,7 +33,6 @@
 import { type CollectionEntry, getCollection, render } from "astro:content";
 import { nostrPublishedSlugs } from "virtual:lina-published-slugs";
 import type { GetStaticPaths } from "astro";
-import { blogPostPaths, blogPostToc, readingMinutes } from "../../blog-pages";
 import ArticleBody from "../../components/article/ArticleBody.astro";
 import ArticleEnd from "../../components/article/ArticleEnd.astro";
 import ArticleHead from "../../components/article/ArticleHead.astro";
@@ -44,10 +43,15 @@ import ReadingProgress from "../../components/article/ReadingProgress.astro";
 import SponsorNotice from "../../components/article/SponsorNotice.astro";
 import { sponsorNotice } from "../../components/article/sponsor-notice";
 import Layout from "../../layouts/Layout.astro";
-import { nostrArticleUrl } from "../../nostr-address";
-import { postOgImagePath } from "../../og-pages";
-import { NOSTR_NPUB } from "../../profile-links";
-import { isNostrPublished } from "../../published-articles";
+import {
+  blogPostPaths,
+  blogPostToc,
+  readingMinutes,
+} from "../../lib/blog/blog-pages";
+import { nostrArticleUrl } from "../../lib/blog/nostr-address";
+import { isNostrPublished } from "../../lib/blog/published-articles";
+import { postOgImagePath } from "../../lib/og/og-pages";
+import { NOSTR_NPUB } from "../../lib/profile-links";
 
 export const getStaticPaths = (async () =>
   blogPostPaths(await getCollection("blog"))) satisfies GetStaticPaths;

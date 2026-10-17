@@ -63,7 +63,7 @@ describe("ブレークポイントの境界", () => {
 
   it("src の sizes と matchMedia の幅も同じ書き方で、<style> の外にある", () => {
     const paths = sourcesEndingWith(".astro", ".ts");
-    expect(paths).toContain("avatar-images.ts");
+    expect(paths).toContain("lib/avatar-images.ts");
     expect(paths).toContain("components/home/AvatarThreeView.astro");
     const outside = paths.map((path) => ({
       path,

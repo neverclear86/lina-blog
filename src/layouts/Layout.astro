@@ -1,14 +1,14 @@
 ---
 import { Font } from "astro:assets";
-import { FEED_PATH, FEED_TITLE } from "../blog-rss";
 import type { FooterVariant } from "../components/site/footer-links";
 import SiteFooter from "../components/site/SiteFooter.astro";
 import SiteHeader from "../components/site/SiteHeader.astro";
 import SkipLink from "../components/site/SkipLink.astro";
 import { DEFAULT_LOCALE, type Locale } from "../i18n/locales";
 import { absoluteUrl, alternateLinks, canonicalUrl } from "../i18n/paths";
-import { openGraphTags, pageDescription, twitterTags } from "../page-meta";
-import { THEME_SCRIPT } from "../theme";
+import { FEED_PATH, FEED_TITLE } from "../lib/blog/blog-rss";
+import { openGraphTags, pageDescription, twitterTags } from "../lib/page-meta";
+import { THEME_SCRIPT } from "../lib/theme";
 import "../styles/tokens.css";
 import "../styles/global.css";
 import "../styles/controls.css";
@@ -76,7 +76,7 @@ const twitter = twitterTags(imageUrl);
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    {/* Sets <html data-theme> before the first paint; see THEME_SCRIPT in src/theme.ts. */}
+    {/* Sets <html data-theme> before the first paint; see THEME_SCRIPT in src/lib/theme.ts. */}
     <script is:inline set:html={THEME_SCRIPT} />
     {/* The mark /li of the brand kit on ink, unchanged in public/favicon/. The PNGs are for browsers without SVG favicons and for home screens. */}
     <link rel="icon" type="image/svg+xml" href="/favicon/t3_mark_on-ink.svg">
@@ -104,7 +104,7 @@ const twitter = twitterTags(imageUrl);
     {alternates.map(({ hreflang, href }) => (
   <link rel="alternate" hreflang={hreflang} href={href}>
 ))}
-    {/* The description, the Open Graph tags and the Twitter card; see src/page-meta.ts. */}
+    {/* The description, the Open Graph tags and the Twitter card; see src/lib/page-meta.ts. */}
     <meta name="description" content={metaDescription}>
     {openGraph.map(({ property, content }) => (
   <meta property={property} content={content}>

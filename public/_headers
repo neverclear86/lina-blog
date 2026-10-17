@@ -1,4 +1,4 @@
-# Security headers of every static file. src/api.ts sends the same values from the Worker.
+# Security headers of every static file. src/lib/server/api.ts sends the same values from the Worker.
 
 /*
   Content-Security-Policy: frame-ancestors 'none'

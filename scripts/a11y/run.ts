@@ -24,7 +24,7 @@ import { parseArgs } from "node:util";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, type Page } from "playwright";
 import sharp from "sharp";
-import { THEME_STORAGE_KEY } from "../../src/theme.ts";
+import { THEME_STORAGE_KEY } from "../../src/lib/theme.ts";
 import {
   expectedStatus,
   isFailing,

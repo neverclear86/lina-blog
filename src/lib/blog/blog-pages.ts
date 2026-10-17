@@ -5,10 +5,10 @@
  * its date, its reading time and the items of its table of contents.
  */
 import type { MarkdownHeading } from "astro";
+import { homeSectionPath } from "../../components/site/site-nav";
+import { translate, type UiKey } from "../../i18n/ui";
+import { formatJstDate } from "../jst-date";
 import { type BlogFrontmatter, blogSchema } from "./blog-schema";
-import { homeSectionPath } from "./components/site/site-nav";
-import { translate, type UiKey } from "./i18n/ui";
-import { formatJstDate } from "./jst-date";
 import {
   type BlogTag,
   postsNewestFirst,

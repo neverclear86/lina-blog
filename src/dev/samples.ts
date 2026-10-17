@@ -4,14 +4,14 @@
  * what its section shows.
  */
 import type { ComponentProps } from "astro/types";
-import { blogCrumbs, blogPostBreadcrumb } from "../blog-pages";
 import type ArticleToc from "../components/article/ArticleToc.astro";
 import type PostNav from "../components/article/PostNav.astro";
 import { sponsorNotice } from "../components/article/sponsor-notice";
 import type PostRows from "../components/blog/PostRows.astro";
 import type LatestPosts from "../components/home/LatestPosts.astro";
 import { translate } from "../i18n/ui";
-import type { YouTubeVideo } from "../youtube-feed";
+import { blogCrumbs, blogPostBreadcrumb } from "../lib/blog/blog-pages";
+import type { YouTubeVideo } from "../lib/youtube/youtube-feed";
 
 export const tagCrumbs = blogCrumbs("技術");
 export const postCrumbs = blogPostBreadcrumb(

@@ -1,13 +1,14 @@
 /** Links of the account window of the hero (`HeroAccount.astro`). */
-import { FEED_PATH } from "../../blog-rss";
+
+import type { Locale } from "../../i18n/locales";
+import { FEED_PATH } from "../../lib/blog/blog-rss";
 import {
   type ExternalLinkAttrs,
   externalLabel,
   externalLinkAttrs,
   isExternalLink,
-} from "../../external-link";
-import type { Locale } from "../../i18n/locales";
-import { PROFILE_LINKS, type ProfileLink } from "../../profile-links";
+} from "../../lib/external-link";
+import { PROFILE_LINKS, type ProfileLink } from "../../lib/profile-links";
 
 /** Which icon a link shows: the service of a profile, or the feed. */
 export type AccountLinkId = ProfileLink["id"] | "rss";

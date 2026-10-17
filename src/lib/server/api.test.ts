@@ -8,13 +8,16 @@ import {
   type Mock,
   vi,
 } from "vitest";
+import {
+  type TurnstileVerification,
+  verifyTurnstile,
+} from "../contact/turnstile";
 import api, { type ApiEnv } from "./api";
-import { type TurnstileVerification, verifyTurnstile } from "./turnstile";
 
-vi.mock("./turnstile", () => ({ verifyTurnstile: vi.fn() }));
+vi.mock("../contact/turnstile", () => ({ verifyTurnstile: vi.fn() }));
 
 /**
- * Headers that `secureHeaders()` in `src/api.ts` adds, keyed by lower-case name: Hono's
+ * Headers that `secureHeaders()` in `src/lib/server/api.ts` adds, keyed by lower-case name: Hono's
  * defaults, with `Referrer-Policy` and `X-Frame-Options` set to the values of `public/_headers`.
  */
 const SECURITY_HEADERS = {

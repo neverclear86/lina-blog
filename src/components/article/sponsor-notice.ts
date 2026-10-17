@@ -2,7 +2,7 @@
  * The notice above the body of a sponsored blog post's page: a "PR" label and a sentence that
  * names the sponsor, so readers see that the post is an advertisement before they read it.
  */
-import type { BlogFrontmatter } from "../../blog-schema";
+import type { BlogFrontmatter } from "../../lib/blog/blog-schema";
 
 /** Link to the sponsor's site from its name in the notice. */
 export interface SponsorLink {

@@ -19,8 +19,8 @@
 import { readFileSync } from "node:fs";
 import satori from "satori";
 import sharp from "sharp";
-import type { Locale } from "./i18n/locales";
-import { translate } from "./i18n/ui";
+import type { Locale } from "../../i18n/locales";
+import { translate } from "../../i18n/ui";
 import type { OgFont } from "./og-font";
 
 /** The element tree that Satori draws: `{ type, props }` objects, as in `React.createElement`. */
@@ -64,7 +64,7 @@ export interface OgImageInput {
 
 /** The logo as a data URI, which Satori draws as an image. */
 const LOGO_URI = `data:image/svg+xml;base64,${readFileSync(
-  new URL("./assets/name-logo/t3_full_for-dark.svg", import.meta.url),
+  new URL("../../assets/name-logo/t3_full_for-dark.svg", import.meta.url),
 ).toString("base64")}`;
 
 /** The width of the title box in pixels. The title ends left of the band and its hatch strip. */

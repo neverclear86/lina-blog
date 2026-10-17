@@ -1,5 +1,5 @@
 import { getCollection } from "astro:content";
-import { ogImagePages } from "../../og-pages";
+import { ogImagePages } from "../../lib/og/og-pages";
 
 /**
  * `/og/images.json`: the OGP images to draw (`ogImagePages`) for the top pages and every blog

@@ -9,7 +9,7 @@ import { ANSI_ART_MAX_COLUMNS, type RgbaImage } from "./ansi-art.ts";
 
 /** Illustration that the text art is drawn from: the fourth pose of the top page's Hero. */
 export const ANSI_ART_SOURCE = new URL(
-  "./assets/main-visual.webp",
+  "../../assets/main-visual.webp",
   import.meta.url,
 );
 

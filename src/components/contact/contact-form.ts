@@ -2,17 +2,18 @@
  * What the contact form shows: the state before and after a submission, the text of its status
  * line and the text under a rejected field, and the size of the Turnstile widget. No DOM access,
  * so a browser script can call these functions and Vitest can test them directly.
- * `POST /api/contact` answers with a `ContactResponse` of `src/api.ts`.
+ * `POST /api/contact` answers with a `ContactResponse` of `src/lib/server/api.ts`.
  */
+
+import type { Locale } from "../../i18n/locales";
+import { translate, type UiKey } from "../../i18n/ui";
 import {
   CONTACT_LIMITS,
   type ContactErrorCode,
   type ContactErrors,
   type ContactField,
   validateContact,
-} from "../../contact";
-import type { Locale } from "../../i18n/locales";
-import { translate, type UiKey } from "../../i18n/ui";
+} from "../../lib/contact/contact";
 
 /**
  * What the contact form shows. Before a request, `contactStateBeforeSend` returns `invalid`,
@@ -33,7 +34,7 @@ export type ContactFormState =
   | { state: "network" }
   | { state: "unavailable" };
 
-// Field names and error codes that a 400 response may carry, as in src/contact.ts.
+// Field names and error codes that a 400 response may carry, as in src/lib/contact/contact.ts.
 const FIELDS: readonly ContactField[] = ["kind", "name", "email", "message"];
 const CODES: readonly ContactErrorCode[] = [
   "required",

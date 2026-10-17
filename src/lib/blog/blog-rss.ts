@@ -1,7 +1,7 @@
 /**
  * Feed items for `/rss.xml`, built from blog posts. `src/pages/rss.xml.ts` passes the posts of
  * the `blog` collection, and `src/layouts/Layout.astro` links the feed from every page. The
- * text version of the site (`src/text-site.ts`) also titles its latest posts with
+ * text version of the site (`src/lib/text-site.ts`) also titles its latest posts with
  * `rssItemTitle` and links the feed by `FEED_PATH`.
  */
 import type { RSSFeedItem } from "@astrojs/rss";

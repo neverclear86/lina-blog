@@ -1,7 +1,7 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
-import { blogSchema } from "./blog-schema";
 import { devPagesEnabled } from "./dev/dev-pages";
+import { blogSchema } from "./lib/blog/blog-schema";
 
 /**
  * Blog posts: Markdown files under `src/content/blog/`. The glob loader uses a post's `slug`

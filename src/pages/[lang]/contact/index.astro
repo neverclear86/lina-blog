@@ -12,11 +12,11 @@ import Breadcrumb from "../../../components/site/Breadcrumb.astro";
 import ExternalNote from "../../../components/site/ExternalNote.astro";
 import { labelSegments } from "../../../components/site/label-break";
 import PageHead from "../../../components/site/PageHead.astro";
-import { externalLinkAttrs, requireSite } from "../../../external-link";
 import { LOCALES, type Locale } from "../../../i18n/locales";
 import { useTranslations } from "../../../i18n/ui";
 import Layout from "../../../layouts/Layout.astro";
-import { profileLink } from "../../../profile-links";
+import { externalLinkAttrs, requireSite } from "../../../lib/external-link";
+import { profileLink } from "../../../lib/profile-links";
 
 export const getStaticPaths = (() =>
   LOCALES.map((lang) => ({

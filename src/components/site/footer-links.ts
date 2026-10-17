@@ -1,13 +1,14 @@
 /** Links and variants of the site footer (`SiteFooter.astro`). */
-import { FEED_PATH } from "../../blog-rss";
+
+import type { Locale } from "../../i18n/locales";
+import type { UiKey } from "../../i18n/ui";
+import { FEED_PATH } from "../../lib/blog/blog-rss";
 import {
   type ExternalLinkAttrs,
   externalLinkAttrs,
   isExternalLink,
-} from "../../external-link";
-import type { Locale } from "../../i18n/locales";
-import type { UiKey } from "../../i18n/ui";
-import { PROFILE_LINKS } from "../../profile-links";
+} from "../../lib/external-link";
+import { PROFILE_LINKS } from "../../lib/profile-links";
 import { contactPagePath, homeSectionPath } from "./site-nav";
 
 /**

@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import opentype from "opentype.js";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { LOCALES } from "./i18n/locales";
-import { translate } from "./i18n/ui";
+import { LOCALES } from "../../i18n/locales";
+import { translate } from "../../i18n/ui";
 import { OG_FONT_FACES, type OgFont } from "./og-font";
 import {
   OG_COLORS,
@@ -161,7 +161,7 @@ const IS_INK = 128;
 describe("OG_COLORS", () => {
   it("色は tokens.css のダークの値と一致する", () => {
     const css = readFileSync(
-      new URL("./styles/tokens.css", import.meta.url),
+      new URL("../../styles/tokens.css", import.meta.url),
       "utf8",
     );
     const light = tokens(css, ":root");

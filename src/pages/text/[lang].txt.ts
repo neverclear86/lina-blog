@@ -1,7 +1,7 @@
 import { getCollection } from "astro:content";
 import type { APIRoute, GetStaticPaths } from "astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
-import { buildTextSite } from "../../text-site";
+import { buildTextSite } from "../../lib/text-site";
 
 export const getStaticPaths = (() =>
   LOCALES.map((lang) => ({ params: { lang } }))) satisfies GetStaticPaths;

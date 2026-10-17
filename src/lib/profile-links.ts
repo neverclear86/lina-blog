@@ -1,6 +1,6 @@
 /**
- * Links to the profiles on other services, shared by `/llms.txt` (`src/llms.ts`), the text
- * version of the site (`src/text-site.ts`), the large window and the video list of the Latest
+ * Links to the profiles on other services, shared by `/llms.txt` (`src/lib/llms.ts`), the text
+ * version of the site (`src/lib/text-site.ts`), the large window and the video list of the Latest
  * section (`src/components/home/LatestVideoFeature.astro`,
  * `src/components/home/LatestVideoList.astro`), the account window of the hero
  * (`src/components/home/hero-account.ts`), the links column of the site footer
@@ -8,7 +8,7 @@
  * the contact page and the contact band (`src/pages/[lang]/contact/index.astro`,
  * `src/components/home/ContactBand.astro`).
  */
-import type { Locale } from "./i18n/locales";
+import type { Locale } from "../i18n/locales";
 
 /** A profile on another service. */
 export interface ProfileLink {
@@ -32,7 +32,7 @@ export const YOUTUBE_URL = "https://www.youtube.com/@LinaTsukusu";
 
 /**
  * The public key of the Nostr account in bech32, which the Nostr profile below and the links to
- * the posts on Nostr (`nostrArticleUrl` in `src/nostr-address.ts`) are built from. It is
+ * the posts on Nostr (`nostrArticleUrl` in `src/lib/blog/nostr-address.ts`) are built from. It is
  * provisional, as the profile is.
  */
 export const NOSTR_NPUB =

@@ -11,9 +11,13 @@
  * Japanese only.
  */
 import type { ComponentProps } from "astro/types";
-import { blogCrumbs, blogListText, tagFilterLinks } from "../../blog-pages";
 import { translate } from "../../i18n/ui";
-import type { BlogTag } from "../../latest-posts";
+import {
+  blogCrumbs,
+  blogListText,
+  tagFilterLinks,
+} from "../../lib/blog/blog-pages";
+import type { BlogTag } from "../../lib/blog/latest-posts";
 import Breadcrumb from "../site/Breadcrumb.astro";
 import PageHead from "../site/PageHead.astro";
 import PostRows from "./PostRows.astro";

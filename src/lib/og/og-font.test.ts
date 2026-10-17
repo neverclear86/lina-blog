@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import config from "../astro.config.mjs";
+import config from "../../../astro.config.mjs";
 import { loadOgFonts, OG_FONT_FACES, truetypeUrlFromCss } from "./og-font";
 
 const TTF_URL = "https://fonts.gstatic.com/s/example/v1/font.ttf";

@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { buildRobotsTxt } from "../sitemap";
+import { buildRobotsTxt } from "../lib/sitemap";
 
 /**
  * `/robots.txt`. Prerendered like the pages, so `astro build` writes it to `dist/client/` and

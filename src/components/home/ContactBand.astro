@@ -28,11 +28,11 @@
  * and below 360px the image is hidden.
  */
 import { Picture } from "astro:assets";
-import { avatarAlt, THUMBS_UP_BAND } from "../../avatar-images";
-import { externalLinkAttrs, requireSite } from "../../external-link";
 import type { Locale } from "../../i18n/locales";
 import { useTranslations } from "../../i18n/ui";
-import { profileLink } from "../../profile-links";
+import { avatarAlt, THUMBS_UP_BAND } from "../../lib/avatar-images";
+import { externalLinkAttrs, requireSite } from "../../lib/external-link";
+import { profileLink } from "../../lib/profile-links";
 import ExternalNote from "../site/ExternalNote.astro";
 import { labelSegments } from "../site/label-break";
 import { contactPagePath } from "../site/site-nav";

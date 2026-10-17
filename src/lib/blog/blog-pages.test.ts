@@ -1,5 +1,6 @@
 import type { MarkdownHeading } from "astro";
 import { describe, expect, it } from "vitest";
+import { translate } from "../../i18n/ui";
 import {
   adjacentPosts,
   blogCrumbs,
@@ -12,7 +13,6 @@ import {
   readingMinutes,
   tagFilterLinks,
 } from "./blog-pages";
-import { translate } from "./i18n/ui";
 import type { BlogTag } from "./latest-posts";
 
 /** A post as `adjacentPosts` needs it: a slug and a date in `YYYY-MM-DD`. */

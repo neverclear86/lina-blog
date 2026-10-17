@@ -1,6 +1,6 @@
 import type { z } from "astro/zod";
 import { load, YAMLException } from "js-yaml";
-import { blogSchema } from "../../../src/blog-schema";
+import { blogSchema } from "../../../src/lib/blog/blog-schema";
 import type { ErrorCode } from "./errors";
 
 /**
