@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { externalLabel } from "../../external-link";
 import { translate } from "../../i18n/ui";
+import { externalLabel } from "../../lib/external-link";
 import { accountLinks } from "./hero-account";
 
 const ACCOUNT = readFileSync(

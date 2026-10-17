@@ -2,10 +2,10 @@
  * Builds `/llms.txt`, a Markdown summary of the site for LLMs (https://llmstxt.org/).
  * `src/pages/llms.txt.ts` calls it when `/llms.txt` is rendered, so every build writes the file
  * from the locales in `src/i18n/locales.ts` and the Japanese labels of `PROFILE_LINKS` in
- * `src/profile-links.ts`.
+ * `src/lib/profile-links.ts`.
  */
-import { contactPagePath } from "./components/site/site-nav";
-import { LOCALES, type Locale } from "./i18n/locales";
+import { contactPagePath } from "../components/site/site-nav";
+import { LOCALES, type Locale } from "../i18n/locales";
 import { PROFILE_LINKS } from "./profile-links";
 
 /** Link text of each locale's top page. The type requires one for every locale. */

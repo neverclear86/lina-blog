@@ -17,7 +17,7 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   ├── avatars/        # Makes the avatar images in `src/assets/` from the v2.1 originals (`bun run import:avatars`)
 │   ├── lighthouse/     # Job summary table of the Lighthouse CI scores
 │   └── sync/           # Article sync script for the publish Worker (`bun run sync`, run by Hermes)
-├── src/                # The site; a module in this directory has its unit test `<name>.test.ts` beside it, and `fetch.ts` is the Worker entry
+├── src/                # The site; directly in this directory are only `fetch.ts`, the Worker entry, and `content.config.ts`, which Astro reads from fixed places
 │   ├── assets/         # Images processed by astro:assets: the nine v2.1 avatars, made by `scripts/avatars/` (see “Images and caching”)
 │   │   ├── icon/       # Face mark and avatar SVGs of the brand kit (regular and small versions), used as they are by FaceIcon
 │   │   └── name-logo/  # Name logo of the brand kit, kept as it is and drawn by `og-image.ts`
@@ -35,6 +35,13 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   │   └── sections/   # A section of /dev/components/ in each file, with the classes only that section uses
 │   ├── i18n/           # Locales (ja, en), the locale picked for /, the path of the same page in another locale, canonical and hreflang URLs, and the UI strings per locale
 │   ├── layouts/        # The layout of every page: `<head>` with its meta tags, the skip link, the site header and the site footer
+│   ├── lib/            # The site's modules that are not components or pages, each with its unit test `<name>.test.ts` beside it: dates, links, page meta, the theme, the profile links, the avatar images, the sitemap, llms.txt and the text version of the site
+│   │   ├── ansi-art/   # The text art of the avatar main-visual and its source image
+│   │   ├── blog/       # The blog: the frontmatter schema, the pages, RSS, the latest posts and which posts are on Nostr
+│   │   ├── contact/    # The contact form: its checks, the notification mail and Turnstile
+│   │   ├── og/         # OGP images: the fonts, the drawing and the pages that have one
+│   │   ├── server/     # The routes of the Hono app on the Worker and the check for command-line clients
+│   │   └── youtube/    # The YouTube feed and the latest videos
 │   ├── markdown/       # Markdown rendering with Sätteri: its plugins, the highlighting of code blocks, the CSS of an article and of its code blocks, and the sample article shown at /dev/markdown/
 │   ├── pages/          # A file for each URL, prerendered unless it exports `prerender = false`; a directory is a part of the path
 │   │   ├── [lang]/     # The pages that exist in every language, generated once for each locale in `src/i18n/locales.ts` (/ja/, /en/)
@@ -43,7 +50,8 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 │   │   ├── og/         # /og/images.json: the OGP images to draw, read and deleted by `astro.config.mjs` after the build
 │   │   └── text/       # /text/ja.txt and /text/en.txt: the text version of the site
 │   ├── styles/         # The global CSS (see “CSS”)
-│   └── test/           # Helpers for the tests, and the test that checks this tree
+│   ├── test/           # Helpers for the tests, and the test that checks this tree
+│   └── types/          # Type declarations of modules that no package declares: `cloudflare:workers` and the virtual modules of `astro.config.mjs`
 └── workers/            # Workers that are not part of the site
     └── publish/        # Publish Worker, separate from the site and deployed on its own
         └── src/        # The Hono app and Worker entry (every route needs the shared secret) and what its routes call: checking an article, writing files to GitHub, images in R2, posting to Nostr through the bunker (NIP-46), Zenn and withdrawal; each module has its unit test beside it
@@ -51,19 +59,19 @@ Articles are published by a separate Worker (`workers/publish/`, also Hono).
 
 The tree names directories only, so that it does not repeat the comment at the top of each file. `src/test/readme-tree.test.ts` fails when the tree names a directory that does not exist or leaves out one that holds files; `src/content/blog/`, where the publishing Worker commits posts, is listed even while it is empty, and below `src/pages/<name>/` a directory is a part of a URL and is not listed.
 
-Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` and `/api/*` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets, and a `GET` for a path with no file gets `/404.html` (`src/pages/404.astro`) with status 404 without starting the Worker (`assets.not_found_handling`), so a page that exports `prerender = false` must also be added to `assets.run_worker_first`. `/` has no page: the route in `src/api.ts` answers command-line clients such as curl (`src/user-agent.ts`) with `text/plain`, and redirects other clients to `/en/` when `Accept-Language` prefers English over Japanese and to `/ja/` otherwise. The text is the text art `/ansi/color.txt`, a blank line and the text version `/text/en.txt` or `/text/ja.txt`, chosen by `Accept-Language` in the same way, which the Worker fetches through the `ASSETS` binding (`assets.binding` in `wrangler.jsonc`). Without the text art it is the text version alone; without the text version it is a short notice with the top page's URL and status 503. All three responses carry `Vary: User-Agent, Accept-Language`. Every response of `/` and `/api/*` also carries the security headers of Hono's `secureHeaders()`, added by middleware in `src/api.ts`, because a `_headers` file applies to static assets only and not to responses from the Worker. `Content-Security-Policy` (`frame-ancestors 'none'` only), `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options`, `Permissions-Policy` and `Strict-Transport-Security` take the values of the `/*` rule in `public/_headers`, and `src/api.test.ts` checks that both agree; the other headers, such as `Cross-Origin-Opener-Policy`, keep Hono's defaults. Do not add `src/pages/index.astro`, because the adapter serves a prerendered page before the Hono app sees the request. Requests to `/` and `/api/*` go to the Hono app in `src/fetch.ts`, which serves the routes in `src/api.ts`; a request that no route matches, such as `/api/nope` or a `POST` to `/`, gets the same 404 page from Astro's handlers. Astro calls that app with the request only, so `src/fetch.ts` passes the Worker's bindings and secrets (`env` from `cloudflare:workers`) to it.
+Pages are prerendered unless they export `prerender = false`. The Worker runs first only for `/` and `/api/*` (`assets.run_worker_first` in `wrangler.jsonc`); other static files are served from Workers Static Assets, and a `GET` for a path with no file gets `/404.html` (`src/pages/404.astro`) with status 404 without starting the Worker (`assets.not_found_handling`), so a page that exports `prerender = false` must also be added to `assets.run_worker_first`. `/` has no page: the route in `src/lib/server/api.ts` answers command-line clients such as curl (`src/lib/server/user-agent.ts`) with `text/plain`, and redirects other clients to `/en/` when `Accept-Language` prefers English over Japanese and to `/ja/` otherwise. The text is the text art `/ansi/color.txt`, a blank line and the text version `/text/en.txt` or `/text/ja.txt`, chosen by `Accept-Language` in the same way, which the Worker fetches through the `ASSETS` binding (`assets.binding` in `wrangler.jsonc`). Without the text art it is the text version alone; without the text version it is a short notice with the top page's URL and status 503. All three responses carry `Vary: User-Agent, Accept-Language`. Every response of `/` and `/api/*` also carries the security headers of Hono's `secureHeaders()`, added by middleware in `src/lib/server/api.ts`, because a `_headers` file applies to static assets only and not to responses from the Worker. `Content-Security-Policy` (`frame-ancestors 'none'` only), `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options`, `Permissions-Policy` and `Strict-Transport-Security` take the values of the `/*` rule in `public/_headers`, and `src/lib/server/api.test.ts` checks that both agree; the other headers, such as `Cross-Origin-Opener-Policy`, keep Hono's defaults. Do not add `src/pages/index.astro`, because the adapter serves a prerendered page before the Hono app sees the request. Requests to `/` and `/api/*` go to the Hono app in `src/fetch.ts`, which serves the routes in `src/lib/server/api.ts`; a request that no route matches, such as `/api/nope` or a `POST` to `/`, gets the same 404 page from Astro's handlers. Astro calls that app with the request only, so `src/fetch.ts` passes the Worker's bindings and secrets (`env` from `cloudflare:workers`) to it.
 
 Pages that exist in every language go in `src/pages/[lang]/` and are generated once for each locale in `src/i18n/locales.ts` (`/ja/`, `/en/`); their UI strings come from `src/i18n/ui.ts`. Pages outside `[lang]/`, such as the Japanese-only blog under `/blog/`, have no language prefix. Astro's `i18n()` handler in `src/fetch.ts` is never reached, so `astro build` warns that the project does not call it; running it would answer 404 for those unprefixed paths. The layout links every page to the same path in the other locales (`src/i18n/paths.ts`); a page without a language prefix links to the other locale's top page. Every page also has a canonical link and hreflang alternates, as absolute URLs under `site` in `astro.config.mjs` (`canonicalUrl` and `alternateLinks` in `src/i18n/paths.ts`): a page under `[lang]/` lists itself in each locale and `x-default` pointing to `/`, and a page without a language prefix lists only itself, in Japanese.
 
 Blog posts are Markdown files in `src/content/blog/`, committed by the publishing Worker. Posts for checking how pages look go in `src/content/blog-dev/`: `astro dev` loads them into the same `blog` collection and checks them with the same schema. `astro build` leaves them out unless `LINA_DEV_PAGES=1` is set (see “CSS”); with it they reach `dist/` like other posts, in `/blog/`, the tag pages, their own pages `/blog/<slug>/`, the latest posts on the home page, `/rss.xml`, the text version and the OGP images `/og/blog/<slug>.png`, so that build is only for screenshots and is never deployed.
 
-Whether a post is on Nostr is decided at build time from `src/content/published.json`, the published record that the publishing Worker writes (`docs/publish-api.md`): a post is on Nostr when the record has an entry for its slug whose `hash` is not `null`. `astro.config.mjs` reads the record in Node and exports the slugs as the virtual module `virtual:lina-published-slugs`, which pages can import; `isNostrPublished` in `src/published-articles.ts` looks a slug up. The page of a post that is on Nostr has the link `nostr ↗` (`mirror`) in the row of the date and the author, to its article on njump, `https://njump.me/<naddr>` (`nostrArticleUrl` in `src/nostr-address.ts`, with the npub of `src/profile-links.ts`), which opens in a new tab. A missing file means that no post is on Nostr, and a record in another form fails the build. The sample posts have their own record, `src/content/blog-dev/published.json`, read only when the sample posts are: `dev-preview-sample` is on Nostr, `dev-preview-newer` has an entry with `hash: null`, and the other sample posts have no entry. A change to a record is picked up by restarting `astro dev`.
+Whether a post is on Nostr is decided at build time from `src/content/published.json`, the published record that the publishing Worker writes (`docs/publish-api.md`): a post is on Nostr when the record has an entry for its slug whose `hash` is not `null`. `astro.config.mjs` reads the record in Node and exports the slugs as the virtual module `virtual:lina-published-slugs`, which pages can import; `isNostrPublished` in `src/lib/blog/published-articles.ts` looks a slug up. The page of a post that is on Nostr has the link `nostr ↗` (`mirror`) in the row of the date and the author, to its article on njump, `https://njump.me/<naddr>` (`nostrArticleUrl` in `src/lib/blog/nostr-address.ts`, with the npub of `src/lib/profile-links.ts`), which opens in a new tab. A missing file means that no post is on Nostr, and a record in another form fails the build. The sample posts have their own record, `src/content/blog-dev/published.json`, read only when the sample posts are: `dev-preview-sample` is on Nostr, `dev-preview-newer` has an entry with `hash: null`, and the other sample posts have no entry. A change to a record is picked up by restarting `astro dev`.
 
 Markdown is rendered by Sätteri with the plugins in `src/markdown/`. `/dev/markdown/`, a dev page (see “CSS”), shows `src/markdown/sample.md`, a sample article with every supported syntax. Code blocks are highlighted at build time by `src/markdown/highlight.ts`, which gives tokens role classes such as `hl-keyword` instead of inline styles; `markdown.syntaxHighlight` is off so Astro's own Shiki does not run. A paragraph that holds only a YouTube video URL (`https://youtu.be/<ID>` or `https://www.youtube.com/watch?v=<ID>`) becomes a lazily loaded `youtube-nocookie.com` player. An accordion is written as raw HTML (`<details>` and `<summary>`), and how to write one is in `docs/markdown.md`. An `<aside class="note">` or `<aside class="warning">` written as raw HTML in an article is styled as a message box (`docs/markdown.md` shows how to write one). The checkbox of a task list item gets an `aria-label` with the text of the item, and every table gets `tabindex="0"` so that a table wider than the article can be scrolled with the keyboard (`src/markdown/a11y.ts`). A link in an article to another site opens in a new tab and ends with an arrow `↗` and a hidden text that says so; a link of only images has no arrow, and a link in a heading or written as raw HTML is left as it is (`src/markdown/external-links.ts`).
 
-`astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/text-site.ts`): the about text, the five latest posts, the profile links and how to get in touch (the contact form and a DM on Twitter (self-proclaimed X)), with every line in 80 terminal columns. The profile links come from `src/profile-links.ts`, which `/llms.txt`, the Latest section of the home page, the account window of the hero, the links column of the site footer, the contact band of the top page and the contact page use as well.
+`astro build` also writes the text version of the site for command-line clients to `/text/ja.txt` and `/text/en.txt` (`src/pages/text/[lang].txt.ts`, built by `src/lib/text-site.ts`): the about text, the five latest posts, the profile links and how to get in touch (the contact form and a DM on Twitter (self-proclaimed X)), with every line in 80 terminal columns. The profile links come from `src/lib/profile-links.ts`, which `/llms.txt`, the Latest section of the home page, the account window of the hero, the links column of the site footer, the contact band of the top page and the contact page use as well.
 
-Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema, the RSS items and the Markdown plugins; `src/api.ts` and
+Unit tests (`*.test.ts` next to the code) cover logic such as the Hono routes, the blog frontmatter schema, the RSS items and the Markdown plugins; `src/lib/server/api.ts` and
 `workers/publish/src/app.ts` are tested with `app.request()`, and the plugins in `src/markdown/` with Sätteri's `markdownToHtml()`. `src/test/css-source.ts` reads the CSS of a `.css` file or of the `<style>` of an `.astro` file as rules with their `@media` and `@supports` conditions (`parseCss` and the other functions), so that a test can ask which rules set a property under which condition instead of matching the text of the CSS. Pages are checked with screenshots instead: `node .claude/scripts/screenshot.mjs --root . --port 4611 --out /tmp/shots /` serves `dist/` without building it, so run `bun run build` first. It uses Playwright's Chromium (`bunx playwright install chromium` if it is not installed yet). What still moves under `prefers-reduced-motion: reduce` is measured the same way: `node scripts/audit/reduced-motion.mjs --root . --port 4612` opens every page in `dist/client` and `/404` at 1440px and 390px in both themes, counts the running animations and transitions after the page opens, a Tab, hovers, a scroll and clicks, and exits with 1 when any is left (build with `LINA_DEV_PAGES=1` to include the sample posts and the dev pages); `--motion no-preference` only lists them. `src/styles/reduced-motion.test.ts` fails when a rule outside `@media (prefers-reduced-motion: reduce)` in a `.css` file or in a `<style>` element of an `.astro` file under `src/` sets `transition` or a `transition-*` property to a value other than `none`, and one of its selectors is in no rule after it in the same source that is directly in `@media (prefers-reduced-motion: reduce)` and sets `transition: none`. `node scripts/audit/external-links.mjs dist/client` reads every HTML file in headless Chromium and exits with 1 when a link to another host lacks `target="_blank"`, `rel="noopener"` or the note that says it opens in a new tab, or when a link on the site has `target="_blank"` or the note; `--skip <css>` leaves out the links inside the elements it matches. It does not run in CI.
 
 Colors are tested the same way. `src/styles/tokens.test.ts` checks that the plan A tokens have the values of the design, that every foreground and background token pair used for text (a translucent background is laid over each fill that can come under it) reaches 4.5:1 (WCAG AA) in both themes and that every icon color reaches 3:1 on `--panel`, `--bg` and `--bg2`, `--focus-ring` on the page backgrounds, every diff bar of a code block on its line and the focus ring of a code block on `--code`, and `src/styles/hardcoded-colors.test.ts` fails when a color value (`#rrggbb`, `rgb()`, `hsl()` and the like) is written in a `.css` file other than `src/styles/tokens.css`, or in a `<style>` element or a `style`, `fill`, `stroke`, `stop-color` or `color` attribute of an `.astro` file. Use the tokens (`var(--text)` and so on) instead; inline SVG takes `currentColor`. The service icons in `src/components/icons/` are also checked by `icons.test.ts`: their `fill` and `stroke` are only `currentColor` or `none`, because named colors such as `black` pass the check above. `src/styles/token-references.test.ts` fails when a `var(--name)` without a fallback in an `.astro`, `.css` or `.ts` file under `src/` reads a custom property that no file under `src/` defines (`--font-body` and `--font-mono-latin`, which the Fonts API defines, count as defined), because a browser does not report such a read and the property falls back to its inherited or initial value.
@@ -92,7 +100,7 @@ wraps only that selector in `:global()`, as in `:global(:root[data-theme="dark"]
 It does so for `:root` and `html` too, although Astro adds no scope attribute to them either way.
 The elements that rendered Markdown outputs are styled by plain CSS files in `src/markdown/`: `article.css`, whose rules sit under `.article-body` instead of in `:global()`, and `highlight.css` for the windows of code blocks.
 
-The inline script in the `<head>` of `src/layouts/Layout.astro` (`THEME_SCRIPT` in `src/theme.ts`) sets `<html data-theme>` before the first paint.
+The inline script in the `<head>` of `src/layouts/Layout.astro` (`THEME_SCRIPT` in `src/lib/theme.ts`) sets `<html data-theme>` before the first paint.
 It sets the light theme when `localStorage` holds `light` under the key `theme`, and the dark theme in every other case: nothing saved, any other value, or `localStorage` throwing. It does not read `prefers-color-scheme` and does not follow changes of the OS setting.
 Without JavaScript, the page keeps the dark theme that `Layout.astro` renders.
 `src/components/site/ThemeToggle.astro` switches the theme with `toggleTheme` and saves it under the same key; when saving throws, the switch lasts only until the next page.
@@ -138,7 +146,7 @@ because 500 is not loaded. `font-synthesis-weight: none` on `html` keeps the bro
 faking a weight that is not loaded.
 
 The files that the Fonts API downloads are WOFF2 split into unicode-range chunks, which image
-renderers such as Satori cannot read. `src/og-font.ts` downloads Zen Kaku Gothic New 900, the
+renderers such as Satori cannot read. `src/lib/og/og-font.ts` downloads Zen Kaku Gothic New 900, the
 weight of the headings, and JetBrains Mono 400 and 700, the weights of the labels, as one
 TrueType file each from the same Google Fonts CSS API, in Node. Nothing is written to the
 repository or to `dist/`.
@@ -154,7 +162,7 @@ The face icons in `src/assets/icon/` are the SVG files of the brand kit, kept as
 `FaceIcon` uses their URLs in `<img>` elements, and `astro build` only gives the files hashed
 names.
 
-`src/og-image.ts` draws an OGP image from a title, a language, a category and a sponsor with
+`src/lib/og/og-image.ts` draws an OGP image from a title, a language, a category and a sponsor with
 Satori and sharp, in Node: the ink ground and grid of plan A in the dark colors of
 `src/styles/tokens.css`, the orange band, the category chip and the name logo
 `src/assets/name-logo/t3_full_for-dark.svg` of the brand kit, kept as it is. A sponsored post
@@ -162,16 +170,16 @@ also has a "PR" chip and a row with the sponsor's name. A title is cut after thr
 ellipsis, and a sponsor's name after one.
 
 `astro build` writes the OGP images to `dist/client/og/`: `/og/ja.png` and `/og/en.png` for the
-top pages and `/og/blog/<slug>.png` for every post (`src/og-pages.ts` gives the paths and what
+top pages and `/og/blog/<slug>.png` for every post (`src/lib/og/og-pages.ts` gives the paths and what
 each image says). They are drawn in Node, because sharp cannot be loaded in workerd, where the
 pages are prerendered. The endpoint `src/pages/og/images.json.ts` lists the images, and the
 `ogImages()` integration in `astro.config.mjs` draws them with `renderOgImage()` and the fonts of
-`src/og-font.ts` when the build is done, then deletes the list. The build downloads the fonts, so
+`src/lib/og/og-font.ts` when the build is done, then deletes the list. The build downloads the fonts, so
 it needs the network, as the Fonts API already makes it. `astro dev` does not draw the images.
 
 The avatar `src/assets/main-visual.webp` (the fourth pose of the Hero) is also turned into text art
 for terminals. The `linaAnsiArt()` Vite plugin in `astro.config.mjs` calls `decodeAnsiArtSource()`
-in `src/ansi-art-source.ts`, which resizes it with sharp to 80 pixels wide, and the endpoints in
+in `src/lib/ansi-art/ansi-art-source.ts`, which resizes it with sharp to 80 pixels wide, and the endpoints in
 `src/pages/ansi/` are prerendered to `/ansi/color.txt` (24-bit color) and `/ansi/plain.txt` (no
 escape sequences) in `dist/client/`. The pose is centred in a transparent frame, so the figure is
 indented by blank cells. Every line fits in 80 columns.
@@ -189,7 +197,7 @@ why the originals are not committed. `lgtm-bastup` is twice the 374px of the con
 end of a post shows it up to 400px wide below 768px, a little more than half its width. The
 output is the same on every run.
 
-`src/avatar-images.ts` holds what a component needs to show the nine avatars with `Picture`: the
+`src/lib/avatar-images.ts` holds what a component needs to show the nine avatars with `Picture`: the
 imported image, the key of its alt text in `src/i18n/ui.ts`, the candidate `widths`, the `sizes`
 and `priority`. The four Hero poses are decorative, so their `alt` is empty, and only the first
 (`rohan`) has `priority`, which turns off lazy loading and raises the fetch priority. A component
@@ -214,7 +222,7 @@ HTML is revalidated on every request, so a deploy shows up at once and a page ne
 at hashed files that the deploy removed. The adapter skips its rule when a `_headers` file in
 `public/` already sets `Cache-Control` on a rule that matches `/_astro/*`, such as `/*`.
 `public/_headers` must therefore not set `Cache-Control` on `/*`, or the hashed files lose
-their long cache; a test in `src/api.test.ts` fails when it does.
+their long cache; a test in `src/lib/server/api.test.ts` fails when it does.
 
 Article images are not build output. The publish Worker stores them in the R2 bucket
 `lina-blog-images` under a content-hash name with `public, max-age=31536000, immutable`, and
@@ -224,7 +232,7 @@ they are served from `https://img.ikili.pro` (`docs/publish-api.md`).
 
 `astro build` writes `/sitemap-index.xml` and the sitemap it lists with `@astrojs/sitemap` (`sitemap()` in `astro.config.mjs`).
 The sitemap lists the pages of `src/pages/[lang]/` in every locale, and each entry links the same page in the other locales and `/` as `x-default` (`xhtml:link`).
-`src/sitemap.ts` leaves out the dev pages under `/dev/` and every URL that does not end with `/`, such as `/llms.txt` and `/rss.xml`; the integration leaves out the 404 page.
+`src/lib/sitemap.ts` leaves out the dev pages under `/dev/` and every URL that does not end with `/`, such as `/llms.txt` and `/rss.xml`; the integration leaves out the 404 page.
 `/robots.txt` (`src/pages/robots.txt.ts`) is prerendered like `/llms.txt`.
 It allows every crawler, AI crawlers such as GPTBot and ClaudeBot included, and points to the sitemap with an absolute URL.
 
@@ -249,7 +257,7 @@ Policy into a `<meta http-equiv="content-security-policy">` at the end of `<head
 | `script-src` | `'self' https://challenges.cloudflare.com` and the hash of `THEME_SCRIPT` | Turnstile's `api.js` and the theme script |
 | `frame-src`  | `https://challenges.cloudflare.com https://www.youtube-nocookie.com`    | The Turnstile widget and article videos |
 
-`THEME_SCRIPT` (`src/theme.ts`) is rendered with `is:inline`, which Astro does not hash, so
+`THEME_SCRIPT` (`src/lib/theme.ts`) is rendered with `is:inline`, which Astro does not hash, so
 `astro.config.mjs` computes its SHA-256 hash from the constant instead of writing the value.
 The script comes before the `<meta>`, which applies only to what follows it, so the hash has no
 effect while the policy is a `<meta>`; it is there so that the same policy also works as a
@@ -261,7 +269,7 @@ instead.
 `src/styles/style-attributes.test.ts` fails when an `.astro` file has a `style` attribute or
 `define:vars`, which Astro renders as `style` attributes.
 
-`frame-ancestors` has no effect in a `<meta>`, so `public/_headers` and `src/api.ts` send it as
+`frame-ancestors` has no effect in a `<meta>`, so `public/_headers` and `src/lib/server/api.ts` send it as
 the `Content-Security-Policy` header, which holds nothing else. The header and the `<meta>`
 therefore never need the same hashes.
 
@@ -389,7 +397,7 @@ disabled; it is rate-limited and meant for development.
 
 ## 🛡️ Turnstile
 
-`src/turnstile.ts` checks Turnstile tokens with Cloudflare's siteverify API. The secret key is a Worker secret named `TURNSTILE_SECRET_KEY` and is never committed:
+`src/lib/contact/turnstile.ts` checks Turnstile tokens with Cloudflare's siteverify API. The secret key is a Worker secret named `TURNSTILE_SECRET_KEY` and is never committed:
 
 - In production, register it with `bunx wrangler secret put TURNSTILE_SECRET_KEY`.
 - Locally, put it in `.dev.vars` at the root of the repository (ignored by git). `wrangler dev`, which `bun run preview:wrangler` runs, reads it and prints `Using secrets defined in .dev.vars` on startup.
@@ -423,7 +431,7 @@ To check a test key through the contact form route, see the `curl` example in "C
 
 ## 📧 Contact notifications
 
-`POST /api/contact` (`src/api.ts`) sends the contact form notification to the site owner
+`POST /api/contact` (`src/lib/server/api.ts`) sends the contact form notification to the site owner
 through the `CONTACT_MAIL` binding (`send_email` in `wrangler.jsonc`). The recipient address is
 kept out of the repository and is given as the `CONTACT_MAIL_TO` secret.
 

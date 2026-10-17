@@ -9,10 +9,13 @@ import LatestSection from "../../components/home/LatestSection.astro";
 import LatestVideoFeature from "../../components/home/LatestVideoFeature.astro";
 import LatestVideoList from "../../components/home/LatestVideoList.astro";
 import { LOCALES, type Locale } from "../../i18n/locales";
-import { LATEST_VIDEOS_SHOWN, latestVideos } from "../../latest-videos";
 import Layout from "../../layouts/Layout.astro";
-import { topOgImagePath } from "../../og-pages";
-import { fetchLatestVideos } from "../../youtube-feed";
+import { topOgImagePath } from "../../lib/og/og-pages";
+import {
+  LATEST_VIDEOS_SHOWN,
+  latestVideos,
+} from "../../lib/youtube/latest-videos";
+import { fetchLatestVideos } from "../../lib/youtube/youtube-feed";
 
 export const getStaticPaths = (() =>
   LOCALES.map((lang) => ({

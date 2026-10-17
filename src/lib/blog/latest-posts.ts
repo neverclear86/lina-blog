@@ -3,8 +3,9 @@
  * newest first by date, the posts with a tag, the URL slug and path of each tag's list, and the
  * keys in `src/i18n/ui.ts` of the texts of each tag.
  */
+
+import type { UiKey } from "../../i18n/ui";
 import type { BlogFrontmatter } from "./blog-schema";
-import type { UiKey } from "./i18n/ui";
 
 /** A tag of a blog post, one of the values `blogSchema` allows. */
 export type BlogTag = BlogFrontmatter["tags"][number];

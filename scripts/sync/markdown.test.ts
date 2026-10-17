@@ -1,7 +1,7 @@
 // Imported without a dependency of its own, to use the version that astro reads frontmatter with.
 import { parseFrontmatter } from "@astrojs/internal-helpers/frontmatter";
 import { describe, expect, it } from "vitest";
-import { blogSchema } from "../../src/blog-schema";
+import { blogSchema } from "../../src/lib/blog/blog-schema";
 import { contentHash } from "../../workers/publish/src/content-hash";
 import { buildMarkdown, hashMarkdown } from "./markdown";
 import type { ArticleFrontmatter } from "./vault";

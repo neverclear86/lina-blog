@@ -1,7 +1,7 @@
 import { env } from "cloudflare:workers";
 import { actions, i18n, middleware, pages } from "astro/hono";
 import { Hono } from "hono";
-import api, { type ApiEnv } from "./api";
+import api, { type ApiEnv } from "./lib/server/api";
 
 const app = new Hono<ApiEnv>();
 
@@ -20,5 +20,5 @@ app.use(pages());
 app.use(i18n());
 
 // Astro calls this handler with the request only, so pass the Worker's bindings and secrets
-// from `cloudflare:workers` to Hono here; the routes in `src/api.ts` read them as `c.env`.
+// from `cloudflare:workers` to Hono here; the routes in `src/lib/server/api.ts` read them as `c.env`.
 export default { fetch: (request: Request) => app.fetch(request, env) };

@@ -1,7 +1,7 @@
 ---
 /**
  * The button that switches between the light and dark themes. CSS picks what it shows from
- * `<html data-theme>`, which `THEME_SCRIPT` in `src/theme.ts` sets before the first paint, so it
+ * `<html data-theme>`, which `THEME_SCRIPT` in `src/lib/theme.ts` sets before the first paint, so it
  * matches the theme from then on. A click runs `toggleTheme`.
  *
  * It is an `.iconbtn` (`src/styles/controls.css`), 44px square at every width, with an 18px icon
@@ -58,7 +58,7 @@ const { lang } = Astro.props;
 </button>
 
 <script>
-import { toggleTheme } from "../../theme";
+import { toggleTheme } from "../../lib/theme";
 
 for (const button of document.querySelectorAll(".theme-toggle")) {
   button.addEventListener("click", () => {

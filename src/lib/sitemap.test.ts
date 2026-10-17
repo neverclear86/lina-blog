@@ -1,7 +1,7 @@
 import type { SitemapItem } from "@astrojs/sitemap";
 import type { AstroIntegration } from "astro";
 import { describe, expect, it } from "vitest";
-import { devPages } from "./dev/dev-pages";
+import { devPages } from "../dev/dev-pages";
 import { buildRobotsTxt, isSitemapPage, withXDefault } from "./sitemap";
 
 type ConfigSetupOptions = Parameters<

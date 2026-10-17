@@ -18,11 +18,11 @@
  *
  * The rows are links and the tags are not, as `.tag` is not interactive (`labels.css`).
  */
-import type { BlogFrontmatter } from "../../blog-schema";
 import type { Locale } from "../../i18n/locales";
 import { translate } from "../../i18n/ui";
-import { formatJstDate } from "../../jst-date";
-import { tagUiKeys } from "../../latest-posts";
+import type { BlogFrontmatter } from "../../lib/blog/blog-schema";
+import { tagUiKeys } from "../../lib/blog/latest-posts";
+import { formatJstDate } from "../../lib/jst-date";
 
 interface Props {
   /** Path in the command, such as `~/blog` or `~/blog/tags/tech`. */

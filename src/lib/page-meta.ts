@@ -2,8 +2,8 @@
  * The description, the Open Graph tags and the Twitter card tags that the layout puts in the
  * `<head>` of every page.
  */
-import type { Locale } from "./i18n/locales";
-import { translate } from "./i18n/ui";
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
 
 /**
  * Value of `og:locale` for each locale: the language with its region, as the Open Graph protocol

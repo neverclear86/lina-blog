@@ -3,7 +3,7 @@ import {
   externalLinkAttrs,
   externalNote,
   isExternalLink,
-} from "../external-link";
+} from "../lib/external-link";
 
 const HEADINGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6"]);
 

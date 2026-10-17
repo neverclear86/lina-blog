@@ -9,12 +9,12 @@
  * of the section there. From 768px it takes the full width of its place and the height of its
  * content (`align-self: start`), so a short column does not stretch the large window.
  */
-import { externalLinkAttrs, requireSite } from "../../external-link";
 import type { Locale } from "../../i18n/locales";
 import { translate } from "../../i18n/ui";
-import { formatJstDate } from "../../jst-date";
-import { YOUTUBE_URL } from "../../profile-links";
-import type { YouTubeVideo } from "../../youtube-feed";
+import { externalLinkAttrs, requireSite } from "../../lib/external-link";
+import { formatJstDate } from "../../lib/jst-date";
+import { YOUTUBE_URL } from "../../lib/profile-links";
+import type { YouTubeVideo } from "../../lib/youtube/youtube-feed";
 import ExternalNote from "../site/ExternalNote.astro";
 
 interface Props {

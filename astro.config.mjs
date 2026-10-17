@@ -8,22 +8,22 @@ import cloudflare from "@astrojs/cloudflare";
 import { satteri } from "@astrojs/markdown-satteri";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig, envField, fontProviders } from "astro/config";
-import { renderAnsiArt, renderPlainArt } from "./src/ansi-art.ts";
-import { decodeAnsiArtSource } from "./src/ansi-art-source.ts";
 import { devPages, devPagesEnabled } from "./src/dev/dev-pages.ts";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/locales.ts";
+import { renderAnsiArt, renderPlainArt } from "./src/lib/ansi-art/ansi-art.ts";
+import { decodeAnsiArtSource } from "./src/lib/ansi-art/ansi-art-source.ts";
+import { loadNostrPublishedSlugs } from "./src/lib/blog/published-articles-source.ts";
+import { loadOgFonts } from "./src/lib/og/og-font.ts";
+import { renderOgImage } from "./src/lib/og/og-image.ts";
+import { OG_IMAGES_LIST_PATH } from "./src/lib/og/og-pages.ts";
+import { isSitemapPage, withXDefault } from "./src/lib/sitemap.ts";
+import { THEME_SCRIPT } from "./src/lib/theme.ts";
 import { tableFocusable, taskItemLabel } from "./src/markdown/a11y.ts";
 import { codeFilename } from "./src/markdown/code-filename.ts";
 import { externalLinks } from "./src/markdown/external-links.ts";
 import { highlightCodeBlocks } from "./src/markdown/highlight.ts";
 import { tableAlignToClass } from "./src/markdown/table-align.ts";
 import { youtubeEmbed } from "./src/markdown/youtube.ts";
-import { loadOgFonts } from "./src/og-font.ts";
-import { renderOgImage } from "./src/og-image.ts";
-import { OG_IMAGES_LIST_PATH } from "./src/og-pages.ts";
-import { loadNostrPublishedSlugs } from "./src/published-articles-source.ts";
-import { isSitemapPage, withXDefault } from "./src/sitemap.ts";
-import { THEME_SCRIPT } from "./src/theme.ts";
 
 /** Same pattern Astro uses to read a page's `export const prerender`. */
 const PRERENDER_EXPORT = /^\s*export\s+const\s+prerender\s*=\s*(true|false);?/m;
@@ -64,7 +64,7 @@ function prerenderByDefault() {
 const ANSI_ART_MODULE = "virtual:lina-ansi-art";
 
 /**
- * Builds the text art of the Hero's fourth pose (`ANSI_ART_SOURCE` in `src/ansi-art-source.ts`)
+ * Builds the text art of the Hero's fourth pose (`ANSI_ART_SOURCE` in `src/lib/ansi-art/ansi-art-source.ts`)
  * for terminals as the virtual module `virtual:lina-ansi-art`, which exports `ansiArt` (24-bit
  * color) and `plainArt` (no escape sequences).
  *
@@ -97,7 +97,7 @@ const PUBLISHED_SLUGS_MODULE = "virtual:lina-published-slugs";
 
 /**
  * Builds the slugs of the posts that are on Nostr (`loadNostrPublishedSlugs` in
- * `src/published-articles-source.ts`) as the virtual module `virtual:lina-published-slugs`,
+ * `src/lib/blog/published-articles-source.ts`) as the virtual module `virtual:lina-published-slugs`,
  * which exports `nostrPublishedSlugs`, a `Set`.
  *
  * The pages are prerendered in workerd, so the published record is read here, in Node, as the
@@ -141,7 +141,7 @@ function linaPublishedSlugs() {
  * The images are drawn here, in Node, because sharp cannot be loaded in workerd, where the pages
  * are prerendered. `astro:content` cannot be imported in this file, so the endpoint
  * `src/pages/og/images.json.ts`, which is prerendered with the pages, lists the images
- * (`ogImagePages` in `src/og-pages.ts`) in `dist/client/og/images.json`. This hook draws each
+ * (`ogImagePages` in `src/lib/og/og-pages.ts`) in `dist/client/og/images.json`. This hook draws each
  * image of the list with the fonts of `loadOgFonts`, writes it to its path in `dist/client/` and
  * deletes the list, so Workers Static Assets does not serve it. A missing or empty list, or a
  * font that cannot be downloaded, fails the build.
@@ -153,7 +153,7 @@ function ogImages() {
     hooks: {
       "astro:build:done": async ({ dir, logger }) => {
         const list = fileURLToPath(new URL(`.${OG_IMAGES_LIST_PATH}`, dir));
-        /** @type {import('./src/og-pages.ts').OgImagePage[]} */
+        /** @type {import('./src/lib/og/og-pages.ts').OgImagePage[]} */
         const pages = JSON.parse(await readFile(list, "utf8"));
         const fonts = await loadOgFonts();
         for (const { path, input } of pages) {
@@ -203,7 +203,7 @@ export default defineConfig({
     prerenderByDefault(),
     devPages(),
     // `@astrojs/sitemap` writes /sitemap-index.xml at build time, linking each page to the same
-    // page in the other locales; `src/sitemap.ts` filters the pages and adds `x-default`.
+    // page in the other locales; `src/lib/sitemap.ts` filters the pages and adds `x-default`.
     sitemap({
       filter: isSitemapPage,
       serialize: withXDefault,
@@ -219,7 +219,7 @@ export default defineConfig({
   // hashes of the scripts and styles it bundles and `font-src 'self'`. `THEME_SCRIPT` is rendered
   // with `is:inline`, which Astro does not hash, so its hash is computed from the constant. No
   // `style` attribute is allowed. `frame-ancestors` has no effect in a <meta> and is sent as a
-  // header by `public/_headers` and `src/api.ts`.
+  // header by `public/_headers` and `src/lib/server/api.ts`.
   security: {
     csp: {
       directives: [

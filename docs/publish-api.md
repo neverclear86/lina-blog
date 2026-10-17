@@ -78,7 +78,7 @@ R2 のキーは `{name}` そのものである。
 ```
 
 `markdown` は、`## 内容のハッシュ` の正規化を済ませたものである。
-frontmatter は、ブログの frontmatter のスキーマ（`src/blog-schema.ts`）から `date` を除いたものである。
+frontmatter は、ブログの frontmatter のスキーマ（`src/lib/blog/blog-schema.ts`）から `date` を除いたものである。
 frontmatter は、`markdown` の 1 行目の `---` の行と、次の `---` だけの行の間に YAML で書く。
 Worker は、サイトのビルド（Astro）と同じ `js-yaml` で読む。
 閉じの `---` の行より前に `---` か `+++` で始まる行があるときは、Astro と区切りの位置が変わるので、frontmatter が無いものとして扱う。

@@ -29,7 +29,7 @@ const ja = {
   "articleEnd.copyDone": "コピーしました！",
   "articleEnd.copyFail":
     "コピーできませんでした。アドレスバーから URL をコピーしてください",
-  // Alt texts of the avatar images (src/avatar-images.ts). The poses are decorative and have none.
+  // Alt texts of the avatar images (src/lib/avatar-images.ts). The poses are decorative and have none.
   "avatar.frontAlt": "創好リナ 正面",
   "avatar.sideAlt": "創好リナ 側面",
   "avatar.backAlt": "創好リナ 背面",
@@ -126,7 +126,7 @@ const ja = {
   "header.homeLabel": "ikili.pro トップ",
   // Hero of the top page: the heading in two parts (the second one is marked), the intro and the
   // button to the latest video. The two parts of the heading also make the title of the OGP image
-  // of the top page (src/og-pages.ts).
+  // of the top page (src/lib/og/og-pages.ts).
   "hero.headingLead": "IT技術で、",
   "hero.headingMark": "本気で遊ぶ。",
   "hero.intro":
@@ -154,7 +154,7 @@ const ja = {
   // Shown in the large window in place of the newest video when the feed gives none, such as when
   // it cannot be read.
   "latest.videos.empty": "最新の動画を表示できませんでした。",
-  // Hidden text after the name of a link that leaves the site (src/external-link.ts), and the
+  // Hidden text after the name of a link that leaves the site (src/lib/external-link.ts), and the
   // text between the name and it: none in Japanese.
   "link.external": "（外部サイト・新しいタブで開く）",
   "link.externalSeparator": "",

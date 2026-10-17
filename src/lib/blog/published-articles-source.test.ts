@@ -69,7 +69,7 @@ describe("loadNostrPublishedSlugs", () => {
     const published = loadNostrPublishedSlugs(true);
     const record = JSON.parse(
       readFileSync(
-        new URL("./content/blog-dev/published.json", import.meta.url),
+        new URL("../../content/blog-dev/published.json", import.meta.url),
         "utf8",
       ),
     ) as { articles: Record<string, { hash: string | null }> };
@@ -78,7 +78,7 @@ describe("loadNostrPublishedSlugs", () => {
   });
 
   it("見本の記録の slug は blog-dev の記事の slug のどれかである", () => {
-    const base = new URL("./content/blog-dev/", import.meta.url);
+    const base = new URL("../../content/blog-dev/", import.meta.url);
     const record = JSON.parse(
       readFileSync(new URL("published.json", base), "utf8"),
     ) as { articles: Record<string, unknown> };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTextSite } from "../text-site";
+import { buildTextSite } from "../lib/text-site";
 import { DEFAULT_LOCALE, LOCALES } from "./locales";
 import { translate, type UiKey, ui, useTranslations } from "./ui";
 

@@ -1,11 +1,11 @@
 ---
 import { getCollection } from "astro:content";
 import type { GetStaticPaths } from "astro";
-import { blogListText, blogTagPagePaths } from "../../../blog-pages";
 import BlogIndex from "../../../components/blog/BlogIndex.astro";
 import { translate } from "../../../i18n/ui";
-import { type BlogTag, postsWithTag } from "../../../latest-posts";
 import Layout from "../../../layouts/Layout.astro";
+import { blogListText, blogTagPagePaths } from "../../../lib/blog/blog-pages";
+import { type BlogTag, postsWithTag } from "../../../lib/blog/latest-posts";
 
 export const getStaticPaths = (() =>
   blogTagPagePaths()) satisfies GetStaticPaths;

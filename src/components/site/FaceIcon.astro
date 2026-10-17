@@ -11,7 +11,7 @@
  *
  * The files are shown as the kit ships them, as two `<img>` elements, and CSS hides the one that
  * does not match the theme. The dark theme is `<html data-theme="dark">`, which `Layout.astro`
- * renders and `THEME_SCRIPT` in `src/theme.ts` sets before the first paint, so it is also the
+ * renders and `THEME_SCRIPT` in `src/lib/theme.ts` sets before the first paint, so it is also the
  * theme when JavaScript does not run; any other value shows the image for the light theme. The
  * hidden `<img>` is `display: none`, so assistive technology reads the `alt` only once and the
  * lazily loaded file is not fetched. A style that resizes the icons must keep each one in the

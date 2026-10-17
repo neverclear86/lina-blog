@@ -3,17 +3,17 @@
  * the `sizes` that `Picture` of `astro:assets` needs to output them as AVIF and WebP.
  */
 import type { ImageMetadata } from "astro";
-import happyFullbody from "./assets/happy-fullbody.webp";
-import hate from "./assets/hate.webp";
-import lgtmBastup from "./assets/lgtm-bastup.webp";
-import lgtmFullbody from "./assets/lgtm-fullbody.webp";
-import mainVisual from "./assets/main-visual.webp";
-import rohan from "./assets/rohan.webp";
-import threeviewBack from "./assets/threeview-back.webp";
-import threeviewFront from "./assets/threeview-front.webp";
-import threeviewSide from "./assets/threeview-side.webp";
-import type { Locale } from "./i18n/locales";
-import { translate, type UiKey } from "./i18n/ui";
+import happyFullbody from "../assets/happy-fullbody.webp";
+import hate from "../assets/hate.webp";
+import lgtmBastup from "../assets/lgtm-bastup.webp";
+import lgtmFullbody from "../assets/lgtm-fullbody.webp";
+import mainVisual from "../assets/main-visual.webp";
+import rohan from "../assets/rohan.webp";
+import threeviewBack from "../assets/threeview-back.webp";
+import threeviewFront from "../assets/threeview-front.webp";
+import threeviewSide from "../assets/threeview-side.webp";
+import type { Locale } from "../i18n/locales";
+import { translate, type UiKey } from "../i18n/ui";
 
 /** How a component outputs one avatar image with `Picture`. */
 export interface AvatarImage {

@@ -1,7 +1,7 @@
 /**
  * Which blog posts are on Nostr, read from the published record, `src/content/published.json`
  * (docs/publish-api.md). The record is read in Node at build time, by
- * `src/published-articles-source.ts`, and `linaPublishedSlugs()` in `astro.config.mjs` exports
+ * `src/lib/blog/published-articles-source.ts`, and `linaPublishedSlugs()` in `astro.config.mjs` exports
  * the result as the virtual module `virtual:lina-published-slugs`. This module only parses and
  * looks up, and imports nothing from Node, so it can be imported by pages, which are prerendered
  * in workerd.

@@ -1,12 +1,12 @@
-import type { BlogFrontmatter } from "./blog-schema";
-import { LOCALES, type Locale } from "./i18n/locales";
-import { translate } from "./i18n/ui";
+import { LOCALES, type Locale } from "../../i18n/locales";
+import { translate } from "../../i18n/ui";
+import type { BlogFrontmatter } from "../blog/blog-schema";
 import type { OgImageInput } from "./og-image";
 
 /**
  * The pages that have an OGP image: the paths of the images and what each one says.
  *
- * This module only imports the type of `OgImageInput`, never `src/og-image.ts` itself, because
+ * This module only imports the type of `OgImageInput`, never `src/lib/og/og-image.ts` itself, because
  * that module imports sharp, which cannot be loaded in workerd where the pages are prerendered.
  */
 

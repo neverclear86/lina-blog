@@ -1,14 +1,14 @@
 import { type Context, Hono } from "hono";
 import { secureHeaders } from "hono/secure-headers";
+import type { Locale } from "../../i18n/locales";
+import { negotiateLocale } from "../../i18n/negotiate";
 import {
   type ContactErrors,
   type ContactKind,
   validateContact,
-} from "./contact";
-import { buildContactMail, type ContactMail } from "./contact-mail";
-import type { Locale } from "./i18n/locales";
-import { negotiateLocale } from "./i18n/negotiate";
-import { verifyTurnstile } from "./turnstile";
+} from "../contact/contact";
+import { buildContactMail, type ContactMail } from "../contact/contact-mail";
+import { verifyTurnstile } from "../contact/turnstile";
 import { isCommandLineClient } from "./user-agent";
 
 /**

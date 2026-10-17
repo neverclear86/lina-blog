@@ -11,7 +11,7 @@ type RecordFile = { file: URL; name: string };
 
 /** The published record that the publish Worker writes (docs/publish-api.md). */
 const PUBLISHED_RECORD: RecordFile = {
-  file: new URL("./content/published.json", import.meta.url),
+  file: new URL("../../content/published.json", import.meta.url),
   name: "src/content/published.json",
 };
 
@@ -20,7 +20,7 @@ const PUBLISHED_RECORD: RecordFile = {
  * posts are (`astro dev`, or `astro build` with `LINA_DEV_PAGES=1`).
  */
 const DEV_PUBLISHED_RECORD: RecordFile = {
-  file: new URL("./content/blog-dev/published.json", import.meta.url),
+  file: new URL("../../content/blog-dev/published.json", import.meta.url),
   name: "src/content/blog-dev/published.json",
 };
 

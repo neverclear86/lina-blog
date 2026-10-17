@@ -21,9 +21,9 @@
  * is 560px wide or more.
  */
 import { TURNSTILE_SITE_KEY } from "astro:env/client";
-import { CONTACT_KINDS, CONTACT_LIMITS } from "../../contact";
 import type { Locale } from "../../i18n/locales";
 import { useTranslations } from "../../i18n/ui";
+import { CONTACT_KINDS, CONTACT_LIMITS } from "../../lib/contact/contact";
 
 interface Props {
   /** Language of the page, for the strings from `src/i18n/ui.ts`. */
@@ -277,9 +277,9 @@ textarea[aria-invalid="true"] {
 </style>
 
 <script>
-import type { ContactField } from "../../contact";
 import { DEFAULT_LOCALE, LOCALES } from "../../i18n/locales";
-import { resolveTheme } from "../../theme";
+import type { ContactField } from "../../lib/contact/contact";
+import { resolveTheme } from "../../lib/theme";
 import {
   type ContactFormState,
   contactFieldMessage,

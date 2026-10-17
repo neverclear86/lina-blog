@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { translate } from "./i18n/ui";
+import { translate } from "../../i18n/ui";
 import { ogImagePages, postOgImagePath, topOgImagePath } from "./og-pages";
 
 /** A post as `ogImagePages` needs it, with `patch` over a post with one tag and no sponsor. */

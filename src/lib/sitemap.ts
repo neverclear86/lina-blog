@@ -22,7 +22,7 @@ export function isSitemapPage(url: string): boolean {
 
 /**
  * Adds `/` as the `x-default` alternate to an entry that links the same page in other
- * locales. `/` picks the locale for the visitor (`src/api.ts`). An entry without `links`,
+ * locales. `/` picks the locale for the visitor (`src/lib/server/api.ts`). An entry without `links`,
  * a page in one locale only, is returned as is.
  */
 export function withXDefault(item: SitemapItem): SitemapItem {

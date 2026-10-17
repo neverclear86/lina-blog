@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { translate } from "./i18n/ui";
+import { translate } from "../../i18n/ui";
 import {
   type BlogTag,
   newestPosts,

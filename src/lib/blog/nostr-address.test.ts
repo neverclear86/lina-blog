@@ -2,7 +2,7 @@ import { decode, npubEncode, nsecEncode } from "nostr-tools/nip19";
 import { describe, expect, it } from "vitest";
 import { buildNaddr, nostrArticleUrl } from "./nostr-address";
 
-/** The same string as the Nostr npub of `src/profile-links.ts`. */
+/** The same string as the Nostr npub of `src/lib/profile-links.ts`. */
 const OFFICIAL_NPUB =
   "npub1es86m387vusxe66jjp200eqkn3lcxsxudeg2g50zz0yjx5ggvt8sgctaxz";
 

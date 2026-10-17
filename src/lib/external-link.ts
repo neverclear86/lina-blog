@@ -2,8 +2,8 @@
  * Links that leave the site: which `href`s do, the attributes that open them in a new tab, the
  * text that tells assistive technology about it, and the `site` that components judge them by.
  */
-import type { Locale } from "./i18n/locales";
-import { translate } from "./i18n/ui";
+import type { Locale } from "../i18n/locales";
+import { translate } from "../i18n/ui";
 
 /** Attributes to put on an `<a>`, which an Astro element takes with `{...attrs}`. */
 export interface ExternalLinkAttrs {

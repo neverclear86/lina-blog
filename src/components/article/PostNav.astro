@@ -12,8 +12,8 @@
  * is underlined by `.link-title` of `global.css`; in the dark theme it takes the keyword color
  * from the rule of `a:hover` there.
  */
-import type { BlogFrontmatter } from "../../blog-schema";
 import { translate } from "../../i18n/ui";
+import type { BlogFrontmatter } from "../../lib/blog/blog-schema";
 
 /** A post as this part needs it: the title shown and the slug of the path. */
 type Post = { data: Pick<BlogFrontmatter, "title" | "slug"> };

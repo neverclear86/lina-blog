@@ -4,7 +4,7 @@
  * The theme is the `data-theme` attribute on `<html>` ("light" or "dark"). `:root` holds the
  * light values, which also apply when the attribute is missing, and `:root[data-theme="dark"]`
  * overrides only the colors that change with the theme. `Layout.astro` renders the attribute as
- * "dark", so the dark values apply unless `src/theme.ts` finds "light" saved.
+ * "dark", so the dark values apply unless `src/lib/theme.ts` finds "light" saved.
  *
  * The plan A tokens are copied from `.lx` (dark) and `.lx.light` of `design/Main.dc.html`, with
  * `--code` from `design/AArticle.dc.html` and `--ov` from `design/AMobile.dc.html`, under the

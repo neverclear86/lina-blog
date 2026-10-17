@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { buildLlmsTxt } from "../llms";
+import { buildLlmsTxt } from "../lib/llms";
 
 /**
  * `/llms.txt`. Prerendered like the pages, so `astro build` writes it to `dist/client/` and

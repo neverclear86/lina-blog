@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, posix } from "node:path";
 import type { z } from "astro/zod";
 import { parse } from "yaml";
-import { blogSchema } from "../../src/blog-schema";
+import { blogSchema } from "../../src/lib/blog/blog-schema";
 
 /**
  * Frontmatter of an article sent to the publishing Worker: the blog schema without `date`,

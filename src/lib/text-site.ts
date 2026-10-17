@@ -4,10 +4,11 @@
  * in 80 terminal columns. `src/pages/text/[lang].txt.ts` calls it for each locale, so every
  * build writes `/text/ja.txt` and `/text/en.txt`.
  */
-import { FEED_PATH, rssItemTitle } from "./blog-rss";
-import type { BlogFrontmatter } from "./blog-schema";
-import { contactPagePath } from "./components/site/site-nav";
-import type { Locale } from "./i18n/locales";
+
+import { contactPagePath } from "../components/site/site-nav";
+import type { Locale } from "../i18n/locales";
+import { FEED_PATH, rssItemTitle } from "./blog/blog-rss";
+import type { BlogFrontmatter } from "./blog/blog-schema";
 import { PROFILE_LINKS, profileLink } from "./profile-links";
 
 /** Terminal columns that every line of the text version fits in. */

@@ -249,7 +249,7 @@ export function exclusiveImages(
  * UTF-16 code units, the fields of each entry in the order `hash`, `date`, `images`, and
  * `JSON.stringify(value, null, 2)` followed by one newline.
  * JavaScript puts keys that are array indices (such as `9`) before the others, so such keys
- * would not be in order. The slugs of `src/blog-schema.ts` are never array indices.
+ * would not be in order. The slugs of `src/lib/blog/blog-schema.ts` are never array indices.
  *
  * @param record The published record.
  * @returns The content of `src/content/published.json`.

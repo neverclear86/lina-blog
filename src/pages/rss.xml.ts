@@ -1,7 +1,7 @@
 import { getCollection } from "astro:content";
 import rss from "@astrojs/rss";
 import type { APIContext } from "astro";
-import { FEED_PATH, FEED_TITLE, toRssItems } from "../blog-rss";
+import { FEED_PATH, FEED_TITLE, toRssItems } from "../lib/blog/blog-rss";
 
 /**
  * `/rss.xml`: RSS 2.0 feed of every blog post, newest first, with each post's full HTML in

@@ -28,9 +28,13 @@
  * hint is next to `v2.1` below 768px and next to the tabs from 768px. See `./three-view-tabs`.
  */
 import { Picture } from "astro:assets";
-import { type AvatarImage, avatarAlt, THREE_VIEW } from "../../avatar-images";
 import type { Locale } from "../../i18n/locales";
 import { translate, type UiKey } from "../../i18n/ui";
+import {
+  type AvatarImage,
+  avatarAlt,
+  THREE_VIEW,
+} from "../../lib/avatar-images";
 
 interface Props {
   /** Language of the page, which picks the names of the parts and the `alt` of the images. */

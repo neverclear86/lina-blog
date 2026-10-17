@@ -1,7 +1,7 @@
-import type { BlogFrontmatter } from "../../../src/blog-schema";
+import type { BlogFrontmatter } from "../../../src/lib/blog/blog-schema";
 
 /**
- * Frontmatter of an article: the schema of `src/blog-schema.ts` without `date`, already
+ * Frontmatter of an article: the schema of `src/lib/blog/blog-schema.ts` without `date`, already
  * validated.
  */
 type ArticleFrontmatter = Omit<BlogFrontmatter, "date">;
