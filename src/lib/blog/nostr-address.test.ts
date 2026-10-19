@@ -1,10 +1,11 @@
 import { decode, npubEncode, nsecEncode } from "nostr-tools/nip19";
 import { describe, expect, it } from "vitest";
+import { NOSTR_NPUB } from "../profile-links";
 import { buildNaddr, nostrArticleUrl } from "./nostr-address";
 
 /** The same string as the Nostr npub of `src/lib/profile-links.ts`. */
 const OFFICIAL_NPUB =
-  "npub1es86m387vusxe66jjp200eqkn3lcxsxudeg2g50zz0yjx5ggvt8sgctaxz";
+  "npub1ljnatxkrh9mqzkj5h5pu6s97yk582xzdqp55afcch98rsaadec9sz4g9vt";
 
 /** The example of the NIP-19 specification. */
 const SPEC_NPUB =
@@ -12,9 +13,9 @@ const SPEC_NPUB =
 const SPEC_PUBKEY =
   "7e7e9c42a91bfef19fa929e5fda1b72e0ebc1a4c1141673e2794234d86addf4e";
 
-/** Made by go-nostr v0.52.3 (`nip19.EncodeEntity`) and by a Python encoder written from BIP-173. */
+/** Made by go-nostr v0.52.3 (`nip19.EncodeEntity`). */
 const OFFICIAL_NADDR =
-  "naddr1qqf8xctdwpkx2ttpwf6xjcmvv5knqvp3qgsvcradcnlxwgrvadffq48hustfclurgrwxu59y283p8jfr2yyx9ncrqsqqqa28fefm2p";
+  "naddr1qqf8xctdwpkx2ttpwf6xjcmvv5knqvp3qgs0ef74ntpmjasptf2t6q7dgzlzt2r4rpxsq62w5uvtjn3cw7kuuzcrqsqqqa2894829z";
 const SPEC_NADDR =
   "naddr1qqrxyctwv9hxzq3q0elfcs4fr0l0r8af98jlmgdh9c8tcxjvz9qkw038js35mp4dma8qxpqqqp65wlnvkm4";
 
@@ -26,6 +27,12 @@ function decodeNaddr(naddr: string) {
   }
   return result.data;
 }
+
+describe("OFFICIAL_NPUB", () => {
+  it("profile-links の NOSTR_NPUB と同じ文字列である", () => {
+    expect(OFFICIAL_NPUB).toBe(NOSTR_NPUB);
+  });
+});
 
 describe("buildNaddr", () => {
   it("公式の npub と kind 30023 と slug から、別の実装で作った naddr と同じ値を返す", () => {
