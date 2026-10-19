@@ -33,7 +33,7 @@ describe("footerProfileLinks", () => {
       ["GitHub", "https://github.com/neverclear86"],
       [
         "Nostr",
-        "https://nostter.app/npub1es86m387vusxe66jjp200eqkn3lcxsxudeg2g50zz0yjx5ggvt8sgctaxz",
+        "https://nostter.app/npub1ljnatxkrh9mqzkj5h5pu6s97yk582xzdqp55afcch98rsaadec9sz4g9vt",
       ],
       ["Zenn", "https://zenn.dev/linatsukusu"],
       ["RSS", "/rss.xml"],

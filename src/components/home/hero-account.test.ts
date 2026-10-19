@@ -19,7 +19,7 @@ describe("accountLinks", () => {
       ["github", "https://github.com/neverclear86"],
       [
         "nostr",
-        "https://nostter.app/npub1es86m387vusxe66jjp200eqkn3lcxsxudeg2g50zz0yjx5ggvt8sgctaxz",
+        "https://nostter.app/npub1ljnatxkrh9mqzkj5h5pu6s97yk582xzdqp55afcch98rsaadec9sz4g9vt",
       ],
       ["zenn", "https://zenn.dev/linatsukusu"],
       ["rss", "/rss.xml"],
