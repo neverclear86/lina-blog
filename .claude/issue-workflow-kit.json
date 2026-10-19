@@ -1,6 +1,6 @@
 {
   "kit": "issue-workflow-kit",
-  "kitCommit": "8ce993df4425272a86471a1e477a335bcfccdbd9",
+  "kitCommit": "c46a71b1570d3283d63b753e3dd8b7bb4ad8a5b4",
   "config": {
     "values": {
       "REPO": "neverclear86/lina-blog",
