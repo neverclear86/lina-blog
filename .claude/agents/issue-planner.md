@@ -108,6 +108,7 @@ disallowedTools: Agent, Skill, Artifact, SendFeedback, EnterWorktree, ListAgents
 <!-- /ADAPT:design -->
 - 既存のコードの流儀（モジュールの分け方、エラーの表し方、テストの書き方）に合わせる
 - 新しく書く処理は、同じ働きの既存の関数を `git grep` で探し、再利用するか、別に持つ理由を「決めたこと」に書く
+- プランを書く前に、issue の主題の語で `gh issue list -R neverclear86/lina-blog --state open --search "<主題の語>"` を実行し、同じ作業を扱う開いた issue（親と兄弟のサブ issue は除く）があれば、その記録先（閉じる、コメントを残す、参照する）を「プランに求めること」の手段で受け入れ条件の表に入れる（短く起票された issue は、先に起票済みの詳しい issue と重なることがあり、記録が無いとその issue に依存する issue が止まる）
 - 列挙型の既存の変種を選ぶ決定は、その変種の Doc コメントを引いて理由にする
 
 ## 分割の判定（依頼が「判定」のとき）
